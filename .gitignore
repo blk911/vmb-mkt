@@ -39,3 +39,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+# --------------------------------------------------
+# MATERIALIZED / DERIVED DATA (DO NOT COMMIT)
+# --------------------------------------------------
+
+# Tech index + signal outputs (generated deterministically)
+data/**/tech/**
+data/**/signals/**
+data/**/derived/**
+
+# Atomic write temp files
+data/**/*.tmp
