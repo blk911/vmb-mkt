@@ -52,3 +52,7 @@ data/**/derived/**
 
 # Atomic write temp files
 data/**/*.tmp
+# local restore snapshots
+backups/
+.env.local
+
