@@ -56,3 +56,7 @@ data/**/*.tmp
 backups/
 .env.local
 
+
+# big derived tables (do not commit)
+data/co/dora/denver_metro/tables/
+
