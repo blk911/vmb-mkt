@@ -3,7 +3,12 @@
 import React from "react";
 
 type SweepRow = {
-  addressKey: string;
+  id?: string;
+  addressKey?: string;
+  placeName?: string;
+  decision?: "approve" | "reject" | "skip" | string;
+  decisionNote?: string;
+  decidedAt?: number;
   addressClass?: string;
   confidence?: number;
   reasons?: string[];
@@ -58,10 +63,16 @@ export default function PlacesSweepClient() {
     setLoading(true);
     setErr(null);
     try {
-      const r = await fetch("/api/admin/places/sweep", { cache: "no-store" });
-      const j = (await safeJson(r)) as SweepGetResp;
-      if (!r.ok || !j?.ok) throw new Error(j?.error || `request_failed_status_${r.status}`);
-      setData(j);
+      const r = await fetch("/api/admin/vmb/places/candidates", { cache: "no-store" });
+      const j = (await safeJson(r)) as { rows?: SweepRow[]; count?: number; error?: string };
+      if (!r.ok) throw new Error(j?.error || `request_failed_status_${r.status}`);
+      const rows = Array.isArray(j?.rows) ? j.rows : [];
+      setData({
+        ok: true,
+        rows,
+        counts: { rows: Number(j?.count ?? rows.length) },
+        updatedAt: new Date().toISOString(),
+      });
     } catch (e: any) {
       setErr(e?.message || "refresh_failed");
     } finally {
@@ -73,7 +84,7 @@ export default function PlacesSweepClient() {
     setRunning(true);
     setErr(null);
     try {
-      const res = await fetch("/api/admin/places/sweep/run", {
+      const res = await fetch("/api/admin/vmb/places/run-sweep", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ limit }),
@@ -88,13 +99,14 @@ export default function PlacesSweepClient() {
     }
   }
 
-  async function decide(addressKey: string, decision: string, candidate?: any) {
+  async function decide(row: SweepRow, decision: "approve" | "reject" | "skip", note = "") {
     setErr(null);
     try {
-      const body: any = { addressKey, decision };
-      if (decision === "confirm_candidate" && candidate) body.candidate = candidate;
+      const id = String(row?.id || "").trim();
+      if (!id) throw new Error("Missing row.id for decision write");
+      const body: any = { id, decision, note };
 
-      const r = await fetch("/api/admin/places/sweep/decide", {
+      const r = await fetch("/api/admin/vmb/places/decide", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
@@ -179,15 +191,22 @@ export default function PlacesSweepClient() {
         {rows.map((r) => {
           const candidates = r.sweepCandidates || [];
           const top = r.topCandidate || null;
+          const label = r.addressKey || r.placeName || r.id || "(unlabeled row)";
 
           return (
-            <div key={r.addressKey} style={{ border: "1px solid #ddd", borderRadius: 10, padding: 14 }}>
+            <div key={r.id || r.addressKey || label} style={{ border: "1px solid #ddd", borderRadius: 10, padding: 14 }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                <div style={{ fontWeight: 700 }}>{r.addressKey}</div>
+                <div style={{ fontWeight: 700 }}>{label}</div>
                 <div style={{ opacity: 0.85 }}>
                   class: <b>{r.addressClass || "unknown"}</b> · conf: {r.confidence ?? ""}
                 </div>
               </div>
+
+              {(r.decision || r.decidedAt) && (
+                <div style={{ marginTop: 6, opacity: 0.85 }}>
+                  decision: <b>{r.decision || "—"}</b> {r.decidedAt ? `· decidedAt ${new Date(r.decidedAt).toLocaleString()}` : ""}
+                </div>
+              )}
 
               <div style={{ marginTop: 6, opacity: 0.85 }}>
                 reasons: {(r.reasons || []).join(", ") || "—"}
@@ -210,8 +229,11 @@ export default function PlacesSweepClient() {
                         {c?.formattedAddress || c?.vicinity || ""} {c?.types ? `· ${c.types.join(", ")}` : ""}
                       </div>
                       <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        <button onClick={() => decide(r.addressKey, "confirm_candidate", c)} style={{ padding: "6px 10px" }}>
-                          Confirm Candidate
+                        <button
+                          onClick={() => decide(r, "approve", `candidate:${c?.name || c?.placeName || "unknown"}`)}
+                          style={{ padding: "6px 10px" }}
+                        >
+                          Approve
                         </button>
                       </div>
                     </div>
@@ -220,17 +242,14 @@ export default function PlacesSweepClient() {
               )}
 
               <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button onClick={() => decide(r.addressKey, "suite_center")} style={{ padding: "6px 10px" }}>
-                  Mark Suite Center
+                <button onClick={() => decide(r, "approve")} style={{ padding: "6px 10px" }}>
+                  Approve
                 </button>
-                <button onClick={() => decide(r.addressKey, "residential")} style={{ padding: "6px 10px" }}>
-                  Mark Residential
+                <button onClick={() => decide(r, "skip")} style={{ padding: "6px 10px" }}>
+                  Skip
                 </button>
-                <button onClick={() => decide(r.addressKey, "unknown")} style={{ padding: "6px 10px" }}>
-                  Mark Unknown
-                </button>
-                <button onClick={() => decide(r.addressKey, "no_storefront")} style={{ padding: "6px 10px" }}>
-                  No Storefront
+                <button onClick={() => decide(r, "reject")} style={{ padding: "6px 10px" }}>
+                  Reject
                 </button>
               </div>
 
