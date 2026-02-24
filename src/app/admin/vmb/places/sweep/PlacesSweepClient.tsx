@@ -43,13 +43,24 @@ export default function PlacesSweepClient() {
   const [err, setErr] = React.useState<string | null>(null);
   const [limit, setLimit] = React.useState<number>(50);
 
+  async function safeJson(res: Response) {
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      throw new Error(
+        `API did not return JSON. status=${res.status} content-type=${res.headers.get("content-type")} bodyHead=${text.slice(0, 120)}`
+      );
+    }
+  }
+
   async function refresh() {
     setLoading(true);
     setErr(null);
     try {
       const r = await fetch("/api/admin/places/sweep", { cache: "no-store" });
-      const j = (await r.json()) as SweepGetResp;
-      if (!j?.ok) throw new Error(j?.error || "failed_get");
+      const j = (await safeJson(r)) as SweepGetResp;
+      if (!r.ok || !j?.ok) throw new Error(j?.error || `request_failed_status_${r.status}`);
       setData(j);
     } catch (e: any) {
       setErr(e?.message || "refresh_failed");
@@ -62,13 +73,13 @@ export default function PlacesSweepClient() {
     setRunning(true);
     setErr(null);
     try {
-      const r = await fetch("/api/admin/places/sweep/run", {
+      const res = await fetch("/api/admin/places/sweep/run", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ limit }),
       });
-      const j = await r.json();
-      if (!j?.ok) throw new Error(j?.error || "run_failed");
+      const json = await safeJson(res);
+      if (!res.ok || !json?.ok) throw new Error(json?.error || `request_failed_status_${res.status}`);
       await refresh();
     } catch (e: any) {
       setErr(e?.message || "run_failed");
@@ -88,8 +99,8 @@ export default function PlacesSweepClient() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
       });
-      const j = await r.json();
-      if (!j?.ok) throw new Error(j?.error || "decide_failed");
+      const json = await safeJson(r);
+      if (!r.ok || !json?.ok) throw new Error(json?.error || `request_failed_status_${r.status}`);
       await refresh();
     } catch (e: any) {
       setErr(e?.message || "decide_failed");
