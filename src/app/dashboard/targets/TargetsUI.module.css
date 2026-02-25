@@ -1,0 +1,277 @@
+.wrap {
+  display: grid;
+  gap: 12px;
+}
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 16px;
+  padding: 12px;
+}
+
+.toolbarGrid {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 10px 14px;
+  align-items: center;
+}
+
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 800;
+  opacity: 0.75;
+  letter-spacing: 0.2px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  align-items: flex-end;
+}
+
+.divider {
+  width: 1px;
+  height: 34px;
+  background: rgba(0,0,0,0.10);
+  margin: 0 2px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 120px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.6;
+}
+
+.control {
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.14);
+  padding: 0 10px;
+  font-size: 13px;
+  outline: none;
+  background: #fff;
+}
+
+.control:focus {
+  border-color: rgba(0,0,0,0.28);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.10);
+  background: rgba(0,0,0,0.02);
+  font-size: 12px;
+  font-weight: 650;
+  opacity: 0.9;
+}
+
+.checkRow input {
+  transform: translateY(1px);
+}
+
+.btn {
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.14);
+  background: #fff;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.meta {
+  margin-top: 8px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.meta b {
+  opacity: 1;
+}
+
+/* Card polish helpers (optional but worth it) */
+.card {
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 16px;
+  padding: 12px;
+  background: #fff;
+}
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.cardTitle {
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.cardSub {
+  font-size: 12px;
+  opacity: 0.75;
+  margin-top: 4px;
+}
+
+.badge {
+  font-size: 12px;
+  font-weight: 800;
+  opacity: 0.85;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.chip {
+  font-size: 11px;
+  font-weight: 750;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: rgba(0,0,0,0.02);
+}
+
+/* Drawer */
+.drawerBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.26);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 50;
+}
+
+.drawer {
+  width: 520px;
+  max-width: 92vw;
+  height: 100%;
+  background: #fff;
+  padding: 14px;
+  overflow: auto;
+  box-shadow: -10px 0 30px rgba(0,0,0,0.20);
+}
+
+.drawerHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.10);
+}
+
+.drawerTitle {
+  font-size: 18px;
+  font-weight: 950;
+  line-height: 1.15;
+}
+
+.drawerSub {
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.drawerClose {
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.14);
+  background: #fff;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.pills {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  font-size: 12px;
+  font-weight: 850;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: rgba(0,0,0,0.02);
+}
+
+.section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0,0,0,0.10);
+}
+
+.sectionTitle2 {
+  font-size: 12px;
+  font-weight: 950;
+  opacity: 0.75;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.kv {
+  font-size: 13px;
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 6px 10px;
+  align-items: baseline;
+}
+
+.k {
+  font-size: 12px;
+  font-weight: 850;
+  opacity: 0.65;
+}
+
+.v {
+  font-size: 13px;
+  font-weight: 650;
+  opacity: 0.95;
+  word-break: break-word;
+}
+
+.link {
+  text-decoration: underline;
+}
+
+.listActionsRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}

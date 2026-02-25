@@ -1,0 +1,30 @@
+{
+  "ok": true,
+  "updatedAt": "2026-02-03T00:00:00.000Z",
+  "brands": [
+    {
+      "brandId": "phenix",
+      "displayName": "Phenix Salon Suites",
+      "aliases": ["phenix", "phenix salon", "phenix salons", "phenix salon suites"],
+      "category": "suite"
+    },
+    {
+      "brandId": "sola",
+      "displayName": "Sola Salon Studios",
+      "aliases": ["sola", "sola salon", "sola salons", "sola salon studios"],
+      "category": "suite"
+    },
+    {
+      "brandId": "mysalonsuite",
+      "displayName": "My Salon Suite",
+      "aliases": ["my salon suite", "my salon suites", "mysalonsuite"],
+      "category": "suite"
+    },
+    {
+      "brandId": "salonsbyjc",
+      "displayName": "Salons by JC",
+      "aliases": ["salons by jc", "salon by jc"],
+      "category": "suite"
+    }
+  ]
+}

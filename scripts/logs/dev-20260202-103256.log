@@ -1,0 +1,79 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20260202103256
+Username: JSW-NEW-BOX\jswne
+RunAs User: JSW-NEW-BOX\jswne
+Configuration Name: 
+Machine: JSW-NEW-BOX (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+Process ID: 1692
+PSVersion: 5.1.26100.7462
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.7462
+BuildVersion: 10.0.26100.7462
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+PS C:\dev\vmb-mkt> function Finish([int]$code = 0) {
+  try { Stop-Transcript | Out-Null } catch {}
+  Write-Host ""
+  Write-Host "LOG: $logFile" -ForegroundColor Cyan
+  Write-Host "EXIT CODE: $code" -ForegroundColor Yellow
+  Write-Host ""
+  Read-Host "Press Enter to close"
+  exit $code
+}
+PS C:\dev\vmb-mkt> try {
+  Write-Host "== dev.ps1: VMB-MKT dev on port $Port ==" -ForegroundColor Cyan
+  Set-Location $repoRoot
+
+  # Stop anything already on the port
+  & "$PSScriptRoot\stop.ps1" -Port $Port
+
+  # Verify required data exists
+  $dst = Join-Path $repoRoot "data\co\dora\denver_metro\tables"
+  $rollups = Join-Path $dst "vmb_address_rollup.json"
+  $cands  = Join-Path $dst "vmb_attach_candidates.json"
+  $attach = Join-Path $dst "vmb_licensees_attached.json"
+
+  Write-Host ""
+  Write-Host "== data check ==" -ForegroundColor Cyan
+  Write-Host "tables: $dst"
+
+  $missing = @()
+  if (-not (Test-Path $rollups)) { $missing += $rollups }
+  if (-not (Test-Path $cands))   { $missing += $cands }
+  if (-not (Test-Path $attach))  { $missing += $attach }
+
+  if ($missing.Count -gt 0) {
+    Write-Host "Missing required VMB tables:" -ForegroundColor Red
+    $missing | ForEach-Object { Write-Host $_ }
+    Write-Host ""
+    Write-Host "Fix: run import (example):" -ForegroundColor Yellow
+    Write-Host "  powershell -ExecutionPolicy Bypass -File .\scripts\import-vmb-tables.ps1 -SourceDir C:\path\to\denver_metro\tables"
+    Finish 3
+  }
+
+  Write-Host "OK: data present." -ForegroundColor Green
+  Write-Host ""
+  Write-Host "== starting Next dev ==" -ForegroundColor Cyan
+
+  # IMPORTANT: this blocks (as it should) until you Ctrl+C
+  npm run dev
+
+  Finish 0
+}
+catch {
+  Write-Host ""
+  Write-Host "FAILED: $($_.Exception.Message)" -ForegroundColor Red
+  Finish 1
+}
+== dev.ps1: VMB-MKT dev on port 3001 ==
+
+FAILED: The term '\stop.ps1' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+**********************
+Windows PowerShell transcript end
+End time: 20260202103256
+**********************
