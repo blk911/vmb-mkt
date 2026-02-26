@@ -266,10 +266,10 @@ export default function OwnerDeckPage() {
             The Modern Revenue System for Salons
           </h1>
           <ul className="mt-4 space-y-1 text-center text-2xl font-semibold leading-tight text-neutral-900 md:text-3xl">
-            <li>Firm commitment at booking</li>
-            <li>Priority access for VMB members</li>
-            <li>VMB members earn exclusive rewards</li>
-            <li>VMB members advocate your brand</li>
+            <li>Eliminate Cancellations</li>
+            <li>Protect Peak Hours</li>
+            <li>Client Loyalty = Retention</li>
+            <li>Monetize Referrals</li>
           </ul>
         </div>
       </div>
