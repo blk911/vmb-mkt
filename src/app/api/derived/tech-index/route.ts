@@ -1,7 +1,18 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
+import { adminDb } from "@/lib/admin/firestoreAdmin";
+import { TECH_INDEX_COL } from "@/lib/places/storePaths";
 
 const PATH = "data/co/dora/denver_metro/places/derived/tech_index.v4_facilities.v1.json";
+export const runtime = "nodejs";
+
+function hasFirebaseEnv() {
+  return !!(
+    process.env.FIREBASE_PROJECT_ID &&
+    process.env.FIREBASE_CLIENT_EMAIL &&
+    process.env.FIREBASE_PRIVATE_KEY
+  );
+}
 
 function pickLite(t: any) {
   return {
@@ -33,23 +44,45 @@ function pickLite(t: any) {
 }
 
 export async function GET(req: Request) {
-  if (!fs.existsSync(PATH)) {
-    return NextResponse.json(
-      { ok: false, error: "missing_tech_index", path: PATH },
-      { status: 404 }
-    );
-  }
-
   const url = new URL(req.url);
   const lite = url.searchParams.get("lite") === "1";
   const id = (url.searchParams.get("id") || "").trim();
+  let tech: any[] = [];
+  let source: any = null;
+  let updatedAt = new Date().toISOString();
+  let firestoreError: string | null = null;
 
-  const text = fs.readFileSync(PATH, "utf8");
-  const json = JSON.parse(text);
+  // Primary source: Firestore (durable for Vercel)
+  if (hasFirebaseEnv()) {
+    try {
+      const db = adminDb();
+      const snap = await db.collection(TECH_INDEX_COL).limit(5000).get();
+      tech = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      if (tech.length > 0) {
+        source = { provider: "firestore", collection: TECH_INDEX_COL, rows: tech.length };
+      }
+    } catch (e: any) {
+      firestoreError = e?.message || "firestore_read_failed";
+    }
+  }
+
+  // Fallback source: local file (dev convenience)
+  if (!tech.length) {
+    if (!fs.existsSync(PATH)) {
+      return NextResponse.json(
+        { ok: false, error: "missing_tech_index", path: PATH, firestoreError },
+        { status: 404 }
+      );
+    }
+    const text = fs.readFileSync(PATH, "utf8");
+    const json = JSON.parse(text);
+    tech = (json.tech || []) as any[];
+    source = json.source || { provider: "file", path: PATH };
+    updatedAt = json.updatedAt || updatedAt;
+  }
 
   // If requesting a single tech entity by id
   if (id) {
-    const tech = (json.tech || []) as any[];
     const hit = tech.find((t) => t.id === id) || null;
     if (!hit) {
       return NextResponse.json({ ok: false, error: "not_found", id }, { status: 404 });
@@ -61,17 +94,28 @@ export async function GET(req: Request) {
   if (lite) {
     return NextResponse.json(
       {
-        ok: json.ok,
-        kind: json.kind,
-        version: json.version,
-        counts: json.counts,
-        source: json.source,
-        updatedAt: json.updatedAt,
-        tech: (json.tech || []).map(pickLite),
+        ok: true,
+        kind: "tech_index",
+        version: "v4_firestore",
+        counts: { rows: tech.length },
+        source,
+        updatedAt,
+        tech: tech.map(pickLite),
       },
       { status: 200 }
     );
   }
 
-  return NextResponse.json(json, { status: 200 });
+  return NextResponse.json(
+    {
+      ok: true,
+      kind: "tech_index",
+      version: "v4_firestore",
+      counts: { rows: tech.length },
+      source,
+      updatedAt,
+      tech,
+    },
+    { status: 200 }
+  );
 }
