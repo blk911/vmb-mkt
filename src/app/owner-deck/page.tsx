@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import BeUnforgettable from "@/components/BeUnforgettable";
 
 export const metadata: Metadata = {
   title: "VMB - Owner Deck",
@@ -273,6 +274,12 @@ export default function OwnerDeckPage() {
           </ul>
         </div>
       </div>
+
+      <section className="mt-6 w-full">
+        <div className="mx-auto max-w-4xl px-4">
+          <BeUnforgettable mode="dark" loop={false} speed="slow" />
+        </div>
+      </section>
 
       <div id="cards" className="mt-10 space-y-6 pb-16 md:space-y-8">
         {cards.map((card, idx) => (
