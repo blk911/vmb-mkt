@@ -21,6 +21,8 @@ export default function BeUnforgettable({
   speed = "normal",
   className = "",
 }: Props) {
+  const HOLD_AFTER_FINAL_MS = 5313;
+  const FIRST_WORD_HOLD_S = 0.125;
   const [key, setKey] = useState(0);
   const timerRef = useRef<number | null>(null);
 
@@ -32,10 +34,14 @@ export default function BeUnforgettable({
 
   const totalSeconds = useMemo(() => {
     const n = words.length;
-    const wordsBlock = n > 0 ? n * timing.perWord + (n - 1) * timing.gap : 0;
+    const wordsBlockBase = n > 0 ? n * timing.perWord + (n - 1) * timing.gap : 0;
+    const wordsBlock = wordsBlockBase + FIRST_WORD_HOLD_S;
+    const finalStart = wordsBlock + timing.pause;
     const finalAnim = Math.max(0.9, timing.perWord);
-    const brandAnim = 0.85;
-    return wordsBlock + timing.pause + finalAnim + timing.brandDelay + brandAnim + (loop ? timing.loopGap : 0);
+    const finalEnd = finalStart + finalAnim;
+    const brandEnd = finalStart + timing.brandDelay + 0.85;
+    const sequenceEnd = Math.max(finalEnd, brandEnd);
+    return sequenceEnd + (loop ? HOLD_AFTER_FINAL_MS / 1000 : 0);
   }, [words.length, timing, loop]);
 
   useEffect(() => {
@@ -64,6 +70,11 @@ export default function BeUnforgettable({
           0%   { transform: translateY(140%); opacity: 0; }
           14%  { opacity: 1; }
           30%  { transform: translateY(0%); opacity: 1; }
+          62%  { transform: translateY(0%); opacity: 1; }
+          100% { transform: translateY(-140%); opacity: 0; }
+        }
+        @keyframes rollFromCenter {
+          0%   { transform: translateY(0%); opacity: 1; }
           62%  { transform: translateY(0%); opacity: 1; }
           100% { transform: translateY(-140%); opacity: 0; }
         }
@@ -96,7 +107,7 @@ export default function BeUnforgettable({
           </div>
           <div className="relative min-w-0 flex-1 overflow-hidden" style={{ height: "clamp(42px, 6vw, 64px)" }}>
             {words.map((w, i) => {
-              const delay = i * (timing.perWord + timing.gap);
+              const delay = i * (timing.perWord + timing.gap) + FIRST_WORD_HOLD_S;
               return (
                 <div
                   key={w + i}
@@ -109,7 +120,10 @@ export default function BeUnforgettable({
                     lineHeight: 1,
                     transform: "translateY(140%)",
                     opacity: 0,
-                    animation: `rollAnswer ${timing.perWord}s cubic-bezier(.2,.9,.2,1) ${delay}s 1 both`,
+                    animation:
+                      i === 0
+                        ? `rollFromCenter ${timing.perWord}s cubic-bezier(.2,.9,.2,1) ${FIRST_WORD_HOLD_S}s 1 both`
+                        : `rollAnswer ${timing.perWord}s cubic-bezier(.2,.9,.2,1) ${delay}s 1 both`,
                   }}
                 >
                   {w}
@@ -118,7 +132,9 @@ export default function BeUnforgettable({
             })}
 
             {(() => {
-              const wordsBlock = words.length > 0 ? words.length * timing.perWord + (words.length - 1) * timing.gap : 0;
+              const wordsBlockBase =
+                words.length > 0 ? words.length * timing.perWord + (words.length - 1) * timing.gap : 0;
+              const wordsBlock = wordsBlockBase + FIRST_WORD_HOLD_S;
               const t = wordsBlock + timing.pause;
               return (
                 <div
@@ -141,10 +157,11 @@ export default function BeUnforgettable({
           </div>
         </div>
 
-        <div className="relative mt-4 grid place-items-center overflow-hidden" style={{ height: 44 }} key={"brand-" + key}>
+        <div className="relative mt-4 grid place-items-end overflow-hidden" style={{ height: 44 }} key={"brand-" + key}>
           {(() => {
             const n = words.length;
-            const wordsBlock = n > 0 ? n * timing.perWord + (n - 1) * timing.gap : 0;
+            const wordsBlockBase = n > 0 ? n * timing.perWord + (n - 1) * timing.gap : 0;
+            const wordsBlock = wordsBlockBase + FIRST_WORD_HOLD_S;
             const t = wordsBlock + timing.pause + timing.brandDelay;
             return (
               <span
@@ -152,7 +169,7 @@ export default function BeUnforgettable({
                   position: "absolute",
                   left: 0,
                   right: 0,
-                  textAlign: "center",
+                  textAlign: "right",
                   fontFamily: '"Lucida Calligraphy","Zapfino","Snell Roundhand","Brush Script MT",cursive',
                   fontSize: "clamp(22px, 3.6vw, 36px)",
                   transform: "translateY(140%)",
@@ -166,18 +183,6 @@ export default function BeUnforgettable({
           })()}
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-2">
-          <button
-            className={[
-              "rounded-xl border px-4 py-2 text-sm font-semibold",
-              isLight ? "border-neutral-200 bg-white hover:bg-neutral-50" : "border-white/15 bg-white/5 hover:bg-white/10",
-            ].join(" ")}
-            onClick={() => setKey((k) => k + 1)}
-            type="button"
-          >
-            Replay
-          </button>
-        </div>
       </div>
     </div>
   );
