@@ -37,11 +37,79 @@ function CardShell({ card, index }: { card: Card; index: number }) {
           </div>
 
           <div className="mt-6 rounded-2xl border bg-neutral-50 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="text-sm font-medium text-neutral-700">Visual slot</div>
-              <div className="text-xs text-neutral-500">Drop icon / gif / lottie here</div>
-            </div>
-            <div className="mt-3 h-20 w-full rounded-xl border border-dashed bg-white" />
+            {index === 7 ? (
+              <div className="grid grid-cols-4 gap-2">
+                <img
+                  src="/owner-deck-assets/van-tay-media-chyT9XPAdcg-unsplash.jpg"
+                  alt="Owner deck visual strip 1"
+                  className="h-24 w-full rounded-lg object-cover"
+                />
+                <img
+                  src="/owner-deck-assets/blake-wisz-q3o_8MteFM0-unsplash.jpg"
+                  alt="Owner deck visual strip 2"
+                  className="h-24 w-full rounded-lg object-cover"
+                />
+                <img
+                  src="/owner-deck-assets/elena-rabkina-QH8aF3B0gYQ-unsplash.jpg"
+                  alt="Owner deck visual strip 3"
+                  className="h-24 w-full rounded-lg object-cover"
+                />
+                <img
+                  src="/owner-deck-assets/alexander-grey--8a5eJ1-mmQ-unsplash (1).jpg"
+                  alt="Owner deck visual strip 4"
+                  className="h-24 w-full rounded-lg object-cover"
+                />
+              </div>
+            ) : index === 0 || index === 1 || index === 2 || index === 3 || index === 4 || index === 5 || index === 6 ? (
+              <div className="grid grid-cols-2 gap-3">
+                <img
+                  src={
+                    index === 0
+                      ? "/owner-deck-assets/adem-ay-Tk9m_HP4rgQ-unsplash.jpg"
+                      : index === 1
+                        ? "/owner-deck-assets/or-hakim-0jR7w4OW5SQ-unsplash.jpg"
+                        : index === 2
+                          ? "/owner-deck-assets/simon-kadula--gkndM1GvSA-unsplash.jpg"
+                          : index === 3
+                            ? "/owner-deck-assets/melissa-askew-tSlvoSZK77c-unsplash.jpg"
+                            : index === 4
+                              ? "/owner-deck-assets/patrick-tomasso-fMntI8HAAB8-unsplash.jpg"
+                              : index === 5
+                                ? "/owner-deck-assets/kevin-laminto-plTEYtXwXok-unsplash.jpg"
+                                : "/owner-deck-assets/alexander-grey--8a5eJ1-mmQ-unsplash.jpg"
+                  }
+                  alt="Owner deck visual left"
+                  className="h-44 w-full rounded-xl object-cover"
+                />
+                <img
+                  src={
+                    index === 0
+                      ? "/owner-deck-assets/simon-kadula--gkndM1GvSA-unsplash.jpg"
+                      : index === 1
+                        ? "/owner-deck-assets/giorgio-trovato-OKXwmdbdXkk-unsplash.jpg"
+                        : index === 2
+                          ? "/owner-deck-assets/towfiqu-barbhuiya-bwOAixLG0uc-unsplash.jpg"
+                          : index === 3
+                            ? "/owner-deck-assets/brooke-cagle-BMLPa7HBnQQ-unsplash.jpg"
+                            : index === 4
+                              ? "/owner-deck-assets/jodene-isakowitz-hvqHtZqNMeI-unsplash.jpg"
+                              : index === 5
+                                ? "/owner-deck-assets/jodene-isakowitz-hvqHtZqNMeI-unsplash.jpg"
+                                : "/owner-deck-assets/imagine-buddy-vsLbaIdhwaU-unsplash.jpg"
+                  }
+                  alt="Owner deck visual right"
+                  className="h-44 w-full rounded-xl object-cover"
+                />
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-sm font-medium text-neutral-700">Visual slot</div>
+                  <div className="text-xs text-neutral-500">Drop icon / gif / lottie here</div>
+                </div>
+                <div className="mt-3 h-20 w-full rounded-xl border border-dashed bg-white" />
+              </>
+            )}
           </div>
 
           {card.bullets?.length ? (
