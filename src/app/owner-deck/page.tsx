@@ -277,7 +277,7 @@ export default function OwnerDeckPage() {
 
       <section className="mt-6 w-full">
         <div className="mx-auto max-w-4xl px-4">
-          <BeUnforgettable mode="dark" loop speed="slow" />
+          <BeUnforgettable mode="light" loop speed="slow" />
         </div>
       </section>
 
