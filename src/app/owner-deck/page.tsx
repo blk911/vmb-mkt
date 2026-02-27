@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import BeUnforgettable from "@/components/BeUnforgettable";
+import MoneyShotCard from "./MoneyShotCard";
 
 export const metadata: Metadata = {
   title: "VMB - Owner Deck",
@@ -285,6 +286,7 @@ export default function OwnerDeckPage() {
         {cards.map((card, idx) => (
           <CardShell key={idx} card={card} index={idx} />
         ))}
+        <MoneyShotCard />
       </div>
 
       <footer className="border-t bg-white">
