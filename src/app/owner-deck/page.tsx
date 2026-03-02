@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import BeUnforgettable from "@/components/BeUnforgettable";
 import MoneyShotCard from "./MoneyShotCard";
+import DeckTopNav from "@/app/marketing-decks/_components/DeckTopNav";
 
 export const metadata: Metadata = {
   title: "VMB - Owner Deck",
@@ -246,14 +247,7 @@ export default function OwnerDeckPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-neutral-50 to-white">
-      <div className="sticky top-0 z-50 border-b bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-          <div className="min-w-0">
-            <div className="text-sm font-semibold text-neutral-900">VMB</div>
-            <div className="text-xs text-neutral-500">Owner Deck (Web)</div>
-          </div>
-        </div>
-      </div>
+      <DeckTopNav active="modern" />
 
       <div className="mx-auto max-w-4xl px-4 pt-10">
         <div className="rounded-3xl border bg-white p-7 shadow-sm md:p-10">
