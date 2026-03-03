@@ -132,7 +132,38 @@ const CARDS: MoneyShotCard[] = [
   },
   {
     id: "#3",
-    title: "Build a Team for the big win",
+    title: "Payment Secured at Appointment Confirmation",
+    content: {
+      steps: [
+        {
+          heading: "1️⃣ Secure Prime Appointment Slots",
+          lines: [
+            "Appointments booked through VMB are confirmed with payment.",
+            "Your most valuable time is no longer a soft hold — it becomes committed revenue.",
+          ],
+        },
+        {
+          heading: "2️⃣ Stop Losing Revenue to No-Shows",
+          lines: [
+            "Missed appointments and last-minute cancellations no longer wipe out hours of work.",
+            "Your schedule stays protected and your daily income stays intact.",
+          ],
+        },
+        {
+          heading: "3️⃣ Every New Client Becomes a VMB Client",
+          lines: [
+            "Walk-ins and new customers can register instantly through VMB.",
+            "Each visit grows your client network and future booking potential.",
+          ],
+        },
+        {
+          heading: "4️⃣ Your Calendar Becomes Predictable Revenue",
+          lines: [
+            "Instead of hoping appointments stick, VMB converts booked time into reliable income you can plan around.",
+          ],
+        },
+      ],
+    },
   },
   {
     id: "#4",
@@ -170,11 +201,13 @@ export default function MoneyShotsCards() {
               <div className="border-t px-5 py-4">
                 <div className="grid items-stretch gap-4 md:grid-cols-[minmax(0,1fr)_280px]">
                   <div className="min-h-[150px] rounded-xl border border-neutral-200 p-4">
-                    <div className="text-xl font-semibold leading-tight text-neutral-900">
-                      {card.detailTitle || `${card.id} ${card.title}`}
-                    </div>
                     {card.content ? (
                       <div className="mt-3 space-y-4 text-sm leading-relaxed text-neutral-700 md:text-base">
+                        {card.id === "#3" ? (
+                          <section className="space-y-1.5">
+                            <p className="text-base md:text-lg"><strong>Your time is priceless — VMB makes sure you get paid.</strong></p>
+                          </section>
+                        ) : null}
                         {card.content.steps.map((step) => (
                           <section key={step.heading} className="space-y-1.5">
                             <h4 className="font-semibold text-neutral-900">{step.heading}</h4>
