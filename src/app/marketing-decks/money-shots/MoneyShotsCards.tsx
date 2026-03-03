@@ -167,11 +167,81 @@ const CARDS: MoneyShotCard[] = [
   },
   {
     id: "#4",
-    title: "Clients connect to cash",
+    title: "VMB: A Business Plan for Personal Care Professionals",
+    content: {
+      steps: [
+        {
+          heading: "🔵 1 Your Clients Already Promote You",
+          lines: [
+            "They talk about you at dinner, at work, on Instagram, in group chats.",
+            "Every compliment about their hair, nails, or skin becomes a recommendation.",
+            "VMB captures those conversations and turns them into <strong>real bookings and gifts.</strong>",
+          ],
+        },
+        {
+          heading: "🔵 2 Loyalty Becomes a Partnership",
+          lines: [
+            "Your most loyal clients already want you to succeed.",
+            "With VMB they can invite friends, send service gifts, and share your salon.",
+            "You're not just serving them — <strong>you're partnering with them</strong>.",
+          ],
+        },
+        {
+          heading: "🔵 3 Word of Mouth Becomes Co-Marketing",
+          lines: [
+            "Instead of paying for ads, you reward the clients who already promote you.",
+            "Your clients become your <strong>co-marketing team</strong> — because they believe in your work.",
+          ],
+        },
+        {
+          heading: "🔵 4 Your Salon Becomes a Community",
+          lines: [
+            "Clients aren't just appointments anymore.",
+            "They're connected to your salon through gifting, referrals, and shared experiences.",
+            "That's what creates <strong>real loyalty and lasting growth</strong>.",
+          ],
+        },
+      ],
+    },
   },
   {
     id: "#5",
-    title: "Timing is everything",
+    title: "VMB Opens the Door to the Vault",
+    content: {
+      steps: [
+        {
+          heading: "🔵 1 Your Network Travels With You",
+          lines: [
+            "Clients move, travel, and recommend services wherever they go.",
+            "With VMB, those connections stay inside the network.",
+          ],
+        },
+        {
+          heading: "🔵 2 Every Invitation Expands Your Reach",
+          lines: [
+            "When a client joins VMB, your salon becomes connected to their world.",
+            "Friends, coworkers, family — every invite expands the opportunity.",
+          ],
+        },
+        {
+          heading: "🔵 3 Relationships Cross Industries",
+          lines: [
+            "Barbers. Stylists. Estheticians. Nail techs.",
+            "Realtors. Fitness trainers. Hospitality workers.",
+            "These professionals already exchange referrals every day.",
+            "VMB organizes those <strong>indirect co-marketing relationships.</strong>",
+          ],
+        },
+        {
+          heading: "🔵 4 The Network Becomes Limitless",
+          lines: [
+            "Every new client creates new pathways to future clients.",
+            "Your salon stops growing one appointment at a time",
+            "and starts <strong>growing through connected communities</strong>.",
+          ],
+        },
+      ],
+    },
   },
 ];
 
@@ -212,7 +282,10 @@ export default function MoneyShotsCards() {
                           <section key={step.heading} className="space-y-1.5">
                             <h4 className="font-semibold text-neutral-900">{step.heading}</h4>
                             {step.lines.map((line) => (
-                              <p key={line}>{line}</p>
+                              <p
+                                key={line}
+                                dangerouslySetInnerHTML={{ __html: line }}
+                              />
                             ))}
                             {step.bullets ? (
                               <ul className="list-disc space-y-1 pl-5">
