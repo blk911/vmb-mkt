@@ -12,6 +12,7 @@ const IMG = {
 type MoneyShotCard = {
   id: string;
   title: string;
+  detailTitle?: string;
   image?: string;
   gallery?: string[];
   content?: {
@@ -27,6 +28,7 @@ const CARDS: MoneyShotCard[] = [
   {
     id: "#1",
     title: "Unlock Cash In your current book",
+    detailTitle: "Know your clients - intimately well!",
     gallery: [IMG.card1, IMG.card2, IMG.card3, IMG.card4],
     content: {
       steps: [
@@ -84,6 +86,49 @@ const CARDS: MoneyShotCard[] = [
   {
     id: "#2",
     title: "One for the money, Two for the Gold",
+    detailTitle: "Client relationships are your most valuable asset",
+    content: {
+      steps: [
+        {
+          heading: "1️⃣ Deep Dig Your Client List",
+          lines: [
+            "Look at your regulars. Your influencers. Your social butterflies.",
+            "These clients already talk about you — online and in real life.",
+            "VMB's invitation and gifting tools turn those conversations into booked business.",
+          ],
+        },
+        {
+          heading: "2️⃣ Pick Your Target — Full Send",
+          lines: [
+            "Who deserves a little pampering?",
+            "A partner. A best friend. A sister. A co-worker.",
+            "Clients send service gifts or request them from someone special.",
+            "VMB makes gifting salon experiences simple — and irresistible.",
+          ],
+        },
+        {
+          heading: "3️⃣ Girls' Day Out",
+          lines: [
+            "Select a few VMB clients and spark a moment.",
+            "\"Bring a friend, get a perk.\"",
+            "Now one appointment becomes two chairs filled —",
+            "and two new relationships started.",
+          ],
+        },
+        {
+          heading: "4️⃣ VIP Clients Drive the Engine",
+          lines: [
+            "Your most engaged clients unlock the VMB advantages:",
+            "Your best clients become your best promoters.",
+          ],
+          bullets: [
+            "Early access to premium appointment times",
+            "Built-in gifting and invitation tools",
+            "Participation in the VMB co-marketing pay plan",
+          ],
+        },
+      ],
+    },
   },
   {
     id: "#3",
@@ -126,7 +171,7 @@ export default function MoneyShotsCards() {
                 <div className="grid items-stretch gap-4 md:grid-cols-[minmax(0,1fr)_280px]">
                   <div className="min-h-[150px] rounded-xl border border-neutral-200 p-4">
                     <div className="text-xl font-semibold leading-tight text-neutral-900">
-                      {card.id} {card.title}
+                      {card.detailTitle || `${card.id} ${card.title}`}
                     </div>
                     {card.content ? (
                       <div className="mt-3 space-y-4 text-sm leading-relaxed text-neutral-700 md:text-base">
