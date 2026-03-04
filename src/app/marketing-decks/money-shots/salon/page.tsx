@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function MoneyShotsLegacyPage() {
+export default function MoneyShotsSalonLegacyPage() {
   redirect("/marketing-decks/salons");
 }

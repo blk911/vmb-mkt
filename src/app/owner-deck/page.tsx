@@ -247,7 +247,7 @@ export default function OwnerDeckPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-neutral-50 to-white">
-      <DeckTopNav active="modern" />
+      <DeckTopNav active="details" />
 
       <div className="mx-auto max-w-4xl px-4 pt-10">
         <div className="rounded-3xl border bg-white p-7 shadow-sm md:p-10">
