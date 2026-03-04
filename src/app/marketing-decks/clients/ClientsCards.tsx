@@ -159,8 +159,6 @@ const CARDS: ClientCard[] = [
       ],
     },
   },
-  { id: "#4", title: "Client Rewards - Consectetur" },
-  { id: "#5", title: "Client Loyalty - Adipiscing Elit" },
 ];
 
 export default function ClientsCards() {
