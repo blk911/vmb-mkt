@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 const CARDS = [
-  "#1 Leveling up the Perosnal Care industry",
+  "#1 Leveling up the Personal Care industry",
   "#2 The VMB Game Plan",
   "#3 How VMB Operates: Co-Marketing Explained",
   "#4 What's Next...",
