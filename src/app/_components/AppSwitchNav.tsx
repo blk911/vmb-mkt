@@ -9,26 +9,58 @@ type AppLink = {
   href: string;
 };
 
+const MARKETING_LINK: AppLink = { id: "marketing", label: "MARKETING", href: "https://vmb-mkt.vercel.app/marketing-decks" };
+const DATASTORE_LINK: AppLink = { id: "datastore", label: "DATA STORE", href: "https://vmb-mkt.vercel.app/dashboard/targets" };
+const TEAM_LINK: AppLink = { id: "team", label: "TEAM", href: "https://vmb-team-planner.vercel.app/" };
+
 const LINKS: AppLink[] = [
-  { id: "team", label: "TEAM", href: "https://vmb-team-planner.vercel.app/" },
-  { id: "marketing", label: "MARKETING", href: "https://vmb-mkt.vercel.app/marketing-decks" },
-  { id: "datastore", label: "DATA STORE", href: "https://vmb-mkt.vercel.app/dashboard/targets" },
+  MARKETING_LINK,
+  DATASTORE_LINK,
 ];
 
-function isActive(href: string, pathname: string): boolean {
+function isDataStorePath(pathname: string): boolean {
+  return pathname === "/dashboard" || pathname.startsWith("/dashboard/");
+}
+
+function linksForPath(pathname: string): AppLink[] {
+  // Show TEAM only when user is in Data Store sections.
+  if (!isDataStorePath(pathname)) return LINKS;
+  return [...LINKS, TEAM_LINK];
+}
+
+const MKT_HOST = "vmb-mkt.vercel.app";
+
+const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1"]);
+
+function sameAppHost(hostname: string) {
+  return hostname === MKT_HOST || LOCAL_HOSTS.has(hostname);
+}
+
+function normalizePathForLocal(pathname: string) {
+  return pathname;
+}
+
+function pathFromHref(href: string): string | null {
   try {
     const target = new URL(href);
-    if (target.hostname !== "vmb-mkt.vercel.app") return false;
-    if (target.pathname === "/") return pathname === "/";
-    return pathname === target.pathname || pathname.startsWith(target.pathname + "/");
+    if (!sameAppHost(target.hostname)) return null;
+    return normalizePathForLocal(target.pathname);
   } catch {
-    return false;
+    return null;
   }
+}
+
+function isActive(href: string, pathname: string): boolean {
+  const targetPath = pathFromHref(href);
+  if (!targetPath) return false;
+  if (targetPath === "/") return pathname === "/";
+  return pathname === targetPath || pathname.startsWith(targetPath + "/");
 }
 
 export default function AppSwitchNav() {
   const pathname = usePathname() || "/";
   if (pathname.startsWith("/auth/login")) return null;
+  const links = linksForPath(pathname);
 
   return (
     <div
@@ -46,7 +78,7 @@ export default function AppSwitchNav() {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        {LINKS.map((link) => {
+        {links.map((link) => {
           const active = isActive(link.href, pathname);
           return (
             <Link
