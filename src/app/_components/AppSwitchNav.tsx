@@ -12,7 +12,7 @@ type AppLink = {
 const LINKS: AppLink[] = [
   { id: "team", label: "TEAM", href: "https://vmb-team-planner.vercel.app/" },
   { id: "marketing", label: "MARKETING", href: "https://vmb-mkt.vercel.app/marketing-decks" },
-  { id: "datastore", label: "DATA STORE", href: "https://vmb-mkt.vercel.app/dashboard/data" },
+  { id: "datastore", label: "DATA STORE", href: "https://vmb-mkt.vercel.app/dashboard/targets" },
 ];
 
 function isActive(href: string, pathname: string): boolean {
