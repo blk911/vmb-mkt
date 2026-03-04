@@ -1,4 +1,3 @@
-import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 const PROTECTED_PREFIXES = ["/admin", "/api/admin", "/dashboard"];
@@ -18,10 +17,12 @@ function unauthorizedResponse() {
 }
 
 function safeEqual(a: string, b: string): boolean {
-  const aBuf = Buffer.from(a, "utf8");
-  const bBuf = Buffer.from(b, "utf8");
-  if (aBuf.length !== bBuf.length) return false;
-  return timingSafeEqual(aBuf, bBuf);
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
 }
 
 function parseBasicAuth(authHeader: string | null): { user: string; pass: string } | null {
@@ -30,7 +31,7 @@ function parseBasicAuth(authHeader: string | null): { user: string; pass: string
   if (!scheme || !encoded || scheme.toLowerCase() !== "basic") return null;
 
   try {
-    const decoded = Buffer.from(encoded, "base64").toString("utf8");
+    const decoded = atob(encoded);
     const sepIdx = decoded.indexOf(":");
     if (sepIdx < 0) return null;
     return {
