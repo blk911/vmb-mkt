@@ -1,0 +1,51 @@
+import { NextResponse } from "next/server";
+import { createSessionToken, SESSION_COOKIE, SESSION_TTL_SECONDS } from "@/lib/auth/session";
+
+type Body = {
+  user?: string;
+  pass?: string;
+  next?: string;
+};
+
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+export async function POST(req: Request) {
+  const adminUser = process.env.ADMIN_BASIC_USER || "";
+  const adminPass = process.env.ADMIN_BASIC_PASS || "";
+  const sessionSecret = process.env.ADMIN_SESSION_SECRET || "";
+  if (!adminUser || !adminPass || !sessionSecret) {
+    return NextResponse.json({ ok: false, error: "auth_not_configured" }, { status: 503 });
+  }
+
+  let body: Body = {};
+  try {
+    body = (await req.json()) as Body;
+  } catch {
+    return NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 });
+  }
+
+  const user = String(body.user || "");
+  const pass = String(body.pass || "");
+  const nextPath = typeof body.next === "string" && body.next.startsWith("/") ? body.next : "/dashboard/targets";
+
+  if (!safeEqual(user, adminUser) || !safeEqual(pass, adminPass)) {
+    return NextResponse.json({ ok: false, error: "invalid_credentials" }, { status: 401 });
+  }
+
+  const token = await createSessionToken(user, sessionSecret);
+  const res = NextResponse.json({ ok: true, next: nextPath });
+  res.cookies.set(SESSION_COOKIE, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_TTL_SECONDS,
+  });
+  return res;
+}
+

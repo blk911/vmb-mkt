@@ -28,6 +28,7 @@ function isActive(href: string, pathname: string): boolean {
 
 export default function AppSwitchNav() {
   const pathname = usePathname() || "/";
+  if (pathname.startsWith("/auth/login")) return null;
 
   return (
     <div
