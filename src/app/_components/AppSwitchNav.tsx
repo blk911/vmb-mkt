@@ -11,7 +11,7 @@ type AppLink = {
 
 const MARKETING_LINK: AppLink = { id: "marketing", label: "MARKETING", href: "https://vmb-mkt.vercel.app/marketing-decks" };
 const DATASTORE_LINK: AppLink = { id: "datastore", label: "DATA STORE", href: "https://vmb-mkt.vercel.app/dashboard/targets" };
-const TEAM_LINK: AppLink = { id: "team", label: "TEAM", href: "https://vmb-team-planner.vercel.app/" };
+const TEAM_LINK: AppLink = { id: "team", label: "TEAM", href: "https://vmb-mkt.vercel.app/owner-deck" };
 
 const LINKS: AppLink[] = [
   MARKETING_LINK,
