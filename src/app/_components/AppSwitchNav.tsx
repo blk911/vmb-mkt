@@ -11,22 +11,11 @@ type AppLink = {
 
 const MARKETING_LINK: AppLink = { id: "marketing", label: "MARKETING", href: "https://vmb-mkt.vercel.app/marketing-decks" };
 const DATASTORE_LINK: AppLink = { id: "datastore", label: "DATA STORE", href: "https://vmb-mkt.vercel.app/dashboard/targets" };
-const TEAM_LINK: AppLink = { id: "team", label: "TEAM", href: "https://vmb-mkt.vercel.app/owner-deck" };
 
 const LINKS: AppLink[] = [
   MARKETING_LINK,
   DATASTORE_LINK,
 ];
-
-function isDataStorePath(pathname: string): boolean {
-  return pathname === "/dashboard" || pathname.startsWith("/dashboard/");
-}
-
-function linksForPath(pathname: string): AppLink[] {
-  // Show TEAM only when user is in Data Store sections.
-  if (!isDataStorePath(pathname)) return LINKS;
-  return [...LINKS, TEAM_LINK];
-}
 
 const MKT_HOST = "vmb-mkt.vercel.app";
 
@@ -60,7 +49,7 @@ function isActive(href: string, pathname: string): boolean {
 export default function AppSwitchNav() {
   const pathname = usePathname() || "/";
   if (pathname.startsWith("/auth/login")) return null;
-  const links = linksForPath(pathname);
+  const links = LINKS;
 
   return (
     <div
