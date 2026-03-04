@@ -162,7 +162,7 @@ const CARDS: ClientCard[] = [
 ];
 
 export default function ClientsCards() {
-  const [openIdx, setOpenIdx] = useState<number | null>(0);
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
 
   return (
     <div className="mx-auto mt-4 max-w-5xl space-y-4 px-4 pb-16">
