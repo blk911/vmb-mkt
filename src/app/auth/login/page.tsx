@@ -2,20 +2,16 @@
 
 import { Suspense } from "react";
 import { FormEvent, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 function LoginForm() {
   const router = useRouter();
-  const search = useSearchParams();
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const nextPath = (() => {
-    const next = search.get("next");
-    return next && next.startsWith("/") ? next : "/dashboard/targets";
-  })();
+  const nextPath = "/admin/vmb";
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();

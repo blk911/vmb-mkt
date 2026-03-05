@@ -19,6 +19,7 @@ export default function ProtectedSessionClient() {
   const logoutTimerRef = useRef<number | null>(null);
   const countdownRef = useRef<number | null>(null);
   const lastHeartbeatAtRef = useRef(0);
+  const warningOpenRef = useRef(false);
 
   const protectedView = isProtectedPath(pathname);
 
@@ -54,10 +55,12 @@ export default function ProtectedSessionClient() {
   const resetIdleTimers = useCallback(() => {
     if (!protectedView) return;
     clearTimers();
+    warningOpenRef.current = false;
     setShowWarning(false);
     setCountdown(60);
 
     warningTimerRef.current = window.setTimeout(() => {
+      warningOpenRef.current = true;
       setShowWarning(true);
       const warningShownAt = Date.now();
       countdownRef.current = window.setInterval(() => {
@@ -79,11 +82,13 @@ export default function ProtectedSessionClient() {
     }
 
     const onActivity = () => {
+      // Once warning is shown, only explicit modal choice can continue session.
+      if (warningOpenRef.current) return;
       void pingHeartbeat();
       resetIdleTimers();
     };
 
-    const events: Array<keyof WindowEventMap> = ["pointerdown", "keydown", "scroll", "mousemove", "touchstart"];
+    const events: Array<keyof WindowEventMap> = ["pointerdown", "keydown", "scroll", "touchstart"];
     events.forEach((evt) => window.addEventListener(evt, onActivity, { passive: true }));
     onActivity();
 
@@ -97,14 +102,6 @@ export default function ProtectedSessionClient() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => void goLogout()}
-        className="fixed bottom-4 right-4 z-[1300] rounded-full border border-neutral-300 bg-white px-4 py-2 text-xs font-semibold text-neutral-800 shadow-sm hover:bg-neutral-50"
-      >
-        Log Out
-      </button>
-
       {showWarning ? (
         <div className="fixed inset-0 z-[1400] grid place-items-center bg-black/35 p-4">
           <div className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-5 shadow-lg">
@@ -117,11 +114,12 @@ export default function ProtectedSessionClient() {
                 type="button"
                 className="rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
                 onClick={() => {
+                  warningOpenRef.current = false;
                   void pingHeartbeat();
                   resetIdleTimers();
                 }}
               >
-                Keep Working
+                LIVE
               </button>
               <button
                 type="button"

@@ -7,7 +7,7 @@ function isApiPath(pathname: string) {
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const sessionSecret = process.env.ADMIN_SESSION_SECRET || "";
+  const sessionSecret = process.env.MKT_ADMIN_SESSION_SECRET || process.env.ADMIN_SESSION_SECRET || "";
   if (!sessionSecret) {
     return new NextResponse("Admin session auth is not configured.", { status: 503 });
   }

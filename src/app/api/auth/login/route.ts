@@ -15,9 +15,9 @@ function safeEqual(a: string, b: string): boolean {
 }
 
 export async function POST(req: Request) {
-  const adminUser = process.env.ADMIN_BASIC_USER || "";
-  const adminPass = process.env.ADMIN_BASIC_PASS || "";
-  const sessionSecret = process.env.ADMIN_SESSION_SECRET || "";
+  const adminUser = process.env.MKT_ADMIN_USER || process.env.ADMIN_BASIC_USER || "";
+  const adminPass = process.env.MKT_ADMIN_PASS || process.env.ADMIN_BASIC_PASS || "";
+  const sessionSecret = process.env.MKT_ADMIN_SESSION_SECRET || process.env.ADMIN_SESSION_SECRET || "";
   if (!adminUser || !adminPass || !sessionSecret) {
     return NextResponse.json({ ok: false, error: "auth_not_configured" }, { status: 503 });
   }
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
 
   const user = String(body.user || "");
   const pass = String(body.pass || "");
-  const nextPath = typeof body.next === "string" && body.next.startsWith("/") ? body.next : "/dashboard/targets";
+  const nextPath = "/admin/vmb";
 
   if (!safeEqual(user, adminUser) || !safeEqual(pass, adminPass)) {
     return NextResponse.json({ ok: false, error: "invalid_credentials" }, { status: 401 });
