@@ -25,7 +25,7 @@ export default function DeckTopNav({ active }: { active: TabKey }) {
           </Link>
           <span className="text-neutral-300">:</span>
           <Link href="/marketing-decks/details" className={tabClass(active === "details")}>
-            Details
+            About
           </Link>
           <span className="text-neutral-300">:</span>
           <Link href="/marketing-decks/faq" className={tabClass(active === "faq")}>

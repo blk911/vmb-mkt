@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import SalonCashFlowComparison from "@/components/marketing/SalonCashFlowComparison";
 
 const CARDS = [
-  "#1 Leveling up the Personal Care industry",
+  "#1 VMB's Mission Statement",
   "#2 The VMB Game Plan",
-  "#3 How VMB Operates: Co-Marketing Explained",
+  "#3 VMB Co-Marketing Program",
   "#4 What's Next...",
   "#5 FAQ",
 ];
@@ -33,7 +34,11 @@ export default function DetailsCards() {
             </button>
             {open ? (
               <div className="border-t px-5 py-4 text-sm leading-relaxed text-neutral-600 md:text-base">
-                Lorem ipsum content slot. Click card header again to close.
+                {idx === 2 ? (
+                  <SalonCashFlowComparison />
+                ) : (
+                  <>Lorem ipsum content slot. Click card header again to close.</>
+                )}
               </div>
             ) : null}
           </div>
