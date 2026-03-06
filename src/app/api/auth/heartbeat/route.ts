@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
+import { getSessionSecret } from "@/lib/auth/config";
 import { createSessionToken, SESSION_COOKIE, SESSION_TTL_SECONDS, verifySessionToken } from "@/lib/auth/session";
 
 export async function POST(req: Request) {
-  const sessionSecret = process.env.ADMIN_SESSION_SECRET || "";
+  const sessionSecret = getSessionSecret();
   if (!sessionSecret) {
     return NextResponse.json({ ok: false, error: "auth_not_configured" }, { status: 503 });
   }

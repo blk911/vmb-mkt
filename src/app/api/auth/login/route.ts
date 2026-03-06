@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getAdminPass, getAdminUser, getSessionSecret } from "@/lib/auth/config";
 import { createSessionToken, SESSION_COOKIE, SESSION_TTL_SECONDS } from "@/lib/auth/session";
 
 type Body = {
@@ -15,9 +16,9 @@ function safeEqual(a: string, b: string): boolean {
 }
 
 export async function POST(req: Request) {
-  const adminUser = process.env.MKT_ADMIN_USER || process.env.ADMIN_BASIC_USER || "";
-  const adminPass = process.env.MKT_ADMIN_PASS || process.env.ADMIN_BASIC_PASS || "";
-  const sessionSecret = process.env.MKT_ADMIN_SESSION_SECRET || process.env.ADMIN_SESSION_SECRET || "";
+  const adminUser = getAdminUser();
+  const adminPass = getAdminPass();
+  const sessionSecret = getSessionSecret();
   if (!adminUser || !adminPass || !sessionSecret) {
     return NextResponse.json({ ok: false, error: "auth_not_configured" }, { status: 503 });
   }

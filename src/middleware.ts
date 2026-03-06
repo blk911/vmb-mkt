@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSessionSecret } from "@/lib/auth/config";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session";
 
 function isApiPath(pathname: string) {
@@ -7,7 +8,7 @@ function isApiPath(pathname: string) {
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const sessionSecret = process.env.MKT_ADMIN_SESSION_SECRET || process.env.ADMIN_SESSION_SECRET || "";
+  const sessionSecret = getSessionSecret();
   if (!sessionSecret) {
     return new NextResponse("Admin session auth is not configured.", { status: 503 });
   }
