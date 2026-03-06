@@ -8,7 +8,6 @@ const CARDS = [
   "#2 The VMB Game Plan",
   "#3 VMB Co-Marketing Program",
   "#4 What's Next...",
-  "#5 FAQ",
 ];
 
 const MISSION_TEXT =
@@ -105,6 +104,8 @@ export default function DetailsCards() {
                   </div>
                 ) : idx === 2 ? (
                   <SalonCashFlowComparison />
+                ) : idx === 3 ? (
+                  <p className="font-semibold text-neutral-900">Coming Soon!!</p>
                 ) : (
                   <>Lorem ipsum content slot. Click card header again to close.</>
                 )}

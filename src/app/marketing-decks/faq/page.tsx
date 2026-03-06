@@ -12,7 +12,9 @@ export default function FaqPage() {
       <section className="mx-auto max-w-5xl px-4 pt-10 pb-16">
         <div className="rounded-3xl border bg-white p-7 shadow-sm md:p-10">
           <h1 className="text-3xl font-semibold tracking-tight text-neutral-900 md:text-4xl">FAQ</h1>
-          <p className="mt-3 text-neutral-600">FAQ page shell is ready for content.</p>
+          <div className="mt-6 rounded-2xl border bg-neutral-50 px-6 py-5 text-lg font-semibold text-neutral-900">
+            Coming soon
+          </div>
         </div>
       </section>
     </main>
