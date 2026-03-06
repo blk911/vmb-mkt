@@ -8,6 +8,7 @@ function LoginForm() {
   const router = useRouter();
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
+  const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -57,13 +58,23 @@ function LoginForm() {
       <label className="mt-4 block text-sm font-medium text-neutral-800">
         Password
         <input
-          type="password"
+          type={showPass ? "text" : "password"}
           value={pass}
           onChange={(e) => setPass(e.target.value)}
           autoComplete="current-password"
           className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none ring-neutral-300 focus:ring-2"
           required
         />
+      </label>
+
+      <label className="mt-3 inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-neutral-700">
+        <input
+          type="checkbox"
+          checked={showPass}
+          onChange={(e) => setShowPass(e.target.checked)}
+          className="h-4 w-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-400"
+        />
+        Show password
       </label>
 
       {error ? <p className="mt-3 text-sm font-medium text-red-600">{error}</p> : null}
