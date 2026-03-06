@@ -220,6 +220,69 @@ export default function SalonCashFlowComparison() {
           referrals, and net session revenue.
         </p>
       </div>
+
+      <div className="mt-8 grid gap-6 xl:grid-cols-2">
+        <div className="mx-auto w-full max-w-[520px] rounded-2xl border border-neutral-300 bg-white p-6 shadow-sm text-neutral-700">
+          <div className="text-[18px] font-medium leading-7">Comparison Block (Left)</div>
+          <p className="mt-4 text-[15px] leading-7">
+            Placeholder for upcoming content.
+          </p>
+        </div>
+
+        <div className="mx-auto w-full max-w-[520px] rounded-2xl border border-emerald-300 bg-emerald-50/60 p-6 shadow-sm text-neutral-900">
+          <div className="text-[18px] font-bold leading-7">
+            VMB Co-Marketing Plan
+          </div>
+
+          <div className="mt-4 grid grid-cols-[1fr_auto] items-center gap-x-6">
+            <div className="text-[20px] leading-8">Revenue In-flow</div>
+            <div className="text-[20px] leading-8 tabular-nums">100%</div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-[1fr_auto] items-end gap-x-6">
+            <div className="border-t-2 border-dashed border-neutral-700 pt-3 text-[18px] leading-7">
+              Operating Expenses
+            </div>
+            <div className="border-t-2 border-dashed border-neutral-700 pt-3 text-right text-[18px] leading-7">
+              &nbsp;
+            </div>
+          </div>
+
+          <div className="mt-1 space-y-1 text-[18px] leading-8">
+            <div className="grid grid-cols-[1fr_auto] items-center gap-x-6">
+              <div>-  Web Svcs/Apps/Tools</div>
+              <div className="tabular-nums">15%</div>
+            </div>
+            <div className="grid grid-cols-[1fr_auto] items-center gap-x-6">
+              <div>-  Dev/Admin Staff</div>
+              <div className="tabular-nums">20%</div>
+            </div>
+            <div className="grid grid-cols-[1fr_auto] items-center gap-x-6">
+              <div>-  Taxes/Ins/Misc Op Ex.</div>
+              <div className="tabular-nums">5%</div>
+            </div>
+            <div className="grid grid-cols-[1fr_auto] items-center gap-x-6 text-sky-600">
+              <div>-  Marketing/Ads/SocMed</div>
+              <div className="tabular-nums">0%</div>
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-[1fr_auto] items-center gap-x-6 border-t-2 border-dashed border-neutral-700 pt-3">
+            <div className="text-right text-[20px] leading-8">Subtotal</div>
+            <div className="text-[20px] leading-8 tabular-nums">40%</div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-[1fr_auto] items-center gap-x-6">
+            <div className="text-[20px] leading-8">Co-Marketing Funding</div>
+            <div className="text-[20px] leading-8 tabular-nums">60%</div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-[1fr_auto] items-center gap-x-6 border-t-2 border-dashed border-neutral-700 pt-3 text-red-600">
+            <div className="text-[20px] font-medium leading-8">Total Funds Distributed</div>
+            <div className="text-[20px] font-medium leading-8 tabular-nums">60%</div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

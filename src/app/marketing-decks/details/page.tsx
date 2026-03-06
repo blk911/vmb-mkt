@@ -13,7 +13,12 @@ export default function DetailsPage() {
       <section className="mx-auto max-w-5xl px-4 pt-10">
         <div className="rounded-3xl border bg-white p-7 shadow-sm md:p-10">
           <h1 className="text-3xl font-semibold tracking-tight text-neutral-900 md:text-4xl">About</h1>
-          <p className="mt-3 text-neutral-600">Click each card to open/close. Titles are ipsum placeholders for now.</p>
+          <p className="mt-3 text-neutral-600">
+            <span className="font-semibold text-neutral-900">MISSION:</span> The personal care industry is built on
+            Clients and Client relationships. Our mission is to strengthen the connection between salons and their
+            clients - by rewarding loyalty, encouraging referrals, and turning everyday relationships into lasting
+            opportunity. VMB focuses on what actually drives growth: clients.
+          </p>
         </div>
       </section>
       <DetailsCards />
