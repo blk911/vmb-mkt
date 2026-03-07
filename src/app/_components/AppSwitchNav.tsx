@@ -12,12 +12,12 @@ type AppLink = {
 
 const MARKETING_LINK: AppLink = { id: "marketing", label: "MARKETING", href: "/marketing-decks" };
 const DATASTORE_LINK: AppLink = { id: "datastore", label: "DATA STORE", href: "/dashboard/targets" };
-const TEAM_LINK: AppLink = { id: "team", label: "TEAM", href: "https://vmb-team-planner.vercel.app/" };
+const TEAM_APP_ROOT = "https://vmb-team-planner.vercel.app/";
+const TEAM_ADMIN_ROOT = "https://vmb-team-planner.vercel.app/admin";
 
-const LINKS: AppLink[] = [
+const BASE_LINKS: AppLink[] = [
   MARKETING_LINK,
   DATASTORE_LINK,
-  TEAM_LINK,
 ];
 
 function isActive(href: string, pathname: string): boolean {
@@ -29,7 +29,8 @@ function isActive(href: string, pathname: string): boolean {
 export default function AppSwitchNav() {
   const pathname = usePathname() || "/";
   if (pathname.startsWith("/auth/login")) return null;
-  const links = LINKS;
+  const teamHref = pathname.startsWith("/admin") || pathname.startsWith("/dashboard") ? TEAM_ADMIN_ROOT : TEAM_APP_ROOT;
+  const links: AppLink[] = [...BASE_LINKS, { id: "team", label: "TEAM", href: teamHref }];
   const onLogout = useCallback(async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST", cache: "no-store" });
