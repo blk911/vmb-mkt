@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 export type BeautyRegion = {
@@ -33,11 +33,30 @@ export type BeautyZoneMember = {
   lat: number;
   lon: number;
   distance_miles: number;
+  category_raw?: string;
+  category_source_labels_raw?: string[];
+  google_types_raw?: string[];
   category: string;
   subtype: string;
   source: string;
   priority_score: number;
   is_anchor: boolean;
+  nearby_dora_licenses_total?: number;
+  nearby_dora_hair_count?: number;
+  nearby_dora_nail_count?: number;
+  nearby_dora_esthe_count?: number;
+  nearby_dora_barber_count?: number;
+  nearby_dora_spa_count?: number;
+  nearby_dora_operational_mix?: {
+    hair: number;
+    nail: number;
+    esthe: number;
+    barber: number;
+    spa: number;
+  };
+  nearby_dora_profession_mix_raw?: Record<string, number>;
+  dora_density_radius_miles?: number;
+  dora_density_profile?: string;
 };
 
 export type BeautyZoneCluster = {
@@ -67,10 +86,11 @@ type ZonesFile = {
 };
 
 type ZoneMembersFile = {
-  generated_at: string;
-  input_candidates_path: string;
-  input_zones_path: string;
-  count: number;
+  generated_at?: string;
+  input_candidates_path?: string;
+  input_zones_path?: string;
+  count?: number;
+  counts?: Record<string, number>;
   members: BeautyZoneMember[];
 };
 
@@ -85,7 +105,9 @@ function loadZones(): ZonesFile {
 }
 
 function loadZoneMembers(): ZoneMembersFile {
-  const filePath = path.join(process.cwd(), "data", "markets", "beauty_zone_members.json");
+  const enrichedPath = path.join(process.cwd(), "data", "markets", "beauty_zone_members_enriched.json");
+  const basePath = path.join(process.cwd(), "data", "markets", "beauty_zone_members.json");
+  const filePath = existsSync(enrichedPath) ? enrichedPath : basePath;
   return JSON.parse(readFileSync(filePath, "utf8")) as ZoneMembersFile;
 }
 

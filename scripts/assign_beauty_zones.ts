@@ -54,6 +54,9 @@ type ZoneMember = {
   lat: number;
   lon: number;
   distance_miles: number;
+  category_raw: string;
+  category_source_labels_raw: string[];
+  google_types_raw: string[];
   category: string;
   subtype: string;
   source: string;
@@ -126,18 +129,92 @@ function pickAddress(row: CandidateRow): string {
   return norm(row.candidate?.address) || norm(row.address) || "";
 }
 
-function detectCategory(name: string, types: string[]): string {
-  const hay = `${name} ${types.join(" ")}`.toLowerCase();
+function detectCategory(name: string, types: string[]): {
+  category: string;
+  categoryRaw: string;
+  sourceLabelsRaw: string[];
+} {
+  const normalizedTypes = types.map((type) => type.toLowerCase());
+  const hay = `${name} ${normalizedTypes.join(" ")}`.toLowerCase();
+  const sourceLabelsRaw: string[] = [];
 
-  if (hay.includes("nail")) return "nail";
-  if (hay.includes("spa")) return "spa";
-  if (hay.includes("brow")) return "brow";
-  if (hay.includes("lash")) return "lash";
-  if (hay.includes("barber")) return "barber";
-  if (hay.includes("salon")) return "hair";
-  if (hay.includes("beauty")) return "beauty";
+  const addRaw = (label: string, condition: boolean) => {
+    if (condition && !sourceLabelsRaw.includes(label)) {
+      sourceLabelsRaw.push(label);
+    }
+  };
 
-  return "other";
+  addRaw("nail_salon", normalizedTypes.includes("nail_salon"));
+  addRaw("nail salon", hay.includes("nail salon"));
+  addRaw("nail", hay.includes("nail"));
+  addRaw("manicure", hay.includes("manicure"));
+  addRaw("pedicure", hay.includes("pedicure"));
+
+  addRaw("barber_shop", normalizedTypes.includes("barber_shop"));
+  addRaw("barber shop", hay.includes("barber shop"));
+  addRaw("barber", hay.includes("barber"));
+
+  addRaw("day spa", hay.includes("day spa"));
+  addRaw("spa", normalizedTypes.includes("spa") || hay.includes("spa"));
+
+  addRaw("eyebrow", hay.includes("eyebrow"));
+  addRaw("brow", hay.includes("brow"));
+  addRaw("lash", hay.includes("lash"));
+  addRaw("lashes", hay.includes("lashes"));
+  addRaw("wax", hay.includes("wax"));
+  addRaw("waxing", hay.includes("waxing"));
+  addRaw("facial", hay.includes("facial"));
+  addRaw("esthetic", hay.includes("esthetic"));
+  addRaw("aesthetic", hay.includes("aesthetic"));
+  addRaw("skin care", hay.includes("skin care"));
+  addRaw("skincare", hay.includes("skincare"));
+
+  addRaw("beauty_salon", normalizedTypes.includes("beauty_salon"));
+  addRaw("hair_care", normalizedTypes.includes("hair_care"));
+  addRaw("salon", hay.includes("salon"));
+  addRaw("hair", hay.includes("hair"));
+  addRaw("stylist", hay.includes("stylist"));
+  addRaw("cosmetology", hay.includes("cosmetology"));
+
+  addRaw("beauty", hay.includes("beauty"));
+  addRaw("studio", hay.includes("studio"));
+
+  const category =
+    sourceLabelsRaw.some((label) => ["nail_salon", "nail salon", "nail", "manicure", "pedicure"].includes(label))
+      ? "nail"
+      : sourceLabelsRaw.some((label) => ["barber_shop", "barber shop", "barber"].includes(label))
+        ? "barber"
+        : sourceLabelsRaw.some((label) => ["day spa", "spa"].includes(label))
+          ? "spa"
+          : sourceLabelsRaw.some((label) =>
+              [
+                "eyebrow",
+                "brow",
+                "lash",
+                "lashes",
+                "wax",
+                "waxing",
+                "facial",
+                "esthetic",
+                "aesthetic",
+                "skin care",
+                "skincare",
+              ].includes(label)
+            )
+            ? "esthe"
+            : sourceLabelsRaw.some((label) =>
+                ["beauty_salon", "hair_care", "salon", "hair", "stylist", "cosmetology"].includes(label)
+              )
+              ? "hair"
+              : sourceLabelsRaw.some((label) => ["beauty", "studio"].includes(label))
+                ? "beauty"
+                : "other";
+
+  return {
+    category,
+    categoryRaw: sourceLabelsRaw[0] ?? "other",
+    sourceLabelsRaw,
+  };
 }
 
 function detectSubtype(name: string, types: string[]): string {
@@ -145,9 +222,13 @@ function detectSubtype(name: string, types: string[]): string {
 
   if (
     hay.includes("sola") ||
+    hay.includes("lofts") ||
+    hay.includes("suites") ||
+    hay.includes("studios") ||
     hay.includes("salon loft") ||
     hay.includes("salons by jc") ||
-    hay.includes("phenix")
+    hay.includes("phenix") ||
+    hay.includes("image studios")
   ) {
     return "suite";
   }
@@ -161,7 +242,7 @@ function computePriorityScore(category: string, subtype: string, matchScore?: nu
   if (category === "nail") score += 4;
   else if (category === "hair") score += 3;
   else if (category === "spa") score += 2;
-  else if (category === "brow" || category === "lash") score += 2;
+  else if (category === "esthe") score += 2;
   else if (category === "barber") score += 2;
   else if (category === "beauty") score += 1;
 
@@ -177,7 +258,7 @@ function computePriorityScore(category: string, subtype: string, matchScore?: nu
 }
 
 function isBeautyBusiness(category: string): boolean {
-  return ["nail", "hair", "spa", "brow", "lash", "barber", "beauty"].includes(category);
+  return ["nail", "hair", "esthe", "barber", "spa", "beauty"].includes(category);
 }
 
 function main() {
@@ -198,7 +279,8 @@ function main() {
     const state = norm(row.state);
     const zip = norm(row.zip);
     const types = row.candidate?.types ?? [];
-    const category = detectCategory(name, types);
+    const categoryDetails = detectCategory(name, types);
+    const category = categoryDetails.category;
 
     if (!isBeautyBusiness(category)) continue;
 
@@ -224,6 +306,9 @@ function main() {
           lat,
           lon,
           distance_miles: Number(distance.toFixed(3)),
+          category_raw: categoryDetails.categoryRaw,
+          category_source_labels_raw: categoryDetails.sourceLabelsRaw,
+          google_types_raw: [...types],
           category,
           subtype,
           source: "places_candidates.v1.json",

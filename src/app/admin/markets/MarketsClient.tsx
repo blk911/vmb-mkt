@@ -11,8 +11,31 @@ import type {
 
 type SortKey = "upgraded_priority_score" | "name" | "category";
 
-const CATEGORY_FILTERS = ["All", "Nail", "Hair", "Spa", "Brow", "Lash", "Barber", "Beauty"] as const;
+const CATEGORY_FILTERS = ["All", "Hair", "Nail", "Esthe", "Barber", "Spa", "Beauty"] as const;
 const SUBTYPE_FILTERS = ["All", "Storefront", "Suite"] as const;
+
+function formatProfessionMix(member: EnrichedBeautyZoneMember) {
+  return [
+    `Hair ${member.nearby_dora_hair_count ?? 0}`,
+    `Nail ${member.nearby_dora_nail_count ?? 0}`,
+    `Esthe ${member.nearby_dora_esthe_count ?? 0}`,
+    `Barber ${member.nearby_dora_barber_count ?? 0}`,
+    `Spa ${member.nearby_dora_spa_count ?? 0}`,
+  ].join(" · ");
+}
+
+function formatRawProfessionMix(member: EnrichedBeautyZoneMember) {
+  const entries = Object.entries(member.nearby_dora_profession_mix_raw ?? {}).sort((a, b) => b[1] - a[1]);
+  if (!entries.length) return "No raw DORA labels";
+  return entries.map(([label, count]) => `${label}: ${count}`).join(" · ");
+}
+
+function densityBadgeClass(total: number) {
+  if (total >= 25) return "bg-violet-100 text-violet-800";
+  if (total >= 10) return "bg-amber-100 text-amber-800";
+  if (total >= 1) return "bg-sky-100 text-sky-800";
+  return "bg-neutral-100 text-neutral-600";
+}
 
 type Props = {
   regions: BeautyRegion[];
@@ -96,8 +119,10 @@ export default function MarketsClient({ regions, zones, members, clusters }: Pro
   const selectedZoneSummary = useMemo(() => {
     return {
       total: selectedZoneMembers.length,
-      nail: selectedZoneMembers.filter((member) => member.category === "nail").length,
       hair: selectedZoneMembers.filter((member) => member.category === "hair").length,
+      nail: selectedZoneMembers.filter((member) => member.category === "nail").length,
+      esthe: selectedZoneMembers.filter((member) => member.category === "esthe").length,
+      barber: selectedZoneMembers.filter((member) => member.category === "barber").length,
       spa: selectedZoneMembers.filter((member) => member.category === "spa").length,
       suite: selectedZoneMembers.filter((member) => member.subtype === "suite").length,
     };
@@ -207,11 +232,13 @@ export default function MarketsClient({ regions, zones, members, clusters }: Pro
           </div>
 
           <div className="border-b border-neutral-200 px-4 py-4">
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7">
               {[
                 { label: "Total Members", value: selectedZoneSummary.total },
-                { label: "Nail", value: selectedZoneSummary.nail },
                 { label: "Hair", value: selectedZoneSummary.hair },
+                { label: "Nail", value: selectedZoneSummary.nail },
+                { label: "Esthe", value: selectedZoneSummary.esthe },
+                { label: "Barber", value: selectedZoneSummary.barber },
                 { label: "Spa", value: selectedZoneSummary.spa },
                 { label: "Suite", value: selectedZoneSummary.suite },
               ].map((item) => (
@@ -384,6 +411,8 @@ export default function MarketsClient({ regions, zones, members, clusters }: Pro
                     <th className="px-4 py-3 font-medium">Category</th>
                     <th className="px-4 py-3 font-medium">Subtype</th>
                     <th className="px-4 py-3 font-medium">Address</th>
+                    <th className="px-4 py-3 font-medium">DORA Density</th>
+                    <th className="px-4 py-3 font-medium">Profession Mix</th>
                     <th className="px-4 py-3 font-medium">Priority Score</th>
                     <th className="px-4 py-3 font-medium">Is Anchor</th>
                   </tr>
@@ -396,6 +425,19 @@ export default function MarketsClient({ regions, zones, members, clusters }: Pro
                       <td className="px-4 py-3">{member.subtype}</td>
                       <td className="px-4 py-3">
                         {[member.address, member.city, member.state, member.zip].filter(Boolean).join(", ")}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${densityBadgeClass(
+                            member.nearby_dora_licenses_total ?? 0
+                          )}`}
+                          title={`Radius ${member.dora_density_radius_miles ?? 0} mi • ${member.dora_density_profile ?? "custom"}`}
+                        >
+                          {member.nearby_dora_licenses_total ?? 0} nearby
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-neutral-600" title={formatRawProfessionMix(member)}>
+                        {formatProfessionMix(member)}
                       </td>
                       <td className="px-4 py-3">
                         <span
