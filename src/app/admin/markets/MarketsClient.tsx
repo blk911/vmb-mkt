@@ -4,6 +4,11 @@ import { useMemo, useState } from "react";
 import MarketZoneFilters from "@/components/admin/MarketZoneFilters";
 import type { BeautyRegion, BeautyZone, BeautyZoneMember } from "@/lib/markets";
 
+type SortKey = "priority_score" | "name" | "category";
+
+const CATEGORY_FILTERS = ["All", "Nail", "Hair", "Spa", "Brow", "Lash", "Barber", "Beauty"] as const;
+const SUBTYPE_FILTERS = ["All", "Storefront", "Suite"] as const;
+
 type Props = {
   regions: BeautyRegion[];
   zones: BeautyZone[];
@@ -15,6 +20,9 @@ export default function MarketsClient({ regions, zones, members }: Props) {
     regionId: "DEN",
     zoneId: "ALL",
   });
+  const [categoryFilter, setCategoryFilter] = useState<(typeof CATEGORY_FILTERS)[number]>("All");
+  const [subtypeFilter, setSubtypeFilter] = useState<(typeof SUBTYPE_FILTERS)[number]>("All");
+  const [sortKey, setSortKey] = useState<SortKey>("priority_score");
 
   const visibleZones = useMemo(() => {
     return zones.filter((zone) => {
@@ -52,10 +60,38 @@ export default function MarketsClient({ regions, zones, members }: Props) {
 
     return members
       .filter((member) => member.zone_id === filters.zoneId)
+      .filter((member) => {
+        if (categoryFilter !== "All" && member.category !== categoryFilter.toLowerCase()) return false;
+        if (subtypeFilter !== "All" && member.subtype !== subtypeFilter.toLowerCase()) return false;
+        return true;
+      })
       .sort((a, b) => {
-        if (b.priority_score !== a.priority_score) return b.priority_score - a.priority_score;
-        return a.name.localeCompare(b.name);
+        if (sortKey === "priority_score") {
+          if (b.priority_score !== a.priority_score) return b.priority_score - a.priority_score;
+          return a.name.localeCompare(b.name);
+        }
+        if (sortKey === "name") return a.name.localeCompare(b.name);
+        if (sortKey === "category") {
+          const categoryCompare = a.category.localeCompare(b.category);
+          if (categoryCompare !== 0) return categoryCompare;
+          return a.name.localeCompare(b.name);
+        }
+        return 0;
       });
+  }, [categoryFilter, filters.zoneId, members, sortKey, subtypeFilter]);
+
+  const selectedZoneSummary = useMemo(() => {
+    const selectedZoneMembers = filters.zoneId === "ALL"
+      ? []
+      : members.filter((member) => member.zone_id === filters.zoneId);
+
+    return {
+      total: selectedZoneMembers.length,
+      nail: selectedZoneMembers.filter((member) => member.category === "nail").length,
+      hair: selectedZoneMembers.filter((member) => member.category === "hair").length,
+      spa: selectedZoneMembers.filter((member) => member.category === "spa").length,
+      suite: selectedZoneMembers.filter((member) => member.subtype === "suite").length,
+    };
   }, [filters.zoneId, members]);
 
   return (
@@ -140,6 +176,76 @@ export default function MarketsClient({ regions, zones, members }: Props) {
             <h2 className="text-base font-semibold text-neutral-900">Salon Members</h2>
           </div>
 
+          <div className="border-b border-neutral-200 px-4 py-4">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+              {[
+                { label: "Total Members", value: selectedZoneSummary.total },
+                { label: "Nail", value: selectedZoneSummary.nail },
+                { label: "Hair", value: selectedZoneSummary.hair },
+                { label: "Spa", value: selectedZoneSummary.spa },
+                { label: "Suite", value: selectedZoneSummary.suite },
+              ].map((item) => (
+                <div key={item.label} className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2">
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+                    {item.label}
+                  </div>
+                  <div className="mt-1 text-lg font-semibold text-neutral-900">{item.value}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-3">
+              <label className="min-w-[180px] flex-1">
+                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                  Category
+                </span>
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value as (typeof CATEGORY_FILTERS)[number])}
+                  className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-500"
+                >
+                  {CATEGORY_FILTERS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="min-w-[180px] flex-1">
+                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                  Subtype
+                </span>
+                <select
+                  value={subtypeFilter}
+                  onChange={(e) => setSubtypeFilter(e.target.value as (typeof SUBTYPE_FILTERS)[number])}
+                  className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-500"
+                >
+                  {SUBTYPE_FILTERS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="min-w-[180px] flex-1">
+                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                  Sort
+                </span>
+                <select
+                  value={sortKey}
+                  onChange={(e) => setSortKey(e.target.value as SortKey)}
+                  className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-500"
+                >
+                  <option value="priority_score">Priority Score</option>
+                  <option value="name">Name</option>
+                  <option value="category">Category</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
           {visibleMembers.length ? (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-neutral-200 text-sm">
@@ -162,8 +268,30 @@ export default function MarketsClient({ regions, zones, members }: Props) {
                       <td className="px-4 py-3">
                         {[member.address, member.city, member.state, member.zip].filter(Boolean).join(", ")}
                       </td>
-                      <td className="px-4 py-3">{member.priority_score}</td>
-                      <td className="px-4 py-3">{member.is_anchor ? "Yes" : "No"}</td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                            member.priority_score >= 7
+                              ? "bg-emerald-100 text-emerald-800"
+                              : member.priority_score >= 4
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-neutral-100 text-neutral-700"
+                          }`}
+                        >
+                          {member.priority_score}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                            member.is_anchor
+                              ? "bg-neutral-900 text-white"
+                              : "bg-neutral-100 text-neutral-500"
+                          }`}
+                        >
+                          {member.is_anchor ? "Yes" : "No"}
+                        </span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
