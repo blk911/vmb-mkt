@@ -72,10 +72,7 @@ export default function MarketsClient({ regions, zones, members }: Props) {
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {visibleZones.map((zone) => (
-          <article
-            key={zone.zone_id}
-            className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm"
-          >
+          <article key={zone.zone_id} className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-base font-semibold text-neutral-900">{zone.zone_name}</h2>
@@ -92,17 +89,41 @@ export default function MarketsClient({ regions, zones, members }: Props) {
               </div>
               {filters.zoneId === "ALL" ? (
                 <>
-                  <div>
-                    <span className="font-medium">Total members:</span> {zoneCounts[zone.zone_id] ?? 0}
+                  <div className="mt-3 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2">
+                    <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+                      Total Members
+                    </div>
+                    <div className="mt-1 text-2xl font-semibold text-neutral-900">
+                      {zoneCounts[zone.zone_id] ?? 0}
+                    </div>
                   </div>
-                  <div>
-                    <span className="font-medium">Nail / Hair / Spa / Suite:</span>{" "}
-                    {[
-                      `${zoneCategoryRollups[zone.zone_id]?.nail ?? 0} nail`,
-                      `${zoneCategoryRollups[zone.zone_id]?.hair ?? 0} hair`,
-                      `${zoneCategoryRollups[zone.zone_id]?.spa ?? 0} spa`,
-                      `${zoneSubtypeRollups[zone.zone_id]?.suite ?? 0} suite`,
-                    ].join(" / ")}
+                  <div className="mt-3">
+                    <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+                      Categories
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {[
+                        { label: "nail", count: zoneCategoryRollups[zone.zone_id]?.nail ?? 0 },
+                        { label: "hair", count: zoneCategoryRollups[zone.zone_id]?.hair ?? 0 },
+                        { label: "spa", count: zoneCategoryRollups[zone.zone_id]?.spa ?? 0 },
+                        { label: "suite", count: zoneSubtypeRollups[zone.zone_id]?.suite ?? 0 },
+                      ].map((item) => {
+                        const muted = item.count === 0;
+                        return (
+                          <span
+                            key={item.label}
+                            className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${
+                              muted
+                                ? "border-neutral-200 bg-neutral-50 text-neutral-400"
+                                : "border-neutral-300 bg-white text-neutral-700"
+                            }`}
+                          >
+                            <span className="font-semibold">{item.count}</span>
+                            <span>{item.label}</span>
+                          </span>
+                        );
+                      })}
+                    </div>
                   </div>
                 </>
               ) : null}
