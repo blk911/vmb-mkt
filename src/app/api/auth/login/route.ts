@@ -32,7 +32,7 @@ export async function POST(req: Request) {
 
   const user = String(body.user || "");
   const pass = String(body.pass || "");
-  const nextPath = "/admin/vmb";
+  const nextPath = "/admin/markets";
 
   if (!safeEqual(user, adminUser) || !safeEqual(pass, adminPass)) {
     return NextResponse.json({ ok: false, error: "invalid_credentials" }, { status: 401 });

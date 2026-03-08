@@ -11,12 +11,14 @@ type AppLink = {
 };
 
 const MARKETING_LINK: AppLink = { id: "marketing", label: "MARKETING", href: "/marketing-decks" };
+const MARKETS_LINK: AppLink = { id: "markets", label: "MARKETS", href: "/admin/markets" };
 const DATASTORE_LINK: AppLink = { id: "datastore", label: "DATA STORE", href: "/dashboard/targets" };
 const TEAM_APP_ROOT = "https://vmb-team-planner.vercel.app/";
 const TEAM_ADMIN_ROOT = "https://vmb-team-planner.vercel.app/admin";
 
 const BASE_LINKS: AppLink[] = [
   MARKETING_LINK,
+  MARKETS_LINK,
   DATASTORE_LINK,
 ];
 

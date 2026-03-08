@@ -12,7 +12,7 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const nextPath = "/admin/vmb";
+  const nextPath = "/admin/markets";
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
