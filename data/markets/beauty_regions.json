@@ -1,0 +1,24 @@
+{
+  "regions": [
+    {
+      "region_id": "DEN",
+      "region_name": "Denver Metro",
+      "status": "active"
+    },
+    {
+      "region_id": "BDR",
+      "region_name": "Boulder",
+      "status": "planned"
+    },
+    {
+      "region_id": "FCO",
+      "region_name": "Fort Collins",
+      "status": "planned"
+    },
+    {
+      "region_id": "COS",
+      "region_name": "Colorado Springs",
+      "status": "planned"
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "zones": [
+    {
+      "zone_id": "CC01",
+      "zone_name": "Cherry Creek Core",
+      "region_id": "DEN",
+      "region_name": "Denver Metro",
+      "market": "Cherry Creek",
+      "center_lat": 39.719730,
+      "center_lon": -104.953480,
+      "radius_miles": 0.6,
+      "status": "target",
+      "notes": "Luxury beauty retail district"
+    },
+    {
+      "zone_id": "DT01",
+      "zone_name": "Downtown Denver Beauty Corridor",
+      "region_id": "DEN",
+      "region_name": "Denver Metro",
+      "market": "Downtown Denver",
+      "center_lat": 39.744720,
+      "center_lon": -104.990300,
+      "radius_miles": 0.8,
+      "status": "target",
+      "notes": "LoDo / Union Station beauty services"
+    },
+    {
+      "zone_id": "DTC01",
+      "zone_name": "DTC Belleview Corridor",
+      "region_id": "DEN",
+      "region_name": "Denver Metro",
+      "market": "DTC / Greenwood Village",
+      "center_lat": 39.623850,
+      "center_lon": -104.894310,
+      "radius_miles": 1.2,
+      "status": "target",
+      "notes": "Corporate nail + hair corridor"
+    },
+    {
+      "zone_id": "TH01",
+      "zone_name": "Thornton Beauty Corridor",
+      "region_id": "DEN",
+      "region_name": "Denver Metro",
+      "market": "Thornton",
+      "center_lat": 39.934400,
+      "center_lon": -104.985200,
+      "radius_miles": 2.5,
+      "status": "target",
+      "notes": "North metro retail strip salon cluster"
+    },
+    {
+      "zone_id": "BD01",
+      "zone_name": "Boulder Core",
+      "region_id": "BDR",
+      "region_name": "Boulder",
+      "market": "Boulder",
+      "center_lat": 40.017600,
+      "center_lon": -105.279700,
+      "radius_miles": 1.2,
+      "status": "planned",
+      "notes": "Seed zone placeholder for Boulder"
+    },
+    {
+      "zone_id": "FC01",
+      "zone_name": "Fort Collins Core",
+      "region_id": "FCO",
+      "region_name": "Fort Collins",
+      "market": "Fort Collins",
+      "center_lat": 40.585300,
+      "center_lon": -105.084400,
+      "radius_miles": 1.5,
+      "status": "planned",
+      "notes": "Seed zone placeholder for Fort Collins"
+    },
+    {
+      "zone_id": "CS01",
+      "zone_name": "Colorado Springs Core",
+      "region_id": "COS",
+      "region_name": "Colorado Springs",
+      "market": "Colorado Springs",
+      "center_lat": 38.833900,
+      "center_lon": -104.821400,
+      "radius_miles": 1.5,
+      "status": "planned",
+      "notes": "Seed zone placeholder for Colorado Springs"
+    }
+  ]
+}
