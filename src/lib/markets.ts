@@ -40,6 +40,24 @@ export type BeautyZoneMember = {
   is_anchor: boolean;
 };
 
+export type BeautyZoneCluster = {
+  zone_id: string;
+  cluster_id: string;
+  cluster_rank: number;
+  member_count: number;
+  categories_present: string[];
+  top_member_names: string[];
+  has_suite: boolean;
+  largest_cluster: boolean;
+};
+
+export type EnrichedBeautyZoneMember = BeautyZoneMember & {
+  cluster_id: string;
+  cluster_size: number;
+  upgraded_priority_score: number;
+  in_largest_cluster: boolean;
+};
+
 type RegionsFile = {
   regions: BeautyRegion[];
 };
@@ -89,4 +107,127 @@ export function getMarketById(id: string): BeautyZone | undefined {
 
 export function getZoneMembers(): BeautyZoneMember[] {
   return loadZoneMembers().members;
+}
+
+function toRad(value: number): number {
+  return (value * Math.PI) / 180;
+}
+
+function haversineMiles(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 3958.8;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+export function getZoneMembersWithClusters(): {
+  members: EnrichedBeautyZoneMember[];
+  clusters: BeautyZoneCluster[];
+} {
+  const members = getZoneMembers();
+  const CLUSTER_THRESHOLD_MILES = 0.12;
+
+  const enrichedMembers: EnrichedBeautyZoneMember[] = [];
+  const clusters: BeautyZoneCluster[] = [];
+
+  const membersByZone = new Map<string, BeautyZoneMember[]>();
+  for (const member of members) {
+    const zoneMembers = membersByZone.get(member.zone_id) ?? [];
+    zoneMembers.push(member);
+    membersByZone.set(member.zone_id, zoneMembers);
+  }
+
+  for (const [zoneId, zoneMembers] of membersByZone.entries()) {
+    const visited = new Set<number>();
+    const components: number[][] = [];
+
+    for (let i = 0; i < zoneMembers.length; i++) {
+      if (visited.has(i)) continue;
+
+      const queue = [i];
+      const component: number[] = [];
+      visited.add(i);
+
+      while (queue.length) {
+        const current = queue.shift()!;
+        component.push(current);
+        const currentMember = zoneMembers[current];
+
+        for (let j = 0; j < zoneMembers.length; j++) {
+          if (visited.has(j)) continue;
+          const nextMember = zoneMembers[j];
+          const distance = haversineMiles(
+            currentMember.lat,
+            currentMember.lon,
+            nextMember.lat,
+            nextMember.lon
+          );
+          if (distance <= CLUSTER_THRESHOLD_MILES) {
+            visited.add(j);
+            queue.push(j);
+          }
+        }
+      }
+
+      components.push(component);
+    }
+
+    const sortedComponents = components
+      .map((component) => component.map((index) => zoneMembers[index]))
+      .sort((a, b) => {
+        if (b.length !== a.length) return b.length - a.length;
+        const topA = Math.max(...a.map((member) => member.priority_score));
+        const topB = Math.max(...b.map((member) => member.priority_score));
+        return topB - topA;
+      });
+
+    const largestClusterSize = sortedComponents[0]?.length ?? 0;
+
+    sortedComponents.forEach((clusterMembers, index) => {
+      const clusterId = `${zoneId}_cluster_${index + 1}`;
+      const clusterSize = clusterMembers.length;
+      const hasSuite = clusterMembers.some((member) => member.subtype === "suite");
+
+      const upgradedMembers = clusterMembers.map((member) => {
+        let upgradedPriorityScore = member.priority_score;
+
+        if (member.subtype === "suite") upgradedPriorityScore += 2;
+        if (clusterSize >= 2) upgradedPriorityScore += 2 + Math.min(clusterSize - 2, 2);
+        if (largestClusterSize >= 2 && clusterSize === largestClusterSize) upgradedPriorityScore += 3;
+
+        return {
+          ...member,
+          cluster_id: clusterId,
+          cluster_size: clusterSize,
+          upgraded_priority_score: upgradedPriorityScore,
+          in_largest_cluster: clusterSize === largestClusterSize && largestClusterSize > 0,
+        };
+      });
+
+      upgradedMembers
+        .sort((a, b) => {
+          if (b.upgraded_priority_score !== a.upgraded_priority_score) {
+            return b.upgraded_priority_score - a.upgraded_priority_score;
+          }
+          return a.name.localeCompare(b.name);
+        })
+        .forEach((member) => enrichedMembers.push(member));
+
+      clusters.push({
+        zone_id: zoneId,
+        cluster_id: clusterId,
+        cluster_rank: index + 1,
+        member_count: clusterSize,
+        categories_present: Array.from(new Set(clusterMembers.map((member) => member.category))).sort(),
+        top_member_names: upgradedMembers.slice(0, 3).map((member) => member.name),
+        has_suite: hasSuite,
+        largest_cluster: clusterSize === largestClusterSize && largestClusterSize > 0,
+      });
+    });
+  }
+
+  return { members: enrichedMembers, clusters };
 }
