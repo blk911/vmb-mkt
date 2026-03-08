@@ -1,7 +1,46 @@
 {
-  "generated_at": "2026-03-08T15:27:59.656Z",
+  "generated_at": "2026-03-08T17:52:37.174Z",
   "input_candidates_path": "C:\\dev\\vmb-mkt\\data\\co\\dora\\denver_metro\\places\\derived\\places_candidates.v1.json",
   "input_zones_path": "C:\\dev\\vmb-mkt\\data\\markets\\beauty_zones.json",
-  "count": 0,
-  "members": []
+  "count": 2,
+  "members": [
+    {
+      "zone_id": "DT01",
+      "zone_name": "Downtown Denver Beauty Corridor",
+      "market": "Downtown Denver",
+      "location_id": "salon_lofts_403_16th_st_mall_fl_3_denver_dt01",
+      "name": "Salon Lofts",
+      "address": "403 16th St Mall FL 3, Denver",
+      "city": "DENVER",
+      "state": "CO",
+      "zip": "80202",
+      "lat": 39.7435524,
+      "lon": -104.9896175,
+      "distance_miles": 0.088,
+      "category": "hair",
+      "subtype": "suite",
+      "source": "places_candidates.v1.json",
+      "priority_score": 8,
+      "is_anchor": true
+    },
+    {
+      "zone_id": "DTC01",
+      "zone_name": "DTC Belleview Corridor",
+      "market": "DTC / Greenwood Village",
+      "location_id": "purluxe_beauty_bar_dtc_4822_s_newport_st_denver_dtc01",
+      "name": "Purluxe Beauty Bar DTC",
+      "address": "4822 S Newport St, Denver",
+      "city": "DENVER",
+      "state": "CO",
+      "zip": "80237",
+      "lat": 39.6265302,
+      "lon": -104.9065893,
+      "distance_miles": 0.679,
+      "category": "spa",
+      "subtype": "storefront",
+      "source": "places_candidates.v1.json",
+      "priority_score": 2,
+      "is_anchor": false
+    }
+  ]
 }
