@@ -31,6 +31,14 @@ export default function MarketsClient({ regions, zones, members }: Props) {
     }, {});
   }, [members]);
 
+  const zoneCategoryRollups = useMemo(() => {
+    return members.reduce<Record<string, Record<string, number>>>((acc, member) => {
+      const zoneRollup = (acc[member.zone_id] ??= {});
+      zoneRollup[member.category] = (zoneRollup[member.category] ?? 0) + 1;
+      return acc;
+    }, {});
+  }, [members]);
+
   const visibleMembers = useMemo(() => {
     if (filters.zoneId === "ALL") return [];
 
@@ -75,9 +83,18 @@ export default function MarketsClient({ regions, zones, members }: Props) {
                 <span className="font-medium">Radius:</span> {zone.radius_miles} mi
               </div>
               {filters.zoneId === "ALL" ? (
-                <div>
-                  <span className="font-medium">Members:</span> {zoneCounts[zone.zone_id] ?? 0}
-                </div>
+                <>
+                  <div>
+                    <span className="font-medium">Members:</span> {zoneCounts[zone.zone_id] ?? 0}
+                  </div>
+                  <div>
+                    <span className="font-medium">Categories:</span>{" "}
+                    {Object.entries(zoneCategoryRollups[zone.zone_id] ?? {})
+                      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+                      .map(([category, count]) => `${count} ${category}`)
+                      .join(" · ") || "No members yet"}
+                  </div>
+                </>
               ) : null}
             </div>
 
