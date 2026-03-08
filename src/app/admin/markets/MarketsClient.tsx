@@ -39,6 +39,14 @@ export default function MarketsClient({ regions, zones, members }: Props) {
     }, {});
   }, [members]);
 
+  const zoneSubtypeRollups = useMemo(() => {
+    return members.reduce<Record<string, Record<string, number>>>((acc, member) => {
+      const zoneRollup = (acc[member.zone_id] ??= {});
+      zoneRollup[member.subtype] = (zoneRollup[member.subtype] ?? 0) + 1;
+      return acc;
+    }, {});
+  }, [members]);
+
   const visibleMembers = useMemo(() => {
     if (filters.zoneId === "ALL") return [];
 
@@ -85,14 +93,16 @@ export default function MarketsClient({ regions, zones, members }: Props) {
               {filters.zoneId === "ALL" ? (
                 <>
                   <div>
-                    <span className="font-medium">Members:</span> {zoneCounts[zone.zone_id] ?? 0}
+                    <span className="font-medium">Total members:</span> {zoneCounts[zone.zone_id] ?? 0}
                   </div>
                   <div>
-                    <span className="font-medium">Categories:</span>{" "}
-                    {Object.entries(zoneCategoryRollups[zone.zone_id] ?? {})
-                      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-                      .map(([category, count]) => `${count} ${category}`)
-                      .join(" · ") || "No members yet"}
+                    <span className="font-medium">Nail / Hair / Spa / Suite:</span>{" "}
+                    {[
+                      `${zoneCategoryRollups[zone.zone_id]?.nail ?? 0} nail`,
+                      `${zoneCategoryRollups[zone.zone_id]?.hair ?? 0} hair`,
+                      `${zoneCategoryRollups[zone.zone_id]?.spa ?? 0} spa`,
+                      `${zoneSubtypeRollups[zone.zone_id]?.suite ?? 0} suite`,
+                    ].join(" / ")}
                   </div>
                 </>
               ) : null}
@@ -118,8 +128,8 @@ export default function MarketsClient({ regions, zones, members }: Props) {
                     <th className="px-4 py-3 font-medium">Category</th>
                     <th className="px-4 py-3 font-medium">Subtype</th>
                     <th className="px-4 py-3 font-medium">Address</th>
-                    <th className="px-4 py-3 font-medium">Priority</th>
-                    <th className="px-4 py-3 font-medium">Anchor</th>
+                    <th className="px-4 py-3 font-medium">Priority Score</th>
+                    <th className="px-4 py-3 font-medium">Is Anchor</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-200">
@@ -140,7 +150,7 @@ export default function MarketsClient({ regions, zones, members }: Props) {
             </div>
           ) : (
             <p className="px-4 py-6 text-sm text-neutral-600">
-              No salon members are currently assigned to this zone.
+              No matched businesses yet for this zone.
             </p>
           )}
         </section>
