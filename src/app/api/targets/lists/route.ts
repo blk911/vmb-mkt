@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import { canAccessAdmin, getSessionUserFromCookieHeader } from "@/lib/auth/access";
 
 const STORE_PATH =
   "data/co/dora/denver_metro/targets/derived/targets_lists.v1.json";
@@ -124,6 +125,13 @@ export async function POST(req: Request) {
 
   if (!body || !(body as any).op) {
     return NextResponse.json({ ok: false, error: "missing_op" }, { status: 400 });
+  }
+
+  if (body.op === "delete") {
+    const sessionUser = await getSessionUserFromCookieHeader(req.headers.get("cookie") || "");
+    if (!canAccessAdmin(sessionUser)) {
+      return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
+    }
   }
 
   switch (body.op) {

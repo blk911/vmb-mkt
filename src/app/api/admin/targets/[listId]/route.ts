@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { readTargetList, updateListMeta } from "@/app/admin/_lib/targets/store";
+import { canAccessAdmin, getSessionUserFromCookieHeader } from "@/lib/auth/access";
 import fs from "node:fs";
 import { targetsDirAbs } from "../../_lib/paths";
 import path from "node:path";
@@ -54,10 +55,15 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _req: Request,
+  req: Request,
   ctx: { params: { listId: string } }
 ) {
   try {
+    const sessionUser = await getSessionUserFromCookieHeader(req.headers.get("cookie") || "");
+    if (!canAccessAdmin(sessionUser)) {
+      return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
+    }
+
     const listId = decodeURIComponent(ctx.params.listId || "").trim();
     if (!listId) {
       return NextResponse.json({ ok: false, error: "missing listId" }, { status: 400 });

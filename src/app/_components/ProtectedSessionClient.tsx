@@ -8,7 +8,7 @@ const LOGOUT_AFTER_MS = 3 * 60 * 1000;
 const HEARTBEAT_MIN_GAP_MS = 30 * 1000;
 
 function isProtectedPath(pathname: string) {
-  return pathname.startsWith("/admin") || pathname.startsWith("/dashboard");
+  return pathname.startsWith("/admin") || pathname.startsWith("/dashboard") || pathname.startsWith("/team");
 }
 
 export default function ProtectedSessionClient() {

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback } from "react";
+import { canShowNavItem, type SessionUser } from "@/lib/auth/access";
 
 type AppLink = {
   id: string;
@@ -11,16 +12,11 @@ type AppLink = {
 };
 
 const MARKETING_LINK: AppLink = { id: "marketing", label: "MARKETING", href: "/marketing-decks" };
+const LOGIN_LINK: AppLink = { id: "login", label: "LOGIN", href: "/auth/login" };
 const MARKETS_LINK: AppLink = { id: "markets", label: "MARKETS", href: "/admin/markets" };
 const DATASTORE_LINK: AppLink = { id: "datastore", label: "DATA STORE", href: "/dashboard/targets" };
-const TEAM_APP_ROOT = "https://vmb-team-planner.vercel.app/";
-const TEAM_ADMIN_ROOT = "https://vmb-team-planner.vercel.app/admin";
-
-const BASE_LINKS: AppLink[] = [
-  MARKETING_LINK,
-  MARKETS_LINK,
-  DATASTORE_LINK,
-];
+const TEAM_LINK: AppLink = { id: "team", label: "TEAM", href: "/team" };
+const ADMIN_LINK: AppLink = { id: "admin", label: "ADMIN", href: "/admin" };
 
 function isActive(href: string, pathname: string): boolean {
   const targetPath = href;
@@ -28,11 +24,15 @@ function isActive(href: string, pathname: string): boolean {
   return pathname === targetPath || pathname.startsWith(targetPath + "/");
 }
 
-export default function AppSwitchNav() {
+type Props = {
+  sessionUser: SessionUser;
+};
+
+export default function AppSwitchNav({ sessionUser }: Props) {
   const pathname = usePathname() || "/";
-  if (pathname.startsWith("/auth/login")) return null;
-  const teamHref = pathname.startsWith("/admin") || pathname.startsWith("/dashboard") ? TEAM_ADMIN_ROOT : TEAM_APP_ROOT;
-  const links: AppLink[] = [...BASE_LINKS, { id: "team", label: "TEAM", href: teamHref }];
+  const links: AppLink[] = [MARKETING_LINK, LOGIN_LINK, MARKETS_LINK, DATASTORE_LINK, TEAM_LINK, ADMIN_LINK].filter(
+    (link) => canShowNavItem(link.id, sessionUser)
+  );
   const onLogout = useCallback(async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST", cache: "no-store" });
@@ -90,29 +90,31 @@ export default function AppSwitchNav() {
           })}
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <button
-            type="button"
-            onClick={() => void onLogout()}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              height: 30,
-              padding: "0 10px",
-              borderRadius: 999,
-              border: "1px solid rgba(15,23,42,0.12)",
-              background: "rgba(15,23,42,0.04)",
-              color: "#0f172a",
-              textDecoration: "none",
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: "0.05em",
-              whiteSpace: "nowrap",
-              cursor: "pointer",
-            }}
-          >
-            LOG OUT
-          </button>
+          {sessionUser ? (
+            <button
+              type="button"
+              onClick={() => void onLogout()}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: 30,
+                padding: "0 10px",
+                borderRadius: 999,
+                border: "1px solid rgba(15,23,42,0.12)",
+                background: "rgba(15,23,42,0.04)",
+                color: "#0f172a",
+                textDecoration: "none",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.05em",
+                whiteSpace: "nowrap",
+                cursor: "pointer",
+              }}
+            >
+              LOG OUT
+            </button>
+          ) : null}
         </div>
       </div>
     </div>

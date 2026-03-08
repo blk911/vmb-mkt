@@ -1,8 +1,11 @@
+import type { Role } from "@/lib/auth/access";
+
 export const SESSION_COOKIE = "vmb_admin_session";
 export const SESSION_TTL_SECONDS = 60 * 60 * 8;
 
 type SessionPayload = {
   u: string;
+  role?: Role;
   exp: number;
   iat: number;
 };
@@ -53,10 +56,16 @@ async function signHmac(data: string, secret: string): Promise<string> {
   return bytesToBase64Url(new Uint8Array(sig));
 }
 
-export async function createSessionToken(user: string, secret: string, ttlSeconds = SESSION_TTL_SECONDS) {
+export async function createSessionToken(
+  user: string,
+  role: Role,
+  secret: string,
+  ttlSeconds = SESSION_TTL_SECONDS
+) {
   const now = Math.floor(Date.now() / 1000);
   const payload: SessionPayload = {
     u: user,
+    role,
     iat: now,
     exp: now + ttlSeconds,
   };

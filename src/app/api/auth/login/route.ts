@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { resolveRoleForUser } from "@/lib/auth/access";
 import { getAdminPass, getAdminUser, getSessionSecret } from "@/lib/auth/config";
 import { createSessionToken, SESSION_COOKIE, SESSION_TTL_SECONDS } from "@/lib/auth/session";
 
@@ -38,8 +39,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "invalid_credentials" }, { status: 401 });
   }
 
-  const token = await createSessionToken(user, sessionSecret);
-  const res = NextResponse.json({ ok: true, next: nextPath });
+  const role = resolveRoleForUser(user);
+  const token = await createSessionToken(user, role, sessionSecret);
+  const res = NextResponse.json({ ok: true, next: nextPath, role });
   res.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
