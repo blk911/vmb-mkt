@@ -1,5 +1,10 @@
-import fs from "node:fs";
-import path from "node:path";
+import {
+  addItems,
+  createTargetList,
+  listTargetLists,
+  readTargetList,
+} from "@/app/admin/_lib/targets/store";
+import { canAccessAdmin, getSessionUserFromCookieHeader } from "@/lib/auth/access";
 
 export const runtime = "nodejs";
 
@@ -11,42 +16,54 @@ type TargetList = {
   meta?: Record<string, any>;
 };
 
-const OUT_REL = "data/co/dora/denver_metro/targets/targets.v1.json";
-
-function ensureDirForFile(relFile: string) {
-  const abs = path.resolve(process.cwd(), relFile);
-  fs.mkdirSync(path.dirname(abs), { recursive: true });
+function uniqStrings(values: string[]) {
+  return Array.from(new Set(values.map((value) => String(value || "").trim()).filter(Boolean)));
 }
 
-function readStore(): { ok: true; updatedAt: string; lists: TargetList[] } {
-  const abs = path.resolve(process.cwd(), OUT_REL);
-  if (!fs.existsSync(abs)) {
-    return { ok: true, updatedAt: new Date().toISOString(), lists: [] };
-  }
-  const raw = fs.readFileSync(abs, "utf8");
-  const j = JSON.parse(raw);
-  const lists = Array.isArray(j?.lists) ? j.lists : [];
-  return { ok: true, updatedAt: j?.updatedAt ?? new Date().toISOString(), lists };
+function toLegacyList(list: Awaited<ReturnType<typeof readTargetList>>): TargetList | null {
+  if (!list || list.scope !== "facility") return null;
+  return {
+    id: list.id,
+    name: list.name,
+    createdAt: list.createdAt,
+    addressKeys: uniqStrings(
+      list.items
+        .filter((item) => item.kind === "facility")
+        .map((item) => item.addressId || item.refId)
+    ),
+    meta: list.savedQuery,
+  };
 }
 
-function writeStore(lists: TargetList[]) {
-  ensureDirForFile(OUT_REL);
-  const abs = path.resolve(process.cwd(), OUT_REL);
-  const payload = { ok: true, updatedAt: new Date().toISOString(), lists };
-  fs.writeFileSync(abs, JSON.stringify(payload, null, 2), "utf8");
-}
+async function readLegacyStore() {
+  const index = await listTargetLists();
+  const facilityListIds = (index.lists || [])
+    .filter((list) => list.scope === "facility")
+    .sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""))
+    .map((list) => list.id);
 
-function uid() {
-  // deterministic enough for local tool
-  return `t_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  const lists = (
+    await Promise.all(facilityListIds.map(async (listId) => toLegacyList(await readTargetList(listId))))
+  ).filter(Boolean) as TargetList[];
+
+  return {
+    ok: true,
+    updatedAt: index.updatedAt || new Date().toISOString(),
+    lists,
+  };
 }
 
 export async function GET() {
-  const store = readStore();
+  const store = await readLegacyStore();
   return Response.json(store);
 }
 
 export async function POST(req: Request) {
+  const sessionUser = await getSessionUserFromCookieHeader(req.headers.get("cookie") || "");
+  if (!canAccessAdmin(sessionUser)) {
+    return Response.json({ ok: false, error: "forbidden" }, { status: 403 });
+  }
+
   const body = await req.json().catch(() => null);
 
   const name = String(body?.name ?? "").trim();
@@ -63,25 +80,31 @@ export async function POST(req: Request) {
   }
 
   const meta = typeof body?.meta === "object" && body?.meta ? body.meta : undefined;
-
-  const store = readStore();
-  const lists = store.lists;
-
-  const item: TargetList = {
-    id: uid(),
+  const list = await createTargetList({
     name,
-    createdAt: new Date().toISOString(),
-    addressKeys,
-    meta,
-  };
+    scope: "facility",
+    savedQuery: meta,
+  });
 
-  lists.unshift(item); // newest first
-  writeStore(lists);
+  await addItems(
+    list.id,
+    addressKeys.map((addressKey) => ({
+      kind: "facility" as const,
+      refId: addressKey,
+      addressId: addressKey,
+      label: addressKey,
+    }))
+  );
 
   return Response.json({
     ok: true,
-    saved: item,
-    counts: { lists: lists.length, addressKeys: addressKeys.length },
-    out: OUT_REL,
+    saved: {
+      id: list.id,
+      name: list.name,
+      createdAt: list.createdAt,
+      addressKeys,
+      meta,
+    },
+    counts: { addressKeys: addressKeys.length },
   });
 }

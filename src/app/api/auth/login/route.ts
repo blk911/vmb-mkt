@@ -9,6 +9,17 @@ type Body = {
   next?: string;
 };
 
+function sanitizeNextPath(next?: string) {
+  const value = String(next || "").trim();
+  if (!value.startsWith("/") || value.startsWith("//")) {
+    return "/admin/markets";
+  }
+  if (value === "/auth/login" || value.startsWith("/auth/login?")) {
+    return "/admin/markets";
+  }
+  return value;
+}
+
 function safeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let diff = 0;
@@ -33,7 +44,7 @@ export async function POST(req: Request) {
 
   const user = String(body.user || "");
   const pass = String(body.pass || "");
-  const nextPath = "/admin/markets";
+  const nextPath = sanitizeNextPath(body.next);
 
   if (!safeEqual(user, adminUser) || !safeEqual(pass, adminPass)) {
     return NextResponse.json({ ok: false, error: "invalid_credentials" }, { status: 401 });

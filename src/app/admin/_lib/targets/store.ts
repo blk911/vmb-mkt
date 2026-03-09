@@ -37,6 +37,7 @@ export async function createTargetList(params: {
   name: string;
   scope: "facility" | "tech";
   savedQuery?: any;
+  notes?: string;
 }): Promise<TargetList> {
   const now = new Date().toISOString();
   const id = `tgt_${now.slice(0, 10).replace(/-/g, "")}_${Math.random().toString(36).slice(2, 8)}`;
@@ -48,6 +49,7 @@ export async function createTargetList(params: {
     createdAt: now,
     updatedAt: now,
     savedQuery: params.savedQuery,
+    notes: params.notes,
     items: [],
   };
 
@@ -136,13 +138,14 @@ export async function removeItems(listId: string, refIds: string[]): Promise<Tar
 
 export async function updateListMeta(
   listId: string,
-  patch: { name?: string; savedQuery?: any }
+  patch: { name?: string; savedQuery?: any; notes?: string }
 ): Promise<TargetList> {
   const list = await readTargetList(listId);
   if (!list) throw new Error(`Target list ${listId} not found`);
 
   if (patch.name !== undefined) list.name = patch.name;
   if (patch.savedQuery !== undefined) list.savedQuery = patch.savedQuery;
+  if (patch.notes !== undefined) list.notes = patch.notes;
 
   list.updatedAt = new Date().toISOString();
   await writeJsonAtomic(listPathAbs(listId), list);
@@ -157,4 +160,16 @@ export async function updateListMeta(
   await writeJsonAtomic(indexPathAbs(), index);
 
   return list;
+}
+
+export async function deleteTargetList(listId: string): Promise<void> {
+  const listPath = listPathAbs(listId);
+  if (fs.existsSync(listPath)) {
+    fs.unlinkSync(listPath);
+  }
+
+  const index = await listTargetLists();
+  index.lists = index.lists.filter((l) => l.id !== listId);
+  index.updatedAt = new Date().toISOString();
+  await writeJsonAtomic(indexPathAbs(), index);
 }

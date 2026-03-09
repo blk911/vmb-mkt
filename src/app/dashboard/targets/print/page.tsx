@@ -1,24 +1,40 @@
 import fs from "fs";
+import path from "node:path";
+import { readTargetList } from "@/app/admin/_lib/targets/store";
+import { dataRootAbs } from "@/backend/lib/paths/data-root";
 
-const LISTS_PATH = "data/co/dora/denver_metro/targets/derived/targets_lists.v1.json";
-const TECH_PATH = "data/co/dora/denver_metro/places/derived/tech_index.v4_facilities.v1.json";
+const TECH_PATH = path.join(
+  dataRootAbs(),
+  "co",
+  "dora",
+  "denver_metro",
+  "places",
+  "derived",
+  "tech_index.v4_facilities.v1.json"
+);
 
 function readJson(p: string) {
   return JSON.parse(fs.readFileSync(p, "utf8"));
 }
 
-export default function TargetsPrintPage({ searchParams }: { searchParams: { listId?: string } }) {
+export default async function TargetsPrintPage({ searchParams }: { searchParams: { listId?: string } }) {
   const listId = (searchParams?.listId || "").trim();
-  const store = fs.existsSync(LISTS_PATH) ? readJson(LISTS_PATH) : { lists: [] };
-  const list = (store.lists || []).find((l: any) => l.id === listId);
+  const list = listId ? await readTargetList(listId) : null;
 
   const techIndex = fs.existsSync(TECH_PATH) ? readJson(TECH_PATH) : { tech: [] };
   const tech = (techIndex.tech || []) as any[];
   const byId = new Map<string, any>();
   for (const t of tech) byId.set(String(t.id), t);
 
+  const techIds = list
+    ? list.items
+        .filter((item) => item.kind === "tech")
+        .map((item) => String(item.refId || "").trim())
+        .filter(Boolean)
+    : [];
+
   const rows = list
-    ? (list.techIds || []).map((id: string) => byId.get(String(id))).filter(Boolean)
+    ? techIds.map((id: string) => byId.get(String(id))).filter(Boolean)
     : [];
 
   return (

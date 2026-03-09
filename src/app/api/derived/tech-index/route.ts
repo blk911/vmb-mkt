@@ -2,8 +2,18 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import { adminDb } from "@/lib/admin/firestoreAdmin";
 import { TECH_INDEX_COL } from "@/lib/places/storePaths";
+import path from "node:path";
+import { dataRootAbs } from "@/backend/lib/paths/data-root";
 
-const PATH = "data/co/dora/denver_metro/places/derived/tech_index.v4_facilities.v1.json";
+const PATH = path.join(
+  dataRootAbs(),
+  "co",
+  "dora",
+  "denver_metro",
+  "places",
+  "derived",
+  "tech_index.v4_facilities.v1.json"
+);
 export const runtime = "nodejs";
 
 function hasFirebaseEnv() {

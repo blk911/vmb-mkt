@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
-import { readTargetList, updateListMeta } from "@/app/admin/_lib/targets/store";
+import { deleteTargetList, readTargetList, updateListMeta } from "@/app/admin/_lib/targets/store";
 import { canAccessAdmin, getSessionUserFromCookieHeader } from "@/lib/auth/access";
-import fs from "node:fs";
-import { targetsDirAbs } from "../../_lib/paths";
-import path from "node:path";
 
 export async function GET(
   _req: Request,
@@ -42,9 +39,9 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const { name, savedQuery } = body;
+    const { name, notes, savedQuery } = body;
 
-    const list = await updateListMeta(listId, { name, savedQuery });
+    const list = await updateListMeta(listId, { name, notes, savedQuery });
     return NextResponse.json({ ok: true, list });
   } catch (e: any) {
     return NextResponse.json(
@@ -69,20 +66,7 @@ export async function DELETE(
       return NextResponse.json({ ok: false, error: "missing listId" }, { status: 400 });
     }
 
-    // Delete list file
-    const listPath = path.join(targetsDirAbs(), `targets_${listId}.json`);
-    if (fs.existsSync(listPath)) {
-      fs.unlinkSync(listPath);
-    }
-
-    // Update index
-    const { listTargetLists } = await import("@/app/admin/_lib/targets/store");
-    const { writeJsonAtomic } = await import("../../_lib/atomic");
-    const index = await listTargetLists();
-    index.lists = index.lists.filter((l) => l.id !== listId);
-    index.updatedAt = new Date().toISOString();
-    const indexPath = path.join(targetsDirAbs(), "targets_index.json");
-    await writeJsonAtomic(indexPath, index);
+    await deleteTargetList(listId);
 
     return NextResponse.json({ ok: true });
   } catch (e: any) {

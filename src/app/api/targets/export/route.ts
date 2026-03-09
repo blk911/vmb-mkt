@@ -1,8 +1,18 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
+import path from "node:path";
+import { readTargetList } from "@/app/admin/_lib/targets/store";
+import { dataRootAbs } from "@/backend/lib/paths/data-root";
 
-const LISTS_PATH = "data/co/dora/denver_metro/targets/derived/targets_lists.v1.json";
-const TECH_PATH = "data/co/dora/denver_metro/places/derived/tech_index.v4_facilities.v1.json";
+const TECH_PATH = path.join(
+  dataRootAbs(),
+  "co",
+  "dora",
+  "denver_metro",
+  "places",
+  "derived",
+  "tech_index.v4_facilities.v1.json"
+);
 
 function readJson(p: string) {
   const txt = fs.readFileSync(p, "utf8");
@@ -27,15 +37,11 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error: "unsupported_format", format }, { status: 400 });
   }
 
-  if (!fs.existsSync(LISTS_PATH)) {
-    return NextResponse.json({ ok: false, error: "lists_store_missing", path: LISTS_PATH }, { status: 404 });
-  }
   if (!fs.existsSync(TECH_PATH)) {
     return NextResponse.json({ ok: false, error: "tech_index_missing", path: TECH_PATH }, { status: 404 });
   }
 
-  const store = readJson(LISTS_PATH);
-  const list = (store?.lists || []).find((l: any) => l.id === listId);
+  const list = await readTargetList(listId);
   if (!list) {
     return NextResponse.json({ ok: false, error: "list_not_found", listId }, { status: 404 });
   }
@@ -46,7 +52,12 @@ export async function GET(req: Request) {
   const byId = new Map<string, any>();
   for (const t of tech) byId.set(String(t.id), t);
 
-  const rows = (list.techIds || [])
+  const techIds = list.items
+    .filter((item: any) => item.kind === "tech")
+    .map((item: any) => String(item.refId || "").trim())
+    .filter(Boolean);
+
+  const rows = techIds
     .map((id: string) => byId.get(String(id)))
     .filter(Boolean);
 

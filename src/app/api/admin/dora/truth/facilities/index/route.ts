@@ -1,20 +1,21 @@
 import fs from "node:fs";
 import path from "node:path";
+import { dataRootAbs } from "@/backend/lib/paths/data-root";
 
 export const runtime = "nodejs";
 
-function readJson(rel: string) {
-  const abs = path.resolve(process.cwd(), rel);
+function readJson(abs: string) {
   if (!fs.existsSync(abs)) {
-    return { ok: false, error: `Missing file: ${rel}`, rows: [] };
+    return { ok: false, error: `Missing file: ${abs}`, rows: [] };
   }
   const raw = fs.readFileSync(abs, "utf8");
   return JSON.parse(raw);
 }
 
 export async function GET() {
-  const rel = "data/co/dora/denver_metro/tables/vmb_facilities_enriched.json";
-  const data = readJson(rel);
+  const rel = path.join("co", "dora", "denver_metro", "tables", "vmb_facilities_enriched.json");
+  const abs = path.join(dataRootAbs(), rel);
+  const data = readJson(abs);
 
   // Normalize response shape for UI
   const rows = Array.isArray(data?.rows) ? data.rows : Array.isArray(data) ? data : [];
@@ -23,7 +24,7 @@ export async function GET() {
 
   return Response.json({
     ok: true,
-    source: rel,
+    source: abs,
     updatedAt,
     counts,
     rows,

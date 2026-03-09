@@ -16,6 +16,15 @@ export default function DeckTopNav({ active }: { active: TabKey }) {
           Marketing
         </Link>
         <div className="flex flex-wrap items-center justify-center gap-3">
+          <Link
+            href="https://venmebaby.com"
+            target="_blank"
+            rel="noreferrer"
+            className={tabClass(false)}
+          >
+            VMB Website
+          </Link>
+          <span className="text-neutral-300">:</span>
           <Link href="/marketing-decks/salons" className={tabClass(active === "salons")}>
             For Salons
           </Link>

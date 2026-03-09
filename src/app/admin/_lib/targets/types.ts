@@ -8,6 +8,7 @@ export type TargetList = {
   scope: TargetScope; // facility or tech
   createdAt: string;
   updatedAt: string;
+  notes?: string;
 
   // This is the saved "view" (query state snapshot)
   savedQuery?: AdminQueryState;

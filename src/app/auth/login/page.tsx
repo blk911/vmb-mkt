@@ -2,17 +2,29 @@
 
 import { Suspense } from "react";
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+
+function sanitizeNextPath(nextPath?: string | null) {
+  const value = String(nextPath || "").trim();
+  if (!value.startsWith("/") || value.startsWith("//")) {
+    return "/admin/markets";
+  }
+  if (value === "/auth/login" || value.startsWith("/auth/login?")) {
+    return "/admin/markets";
+  }
+  return value;
+}
 
 function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const nextPath = "/admin/markets";
+  const nextPath = sanitizeNextPath(searchParams.get("next"));
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
