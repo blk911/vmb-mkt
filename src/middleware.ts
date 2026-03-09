@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { canAccessAdmin, canAccessRoute, getSessionUserFromToken, isAdminRoute } from "@/lib/auth/access";
+import {
+  canAccessAdmin,
+  canAccessRoute,
+  getSessionUserFromToken,
+  isAdminRoute,
+  isAuthRoute,
+  isPublicRoute,
+} from "@/lib/auth/access";
 import { getSessionSecret } from "@/lib/auth/config";
 import { SESSION_COOKIE } from "@/lib/auth/session";
 
@@ -7,8 +14,26 @@ function isApiPath(pathname: string) {
   return pathname.startsWith("/api/");
 }
 
+function isIgnoredPath(pathname: string) {
+  return (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/static") ||
+    pathname.startsWith("/favicon") ||
+    pathname.startsWith("/images")
+  );
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  if (isIgnoredPath(pathname)) {
+    return NextResponse.next();
+  }
+
+  if (isPublicRoute(pathname) || isAuthRoute(pathname)) {
+    return NextResponse.next();
+  }
+
   const sessionSecret = getSessionSecret();
   if (!sessionSecret) {
     return new NextResponse("Admin session auth is not configured.", { status: 503 });
@@ -31,6 +56,9 @@ export async function middleware(req: NextRequest) {
       loginUrl.pathname = "/admin/markets";
       loginUrl.search = "";
     } else {
+      if (pathname.startsWith("/auth/login")) {
+        return NextResponse.next();
+      }
       loginUrl.pathname = "/auth/login";
       loginUrl.searchParams.set("next", pathname);
     }
@@ -41,14 +69,6 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/admin/:path*",
-    "/api/admin/:path*",
-    "/dashboard/:path*",
-    "/api/targets/:path*",
-    "/api/derived/:path*",
-    "/team",
-    "/team/:path*",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
 

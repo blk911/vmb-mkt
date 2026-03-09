@@ -36,6 +36,18 @@ export default function MarketingDecksPage() {
           <BeUnforgettable mode="light" loop speed="slow" />
         </div>
       </section>
+
+      <section className="-mt-8 w-full pb-16">
+        <div className="mx-auto max-w-4xl px-4">
+          <div className="flex justify-center rounded-3xl border bg-white p-4 shadow-sm">
+            <img
+              src="/door-sticker2.png"
+              alt="VMB gift request flyer"
+              className="h-auto w-full max-w-3xl rounded-2xl"
+            />
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
