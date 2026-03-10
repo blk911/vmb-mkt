@@ -52,7 +52,7 @@ function Section({
         ))}
       </div>
 
-      <div className="mt-3 border-t border-dashed border-neutral-400 pt-3">
+      <div className="mt-3 border-t border-neutral-300 pt-3">
         <div className="grid grid-cols-[1fr_auto] items-center gap-4 text-[15px]">
           <div className="font-medium text-neutral-900">Subtotal</div>
           <div className="font-semibold tabular-nums text-neutral-900">{money(subtotal)}</div>
@@ -118,7 +118,7 @@ function CashFlowCard({
           </div>
         )}
 
-        <div className="border-t border-dashed border-neutral-400 pt-3">
+        <div className="border-t border-neutral-300 pt-3">
           <div className="grid grid-cols-[1fr_auto] items-center gap-4 text-[18px]">
             <div className="font-semibold text-neutral-950">Net Revenue</div>
             <div className="font-bold tabular-nums text-neutral-950">{money(netRevenue)}</div>
@@ -134,7 +134,7 @@ function CashFlowCard({
 
       <Section title="Fixed Expenses" rows={fixedRows} subtotal={fixedSubtotal} />
 
-      <div className="mt-8 border-t border-neutral-300 pt-5">
+      <div className="mt-8 border-t border-neutral-300 pt-3">
         <div className="grid grid-cols-[1fr_auto] items-center gap-4">
           <div className="text-[22px] font-bold tracking-tight text-neutral-950">
             Net Session Revenue
@@ -283,7 +283,7 @@ export default function SalonCashFlowComparison() {
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-[1fr_auto] items-center gap-x-6 border-t-2 border-dashed border-neutral-700 pt-3">
+          <div className="mt-4 grid grid-cols-[1fr_auto] items-center gap-x-6 border-t border-neutral-300 pt-3">
             <div className="text-right text-[15px] leading-7">Subtotal</div>
             <div className="text-[15px] leading-7 tabular-nums">40%</div>
           </div>
@@ -293,7 +293,7 @@ export default function SalonCashFlowComparison() {
             <div className="text-[15px] leading-7 tabular-nums">60%</div>
           </div>
 
-          <div className="mt-4 grid grid-cols-[1fr_auto] items-center gap-x-6 border-t-2 border-dashed border-neutral-700 pt-3 text-red-600">
+          <div className="mt-4 grid grid-cols-[1fr_auto] items-center gap-x-6 border-t border-neutral-300 pt-3 text-red-600">
             <div className="text-[15px] font-bold leading-7">Total Funds Distributed</div>
             <div className="text-[15px] font-bold leading-7 tabular-nums">60%</div>
           </div>
