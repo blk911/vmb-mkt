@@ -12,12 +12,13 @@ function money(n: number) {
 }
 
 function RowLine({ row }: { row: Row }) {
-  const amountClass =
-    row.accent === "red"
+  const amountClass = row.muted
+    ? "text-neutral-400 line-through"
+    : row.accent === "red"
       ? "text-red-600"
       : row.accent === "green"
-      ? "text-green-700"
-      : "text-neutral-900";
+        ? "text-green-700"
+        : "text-neutral-900";
 
   const labelClass = row.muted
     ? "text-neutral-400 line-through"
