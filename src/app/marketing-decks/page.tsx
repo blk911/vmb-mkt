@@ -27,9 +27,10 @@ export default function MarketingDecksPage() {
             strengthen the connection between salons and their clients - by rewarding loyalty, encouraging
             referrals, and turning everyday relationships into lasting opportunity.
             <br />
-            <strong className="font-semibold text-neutral-900">
-              VMB focuses on what actually drives growth: CLIENTS.
-            </strong>
+            <span className="text-neutral-900">
+              VMB focuses on what drives revenue and growth:{" "}
+              <strong className="font-semibold">CLIENTS.</strong>
+            </span>
           </p>
         </div>
       </section>
