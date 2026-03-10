@@ -2,9 +2,6 @@ import type { Metadata } from "next";
 import DeckTopNav from "./_components/DeckTopNav";
 import BeUnforgettable from "@/components/BeUnforgettable";
 
-const MISSION_TEXT =
-  "The personal care industry is built on Clients and Client relationships. Our mission is to strengthen the connection between salons and their clients - by rewarding loyalty, encouraging referrals, and turning everyday relationships into lasting opportunity. VMB focuses on what actually drives growth: clients.";
-
 export const metadata: Metadata = {
   title: "Marketing Decks",
 };
@@ -26,7 +23,13 @@ export default function MarketingDecksPage() {
             The Modern Revenue System for Salons
           </h1>
           <p className="mx-auto mt-4 max-w-3xl text-center text-lg leading-relaxed text-neutral-700 md:text-xl">
-            {MISSION_TEXT}
+            The personal care industry is built on Clients and Client relationships. Our mission is to
+            strengthen the connection between salons and their clients - by rewarding loyalty, encouraging
+            referrals, and turning everyday relationships into lasting opportunity.
+            <br />
+            <strong className="font-semibold text-neutral-900">
+              VMB focuses on what actually drives growth: CLIENTS.
+            </strong>
           </p>
         </div>
       </section>
