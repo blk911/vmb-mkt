@@ -257,12 +257,10 @@ export default function SalonCashFlowComparison() {
             <div className="text-[15px] leading-7 tabular-nums">100%</div>
           </div>
 
-          <div className="mt-6 grid grid-cols-[1fr_auto] items-end gap-x-6">
-            <div className="border-t-2 border-dashed border-neutral-700 pt-3 text-[15px] leading-7">
-              Operating Expenses
-            </div>
-            <div className="border-t-2 border-dashed border-neutral-700 pt-3 text-right text-[15px] leading-7">
-              &nbsp;
+          <div className="mt-6 border-t border-neutral-300 pt-3">
+            <div className="grid grid-cols-[1fr_auto] items-end gap-x-6">
+              <div className="text-[15px] leading-7">Operating Expenses</div>
+              <div className="text-right text-[15px] leading-7">&nbsp;</div>
             </div>
           </div>
 
