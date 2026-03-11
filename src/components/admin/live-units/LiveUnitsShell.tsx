@@ -44,25 +44,31 @@ function SectionCard({
   title,
   children,
   className,
+  defaultOpen = true,
 }: {
   title: string;
   children: React.ReactNode;
   className?: string;
+  defaultOpen?: boolean;
 }) {
   return (
-    <section
+    <details
+      open={defaultOpen}
       className={cx(
-        "rounded-2xl border border-slate-200 bg-white shadow-sm",
+        "group rounded-2xl border border-slate-200 bg-white shadow-sm",
         className
       )}
     >
-      <div className="border-b border-slate-100 px-4 py-3">
+      <summary className="flex cursor-pointer list-none items-center justify-between border-b border-slate-100 px-4 py-3">
         <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
           {title}
         </h3>
-      </div>
+        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400 transition group-open:rotate-180">
+          Open
+        </span>
+      </summary>
       <div className="p-4">{children}</div>
-    </section>
+    </details>
   );
 }
 
@@ -70,14 +76,14 @@ function MetricTile({ label, value, tone = "default" }: MetricCard) {
   return (
     <div
       className={cx(
-        "min-h-[74px] rounded-xl border px-3 py-3 shadow-sm",
+        "w-[16ch] rounded-xl border px-2.5 py-2 shadow-sm",
         metricTone(tone)
       )}
     >
       <div className="text-[10px] font-semibold uppercase tracking-[0.12em] opacity-75">
         {label}
       </div>
-      <div className="mt-1 text-[28px] font-semibold leading-none tracking-tight">
+      <div className="mt-1 text-[22px] font-semibold leading-none tracking-tight">
         {value}
       </div>
     </div>
@@ -110,8 +116,8 @@ export default function LiveUnitsShell({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(760px,1fr)_340px]">
-        <div className="space-y-5">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(860px,1fr)_16ch]">
+        <div className="space-y-4">
           {(quickViews || bulkActions) && (
             <SectionCard title="Queue Controls">
               <div className="space-y-4">
@@ -136,11 +142,11 @@ export default function LiveUnitsShell({
             </SectionCard>
           )}
 
-          {primaryFilters ? (
-            <SectionCard title="Review Filters">{primaryFilters}</SectionCard>
-          ) : null}
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+            {primaryFilters ? (
+              <SectionCard title="Review Filters">{primaryFilters}</SectionCard>
+            ) : null}
 
-          <div className="grid grid-cols-1 gap-5 2xl:grid-cols-2">
             {categoryFilters ? (
               <SectionCard title="Category / Signal">{categoryFilters}</SectionCard>
             ) : null}
@@ -151,9 +157,9 @@ export default function LiveUnitsShell({
           </div>
         </div>
 
-        <aside className="space-y-4">
+        <aside className="space-y-3 xl:justify-self-end">
           <SectionCard title="Queue Snapshot">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1">
+            <div className="flex flex-col gap-2">
               {metrics.map((metric) => (
                 <MetricTile
                   key={metric.label}
@@ -167,7 +173,7 @@ export default function LiveUnitsShell({
         </aside>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-5">
         <SectionCard title="Results">{results}</SectionCard>
       </div>
     </div>

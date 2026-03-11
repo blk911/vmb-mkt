@@ -14,12 +14,12 @@ export function FilterGrid({
   cols?: "2" | "3" | "4";
 }) {
   const map = {
-    "2": "grid-cols-1 md:grid-cols-2",
-    "3": "grid-cols-1 md:grid-cols-2 xl:grid-cols-3",
-    "4": "grid-cols-1 md:grid-cols-2 xl:grid-cols-4",
+    "2": "grid-cols-1",
+    "3": "grid-cols-1",
+    "4": "grid-cols-1 md:grid-cols-2",
   };
 
-  return <div className={cx("grid gap-4", map[cols])}>{children}</div>;
+  return <div className={cx("grid gap-3", map[cols])}>{children}</div>;
 }
 
 export function FilterField({
@@ -32,15 +32,15 @@ export function FilterField({
   width?: "sm" | "md" | "lg" | "full";
 }) {
   const widthMap = {
-    sm: "max-w-[140px]",
-    md: "max-w-[260px]",
-    lg: "max-w-[320px]",
+    sm: "max-w-[12ch]",
+    md: "max-w-[18ch]",
+    lg: "max-w-[22ch]",
     full: "max-w-none",
   };
 
   return (
     <div className={cx("min-w-0", widthMap[width])}>
-      <label className="mb-1.5 block text-xs font-medium text-slate-500">
+      <label className="mb-1 block text-[11px] font-medium text-slate-500">
         {label}
       </label>
       {children}
@@ -62,9 +62,9 @@ export function PillButton({
       type="button"
       onClick={onClick}
       className={cx(
-        "inline-flex h-9 items-center rounded-full border px-3 text-sm font-medium transition",
+        "inline-flex h-8 items-center rounded-md border px-2.5 text-[13px] font-medium transition",
         active
-          ? "border-blue-200 bg-blue-50 text-blue-700"
+          ? "border-indigo-300 bg-indigo-50 text-indigo-700"
           : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
       )}
     >
@@ -94,7 +94,7 @@ export function ActionButton({
       type="button"
       onClick={onClick}
       className={cx(
-        "inline-flex h-9 items-center rounded-full border px-3 text-sm font-medium transition",
+        "inline-flex h-8 items-center rounded-md border px-2.5 text-[13px] font-medium transition",
         toneMap[tone]
       )}
     >

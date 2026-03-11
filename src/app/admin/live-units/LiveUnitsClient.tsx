@@ -990,7 +990,7 @@ export default function LiveUnitsClient({
                   setActivePreset(null);
                   setConfidence(event.target.value as "all" | Confidence);
                 }}
-                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none ring-0"
+                className="h-9 w-full rounded-md border border-slate-300 bg-white px-2.5 text-[13px] outline-none ring-0"
               >
                 {CONFIDENCE_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -1007,7 +1007,7 @@ export default function LiveUnitsClient({
                   setActivePreset(null);
                   setReviewFilter(event.target.value as ReviewFilter);
                 }}
-                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none ring-0"
+                className="h-9 w-full rounded-md border border-slate-300 bg-white px-2.5 text-[13px] outline-none ring-0"
               >
                 {REVIEW_FILTER_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -1024,7 +1024,7 @@ export default function LiveUnitsClient({
                   setActivePreset(null);
                   setTuningFilter(event.target.value as TuningFilter);
                 }}
-                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none ring-0"
+                className="h-9 w-full rounded-md border border-slate-300 bg-white px-2.5 text-[13px] outline-none ring-0"
               >
                 {TUNING_FILTER_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -1044,7 +1044,7 @@ export default function LiveUnitsClient({
                   setActivePreset(null);
                   setSignalMix(event.target.value);
                 }}
-                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
+                className="h-9 w-full rounded-md border border-slate-300 bg-white px-2.5 text-[13px]"
               >
                 {signalMixOptions.map((option) => (
                   <option key={option} value={option}>
@@ -1061,7 +1061,7 @@ export default function LiveUnitsClient({
                   setActivePreset(null);
                   setCategory(event.target.value);
                 }}
-                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
+                className="h-9 w-full rounded-md border border-slate-300 bg-white px-2.5 text-[13px]"
               >
                 {categoryOptions.map((option) => (
                   <option key={option} value={option}>
@@ -1078,7 +1078,7 @@ export default function LiveUnitsClient({
                   setActivePreset(null);
                   setSubtypeFilter(event.target.value as SubtypeFilter);
                 }}
-                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
+                className="h-9 w-full rounded-md border border-slate-300 bg-white px-2.5 text-[13px]"
               >
                 {SUBTYPE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -1098,7 +1098,7 @@ export default function LiveUnitsClient({
                   setActivePreset(null);
                   setZone(event.target.value);
                 }}
-                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
+                className="h-9 w-full rounded-md border border-slate-300 bg-white px-2.5 text-[13px]"
               >
                 {zoneOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -1115,7 +1115,7 @@ export default function LiveUnitsClient({
                   setActivePreset(null);
                   setCity(event.target.value);
                 }}
-                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
+                className="h-9 w-full rounded-md border border-slate-300 bg-white px-2.5 text-[13px]"
               >
                 {cityOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -1132,7 +1132,7 @@ export default function LiveUnitsClient({
                   setActivePreset(null);
                   setZipQuery(event.target.value);
                 }}
-                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
+                className="h-9 w-full rounded-md border border-slate-300 bg-white px-2.5 text-[13px]"
                 placeholder="80206"
               />
             </FilterField>
@@ -1144,7 +1144,7 @@ export default function LiveUnitsClient({
                   setActivePreset(null);
                   setScoreBand(event.target.value as ScoreBand);
                 }}
-                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
+                className="h-9 w-full rounded-md border border-slate-300 bg-white px-2.5 text-[13px]"
               >
                 {SCORE_BANDS.map((option) => (
                   <option key={option} value={option}>
@@ -1161,7 +1161,7 @@ export default function LiveUnitsClient({
                   setActivePreset(null);
                   setSortKey(event.target.value as SortKey);
                 }}
-                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
+                className="h-9 w-full rounded-md border border-slate-300 bg-white px-2.5 text-[13px]"
               >
                 {SORT_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
