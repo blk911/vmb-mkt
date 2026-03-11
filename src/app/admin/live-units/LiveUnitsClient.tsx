@@ -898,7 +898,7 @@ export default function LiveUnitsClient({
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 p-4 md:p-5">
       <div>
         <h1 className="text-xl font-semibold text-neutral-900">Live Units</h1>
         <p className="mt-1 text-sm text-neutral-600">
@@ -926,287 +926,293 @@ export default function LiveUnitsClient({
         </div>
       </div>
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-        {[
-          { label: "Total Live Units", value: counts.total },
-          { label: "Approved", value: reviewCounts.approved },
-          { label: "Rejected", value: reviewCounts.rejected },
-          { label: "Watch", value: reviewCounts.watch },
-          { label: "Candidate Review", value: counts.candidate_review },
-          { label: "Needs Research", value: reviewCounts.needs_research },
-          { label: "Ambiguous", value: counts.ambiguous },
-        ].map((item) => (
-          <div key={item.label} className="rounded-2xl border border-neutral-200 bg-white px-4 py-3 shadow-sm">
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">{item.label}</div>
-            <div className="mt-1 text-2xl font-semibold text-neutral-900">{item.value}</div>
-          </div>
-        ))}
-      </section>
-
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-        {[
-          { label: "Reviewed", value: reviewCounts.reviewed },
-          { label: "Unreviewed", value: reviewCounts.unreviewed },
-          { label: "Reviewed %", value: `${reviewedPercent}%` },
-          { label: "Reviewed of Total", value: `${reviewCounts.reviewed}/${rows.length}` },
-          { label: "Boosted by Feedback", value: counts.boosted },
-          { label: "Downgraded by Feedback", value: counts.downgraded },
-        ].map((item) => (
-          <div key={item.label} className="rounded-2xl border border-neutral-200 bg-white px-4 py-3 shadow-sm">
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">{item.label}</div>
-            <div className="mt-1 text-2xl font-semibold text-neutral-900">{item.value}</div>
-          </div>
-        ))}
-      </section>
-
-      <section className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
-        {selectedIds.length ? (
-          <div className="mb-4 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="text-sm font-medium text-neutral-800">
-                {selectedIds.length} selected · {selectedVisibleIds.length} visible in current filter
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedIds([])}
-                className="rounded-full border border-neutral-300 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500"
-              >
-                Clear selection
-              </button>
+      <section className="rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm">
+        <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-10">
+          {[
+            { label: "Total Live Units", value: counts.total },
+            { label: "Reviewed", value: reviewCounts.reviewed },
+            { label: "Unreviewed", value: reviewCounts.unreviewed },
+            { label: "Approved", value: reviewCounts.approved },
+            { label: "Candidate Review", value: counts.candidate_review },
+            { label: "Ambiguous", value: counts.ambiguous },
+            { label: "Watch", value: reviewCounts.watch },
+            { label: "Needs Research", value: reviewCounts.needs_research },
+            { label: "Boosted", value: counts.boosted },
+            { label: "Downgraded", value: counts.downgraded },
+          ].map((item) => (
+            <div key={item.label} className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2">
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">{item.label}</div>
+              <div className="mt-1 text-xl font-semibold leading-none text-neutral-900">{item.value}</div>
             </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {(["approved", "rejected", "watch", "needs_research", "clear"] as BulkActionKind[]).map((action) => (
-                <button
-                  key={action}
-                  type="button"
-                  onClick={() => void applyReviewAction(selectedIds, action, "selected")}
-                  disabled={!!savingBulkAction}
-                  className="rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
-                >
-                  {actionLabel(action, "selected")}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : null}
-
-        <div className="flex flex-wrap gap-2 border-b border-neutral-200 pb-4">
-          {PRESETS.map((preset) => (
-            <button
-              key={preset.id}
-              type="button"
-              onClick={() => applyPreset(preset.id)}
-              className="rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500"
-            >
-              {preset.label}
-            </button>
           ))}
-          {visibleIds.length ? (
-            <>
-              <span className="mx-1 h-6 w-px self-center bg-neutral-200" />
-              {BULK_VISIBLE_ACTIONS.map((action) => (
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm">
+        <div className="space-y-3">
+          <div>
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Quick Views</div>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {PRESETS.map((preset) => (
                 <button
-                  key={action}
+                  key={preset.id}
                   type="button"
-                  onClick={() => void applyReviewAction(visibleIds, action, "visible")}
-                  disabled={!!savingBulkAction}
-                  className="rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
+                  onClick={() => applyPreset(preset.id)}
+                  className="rounded-full border border-neutral-300 bg-neutral-50 px-2.5 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500 hover:bg-white"
                 >
-                  {actionLabel(action, "visible")}
+                  {preset.label}
                 </button>
               ))}
-            </>
-          ) : null}
-        </div>
-
-        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-          <label>
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">Confidence</span>
-            <select
-              value={confidence}
-              onChange={(event) => setConfidence(event.target.value as "all" | Confidence)}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-500"
-            >
-              {CONFIDENCE_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option === "all" ? "All confidence" : option}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">Signal Mix</span>
-            <select
-              value={signalMix}
-              onChange={(event) => setSignalMix(event.target.value)}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-500"
-            >
-              {signalMixOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option === "all" ? "All signal mixes" : formatSignalMix(option)}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">Category</span>
-            <select
-              value={category}
-              onChange={(event) => setCategory(event.target.value)}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-500"
-            >
-              {categoryOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option === "all" ? "All categories" : option}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">Zone</span>
-            <select
-              value={zone}
-              onChange={(event) => setZone(event.target.value)}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-500"
-            >
-              {zoneOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">Review Status</span>
-            <select
-              value={reviewFilter}
-              onChange={(event) => setReviewFilter(event.target.value as ReviewFilter)}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-500"
-            >
-              {REVIEW_FILTER_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option === "all" ? "All review states" : formatReviewLabel(option)}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-          <label>
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">City</span>
-            <select
-              value={city}
-              onChange={(event) => setCity(event.target.value)}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-500"
-            >
-              {cityOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">Zip</span>
-            <input
-              value={zipQuery}
-              onChange={(event) => setZipQuery(event.target.value)}
-              placeholder="80206"
-              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition placeholder:text-neutral-400 focus:border-neutral-500"
-            />
-          </label>
-
-          <label>
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">Score Band</span>
-            <select
-              value={scoreBand}
-              onChange={(event) => setScoreBand(event.target.value as ScoreBand)}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-500"
-            >
-              {SCORE_BANDS.map((option) => (
-                <option key={option} value={option}>
-                  {option === "all" ? "All score bands" : option}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">Subtype</span>
-            <select
-              value={subtypeFilter}
-              onChange={(event) => setSubtypeFilter(event.target.value as SubtypeFilter)}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-500"
-            >
-              {SUBTYPE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">Tuning State</span>
-            <select
-              value={tuningFilter}
-              onChange={(event) => setTuningFilter(event.target.value as TuningFilter)}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-500"
-            >
-              {TUNING_FILTER_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">Sort</span>
-            <select
-              value={sortKey}
-              onChange={(event) => setSortKey(event.target.value as SortKey)}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-500"
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <div className="mt-3 text-sm text-neutral-600">Showing {filteredRows.length} rows</div>
-        {visibleIds.length ? (
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-neutral-500">
-            <label className="inline-flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={allVisibleSelected}
-                ref={(node) => {
-                  if (node) node.indeterminate = someVisibleSelected;
-                }}
-                onChange={(event) => toggleVisibleSelection(event.target.checked)}
-              />
-              <span>Select all visible rows</span>
-            </label>
-            <span>Selected: {selectedIds.length}</span>
+            </div>
           </div>
-        ) : null}
-        {saveError ? <div className="mt-2 text-sm text-rose-600">{saveError}</div> : null}
+
+          <div className="border-t border-neutral-200 pt-3">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Bulk Actions</div>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {visibleIds.length
+                ? BULK_VISIBLE_ACTIONS.map((action) => (
+                    <button
+                      key={action}
+                      type="button"
+                      onClick={() => void applyReviewAction(visibleIds, action, "visible")}
+                      disabled={!!savingBulkAction}
+                      className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
+                    >
+                      {actionLabel(action, "visible")}
+                    </button>
+                  ))
+                : (
+                  <span className="text-xs text-neutral-500">Visible-row actions appear when results are loaded.</span>
+                )}
+            </div>
+          </div>
+
+          {selectedIds.length ? (
+            <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-xs font-medium text-neutral-800">
+                  {selectedIds.length} selected · {selectedVisibleIds.length} visible in current filter
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedIds([])}
+                  className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500"
+                >
+                  Clear selection
+                </button>
+              </div>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {(["approved", "rejected", "watch", "needs_research", "clear"] as BulkActionKind[]).map((action) => (
+                  <button
+                    key={action}
+                    type="button"
+                    onClick={() => void applyReviewAction(selectedIds, action, "selected")}
+                    disabled={!!savingBulkAction}
+                    className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
+                  >
+                    {actionLabel(action, "selected")}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+            <div className="grid gap-3 xl:grid-cols-4">
+              <div className="space-y-2">
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Review / Confidence</div>
+                <label className="block">
+                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Confidence</span>
+                  <select
+                    value={confidence}
+                    onChange={(event) => setConfidence(event.target.value as "all" | Confidence)}
+                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
+                  >
+                    {CONFIDENCE_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option === "all" ? "All confidence" : option}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Review Status</span>
+                  <select
+                    value={reviewFilter}
+                    onChange={(event) => setReviewFilter(event.target.value as ReviewFilter)}
+                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
+                  >
+                    {REVIEW_FILTER_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option === "all" ? "All review states" : formatReviewLabel(option)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Tuning State</span>
+                  <select
+                    value={tuningFilter}
+                    onChange={(event) => setTuningFilter(event.target.value as TuningFilter)}
+                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
+                  >
+                    {TUNING_FILTER_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Category / Signal</div>
+                <label className="block">
+                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Signal Mix</span>
+                  <select
+                    value={signalMix}
+                    onChange={(event) => setSignalMix(event.target.value)}
+                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
+                  >
+                    {signalMixOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option === "all" ? "All signal mixes" : formatSignalMix(option)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Category</span>
+                  <select
+                    value={category}
+                    onChange={(event) => setCategory(event.target.value)}
+                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
+                  >
+                    {categoryOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option === "all" ? "All categories" : option}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Subtype</span>
+                  <select
+                    value={subtypeFilter}
+                    onChange={(event) => setSubtypeFilter(event.target.value as SubtypeFilter)}
+                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
+                  >
+                    {SUBTYPE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Geography</div>
+                <label className="block">
+                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Zone</span>
+                  <select
+                    value={zone}
+                    onChange={(event) => setZone(event.target.value)}
+                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
+                  >
+                    {zoneOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">City</span>
+                  <select
+                    value={city}
+                    onChange={(event) => setCity(event.target.value)}
+                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
+                  >
+                    {cityOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Zip</span>
+                  <input
+                    value={zipQuery}
+                    onChange={(event) => setZipQuery(event.target.value)}
+                    placeholder="80206"
+                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition placeholder:text-neutral-400 focus:border-neutral-500"
+                  />
+                </label>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Score / Sort</div>
+                <label className="block">
+                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Score Band</span>
+                  <select
+                    value={scoreBand}
+                    onChange={(event) => setScoreBand(event.target.value as ScoreBand)}
+                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
+                  >
+                    {SCORE_BANDS.map((option) => (
+                      <option key={option} value={option}>
+                        {option === "all" ? "All score bands" : option}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Sort</span>
+                  <select
+                    value={sortKey}
+                    onChange={(event) => setSortKey(event.target.value as SortKey)}
+                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
+                  >
+                    {SORT_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-neutral-200 pt-3 text-xs text-neutral-500">
+              <div className="flex flex-wrap items-center gap-3">
+                <span>Showing {filteredRows.length} rows</span>
+                {visibleIds.length ? (
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={allVisibleSelected}
+                      ref={(node) => {
+                        if (node) node.indeterminate = someVisibleSelected;
+                      }}
+                      onChange={(event) => toggleVisibleSelection(event.target.checked)}
+                    />
+                    <span>Select all visible rows</span>
+                  </label>
+                ) : null}
+              </div>
+              <span>Selected: {selectedIds.length}</span>
+            </div>
+            {saveError ? <div className="mt-2 text-sm text-rose-600">{saveError}</div> : null}
+          </div>
+        </div>
       </section>
 
       <section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="min-w-[1680px] table-fixed divide-y divide-neutral-200 text-sm">
-            <thead className="bg-neutral-50">
+            <thead className="sticky top-0 z-10 bg-neutral-50">
               <tr className="text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
                 <th className="px-3 py-2.5">
                   <input
