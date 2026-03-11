@@ -55,7 +55,7 @@ function SectionCard({
     <details
       open={defaultOpen}
       className={cx(
-        "group rounded-2xl border border-slate-200 bg-white shadow-sm",
+        "group h-fit self-start rounded-2xl border border-slate-200 bg-white shadow-sm",
         className
       )}
     >
@@ -143,7 +143,7 @@ export default function LiveUnitsShell({
             </SectionCard>
           )}
 
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+          <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-3">
             {primaryFilters ? (
               <SectionCard title="Review Filters">{primaryFilters}</SectionCard>
             ) : null}
@@ -158,7 +158,7 @@ export default function LiveUnitsShell({
           </div>
         </div>
 
-        <aside className="space-y-3 xl:justify-self-end">
+        <aside className="space-y-3 self-start xl:justify-self-end">
           <SectionCard title="Queue Snapshot">
             <div className="flex flex-col gap-2">
               {metrics.map((metric) => (
