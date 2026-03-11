@@ -50,6 +50,11 @@ type LiveUnitRow = {
     score_delta?: number;
     explanation?: string;
   };
+  shop_license?: string | null;
+  shop_license_name?: string | null;
+  shop_distance?: number | null;
+  association_confidence?: "strong" | "likely" | "weak" | null;
+  tech_count_nearby?: number;
 };
 
 type ReviewDecision = {
@@ -63,7 +68,7 @@ type BulkActionKind = ReviewStatus | "clear";
 
 type Props = {
   rows: LiveUnitRow[];
-  source: "tuned" | "base";
+  source: "shop_context" | "tuned" | "base";
   initialReviewState: Record<string, ReviewDecision>;
 };
 
@@ -498,10 +503,18 @@ export default function LiveUnitsClient({ rows, source, initialReviewState }: Pr
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
           <span
             className={`inline-flex rounded-full px-2.5 py-1 font-semibold ${
-              source === "tuned" ? "bg-emerald-100 text-emerald-800" : "bg-neutral-100 text-neutral-700"
+              source === "shop_context"
+                ? "bg-violet-100 text-violet-800"
+                : source === "tuned"
+                  ? "bg-emerald-100 text-emerald-800"
+                  : "bg-neutral-100 text-neutral-700"
             }`}
           >
-            {source === "tuned" ? "Using tuned artifact" : "Using base artifact fallback"}
+            {source === "shop_context"
+              ? "Using shop-context artifact"
+              : source === "tuned"
+                ? "Using tuned artifact"
+                : "Using base artifact fallback"}
           </span>
           <span className="inline-flex rounded-full bg-neutral-100 px-2.5 py-1 font-semibold text-neutral-700">
             Default sort: highest tuned score
@@ -810,6 +823,9 @@ export default function LiveUnitsClient({ rows, source, initialReviewState }: Pr
                 <th className="px-4 py-3">Zone</th>
                 <th className="px-4 py-3">City</th>
                 <th className="px-4 py-3">Zip</th>
+                <th className="px-4 py-3">Nearby Shop License</th>
+                <th className="px-4 py-3">Distance</th>
+                <th className="px-4 py-3">Nearby Techs</th>
                 <th className="px-4 py-3">Original Score</th>
                 <th className="px-4 py-3">Tuned Score</th>
                 <th className="px-4 py-3">Feedback</th>
@@ -849,6 +865,31 @@ export default function LiveUnitsClient({ rows, source, initialReviewState }: Pr
                     <td className="px-4 py-3 text-neutral-700">{getZoneName(row)}</td>
                     <td className="px-4 py-3 text-neutral-700">{row.city || "-"}</td>
                     <td className="px-4 py-3 text-neutral-700">{row.zip || "-"}</td>
+                    <td className="px-4 py-3 text-neutral-700">
+                      {row.shop_license_name ? (
+                        <div className="space-y-1">
+                          <div className="font-medium text-neutral-900">{row.shop_license_name}</div>
+                          <div className="text-xs text-neutral-500">{row.shop_license}</div>
+                        </div>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-neutral-700">
+                      {typeof row.shop_distance === "number" ? (
+                        <div className="space-y-1">
+                          <div>{row.shop_distance.toFixed(2)} mi</div>
+                          {row.association_confidence ? (
+                            <span className="inline-flex rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-semibold text-neutral-700">
+                              {row.association_confidence}
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-neutral-700">{row.tech_count_nearby ?? 0}</td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${scoreBadgeClass(row.entity_score)}`}>
                         {row.entity_score}
@@ -933,7 +974,7 @@ export default function LiveUnitsClient({ rows, source, initialReviewState }: Pr
               })}
               {filteredRows.length === 0 ? (
                 <tr>
-                  <td colSpan={14} className="px-4 py-8 text-center text-sm text-neutral-500">
+                  <td colSpan={17} className="px-4 py-8 text-center text-sm text-neutral-500">
                     No live units match the current review filters.
                   </td>
                 </tr>

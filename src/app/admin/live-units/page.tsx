@@ -28,6 +28,11 @@ type LiveUnitRow = {
     score_delta?: number;
     explanation?: string;
   };
+  shop_license?: string | null;
+  shop_license_name?: string | null;
+  shop_distance?: number | null;
+  association_confidence?: "strong" | "likely" | "weak" | null;
+  tech_count_nearby?: number;
 };
 
 type LiveUnitsFile = {
@@ -38,15 +43,21 @@ type ReviewStateMap = Record<string, ReviewDecision>;
 
 type LoadedLiveUnits = {
   rows: LiveUnitRow[];
-  source: "tuned" | "base";
+  source: "shop_context" | "tuned" | "base";
 };
 
 function loadLiveUnits(): LoadedLiveUnits {
+  const shopContextPath = path.join(process.cwd(), "data", "markets", "beauty_live_units_shop_context.v1.json");
   const tunedPath = path.join(process.cwd(), "data", "markets", "beauty_live_units_tuned.v1.json");
   const basePath = path.join(process.cwd(), "data", "markets", "beauty_live_units.v1.json");
 
-  const filePath = existsSync(tunedPath) ? tunedPath : basePath;
-  const source: LoadedLiveUnits["source"] = filePath === tunedPath ? "tuned" : "base";
+  const filePath = existsSync(shopContextPath)
+    ? shopContextPath
+    : existsSync(tunedPath)
+      ? tunedPath
+      : basePath;
+  const source: LoadedLiveUnits["source"] =
+    filePath === shopContextPath ? "shop_context" : filePath === tunedPath ? "tuned" : "base";
   if (!existsSync(filePath)) return { rows: [], source };
   const parsed = JSON.parse(readFileSync(filePath, "utf8")) as LiveUnitsFile;
   return {

@@ -15,7 +15,10 @@
     "markets:online-candidates": "ts-node ./scripts/build_beauty_online_identity_candidates.v1.ts",
     "markets:live-units": "ts-node ./scripts/build_beauty_live_units.v1.ts",
     "markets:live-unit-review-outputs": "ts-node ./scripts/build_live_unit_review_outputs.v1.ts",
-    "markets:feedback-rules": "ts-node ./scripts/build_match_feedback_rules.v1.ts"
+    "markets:feedback-rules": "ts-node ./scripts/build_match_feedback_rules.v1.ts",
+    "markets:shop-index": "ts-node ./scripts/build_dora_shop_index.v1.ts",
+    "markets:shop-anchor-map": "ts-node ./scripts/build_shop_anchor_map.v1.ts",
+    "markets:live-unit-shop-context": "ts-node ./scripts/build_live_unit_shop_context.v1.ts"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
