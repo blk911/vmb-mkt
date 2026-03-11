@@ -63,8 +63,9 @@ function SectionCard({
         <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
           {title}
         </h3>
-        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400 transition group-open:rotate-180">
-          Open
+        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+          <span className="group-open:hidden">Open</span>
+          <span className="hidden group-open:inline">Close</span>
         </span>
       </summary>
       <div className="p-4">{children}</div>
