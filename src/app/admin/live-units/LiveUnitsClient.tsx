@@ -43,11 +43,17 @@ type LiveUnitRow = {
   explanation: string;
   raw_snippets?: {
     google?: {
+      id?: string;
+      name?: string;
+      address?: string;
+      website_domain?: string;
       zone_id?: string;
       zone_name?: string;
     };
     dora?: {
+      address_key?: string;
       license_row_ids?: string[];
+      raw_names?: string[];
     };
   };
   feedback_tuning?: {
@@ -272,10 +278,11 @@ function reviewBadgeClass(status: ReviewStatus | "unreviewed") {
   return "bg-neutral-100 text-neutral-600";
 }
 
-function techAssociationBadgeClass(status: "confirmed" | "likely" | "nearby" | "rejected" | "watch" | "unreviewed") {
+function techAssociationBadgeClass(status: "confirmed" | "likely" | "nearby" | "conflicting" | "rejected" | "watch" | "unreviewed") {
   if (status === "confirmed") return "bg-emerald-100 text-emerald-800";
   if (status === "likely") return "bg-sky-100 text-sky-800";
   if (status === "nearby") return "bg-neutral-100 text-neutral-700";
+  if (status === "conflicting") return "bg-amber-100 text-amber-800";
   if (status === "rejected") return "bg-rose-100 text-rose-800";
   if (status === "watch") return "bg-amber-100 text-amber-800";
   return "bg-neutral-100 text-neutral-600";
@@ -327,6 +334,82 @@ function techReviewKey(entityId: string, techId: string) {
   return `${entityId}::${techId}`;
 }
 
+function normalizeName(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function nameTokens(value: string) {
+  return normalizeName(value)
+    .split(" ")
+    .filter((token) => token.length >= 3 && !["salon", "studio", "spa", "llc", "inc", "bar", "shop"].includes(token));
+}
+
+function tokenOverlap(a: string, b: string) {
+  const aTokens = new Set(nameTokens(a));
+  const bTokens = new Set(nameTokens(b));
+  if (!aTokens.size || !bTokens.size) return 0;
+  let overlap = 0;
+  for (const token of aTokens) {
+    if (bTokens.has(token)) overlap += 1;
+  }
+  return overlap;
+}
+
+function formatAddressKey(value?: string | null) {
+  if (!value) return null;
+  return value
+    .split("|")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .join(", ");
+}
+
+function buildShopAddress(shop?: ShopIndexRow | null) {
+  if (!shop) return null;
+  return [shop.address, shop.city, shop.state, shop.zip].filter(Boolean).join(", ");
+}
+
+function categoryCompatibility(entityCategory: string, techCategory: string) {
+  if (entityCategory === techCategory) return 2;
+  if (entityCategory === "beauty") return 1;
+  if (entityCategory === "spa" && techCategory === "esthe") return 1;
+  if (entityCategory === "hair" && techCategory === "beauty") return 1;
+  return 0;
+}
+
+function googleAddressFor(row: LiveUnitRow) {
+  return row.raw_snippets?.google?.address || null;
+}
+
+function doraEvidenceTier(row: LiveUnitRow) {
+  const linked = linkedDoraCount(row);
+  if (linked > 0 && row.shop_license) return 3;
+  if (linked > 0 || row.dora_license_id) return 2;
+  if (row.shop_license || (row.tech_count_nearby || 0) > 0 || row.signal_mix.includes("dora")) return 1;
+  return 0;
+}
+
+function renderDoraTierDots(tier: number) {
+  return [0, 1, 2]
+    .map((index) => (index < tier ? "●" : "○"))
+    .join("");
+}
+
+function signalStatusFor(row: LiveUnitRow, review?: ReviewDecision) {
+  const confidence = getEffectiveConfidence(row);
+  if (confidence === "strong" && review?.review_status === "approved") {
+    return { key: "confirmed", color: "bg-red-600", label: "Confirmed" };
+  }
+  if (confidence === "likely" || confidence === "strong") {
+    return { key: "likely", color: "bg-orange-500", label: "Likely" };
+  }
+  return { key: "review", color: "bg-yellow-400", label: "Review" };
+}
+
 export default function LiveUnitsClient({
   rows,
   source,
@@ -352,6 +435,7 @@ export default function LiveUnitsClient({
   );
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [openEntityId, setOpenEntityId] = useState<string | null>(null);
+  const [openSignalPopoverId, setOpenSignalPopoverId] = useState<string | null>(null);
   const [savingLiveUnitId, setSavingLiveUnitId] = useState<string | null>(null);
   const [savingBulkAction, setSavingBulkAction] = useState<string | null>(null);
   const [savingTechActionKey, setSavingTechActionKey] = useState<string | null>(null);
@@ -466,11 +550,50 @@ export default function LiveUnitsClient({
     () => new Map(shopIndex.map((shop) => [shop.license_id, shop] as const)),
     [shopIndex]
   );
+  const selectedEntityShop = useMemo(
+    () => (selectedEntity?.shop_license ? shopByLicenseId.get(selectedEntity.shop_license) || null : null),
+    [selectedEntity, shopByLicenseId]
+  );
+  const selectedEntityAddresses = useMemo(() => {
+    if (!selectedEntity) return [];
+    return [
+      {
+        label: "Salon / entity address",
+        value: googleAddressFor(selectedEntity) || formatAddressKey(selectedEntity.raw_snippets?.dora?.address_key) || buildShopAddress(selectedEntityShop),
+      },
+      {
+        label: "DORA shop registration address",
+        value: buildShopAddress(selectedEntityShop),
+      },
+      {
+        label: "Matched evidence address",
+        value: formatAddressKey(selectedEntity.raw_snippets?.dora?.address_key),
+      },
+    ].filter((item) => item.value);
+  }, [selectedEntity, selectedEntityShop]);
+  const selectedEntitySignal = useMemo(
+    () => (selectedEntity ? signalStatusFor(selectedEntity, reviewState[selectedEntity.live_unit_id]) : null),
+    [reviewState, selectedEntity]
+  );
+  const peerEntitiesByShop = useMemo(() => {
+    const map = new Map<string, LiveUnitRow[]>();
+    for (const row of rows) {
+      if (!row.shop_license) continue;
+      if (!map.has(row.shop_license)) map.set(row.shop_license, []);
+      map.get(row.shop_license)!.push(row);
+    }
+    return map;
+  }, [rows]);
   const selectedEntityTechCandidates = useMemo(() => {
     if (!selectedEntity) return [];
 
     const entityId = entityIdFor(selectedEntity);
     const linkedDoraIds = new Set(selectedEntity.raw_snippets?.dora?.license_row_ids || []);
+    const selectedEntityShop = selectedEntity.shop_license ? shopByLicenseId.get(selectedEntity.shop_license) || null : null;
+    const selectedEntityEvidenceAddress = formatAddressKey(selectedEntity.raw_snippets?.dora?.address_key);
+    const sameShopPeers = selectedEntity.shop_license
+      ? (peerEntitiesByShop.get(selectedEntity.shop_license) || []).filter((row) => entityIdFor(row) !== entityId)
+      : [];
     const candidates = techAssociations
       .filter((tech) => {
         if (selectedEntity.shop_license && tech.shop_license_id === selectedEntity.shop_license) return true;
@@ -480,34 +603,131 @@ export default function LiveUnitsClient({
       .map((tech) => {
         const techId = tech.tech_row_id || tech.tech_license_id;
         const review = salonTechReviewState[techReviewKey(entityId, techId)];
+        const evidenceTags: string[] = [];
+        let score = 0;
+
+        if (selectedEntity.shop_license && tech.shop_license_id === selectedEntity.shop_license) {
+          score += 3;
+          evidenceTags.push("shop-linked");
+        }
+        if (linkedDoraIds.has(tech.tech_row_id)) {
+          score += 4;
+          evidenceTags.push("matched evidence");
+        }
+
+        const overlap = tokenOverlap(selectedEntity.name_display, tech.tech_name);
+        if (overlap > 0) {
+          score += 3;
+          evidenceTags.push("same-name match");
+        }
+
+        if (tech.distance_to_shop <= 0.05) {
+          score += 4;
+          evidenceTags.push("same building");
+        } else if (tech.distance_to_shop <= 0.2) {
+          score += 2;
+          evidenceTags.push("same complex");
+        } else {
+          score += 1;
+          evidenceTags.push("nearby");
+        }
+
+        const categoryScore = categoryCompatibility(selectedEntity.operational_category, tech.tech_category);
+        if (categoryScore > 0) {
+          score += categoryScore;
+          evidenceTags.push("category aligned");
+        }
+
+        if ((selectedEntity.zip || "") && selectedEntity.zip === tech.zip) {
+          score += 1;
+          evidenceTags.push("same zip");
+        }
+
+        if (tech.association_confidence === "strong") {
+          score += 2;
+          evidenceTags.push("address exact");
+        } else if (tech.association_confidence === "likely") {
+          score += 1;
+          evidenceTags.push("address near");
+        } else {
+          evidenceTags.push("address broad");
+        }
+
+        const competingSalon = sameShopPeers
+          .map((peer) => ({
+            peer,
+            overlap: tokenOverlap(peer.name_display, tech.tech_name),
+            categoryScore: categoryCompatibility(peer.operational_category, tech.tech_category),
+            peerScore: getEffectiveScore(peer),
+          }))
+          .filter((item) => item.overlap > overlap || item.categoryScore > categoryScore)
+          .sort((a, b) => b.peerScore - a.peerScore)[0];
+
+        if (competingSalon && competingSalon.peerScore >= getEffectiveScore(selectedEntity)) {
+          score -= 3;
+          evidenceTags.push("competing nearby salon");
+        }
+
+        const computedStatus =
+          linkedDoraIds.has(tech.tech_row_id) && overlap > 0 && tech.distance_to_shop <= 0.05
+            ? "confirmed"
+            : score >= 8
+              ? "likely"
+              : competingSalon
+                ? "conflicting"
+                : score >= 4
+                  ? "nearby"
+                  : "conflicting";
         const currentStatus =
-          review?.review_status ||
-          (tech.association_confidence === "strong" ? "likely" : tech.association_confidence === "likely" ? "likely" : "nearby");
+          review?.review_status === "confirmed"
+            ? "confirmed"
+            : review?.review_status === "rejected"
+              ? "rejected"
+              : review?.review_status === "watch"
+                ? "conflicting"
+                : computedStatus;
+
+        const techAddress = formatAddressKey(tech.address_key);
         return {
           ...tech,
           tech_id: techId,
           entity_id: entityId,
-          current_status: currentStatus as "confirmed" | "likely" | "nearby" | "rejected" | "watch" | "unreviewed",
+          current_status: currentStatus as "confirmed" | "likely" | "nearby" | "conflicting" | "rejected" | "watch" | "unreviewed",
           review,
-          evidence_summary:
-            linkedDoraIds.has(tech.tech_row_id)
-              ? "Linked through matched DORA evidence"
-              : tech.association_confidence === "strong"
-                ? "Same building as linked shop anchor"
-                : tech.association_confidence === "likely"
-                  ? "Same complex as linked shop anchor"
-                  : "Nearby cluster to linked shop anchor",
+          association_score: score,
+          evidence_tags: evidenceTags,
+          competing_salon_name: competingSalon?.peer.name_display || null,
+          evidence_summary: evidenceTags.join(" · "),
+          addresses: {
+            salon_entity: selectedEntityEvidenceAddress || buildShopAddress(selectedEntityShop),
+            shop_registration: buildShopAddress(shopByLicenseId.get(tech.shop_license_id) || null),
+            matched_evidence: selectedEntityEvidenceAddress,
+            tech_license: techAddress,
+          },
         };
       })
       .sort((a, b) => {
         const rank = (status: typeof a.current_status) =>
-          status === "confirmed" ? 5 : status === "likely" ? 4 : status === "nearby" ? 3 : status === "watch" ? 2 : status === "rejected" ? 1 : 0;
+          status === "confirmed"
+            ? 6
+            : status === "likely"
+              ? 5
+              : status === "nearby"
+                ? 4
+                : status === "conflicting"
+                  ? 3
+                  : status === "watch"
+                    ? 2
+                    : status === "rejected"
+                      ? 1
+                      : 0;
         if (rank(b.current_status) !== rank(a.current_status)) return rank(b.current_status) - rank(a.current_status);
+        if ((b.association_score || 0) !== (a.association_score || 0)) return (b.association_score || 0) - (a.association_score || 0);
         return a.distance_to_shop - b.distance_to_shop;
       });
 
     return Array.from(new Map(candidates.map((candidate) => [candidate.tech_id, candidate] as const)).values());
-  }, [openEntityId, salonTechReviewState, selectedEntity, techAssociations]);
+  }, [openEntityId, peerEntitiesByShop, rows, salonTechReviewState, selectedEntity, shopByLicenseId, techAssociations]);
 
   useEffect(() => {
     if (!openEntityId) return;
@@ -1001,9 +1221,6 @@ export default function LiveUnitsClient({
                 </th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Name</th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Category</th>
-                <th className="px-3 py-2.5 whitespace-nowrap">Confidence</th>
-                <th className="px-3 py-2.5 whitespace-nowrap">Review Status</th>
-                <th className="px-3 py-2.5 whitespace-nowrap">Signal Mix</th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Zone</th>
                 <th className="px-3 py-2.5 whitespace-nowrap">City</th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Zip</th>
@@ -1013,7 +1230,7 @@ export default function LiveUnitsClient({
                 <th className="px-3 py-2.5 whitespace-nowrap">Original Score</th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Tuned Score</th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Feedback</th>
-                <th className="px-3 py-2.5 whitespace-nowrap">Explanation</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Address</th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Actions</th>
               </tr>
             </thead>
@@ -1022,6 +1239,10 @@ export default function LiveUnitsClient({
                 const currentReview = reviewState[row.live_unit_id];
                 const currentStatus = currentReview?.review_status || "unreviewed";
                 const isSaving = savingLiveUnitId === row.live_unit_id;
+                const signalStatus = signalStatusFor(row, currentReview);
+                const googleAddress = googleAddressFor(row) || buildShopAddress(row.shop_license ? shopByLicenseId.get(row.shop_license) || null : null) || "-";
+                const linkedDoraIds = row.raw_snippets?.dora?.license_row_ids || [];
+                const signalPopoverOpen = openSignalPopoverId === row.live_unit_id;
 
                 return (
                   <tr
@@ -1038,35 +1259,59 @@ export default function LiveUnitsClient({
                         aria-label={`Select ${row.name_display}`}
                       />
                     </td>
-                    <td className="w-[220px] px-3 py-2 align-middle font-medium text-neutral-900">
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setOpenEntityId(entityIdFor(row));
-                        }}
-                        className="block max-w-full truncate text-left transition hover:text-sky-700"
-                        title={row.name_display}
-                      >
-                        {row.name_display}
-                      </button>
+                    <td className="w-[300px] px-3 py-2 align-middle font-medium text-neutral-900">
+                      <div className="relative flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setOpenSignalPopoverId((current) => (current === row.live_unit_id ? null : row.live_unit_id));
+                          }}
+                          className={`h-3 w-3 shrink-0 rounded-full ${signalStatus.color}`}
+                          aria-label={`Open signal details for ${row.name_display}`}
+                          title={signalStatus.label}
+                        />
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setOpenEntityId(entityIdFor(row));
+                          }}
+                          className="block min-w-0 flex-1 truncate text-left transition hover:text-sky-700"
+                          title={row.name_display}
+                        >
+                          {row.name_display}
+                        </button>
+                        <span className="shrink-0 text-xs font-semibold text-neutral-500">
+                          DORA {renderDoraTierDots(doraEvidenceTier(row))}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setOpenSignalPopoverId((current) => (current === row.live_unit_id ? null : row.live_unit_id));
+                          }}
+                          className="shrink-0 rounded-full border border-neutral-300 px-1.5 py-0.5 text-[11px] font-semibold text-neutral-600 transition hover:border-neutral-500"
+                          aria-label={`Open signal details for ${row.name_display}`}
+                        >
+                          ?
+                        </button>
+                        {signalPopoverOpen ? (
+                          <div className="absolute left-0 top-full z-20 mt-2 w-72 rounded-xl border border-neutral-200 bg-white p-3 shadow-xl">
+                            <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Signal Details</div>
+                            <div className="mt-2 space-y-1 text-sm text-neutral-700">
+                              <div>Signal mix: {formatSignalMix(row.signal_mix)}</div>
+                              <div>Tuned score: {getEffectiveScore(row)}</div>
+                              <div>Original score: {row.entity_score}</div>
+                              <div>Shop license ID: {row.shop_license || "none"}</div>
+                              <div>Linked DORA licenses: {linkedDoraIds.length ? linkedDoraIds.join(", ") : "none"}</div>
+                              <div>Match evidence: {row.explanation}</div>
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
                     </td>
                     <td className="px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{row.operational_category}</td>
-                    <td className="px-3 py-2 align-middle whitespace-nowrap">
-                      <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${confidenceBadgeClass(row.confidence)}`}>
-                        {getEffectiveConfidence(row)}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 align-middle whitespace-nowrap">
-                      <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${reviewBadgeClass(currentStatus)}`}>
-                        {formatReviewLabel(currentStatus)}
-                      </span>
-                    </td>
-                    <td className="w-[140px] px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">
-                      <span className="inline-flex rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-700">
-                        {formatSignalMix(row.signal_mix)}
-                      </span>
-                    </td>
                     <td className="w-[120px] px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{getZoneName(row)}</td>
                     <td className="w-[110px] px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{row.city || "-"}</td>
                     <td className="px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{row.zip || "-"}</td>
@@ -1120,19 +1365,8 @@ export default function LiveUnitsClient({
                       </div>
                     </td>
                     <td className="w-[280px] px-3 py-2 align-middle text-neutral-600">
-                      <div
-                        className="truncate text-sm leading-5"
-                        title={[
-                          row.explanation,
-                          row.feedback_tuning?.explanation,
-                          currentReview?.updated_at
-                            ? `Updated ${new Date(currentReview.updated_at).toLocaleString()}${currentReview.updated_by ? ` by ${currentReview.updated_by}` : ""}`
-                            : "",
-                        ]
-                          .filter(Boolean)
-                          .join("\n")}
-                      >
-                        {row.explanation}
+                      <div className="truncate text-sm leading-5" title={googleAddress}>
+                        {googleAddress}
                       </div>
                     </td>
                     <td className="w-[170px] px-3 py-2 align-middle">
@@ -1176,7 +1410,7 @@ export default function LiveUnitsClient({
               })}
               {filteredRows.length === 0 ? (
                 <tr>
-                  <td colSpan={17} className="px-4 py-8 text-center text-sm text-neutral-500">
+                  <td colSpan={14} className="px-4 py-8 text-center text-sm text-neutral-500">
                     No live units match the current review filters.
                   </td>
                 </tr>
@@ -1199,16 +1433,14 @@ export default function LiveUnitsClient({
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Salon Detail</div>
                 <h2 className="mt-1 text-lg font-semibold text-neutral-900">{selectedEntity.name_display}</h2>
-                <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                  <span className={`inline-flex rounded-full px-2.5 py-1 font-semibold ${confidenceBadgeClass(getEffectiveConfidence(selectedEntity))}`}>
-                    {getEffectiveConfidence(selectedEntity)}
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-neutral-600">
+                  <span className="inline-flex items-center gap-2">
+                    <span className={`h-3 w-3 rounded-full ${selectedEntitySignal?.color || "bg-yellow-400"}`} />
+                    <span className="font-semibold">{selectedEntitySignal?.label || "Review"}</span>
                   </span>
-                  <span className={`inline-flex rounded-full px-2.5 py-1 font-semibold ${reviewBadgeClass(reviewState[selectedEntity.live_unit_id]?.review_status || "unreviewed")}`}>
-                    {formatReviewLabel(reviewState[selectedEntity.live_unit_id]?.review_status || "unreviewed")}
-                  </span>
-                  <span className={`inline-flex rounded-full px-2.5 py-1 font-semibold ${scoreBadgeClass(getEffectiveScore(selectedEntity))}`}>
-                    tuned {getEffectiveScore(selectedEntity)}
-                  </span>
+                  <span className="font-semibold text-neutral-700">DORA {renderDoraTierDots(doraEvidenceTier(selectedEntity))}</span>
+                  <span className="truncate">{googleAddressFor(selectedEntity) || "Address unavailable"}</span>
+                  <span>{getZoneName(selectedEntity)}</span>
                 </div>
               </div>
               <button
@@ -1268,13 +1500,31 @@ export default function LiveUnitsClient({
               </section>
 
               <section className="rounded-2xl border border-neutral-200 bg-white p-4">
+                <details>
+                  <summary className="cursor-pointer text-sm font-semibold text-neutral-900">Address Evidence</summary>
+                  <div className="mt-3 space-y-2 text-sm">
+                    {selectedEntityAddresses.length ? (
+                      selectedEntityAddresses.map((item) => (
+                        <div key={item.label} className="rounded-xl bg-neutral-50 px-3 py-2">
+                          <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{item.label}</div>
+                          <div className="mt-1 text-neutral-900">{item.value}</div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-neutral-600">No address evidence available.</div>
+                    )}
+                  </div>
+                </details>
+              </section>
+
+              <section className="rounded-2xl border border-neutral-200 bg-white p-4">
                 <div className="text-sm font-semibold text-neutral-900">Shop Anchor</div>
                 {selectedEntity.shop_license ? (
                   <div className="mt-3 grid gap-3 sm:grid-cols-2 text-sm">
                     <div>
                       <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Shop Name</div>
                       <div className="mt-1 text-neutral-900">
-                        {shopByLicenseId.get(selectedEntity.shop_license)?.shop_name || selectedEntity.shop_license_name || "-"}
+                        {selectedEntityShop?.shop_name || selectedEntity.shop_license_name || "-"}
                       </div>
                     </div>
                     <div>
@@ -1283,15 +1533,11 @@ export default function LiveUnitsClient({
                     </div>
                     <div className="sm:col-span-2">
                       <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Address</div>
-                      <div className="mt-1 text-neutral-900">
-                        {shopByLicenseId.get(selectedEntity.shop_license)?.address || "Address unavailable"}
-                      </div>
+                      <div className="mt-1 text-neutral-900">{selectedEntityShop?.address || "Address unavailable"}</div>
                     </div>
                     <div>
                       <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">City / Zip</div>
-                      <div className="mt-1 text-neutral-900">
-                        {shopByLicenseId.get(selectedEntity.shop_license)?.city || "-"} / {shopByLicenseId.get(selectedEntity.shop_license)?.zip || "-"}
-                      </div>
+                      <div className="mt-1 text-neutral-900">{selectedEntityShop?.city || "-"} / {selectedEntityShop?.zip || "-"}</div>
                     </div>
                     <div>
                       <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Distance To Entity</div>
@@ -1309,18 +1555,27 @@ export default function LiveUnitsClient({
                 {
                   title: "Confirmed Techs",
                   rows: selectedEntityTechCandidates.filter((tech) => tech.current_status === "confirmed"),
+                  collapsible: false,
                 },
                 {
-                  title: "Candidate Techs",
-                  rows: selectedEntityTechCandidates.filter((tech) =>
-                    ["likely", "nearby", "unreviewed"].includes(tech.current_status)
-                  ),
+                  title: "Likely Techs",
+                  rows: selectedEntityTechCandidates.filter((tech) => tech.current_status === "likely"),
+                  collapsible: false,
                 },
                 {
-                  title: "Rejected / Watch",
-                  rows: selectedEntityTechCandidates.filter((tech) =>
-                    ["rejected", "watch"].includes(tech.current_status)
-                  ),
+                  title: "Nearby Techs",
+                  rows: selectedEntityTechCandidates.filter((tech) => ["nearby", "unreviewed"].includes(tech.current_status)),
+                  collapsible: true,
+                },
+                {
+                  title: "Conflicting Techs",
+                  rows: selectedEntityTechCandidates.filter((tech) => tech.current_status === "conflicting"),
+                  collapsible: true,
+                },
+                {
+                  title: "Rejected Techs",
+                  rows: selectedEntityTechCandidates.filter((tech) => tech.current_status === "rejected"),
+                  collapsible: true,
                 },
               ].map((section) => (
                 <section key={section.title} className="rounded-2xl border border-neutral-200 bg-white p-4">
@@ -1329,9 +1584,85 @@ export default function LiveUnitsClient({
                     <div className="text-xs text-neutral-500">{section.rows.length} rows</div>
                   </div>
                   {section.rows.length ? (
+                    section.collapsible ? (
+                      <details className="mt-2">
+                        <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                          Show {section.title.toLowerCase()}
+                        </summary>
+                        <div className="mt-2 space-y-2">
+                          {section.rows.map((tech) => (
+                            <div key={tech.tech_id} className="rounded-xl border border-neutral-200 p-2.5">
+                              <div className="flex flex-wrap items-start justify-between gap-2">
+                                <div>
+                                  <div className="font-medium text-neutral-900">{tech.tech_name}</div>
+                                  <div className="mt-0.5 text-sm text-neutral-600">
+                                    {tech.license_type || "Profession unavailable"} · {tech.tech_category}
+                                  </div>
+                                  <div className="mt-0.5 text-sm text-neutral-600">
+                                    {tech.city || "-"} / {tech.zip || "-"}
+                                  </div>
+                                </div>
+                                <div className="flex flex-wrap gap-2 text-xs">
+                                  <span className={`inline-flex rounded-full px-2.5 py-1 font-semibold ${techAssociationBadgeClass(tech.current_status)}`}>
+                                    {formatReviewLabel(tech.current_status)}
+                                  </span>
+                                  <span className="inline-flex rounded-full bg-neutral-100 px-2.5 py-1 font-semibold text-neutral-700">
+                                    {tech.distance_to_shop.toFixed(3)} mi
+                                  </span>
+                                  <span className="inline-flex rounded-full bg-neutral-100 px-2.5 py-1 font-semibold text-neutral-700">
+                                    score {tech.association_score}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="mt-1.5 flex flex-wrap gap-1.5 text-[11px]">
+                                {tech.evidence_tags.map((tag: string) => (
+                                  <span key={tag} className="inline-flex rounded-full bg-neutral-100 px-2 py-0.5 font-semibold text-neutral-700">
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                              {tech.competing_salon_name ? (
+                                <div className="mt-1 text-xs text-amber-700">Competing nearby salon: {tech.competing_salon_name}</div>
+                              ) : null}
+                              <div className="mt-1.5 space-y-0.5 text-xs text-neutral-500">
+                                {tech.addresses.salon_entity ? <div>Salon/entity: {tech.addresses.salon_entity}</div> : null}
+                                {tech.addresses.shop_registration ? <div>Shop registration: {tech.addresses.shop_registration}</div> : null}
+                                {tech.addresses.matched_evidence ? <div>Matched evidence: {tech.addresses.matched_evidence}</div> : null}
+                                {tech.addresses.tech_license ? <div>Tech address: {tech.addresses.tech_license}</div> : null}
+                              </div>
+                              <div className="mt-2 flex flex-wrap gap-1.5">
+                                {[
+                                  { label: "Confirm Link", value: "confirmed" as const },
+                                  { label: "Reject Link", value: "rejected" as const },
+                                  { label: "Watch", value: "watch" as const },
+                                ].map((action) => (
+                                  <button
+                                    key={action.value}
+                                    type="button"
+                                    onClick={() => void updateSalonTechReview(tech.entity_id, tech.tech_id, action.value)}
+                                    disabled={savingTechActionKey === techReviewKey(tech.entity_id, tech.tech_id)}
+                                    className="rounded-full border border-neutral-300 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
+                                  >
+                                    {action.label}
+                                  </button>
+                                ))}
+                                <button
+                                  type="button"
+                                  onClick={() => void updateSalonTechReview(tech.entity_id, tech.tech_id, "clear")}
+                                  disabled={savingTechActionKey === techReviewKey(tech.entity_id, tech.tech_id)}
+                                  className="rounded-full border border-neutral-300 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
+                                >
+                                  Clear
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </details>
+                    ) : (
                       <div className="mt-2 space-y-2">
-                      {section.rows.map((tech) => (
-                        <div key={tech.tech_id} className="rounded-xl border border-neutral-200 p-2.5">
+                        {section.rows.map((tech) => (
+                          <div key={tech.tech_id} className="rounded-xl border border-neutral-200 p-2.5">
                           <div className="flex flex-wrap items-start justify-between gap-2">
                             <div>
                               <div className="font-medium text-neutral-900">{tech.tech_name}</div>
@@ -1349,10 +1680,27 @@ export default function LiveUnitsClient({
                               <span className="inline-flex rounded-full bg-neutral-100 px-2.5 py-1 font-semibold text-neutral-700">
                                 {tech.distance_to_shop.toFixed(3)} mi
                               </span>
+                              <span className="inline-flex rounded-full bg-neutral-100 px-2.5 py-1 font-semibold text-neutral-700">
+                                score {tech.association_score}
+                              </span>
                             </div>
                           </div>
-                          <div className="mt-1.5 text-sm text-neutral-600">{tech.evidence_summary}</div>
-                          <div className="mt-0.5 text-xs text-neutral-500">{tech.address_key}</div>
+                          <div className="mt-1.5 flex flex-wrap gap-1.5 text-[11px]">
+                            {tech.evidence_tags.map((tag: string) => (
+                              <span key={tag} className="inline-flex rounded-full bg-neutral-100 px-2 py-0.5 font-semibold text-neutral-700">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                          {tech.competing_salon_name ? (
+                            <div className="mt-1 text-xs text-amber-700">Competing nearby salon: {tech.competing_salon_name}</div>
+                          ) : null}
+                          <div className="mt-1.5 space-y-0.5 text-xs text-neutral-500">
+                            {tech.addresses.salon_entity ? <div>Salon/entity: {tech.addresses.salon_entity}</div> : null}
+                            {tech.addresses.shop_registration ? <div>Shop registration: {tech.addresses.shop_registration}</div> : null}
+                            {tech.addresses.matched_evidence ? <div>Matched evidence: {tech.addresses.matched_evidence}</div> : null}
+                            {tech.addresses.tech_license ? <div>Tech address: {tech.addresses.tech_license}</div> : null}
+                          </div>
                           <div className="mt-2 flex flex-wrap gap-1.5">
                             {[
                               { label: "Confirm Link", value: "confirmed" as const },
@@ -1379,8 +1727,9 @@ export default function LiveUnitsClient({
                             </button>
                           </div>
                         </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )
                   ) : (
                     <div className="mt-3 text-sm text-neutral-500">No tech candidates in this section.</div>
                   )}
