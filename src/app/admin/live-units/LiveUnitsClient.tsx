@@ -1,6 +1,13 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
+import LiveUnitsShell from "@/components/admin/live-units/LiveUnitsShell";
+import {
+  ActionButton,
+  FilterField,
+  FilterGrid,
+  PillButton,
+} from "@/components/admin/live-units/LiveUnitsFields";
 
 type Confidence = "strong" | "likely" | "candidate_review" | "ambiguous";
 type ReviewStatus = "approved" | "rejected" | "watch" | "needs_research";
@@ -437,6 +444,7 @@ export default function LiveUnitsClient({
   const [openEntityId, setOpenEntityId] = useState<string | null>(null);
   const [openSignalPopoverId, setOpenSignalPopoverId] = useState<string | null>(null);
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
+  const [activePreset, setActivePreset] = useState<PresetId | null>(null);
   const [savingLiveUnitId, setSavingLiveUnitId] = useState<string | null>(null);
   const [savingBulkAction, setSavingBulkAction] = useState<string | null>(null);
   const [savingTechActionKey, setSavingTechActionKey] = useState<string | null>(null);
@@ -858,6 +866,7 @@ export default function LiveUnitsClient({
   }
 
   function applyPreset(preset: PresetId) {
+    setActivePreset(preset);
     setConfidence("all");
     setSignalMix("all");
     setCategory("all");
@@ -899,335 +908,325 @@ export default function LiveUnitsClient({
   }
 
   return (
-    <div className="space-y-4 p-4 md:p-5">
-      <div>
-        <h1 className="text-xl font-semibold text-neutral-900">Live Units</h1>
-        <p className="mt-1 text-sm text-neutral-600">
-          Review queue for combined Google, DORA, and online identity signals.
-        </p>
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-          <span
-            className={`inline-flex rounded-full px-2.5 py-1 font-semibold ${
-              source === "shop_context"
-                ? "bg-violet-100 text-violet-800"
+    <>
+      <LiveUnitsShell
+        title="Live Units"
+        subtitle="Review queue for combined Google, DORA, and online identity signals."
+        badges={
+          <>
+            <span
+              className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                source === "shop_context"
+                  ? "bg-violet-100 text-violet-700"
+                  : source === "tuned"
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-slate-100 text-slate-700"
+              }`}
+            >
+              {source === "shop_context"
+                ? "Using shop-context artifact"
                 : source === "tuned"
-                  ? "bg-emerald-100 text-emerald-800"
-                  : "bg-neutral-100 text-neutral-700"
-            }`}
-          >
-            {source === "shop_context"
-              ? "Using shop-context artifact"
-              : source === "tuned"
-                ? "Using tuned artifact"
-                : "Using base artifact fallback"}
-          </span>
-          <span className="inline-flex rounded-full bg-neutral-100 px-2.5 py-1 font-semibold text-neutral-700">
-            Default sort: highest tuned score
-          </span>
-        </div>
-      </div>
-
-      <section className="rounded-2xl border border-neutral-200 bg-white p-2.5 shadow-sm">
-        <div className="grid gap-1.5">
-          <div className="grid gap-1.5 sm:grid-cols-3 lg:grid-cols-6">
-            {[
-              { label: "Total Live Units", value: counts.total },
-              { label: "Reviewed", value: reviewCounts.reviewed },
-              { label: "Unreviewed", value: reviewCounts.unreviewed },
-              { label: "Approved", value: reviewCounts.approved },
-              { label: "Candidate Review", value: counts.candidate_review },
-              { label: "Ambiguous", value: counts.ambiguous },
-            ].map((item) => (
-              <div key={item.label} className="rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2">
-                <div className="truncate text-[10px] font-semibold uppercase tracking-wide text-neutral-500">{item.label}</div>
-                <div className="mt-1 text-lg font-semibold leading-none text-neutral-900">{item.value}</div>
-              </div>
-            ))}
-          </div>
-          <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { label: "Watch", value: reviewCounts.watch },
-              { label: "Needs Research", value: reviewCounts.needs_research },
-              { label: "Boosted", value: counts.boosted },
-              { label: "Downgraded", value: counts.downgraded },
-            ].map((item) => (
-              <div key={item.label} className="rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2">
-                <div className="truncate text-[10px] font-semibold uppercase tracking-wide text-neutral-500">{item.label}</div>
-                <div className="mt-1 text-lg font-semibold leading-none text-neutral-900">{item.value}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="grid gap-2 xl:grid-cols-[1.1fr_1fr_1fr_1.4fr]">
-        <div className="rounded-xl border border-neutral-200 bg-white p-2.5 shadow-sm">
-          <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Quick Views</div>
-          <div className="mt-2 flex flex-wrap gap-1.5">
+                  ? "Using tuned artifact"
+                  : "Using base artifact fallback"}
+            </span>
+            <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+              Default sort: highest tuned score
+            </span>
+          </>
+        }
+        metrics={[
+          { label: "Total Live Units", value: counts.total },
+          { label: "Reviewed", value: reviewCounts.reviewed, tone: "success" },
+          { label: "Unreviewed", value: reviewCounts.unreviewed, tone: "muted" },
+          { label: "Approved", value: reviewCounts.approved, tone: "success" },
+          { label: "Candidate Review", value: counts.candidate_review, tone: "warning" },
+          { label: "Ambiguous", value: counts.ambiguous, tone: "danger" },
+          { label: "Watch", value: reviewCounts.watch },
+          { label: "Needs Research", value: reviewCounts.needs_research },
+          { label: "Boosted", value: counts.boosted },
+          { label: "Downgraded", value: counts.downgraded },
+        ]}
+        quickViews={
+          <>
             {PRESETS.map((preset) => (
-              <button
+              <PillButton
                 key={preset.id}
-                type="button"
+                active={activePreset === preset.id}
                 onClick={() => applyPreset(preset.id)}
-                className="rounded-full border border-neutral-300 bg-neutral-50 px-2.5 py-1 text-[11px] font-semibold text-neutral-700 transition hover:border-neutral-500 hover:bg-white"
               >
                 {preset.label}
-              </button>
+              </PillButton>
             ))}
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-neutral-200 bg-white p-2.5 shadow-sm">
-          <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Bulk Actions</div>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {visibleIds.length
-              ? BULK_VISIBLE_ACTIONS.map((action) => (
-                  <button
-                    key={action}
-                    type="button"
-                    onClick={() => void applyReviewAction(visibleIds, action, "visible")}
-                    disabled={!!savingBulkAction}
-                    className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
-                  >
-                    {actionLabel(action, "visible")}
-                  </button>
-                ))
-              : (
-                <span className="text-xs text-neutral-500">Visible-row actions appear when results are loaded.</span>
-              )}
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-neutral-200 bg-white p-2.5 shadow-sm">
-          <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Review Filters</div>
-          <div className="mt-2 grid gap-2 sm:grid-cols-3 xl:grid-cols-1">
-            <div className="space-y-2">
-              <label className="block">
-                <span className="mb-1 block text-[11px] font-medium text-neutral-500">Confidence</span>
-                <select
-                  value={confidence}
-                  onChange={(event) => setConfidence(event.target.value as "all" | Confidence)}
-                  className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
-                >
-                  {CONFIDENCE_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option === "all" ? "All confidence" : option}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="block">
-                <span className="mb-1 block text-[11px] font-medium text-neutral-500">Review Status</span>
-                <select
-                  value={reviewFilter}
-                  onChange={(event) => setReviewFilter(event.target.value as ReviewFilter)}
-                  className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
-                >
-                  {REVIEW_FILTER_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option === "all" ? "All review states" : formatReviewLabel(option)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="block">
-                <span className="mb-1 block text-[11px] font-medium text-neutral-500">Tuning State</span>
-                <select
-                  value={tuningFilter}
-                  onChange={(event) => setTuningFilter(event.target.value as TuningFilter)}
-                  className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
-                >
-                  {TUNING_FILTER_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-2 md:grid-cols-2">
-          <div className="rounded-xl border border-neutral-200 bg-white p-2.5 shadow-sm">
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Category / Signal</div>
-            <div className="mt-2 space-y-2">
-              <label className="block">
-                <span className="mb-1 block text-[11px] font-medium text-neutral-500">Signal Mix</span>
-                <select
-                  value={signalMix}
-                  onChange={(event) => setSignalMix(event.target.value)}
-                  className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
-                >
-                  {signalMixOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option === "all" ? "All signal mixes" : formatSignalMix(option)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="block">
-                <span className="mb-1 block text-[11px] font-medium text-neutral-500">Category</span>
-                <select
-                  value={category}
-                  onChange={(event) => setCategory(event.target.value)}
-                  className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
-                >
-                  {categoryOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option === "all" ? "All categories" : option}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="block">
-                <span className="mb-1 block text-[11px] font-medium text-neutral-500">Subtype</span>
-                <select
-                  value={subtypeFilter}
-                  onChange={(event) => setSubtypeFilter(event.target.value as SubtypeFilter)}
-                  className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
-                >
-                  {SUBTYPE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-neutral-200 bg-white p-2.5 shadow-sm">
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Geography / Score</div>
-            <div className="mt-2 space-y-2">
-              <label className="block">
-                <span className="mb-1 block text-[11px] font-medium text-neutral-500">Zone</span>
-                <select
-                  value={zone}
-                  onChange={(event) => setZone(event.target.value)}
-                  className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
-                >
-                  {zoneOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <label className="block">
-                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">City</span>
-                  <select
-                    value={city}
-                    onChange={(event) => setCity(event.target.value)}
-                    className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
-                  >
-                    {cityOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block">
-                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Zip</span>
-                  <input
-                    value={zipQuery}
-                    onChange={(event) => setZipQuery(event.target.value)}
-                    placeholder="80206"
-                    className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition placeholder:text-neutral-400 focus:border-neutral-500"
-                  />
-                </label>
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <label className="block">
-                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Score Band</span>
-                  <select
-                    value={scoreBand}
-                    onChange={(event) => setScoreBand(event.target.value as ScoreBand)}
-                    className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
-                  >
-                    {SCORE_BANDS.map((option) => (
-                      <option key={option} value={option}>
-                        {option === "all" ? "All score bands" : option}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block">
-                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Sort</span>
-                  <select
-                    value={sortKey}
-                    onChange={(event) => setSortKey(event.target.value as SortKey)}
-                    className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
-                  >
-                    {SORT_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {selectedIds.length ? (
-          <div className="rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-sm xl:col-span-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="text-xs font-medium text-neutral-800">
-                {selectedIds.length} selected · {selectedVisibleIds.length} visible in current filter
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedIds([])}
-                className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500"
-              >
-                Clear selection
-              </button>
-            </div>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {(["approved", "rejected", "watch", "needs_research", "clear"] as BulkActionKind[]).map((action) => (
-                <button
-                  key={action}
-                  type="button"
-                  onClick={() => void applyReviewAction(selectedIds, action, "selected")}
-                  disabled={!!savingBulkAction}
-                  className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
-                >
-                  {actionLabel(action, "selected")}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : null}
-      </section>
-
-      <section className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-200 px-3 py-2 text-xs text-neutral-500">
-          <div className="flex flex-wrap items-center gap-3">
-            <span>Showing {filteredRows.length} rows</span>
+          </>
+        }
+        bulkActions={
+          <>
             {visibleIds.length ? (
-              <label className="inline-flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={allVisibleSelected}
-                  ref={(node) => {
-                    if (node) node.indeterminate = someVisibleSelected;
-                  }}
-                  onChange={(event) => toggleVisibleSelection(event.target.checked)}
-                />
-                <span>Select all visible rows</span>
-              </label>
-            ) : null}
-          </div>
-          <span>Selected: {selectedIds.length}</span>
-        </div>
-        {saveError ? <div className="px-3 pt-2 text-sm text-rose-600">{saveError}</div> : null}
+              <>
+                <ActionButton tone="success" onClick={() => void applyReviewAction(visibleIds, "approved", "visible")}>
+                  Approve visible
+                </ActionButton>
+                <ActionButton onClick={() => void applyReviewAction(visibleIds, "watch", "visible")}>
+                  Watch visible
+                </ActionButton>
+                <ActionButton tone="warning" onClick={() => void applyReviewAction(visibleIds, "needs_research", "visible")}>
+                  Needs research visible
+                </ActionButton>
+                <ActionButton tone="danger" onClick={() => void applyReviewAction(visibleIds, "clear", "visible")}>
+                  Clear visible
+                </ActionButton>
+              </>
+            ) : (
+              <span className="text-sm text-slate-500">Visible-row actions appear when results are loaded.</span>
+            )}
+          </>
+        }
+        primaryFilters={
+          <FilterGrid cols="3">
+            <FilterField label="Confidence" width="md">
+              <select
+                value={confidence}
+                onChange={(event) => {
+                  setActivePreset(null);
+                  setConfidence(event.target.value as "all" | Confidence);
+                }}
+                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none ring-0"
+              >
+                {CONFIDENCE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option === "all" ? "All confidence" : option}
+                  </option>
+                ))}
+              </select>
+            </FilterField>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-[1320px] table-fixed divide-y divide-neutral-200 text-sm">
+            <FilterField label="Review Status" width="md">
+              <select
+                value={reviewFilter}
+                onChange={(event) => {
+                  setActivePreset(null);
+                  setReviewFilter(event.target.value as ReviewFilter);
+                }}
+                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none ring-0"
+              >
+                {REVIEW_FILTER_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option === "all" ? "All review states" : formatReviewLabel(option)}
+                  </option>
+                ))}
+              </select>
+            </FilterField>
+
+            <FilterField label="Tuning State" width="md">
+              <select
+                value={tuningFilter}
+                onChange={(event) => {
+                  setActivePreset(null);
+                  setTuningFilter(event.target.value as TuningFilter);
+                }}
+                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none ring-0"
+              >
+                {TUNING_FILTER_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </FilterField>
+          </FilterGrid>
+        }
+        categoryFilters={
+          <FilterGrid cols="2">
+            <FilterField label="Signal Mix" width="md">
+              <select
+                value={signalMix}
+                onChange={(event) => {
+                  setActivePreset(null);
+                  setSignalMix(event.target.value);
+                }}
+                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
+              >
+                {signalMixOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option === "all" ? "All signal mixes" : formatSignalMix(option)}
+                  </option>
+                ))}
+              </select>
+            </FilterField>
+
+            <FilterField label="Category" width="md">
+              <select
+                value={category}
+                onChange={(event) => {
+                  setActivePreset(null);
+                  setCategory(event.target.value);
+                }}
+                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
+              >
+                {categoryOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option === "all" ? "All categories" : option}
+                  </option>
+                ))}
+              </select>
+            </FilterField>
+
+            <FilterField label="Subtype" width="full">
+              <select
+                value={subtypeFilter}
+                onChange={(event) => {
+                  setActivePreset(null);
+                  setSubtypeFilter(event.target.value as SubtypeFilter);
+                }}
+                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
+              >
+                {SUBTYPE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </FilterField>
+          </FilterGrid>
+        }
+        geographyFilters={
+          <FilterGrid cols="2">
+            <FilterField label="Zone" width="md">
+              <select
+                value={zone}
+                onChange={(event) => {
+                  setActivePreset(null);
+                  setZone(event.target.value);
+                }}
+                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
+              >
+                {zoneOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </FilterField>
+
+            <FilterField label="City" width="md">
+              <select
+                value={city}
+                onChange={(event) => {
+                  setActivePreset(null);
+                  setCity(event.target.value);
+                }}
+                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
+              >
+                {cityOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </FilterField>
+
+            <FilterField label="Zip" width="sm">
+              <input
+                value={zipQuery}
+                onChange={(event) => {
+                  setActivePreset(null);
+                  setZipQuery(event.target.value);
+                }}
+                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
+                placeholder="80206"
+              />
+            </FilterField>
+
+            <FilterField label="Score Band" width="md">
+              <select
+                value={scoreBand}
+                onChange={(event) => {
+                  setActivePreset(null);
+                  setScoreBand(event.target.value as ScoreBand);
+                }}
+                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
+              >
+                {SCORE_BANDS.map((option) => (
+                  <option key={option} value={option}>
+                    {option === "all" ? "All score bands" : option}
+                  </option>
+                ))}
+              </select>
+            </FilterField>
+
+            <FilterField label="Sort" width="md">
+              <select
+                value={sortKey}
+                onChange={(event) => {
+                  setActivePreset(null);
+                  setSortKey(event.target.value as SortKey);
+                }}
+                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </FilterField>
+          </FilterGrid>
+        }
+        results={
+          <div className="space-y-4">
+            {selectedIds.length ? (
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="text-sm font-medium text-slate-800">
+                    {selectedIds.length} selected · {selectedVisibleIds.length} visible in current filter
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedIds([])}
+                    className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Clear selection
+                  </button>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {(["approved", "rejected", "watch", "needs_research", "clear"] as BulkActionKind[]).map((action) => (
+                    <button
+                      key={action}
+                      type="button"
+                      onClick={() => void applyReviewAction(selectedIds, action, "selected")}
+                      disabled={!!savingBulkAction}
+                      className="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60"
+                    >
+                      {actionLabel(action, "selected")}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
+              <div className="flex items-center gap-3">
+                <span>Showing {filteredRows.length} rows</span>
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    ref={(node) => {
+                      if (node) node.indeterminate = someVisibleSelected;
+                    }}
+                    onChange={(event) => toggleVisibleSelection(event.target.checked)}
+                  />
+                  <span>Select all visible rows</span>
+                </label>
+              </div>
+              <div>Selected: {selectedIds.length}</div>
+            </div>
+
+            {saveError ? <div className="text-sm text-rose-600">{saveError}</div> : null}
+
+            <div className="overflow-hidden rounded-2xl border border-slate-200">
+              <div className="overflow-x-auto">
+                <table className="min-w-[1320px] table-fixed divide-y divide-neutral-200 text-sm">
             <thead className="sticky top-0 z-10 bg-neutral-50">
               <tr className="text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
                 <th className="px-3 py-2.5">
@@ -1458,9 +1457,12 @@ export default function LiveUnitsClient({
                 </tr>
               ) : null}
             </tbody>
-          </table>
-        </div>
-      </section>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
+      />
 
       {selectedEntity ? (
         <>
@@ -1781,6 +1783,6 @@ export default function LiveUnitsClient({
           </aside>
         </>
       ) : null}
-    </div>
+    </>
   );
 }
