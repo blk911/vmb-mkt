@@ -1132,40 +1132,28 @@ export default function LiveUnitsClient({
                       ) : null}
                     </td>
                     <td className="px-3 py-2.5">
-                      <div className="flex min-w-[240px] flex-wrap gap-1.5">
-                        {REVIEW_ACTIONS.map((status) => {
-                          const active = currentReview?.review_status === status;
-                          return (
-                            <button
-                              key={status}
-                              type="button"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                void updateReviewStatus(row.live_unit_id, status);
-                              }}
-                              disabled={isSaving}
-                              className={`rounded-full border px-2.5 py-1 text-xs font-semibold transition ${
-                                active
-                                  ? status === "approved"
-                                    ? "border-emerald-700 bg-emerald-700 text-white"
-                                    : status === "rejected"
-                                      ? "border-rose-700 bg-rose-700 text-white"
-                                      : status === "watch"
-                                        ? "border-amber-700 bg-amber-700 text-white"
-                                        : "border-violet-700 bg-violet-700 text-white"
-                                  : "border-neutral-300 bg-white text-neutral-700 hover:border-neutral-500"
-                              } ${isSaving ? "cursor-wait opacity-60" : ""}`}
-                            >
-                              {status === "approved"
-                                ? "Approve"
-                                : status === "rejected"
-                                  ? "Reject"
-                                  : status === "watch"
-                                    ? "Watch"
-                                    : "Needs Research"}
-                            </button>
-                          );
-                        })}
+                      <div className="flex min-w-[180px] items-center gap-1.5">
+                        <select
+                          value={currentReview?.review_status || ""}
+                          onClick={(event) => event.stopPropagation()}
+                          onChange={(event) => {
+                            event.stopPropagation();
+                            const nextStatus = event.target.value as ReviewStatus | "";
+                            if (nextStatus) {
+                              void updateReviewStatus(row.live_unit_id, nextStatus);
+                            }
+                          }}
+                          disabled={isSaving}
+                          className="min-w-0 flex-1 rounded-lg border border-neutral-300 bg-white px-2 py-1 text-xs font-medium text-neutral-700 outline-none transition focus:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
+                          aria-label={`Review action for ${row.name_display}`}
+                        >
+                          <option value="">Set review</option>
+                          {REVIEW_ACTIONS.map((status) => (
+                            <option key={status} value={status}>
+                              {formatReviewLabel(status)}
+                            </option>
+                          ))}
+                        </select>
                         <button
                           type="button"
                           onClick={(event) => {
@@ -1173,7 +1161,7 @@ export default function LiveUnitsClient({
                             void applyReviewAction([row.live_unit_id], "clear", "row");
                           }}
                           disabled={!!savingBulkAction}
-                          className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
+                          className="rounded-lg border border-neutral-300 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
                         >
                           Clear
                         </button>
