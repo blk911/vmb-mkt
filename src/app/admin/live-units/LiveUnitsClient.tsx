@@ -985,7 +985,7 @@ export default function LiveUnitsClient({
 
       <section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="min-w-[1680px] divide-y divide-neutral-200 text-sm">
+          <table className="min-w-[1680px] table-fixed divide-y divide-neutral-200 text-sm">
             <thead className="bg-neutral-50">
               <tr className="text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
                 <th className="px-3 py-2.5">
@@ -1026,10 +1026,10 @@ export default function LiveUnitsClient({
                 return (
                   <tr
                     key={row.live_unit_id}
-                    className={`align-top transition hover:bg-neutral-50 ${openEntityId === entityIdFor(row) ? "bg-sky-50" : ""}`}
+                    className={`h-12 transition hover:bg-neutral-50 ${openEntityId === entityIdFor(row) ? "bg-sky-50" : ""}`}
                     onClick={() => setOpenEntityId(entityIdFor(row))}
                   >
-                    <td className="px-3 py-2.5">
+                    <td className="px-3 py-2 align-middle">
                       <input
                         type="checkbox"
                         checked={selectedIds.includes(row.live_unit_id)}
@@ -1038,50 +1038,50 @@ export default function LiveUnitsClient({
                         aria-label={`Select ${row.name_display}`}
                       />
                     </td>
-                    <td className="px-3 py-2.5 font-medium text-neutral-900">
+                    <td className="w-[220px] px-3 py-2 align-middle font-medium text-neutral-900">
                       <button
                         type="button"
                         onClick={(event) => {
                           event.stopPropagation();
                           setOpenEntityId(entityIdFor(row));
                         }}
-                        className="text-left transition hover:text-sky-700"
+                        className="block max-w-full truncate text-left transition hover:text-sky-700"
+                        title={row.name_display}
                       >
                         {row.name_display}
                       </button>
                     </td>
-                    <td className="px-3 py-2.5 text-neutral-700 whitespace-nowrap">{row.operational_category}</td>
-                    <td className="px-3 py-2.5 whitespace-nowrap">
+                    <td className="px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{row.operational_category}</td>
+                    <td className="px-3 py-2 align-middle whitespace-nowrap">
                       <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${confidenceBadgeClass(row.confidence)}`}>
                         {getEffectiveConfidence(row)}
                       </span>
                     </td>
-                    <td className="px-3 py-2.5 whitespace-nowrap">
+                    <td className="px-3 py-2 align-middle whitespace-nowrap">
                       <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${reviewBadgeClass(currentStatus)}`}>
                         {formatReviewLabel(currentStatus)}
                       </span>
                     </td>
-                    <td className="px-3 py-2.5 text-neutral-700 whitespace-nowrap">
+                    <td className="w-[140px] px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">
                       <span className="inline-flex rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-700">
                         {formatSignalMix(row.signal_mix)}
                       </span>
                     </td>
-                    <td className="px-3 py-2.5 text-neutral-700 whitespace-nowrap">{getZoneName(row)}</td>
-                    <td className="px-3 py-2.5 text-neutral-700 whitespace-nowrap">{row.city || "-"}</td>
-                    <td className="px-3 py-2.5 text-neutral-700 whitespace-nowrap">{row.zip || "-"}</td>
-                    <td className="px-3 py-2.5 text-neutral-700">
+                    <td className="w-[120px] px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{getZoneName(row)}</td>
+                    <td className="w-[110px] px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{row.city || "-"}</td>
+                    <td className="px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{row.zip || "-"}</td>
+                    <td className="w-[180px] px-3 py-2 align-middle text-neutral-700">
                       {row.shop_license_name ? (
-                        <div className="min-w-[180px]">
-                          <div className="font-medium text-neutral-900">{row.shop_license_name}</div>
-                          <div className="text-xs text-neutral-500 whitespace-nowrap">{row.shop_license}</div>
+                        <div className="truncate font-medium text-neutral-900" title={`${row.shop_license_name}${row.shop_license ? ` (${row.shop_license})` : ""}`}>
+                          {row.shop_license_name}
                         </div>
                       ) : (
                         "-"
                       )}
                     </td>
-                    <td className="px-3 py-2.5 text-neutral-700 whitespace-nowrap">
+                    <td className="w-[110px] px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">
                       {typeof row.shop_distance === "number" ? (
-                        <div className="space-y-0.5">
+                        <div className="inline-flex items-center gap-1.5">
                           <div>{row.shop_distance.toFixed(2)} mi</div>
                           {row.association_confidence ? (
                             <span className="inline-flex rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-semibold text-neutral-700">
@@ -1093,20 +1093,20 @@ export default function LiveUnitsClient({
                         "-"
                       )}
                     </td>
-                    <td className="px-3 py-2.5 text-neutral-700 whitespace-nowrap">{row.tech_count_nearby ?? 0}</td>
-                    <td className="px-3 py-2.5 whitespace-nowrap">
+                    <td className="px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{row.tech_count_nearby ?? 0}</td>
+                    <td className="px-3 py-2 align-middle whitespace-nowrap">
                       <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${scoreBadgeClass(row.entity_score)}`}>
                         {row.entity_score}
                       </span>
                     </td>
-                    <td className="px-3 py-2.5 whitespace-nowrap">
+                    <td className="px-3 py-2 align-middle whitespace-nowrap">
                       <div className="flex flex-col gap-0.5">
                         <span className={`inline-flex w-fit rounded-full px-2.5 py-1 text-xs font-semibold ${scoreBadgeClass(getEffectiveScore(row))}`}>
                           {typeof row.tuned_entity_score === "number" ? row.tuned_entity_score : row.entity_score}
                         </span>
                       </div>
                     </td>
-                    <td className="px-3 py-2.5 whitespace-nowrap">
+                    <td className="px-3 py-2 align-middle whitespace-nowrap">
                       <div className="flex flex-col gap-0.5">
                         {hasFeedbackTuning(row) ? (
                           <span className={`inline-flex w-fit rounded-full px-2 py-0.5 text-[11px] font-semibold ${tuningBadgeClass(row)}`}>
@@ -1119,19 +1119,23 @@ export default function LiveUnitsClient({
                         )}
                       </div>
                     </td>
-                    <td className="px-3 py-2.5 text-neutral-600">
-                      <div className="max-w-[280px] text-sm leading-5">{row.explanation}</div>
-                      {row.feedback_tuning?.explanation ? (
-                        <div className="mt-1 text-xs text-neutral-500">{row.feedback_tuning.explanation}</div>
-                      ) : null}
-                      {currentReview?.updated_at ? (
-                        <div className="mt-1 text-xs text-neutral-400">
-                          Updated {new Date(currentReview.updated_at).toLocaleString()}
-                          {currentReview.updated_by ? ` by ${currentReview.updated_by}` : ""}
-                        </div>
-                      ) : null}
+                    <td className="w-[280px] px-3 py-2 align-middle text-neutral-600">
+                      <div
+                        className="truncate text-sm leading-5"
+                        title={[
+                          row.explanation,
+                          row.feedback_tuning?.explanation,
+                          currentReview?.updated_at
+                            ? `Updated ${new Date(currentReview.updated_at).toLocaleString()}${currentReview.updated_by ? ` by ${currentReview.updated_by}` : ""}`
+                            : "",
+                        ]
+                          .filter(Boolean)
+                          .join("\n")}
+                      >
+                        {row.explanation}
+                      </div>
                     </td>
-                    <td className="px-3 py-2.5">
+                    <td className="w-[170px] px-3 py-2 align-middle">
                       <div className="flex min-w-[180px] items-center gap-1.5">
                         <select
                           value={currentReview?.review_status || ""}
@@ -1325,16 +1329,16 @@ export default function LiveUnitsClient({
                     <div className="text-xs text-neutral-500">{section.rows.length} rows</div>
                   </div>
                   {section.rows.length ? (
-                    <div className="mt-3 space-y-3">
+                      <div className="mt-2 space-y-2">
                       {section.rows.map((tech) => (
-                        <div key={tech.tech_id} className="rounded-xl border border-neutral-200 p-3">
-                          <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div key={tech.tech_id} className="rounded-xl border border-neutral-200 p-2.5">
+                          <div className="flex flex-wrap items-start justify-between gap-2">
                             <div>
                               <div className="font-medium text-neutral-900">{tech.tech_name}</div>
-                              <div className="mt-1 text-sm text-neutral-600">
+                              <div className="mt-0.5 text-sm text-neutral-600">
                                 {tech.license_type || "Profession unavailable"} · {tech.tech_category}
                               </div>
-                              <div className="mt-1 text-sm text-neutral-600">
+                              <div className="mt-0.5 text-sm text-neutral-600">
                                 {tech.city || "-"} / {tech.zip || "-"}
                               </div>
                             </div>
@@ -1347,9 +1351,9 @@ export default function LiveUnitsClient({
                               </span>
                             </div>
                           </div>
-                          <div className="mt-2 text-sm text-neutral-600">{tech.evidence_summary}</div>
-                          <div className="mt-1 text-xs text-neutral-500">{tech.address_key}</div>
-                          <div className="mt-3 flex flex-wrap gap-2">
+                          <div className="mt-1.5 text-sm text-neutral-600">{tech.evidence_summary}</div>
+                          <div className="mt-0.5 text-xs text-neutral-500">{tech.address_key}</div>
+                          <div className="mt-2 flex flex-wrap gap-1.5">
                             {[
                               { label: "Confirm Link", value: "confirmed" as const },
                               { label: "Reject Link", value: "rejected" as const },
