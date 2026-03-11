@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 type Confidence = "strong" | "likely" | "candidate_review" | "ambiguous";
 type ReviewStatus = "approved" | "rejected" | "watch" | "needs_research";
@@ -436,6 +436,7 @@ export default function LiveUnitsClient({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [openEntityId, setOpenEntityId] = useState<string | null>(null);
   const [openSignalPopoverId, setOpenSignalPopoverId] = useState<string | null>(null);
+  const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
   const [savingLiveUnitId, setSavingLiveUnitId] = useState<string | null>(null);
   const [savingBulkAction, setSavingBulkAction] = useState<string | null>(null);
   const [savingTechActionKey, setSavingTechActionKey] = useState<string | null>(null);
@@ -926,213 +927,200 @@ export default function LiveUnitsClient({
         </div>
       </div>
 
-      <section className="rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm">
-        <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-10">
-          {[
-            { label: "Total Live Units", value: counts.total },
-            { label: "Reviewed", value: reviewCounts.reviewed },
-            { label: "Unreviewed", value: reviewCounts.unreviewed },
-            { label: "Approved", value: reviewCounts.approved },
-            { label: "Candidate Review", value: counts.candidate_review },
-            { label: "Ambiguous", value: counts.ambiguous },
-            { label: "Watch", value: reviewCounts.watch },
-            { label: "Needs Research", value: reviewCounts.needs_research },
-            { label: "Boosted", value: counts.boosted },
-            { label: "Downgraded", value: counts.downgraded },
-          ].map((item) => (
-            <div key={item.label} className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2">
-              <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">{item.label}</div>
-              <div className="mt-1 text-xl font-semibold leading-none text-neutral-900">{item.value}</div>
-            </div>
-          ))}
+      <section className="rounded-2xl border border-neutral-200 bg-white p-2.5 shadow-sm">
+        <div className="grid gap-1.5">
+          <div className="grid gap-1.5 sm:grid-cols-3 lg:grid-cols-6">
+            {[
+              { label: "Total Live Units", value: counts.total },
+              { label: "Reviewed", value: reviewCounts.reviewed },
+              { label: "Unreviewed", value: reviewCounts.unreviewed },
+              { label: "Approved", value: reviewCounts.approved },
+              { label: "Candidate Review", value: counts.candidate_review },
+              { label: "Ambiguous", value: counts.ambiguous },
+            ].map((item) => (
+              <div key={item.label} className="rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2">
+                <div className="truncate text-[10px] font-semibold uppercase tracking-wide text-neutral-500">{item.label}</div>
+                <div className="mt-1 text-lg font-semibold leading-none text-neutral-900">{item.value}</div>
+              </div>
+            ))}
+          </div>
+          <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { label: "Watch", value: reviewCounts.watch },
+              { label: "Needs Research", value: reviewCounts.needs_research },
+              { label: "Boosted", value: counts.boosted },
+              { label: "Downgraded", value: counts.downgraded },
+            ].map((item) => (
+              <div key={item.label} className="rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2">
+                <div className="truncate text-[10px] font-semibold uppercase tracking-wide text-neutral-500">{item.label}</div>
+                <div className="mt-1 text-lg font-semibold leading-none text-neutral-900">{item.value}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm">
-        <div className="space-y-3">
-          <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Quick Views</div>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {PRESETS.map((preset) => (
-                <button
-                  key={preset.id}
-                  type="button"
-                  onClick={() => applyPreset(preset.id)}
-                  className="rounded-full border border-neutral-300 bg-neutral-50 px-2.5 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500 hover:bg-white"
-                >
-                  {preset.label}
-                </button>
-              ))}
-            </div>
+      <section className="grid gap-2 xl:grid-cols-[1.1fr_1fr_1fr_1.4fr]">
+        <div className="rounded-xl border border-neutral-200 bg-white p-2.5 shadow-sm">
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Quick Views</div>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {PRESETS.map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => applyPreset(preset.id)}
+                className="rounded-full border border-neutral-300 bg-neutral-50 px-2.5 py-1 text-[11px] font-semibold text-neutral-700 transition hover:border-neutral-500 hover:bg-white"
+              >
+                {preset.label}
+              </button>
+            ))}
           </div>
+        </div>
 
-          <div className="border-t border-neutral-200 pt-3">
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Bulk Actions</div>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {visibleIds.length
-                ? BULK_VISIBLE_ACTIONS.map((action) => (
-                    <button
-                      key={action}
-                      type="button"
-                      onClick={() => void applyReviewAction(visibleIds, action, "visible")}
-                      disabled={!!savingBulkAction}
-                      className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
-                    >
-                      {actionLabel(action, "visible")}
-                    </button>
-                  ))
-                : (
-                  <span className="text-xs text-neutral-500">Visible-row actions appear when results are loaded.</span>
-                )}
-            </div>
-          </div>
-
-          {selectedIds.length ? (
-            <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="text-xs font-medium text-neutral-800">
-                  {selectedIds.length} selected · {selectedVisibleIds.length} visible in current filter
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSelectedIds([])}
-                  className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500"
-                >
-                  Clear selection
-                </button>
-              </div>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {(["approved", "rejected", "watch", "needs_research", "clear"] as BulkActionKind[]).map((action) => (
+        <div className="rounded-xl border border-neutral-200 bg-white p-2.5 shadow-sm">
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Bulk Actions</div>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {visibleIds.length
+              ? BULK_VISIBLE_ACTIONS.map((action) => (
                   <button
                     key={action}
                     type="button"
-                    onClick={() => void applyReviewAction(selectedIds, action, "selected")}
+                    onClick={() => void applyReviewAction(visibleIds, action, "visible")}
                     disabled={!!savingBulkAction}
-                    className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
+                    className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
                   >
-                    {actionLabel(action, "selected")}
+                    {actionLabel(action, "visible")}
                   </button>
-                ))}
-              </div>
+                ))
+              : (
+                <span className="text-xs text-neutral-500">Visible-row actions appear when results are loaded.</span>
+              )}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-neutral-200 bg-white p-2.5 shadow-sm">
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Review Filters</div>
+          <div className="mt-2 grid gap-2 sm:grid-cols-3 xl:grid-cols-1">
+            <div className="space-y-2">
+              <label className="block">
+                <span className="mb-1 block text-[11px] font-medium text-neutral-500">Confidence</span>
+                <select
+                  value={confidence}
+                  onChange={(event) => setConfidence(event.target.value as "all" | Confidence)}
+                  className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
+                >
+                  {CONFIDENCE_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option === "all" ? "All confidence" : option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-[11px] font-medium text-neutral-500">Review Status</span>
+                <select
+                  value={reviewFilter}
+                  onChange={(event) => setReviewFilter(event.target.value as ReviewFilter)}
+                  className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
+                >
+                  {REVIEW_FILTER_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option === "all" ? "All review states" : formatReviewLabel(option)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-[11px] font-medium text-neutral-500">Tuning State</span>
+                <select
+                  value={tuningFilter}
+                  onChange={(event) => setTuningFilter(event.target.value as TuningFilter)}
+                  className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
+                >
+                  {TUNING_FILTER_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
-          ) : null}
+          </div>
+        </div>
 
-          <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
-            <div className="grid gap-3 xl:grid-cols-4">
-              <div className="space-y-2">
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Review / Confidence</div>
-                <label className="block">
-                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Confidence</span>
-                  <select
-                    value={confidence}
-                    onChange={(event) => setConfidence(event.target.value as "all" | Confidence)}
-                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
-                  >
-                    {CONFIDENCE_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option === "all" ? "All confidence" : option}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block">
-                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Review Status</span>
-                  <select
-                    value={reviewFilter}
-                    onChange={(event) => setReviewFilter(event.target.value as ReviewFilter)}
-                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
-                  >
-                    {REVIEW_FILTER_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option === "all" ? "All review states" : formatReviewLabel(option)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block">
-                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Tuning State</span>
-                  <select
-                    value={tuningFilter}
-                    onChange={(event) => setTuningFilter(event.target.value as TuningFilter)}
-                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
-                  >
-                    {TUNING_FILTER_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
+        <div className="grid gap-2 md:grid-cols-2">
+          <div className="rounded-xl border border-neutral-200 bg-white p-2.5 shadow-sm">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Category / Signal</div>
+            <div className="mt-2 space-y-2">
+              <label className="block">
+                <span className="mb-1 block text-[11px] font-medium text-neutral-500">Signal Mix</span>
+                <select
+                  value={signalMix}
+                  onChange={(event) => setSignalMix(event.target.value)}
+                  className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
+                >
+                  {signalMixOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option === "all" ? "All signal mixes" : formatSignalMix(option)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-[11px] font-medium text-neutral-500">Category</span>
+                <select
+                  value={category}
+                  onChange={(event) => setCategory(event.target.value)}
+                  className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
+                >
+                  {categoryOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option === "all" ? "All categories" : option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-[11px] font-medium text-neutral-500">Subtype</span>
+                <select
+                  value={subtypeFilter}
+                  onChange={(event) => setSubtypeFilter(event.target.value as SubtypeFilter)}
+                  className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
+                >
+                  {SUBTYPE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </div>
 
-              <div className="space-y-2">
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Category / Signal</div>
-                <label className="block">
-                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Signal Mix</span>
-                  <select
-                    value={signalMix}
-                    onChange={(event) => setSignalMix(event.target.value)}
-                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
-                  >
-                    {signalMixOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option === "all" ? "All signal mixes" : formatSignalMix(option)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block">
-                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Category</span>
-                  <select
-                    value={category}
-                    onChange={(event) => setCategory(event.target.value)}
-                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
-                  >
-                    {categoryOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option === "all" ? "All categories" : option}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block">
-                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Subtype</span>
-                  <select
-                    value={subtypeFilter}
-                    onChange={(event) => setSubtypeFilter(event.target.value as SubtypeFilter)}
-                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
-                  >
-                    {SUBTYPE_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-
-              <div className="space-y-2">
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Geography</div>
-                <label className="block">
-                  <span className="mb-1 block text-[11px] font-medium text-neutral-500">Zone</span>
-                  <select
-                    value={zone}
-                    onChange={(event) => setZone(event.target.value)}
-                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
-                  >
-                    {zoneOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+          <div className="rounded-xl border border-neutral-200 bg-white p-2.5 shadow-sm">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Geography / Score</div>
+            <div className="mt-2 space-y-2">
+              <label className="block">
+                <span className="mb-1 block text-[11px] font-medium text-neutral-500">Zone</span>
+                <select
+                  value={zone}
+                  onChange={(event) => setZone(event.target.value)}
+                  className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
+                >
+                  {zoneOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="grid gap-2 sm:grid-cols-2">
                 <label className="block">
                   <span className="mb-1 block text-[11px] font-medium text-neutral-500">City</span>
                   <select
                     value={city}
                     onChange={(event) => setCity(event.target.value)}
-                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
+                    className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
                   >
                     {cityOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -1147,19 +1135,17 @@ export default function LiveUnitsClient({
                     value={zipQuery}
                     onChange={(event) => setZipQuery(event.target.value)}
                     placeholder="80206"
-                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition placeholder:text-neutral-400 focus:border-neutral-500"
+                    className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition placeholder:text-neutral-400 focus:border-neutral-500"
                   />
                 </label>
               </div>
-
-              <div className="space-y-2">
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Score / Sort</div>
+              <div className="grid gap-2 sm:grid-cols-2">
                 <label className="block">
                   <span className="mb-1 block text-[11px] font-medium text-neutral-500">Score Band</span>
                   <select
                     value={scoreBand}
                     onChange={(event) => setScoreBand(event.target.value as ScoreBand)}
-                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
+                    className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
                   >
                     {SCORE_BANDS.map((option) => (
                       <option key={option} value={option}>
@@ -1173,10 +1159,10 @@ export default function LiveUnitsClient({
                   <select
                     value={sortKey}
                     onChange={(event) => setSortKey(event.target.value as SortKey)}
-                    className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-neutral-500"
+                    className="h-8 w-full rounded-lg border border-neutral-300 bg-white px-2.5 text-sm outline-none transition focus:border-neutral-500"
                   >
                     {SORT_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
+                      <option key={option} value={option}>
                         {option.label}
                       </option>
                     ))}
@@ -1184,34 +1170,64 @@ export default function LiveUnitsClient({
                 </label>
               </div>
             </div>
-
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-neutral-200 pt-3 text-xs text-neutral-500">
-              <div className="flex flex-wrap items-center gap-3">
-                <span>Showing {filteredRows.length} rows</span>
-                {visibleIds.length ? (
-                  <label className="inline-flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={allVisibleSelected}
-                      ref={(node) => {
-                        if (node) node.indeterminate = someVisibleSelected;
-                      }}
-                      onChange={(event) => toggleVisibleSelection(event.target.checked)}
-                    />
-                    <span>Select all visible rows</span>
-                  </label>
-                ) : null}
-              </div>
-              <span>Selected: {selectedIds.length}</span>
-            </div>
-            {saveError ? <div className="mt-2 text-sm text-rose-600">{saveError}</div> : null}
           </div>
         </div>
+
+        {selectedIds.length ? (
+          <div className="rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-sm xl:col-span-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="text-xs font-medium text-neutral-800">
+                {selectedIds.length} selected · {selectedVisibleIds.length} visible in current filter
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedIds([])}
+                className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500"
+              >
+                Clear selection
+              </button>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {(["approved", "rejected", "watch", "needs_research", "clear"] as BulkActionKind[]).map((action) => (
+                <button
+                  key={action}
+                  type="button"
+                  onClick={() => void applyReviewAction(selectedIds, action, "selected")}
+                  disabled={!!savingBulkAction}
+                  className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
+                >
+                  {actionLabel(action, "selected")}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <section className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-200 px-3 py-2 text-xs text-neutral-500">
+          <div className="flex flex-wrap items-center gap-3">
+            <span>Showing {filteredRows.length} rows</span>
+            {visibleIds.length ? (
+              <label className="inline-flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={allVisibleSelected}
+                  ref={(node) => {
+                    if (node) node.indeterminate = someVisibleSelected;
+                  }}
+                  onChange={(event) => toggleVisibleSelection(event.target.checked)}
+                />
+                <span>Select all visible rows</span>
+              </label>
+            ) : null}
+          </div>
+          <span>Selected: {selectedIds.length}</span>
+        </div>
+        {saveError ? <div className="px-3 pt-2 text-sm text-rose-600">{saveError}</div> : null}
+
         <div className="overflow-x-auto">
-          <table className="min-w-[1680px] table-fixed divide-y divide-neutral-200 text-sm">
+          <table className="min-w-[1320px] table-fixed divide-y divide-neutral-200 text-sm">
             <thead className="sticky top-0 z-10 bg-neutral-50">
               <tr className="text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
                 <th className="px-3 py-2.5">
@@ -1228,16 +1244,13 @@ export default function LiveUnitsClient({
                 <th className="px-3 py-2.5 whitespace-nowrap">Name</th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Category</th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Zone</th>
-                <th className="px-3 py-2.5 whitespace-nowrap">City</th>
-                <th className="px-3 py-2.5 whitespace-nowrap">Zip</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">City / Zip</th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Nearby Shop License</th>
-                <th className="px-3 py-2.5 whitespace-nowrap">Distance</th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Nearby Techs</th>
-                <th className="px-3 py-2.5 whitespace-nowrap">Original Score</th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Tuned Score</th>
-                <th className="px-3 py-2.5 whitespace-nowrap">Feedback</th>
-                <th className="px-3 py-2.5 whitespace-nowrap">Address</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Review Status</th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Actions</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Details</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200">
@@ -1251,12 +1264,12 @@ export default function LiveUnitsClient({
                 const signalPopoverOpen = openSignalPopoverId === row.live_unit_id;
 
                 return (
-                  <tr
-                    key={row.live_unit_id}
-                    className={`h-12 transition hover:bg-neutral-50 ${openEntityId === entityIdFor(row) ? "bg-sky-50" : ""}`}
-                    onClick={() => setOpenEntityId(entityIdFor(row))}
-                  >
-                    <td className="px-3 py-2 align-middle">
+                  <Fragment key={row.live_unit_id}>
+                    <tr
+                      className={`h-12 transition hover:bg-neutral-50 ${openEntityId === entityIdFor(row) ? "bg-sky-50" : ""}`}
+                      onClick={() => setOpenEntityId(entityIdFor(row))}
+                    >
+                      <td className="px-3 py-2 align-middle">
                       <input
                         type="checkbox"
                         checked={selectedIds.includes(row.live_unit_id)}
@@ -1319,8 +1332,9 @@ export default function LiveUnitsClient({
                     </td>
                     <td className="px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{row.operational_category}</td>
                     <td className="w-[120px] px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{getZoneName(row)}</td>
-                    <td className="w-[110px] px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{row.city || "-"}</td>
-                    <td className="px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{row.zip || "-"}</td>
+                    <td className="w-[130px] px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">
+                      {(row.city || "-") + (row.zip ? ` ${row.zip}` : "")}
+                    </td>
                     <td className="w-[180px] px-3 py-2 align-middle text-neutral-700">
                       {row.shop_license_name ? (
                         <div className="truncate font-medium text-neutral-900" title={`${row.shop_license_name}${row.shop_license ? ` (${row.shop_license})` : ""}`}>
@@ -1330,26 +1344,7 @@ export default function LiveUnitsClient({
                         "-"
                       )}
                     </td>
-                    <td className="w-[110px] px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">
-                      {typeof row.shop_distance === "number" ? (
-                        <div className="inline-flex items-center gap-1.5">
-                          <div>{row.shop_distance.toFixed(2)} mi</div>
-                          {row.association_confidence ? (
-                            <span className="inline-flex rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-semibold text-neutral-700">
-                              {row.association_confidence}
-                            </span>
-                          ) : null}
-                        </div>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
                     <td className="px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{row.tech_count_nearby ?? 0}</td>
-                    <td className="px-3 py-2 align-middle whitespace-nowrap">
-                      <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${scoreBadgeClass(row.entity_score)}`}>
-                        {row.entity_score}
-                      </span>
-                    </td>
                     <td className="px-3 py-2 align-middle whitespace-nowrap">
                       <div className="flex flex-col gap-0.5">
                         <span className={`inline-flex w-fit rounded-full px-2.5 py-1 text-xs font-semibold ${scoreBadgeClass(getEffectiveScore(row))}`}>
@@ -1358,22 +1353,9 @@ export default function LiveUnitsClient({
                       </div>
                     </td>
                     <td className="px-3 py-2 align-middle whitespace-nowrap">
-                      <div className="flex flex-col gap-0.5">
-                        {hasFeedbackTuning(row) ? (
-                          <span className={`inline-flex w-fit rounded-full px-2 py-0.5 text-[11px] font-semibold ${tuningBadgeClass(row)}`}>
-                            {tuningLabel(row)}
-                          </span>
-                        ) : (
-                          <span className="inline-flex w-fit rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-semibold text-neutral-600">
-                            unchanged
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="w-[280px] px-3 py-2 align-middle text-neutral-600">
-                      <div className="truncate text-sm leading-5" title={googleAddress}>
-                        {googleAddress}
-                      </div>
+                      <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${reviewBadgeClass(currentStatus)}`}>
+                        {formatReviewLabel(currentStatus)}
+                      </span>
                     </td>
                     <td className="w-[170px] px-3 py-2 align-middle">
                       <div className="flex min-w-[180px] items-center gap-1.5">
@@ -1411,12 +1393,66 @@ export default function LiveUnitsClient({
                         </button>
                       </div>
                     </td>
-                  </tr>
+                    <td className="px-3 py-2 align-middle whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setExpandedRowId((current) => (current === row.live_unit_id ? null : row.live_unit_id));
+                        }}
+                        className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-neutral-700 transition hover:border-neutral-500"
+                      >
+                        {expandedRowId === row.live_unit_id ? "Hide" : "Details"}
+                      </button>
+                      </td>
+                    </tr>
+                    {expandedRowId === row.live_unit_id ? (
+                      <tr className="bg-neutral-50/60">
+                        <td colSpan={11} className="px-3 py-3">
+                          <div className="grid gap-2 lg:grid-cols-4">
+                            <div className="rounded-lg border border-neutral-200 bg-white px-3 py-2">
+                              <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Explanation</div>
+                              <div className="mt-1 text-sm text-neutral-700">{row.explanation}</div>
+                            </div>
+                            <div className="rounded-lg border border-neutral-200 bg-white px-3 py-2">
+                              <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Signal Details</div>
+                              <div className="mt-1 text-sm text-neutral-700">{formatSignalMix(row.signal_mix)}</div>
+                              <div className="mt-1 text-xs text-neutral-500">
+                                Original {row.entity_score} {"->"} Tuned {getEffectiveScore(row)}
+                              </div>
+                            </div>
+                            <div className="rounded-lg border border-neutral-200 bg-white px-3 py-2">
+                              <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Address</div>
+                              <div className="mt-1 text-sm text-neutral-700">{googleAddress}</div>
+                              {typeof row.shop_distance === "number" ? (
+                                <div className="mt-1 text-xs text-neutral-500">
+                                  Shop distance {row.shop_distance.toFixed(2)} mi
+                                  {row.association_confidence ? ` · ${row.association_confidence}` : ""}
+                                </div>
+                              ) : null}
+                            </div>
+                            <div className="rounded-lg border border-neutral-200 bg-white px-3 py-2">
+                              <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Feedback</div>
+                              <div className="mt-1 text-sm text-neutral-700">
+                                {row.feedback_tuning?.explanation || "No feedback note"}
+                              </div>
+                              {currentReview?.updated_at ? (
+                                <div className="mt-1 text-xs text-neutral-500">
+                                  Updated {new Date(currentReview.updated_at).toLocaleString()}
+                                  {currentReview.updated_by ? ` by ${currentReview.updated_by}` : ""}
+                                </div>
+                              ) : null}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : null}
+                  </Fragment>
                 );
               })}
               {filteredRows.length === 0 ? (
                 <tr>
-                  <td colSpan={14} className="px-4 py-8 text-center text-sm text-neutral-500">
+                  <td colSpan={11} className="px-4 py-8 text-center text-sm text-neutral-500">
                     No live units match the current review filters.
                   </td>
                 </tr>
