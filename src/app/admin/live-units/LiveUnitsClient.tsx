@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Confidence = "strong" | "likely" | "candidate_review" | "ambiguous";
 type ReviewStatus = "approved" | "rejected" | "watch" | "needs_research";
@@ -27,6 +27,7 @@ type PresetId =
 
 type LiveUnitRow = {
   live_unit_id: string;
+  entity_id?: string;
   name_display: string;
   operational_category: string;
   subtype?: string;
@@ -35,6 +36,8 @@ type LiveUnitRow = {
   signal_mix: string;
   city: string | null;
   zip: string | null;
+  google_place_id?: string | null;
+  dora_license_id?: string | null;
   entity_score: number;
   tuned_entity_score?: number;
   explanation: string;
@@ -42,6 +45,9 @@ type LiveUnitRow = {
     google?: {
       zone_id?: string;
       zone_name?: string;
+    };
+    dora?: {
+      license_row_ids?: string[];
     };
   };
   feedback_tuning?: {
@@ -64,12 +70,50 @@ type ReviewDecision = {
   updated_by?: string;
 };
 
+type SalonTechLinkReviewDecision = {
+  entity_id: string;
+  tech_id: string;
+  review_status: "confirmed" | "rejected" | "watch";
+  note?: string;
+  updated_at: string;
+  updated_by?: string;
+};
+
+type ShopIndexRow = {
+  shop_name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  license_id: string;
+};
+
+type TechAssociationRow = {
+  shop_license_id: string;
+  shop_name: string;
+  tech_row_id: string;
+  tech_license_id: string;
+  tech_name: string;
+  tech_category: string;
+  address_key: string;
+  distance_to_shop: number;
+  association_confidence: "strong" | "likely" | "weak";
+  city?: string;
+  zip?: string;
+  license_type?: string;
+  tech_lat?: number | null;
+  tech_lon?: number | null;
+};
+
 type BulkActionKind = ReviewStatus | "clear";
 
 type Props = {
   rows: LiveUnitRow[];
   source: "shop_context" | "tuned" | "base";
   initialReviewState: Record<string, ReviewDecision>;
+  initialSalonTechReviewState: Record<string, SalonTechLinkReviewDecision>;
+  shopIndex: ShopIndexRow[];
+  techAssociations: TechAssociationRow[];
 };
 
 const CONFIDENCE_OPTIONS: Array<"all" | Confidence> = [
@@ -228,6 +272,15 @@ function reviewBadgeClass(status: ReviewStatus | "unreviewed") {
   return "bg-neutral-100 text-neutral-600";
 }
 
+function techAssociationBadgeClass(status: "confirmed" | "likely" | "nearby" | "rejected" | "watch" | "unreviewed") {
+  if (status === "confirmed") return "bg-emerald-100 text-emerald-800";
+  if (status === "likely") return "bg-sky-100 text-sky-800";
+  if (status === "nearby") return "bg-neutral-100 text-neutral-700";
+  if (status === "rejected") return "bg-rose-100 text-rose-800";
+  if (status === "watch") return "bg-amber-100 text-amber-800";
+  return "bg-neutral-100 text-neutral-600";
+}
+
 function reviewSummaryCounts(rows: LiveUnitRow[], reviewState: Record<string, ReviewDecision>) {
   const reviewed = rows.filter((row) => !!reviewState[row.live_unit_id]).length;
   return {
@@ -254,7 +307,34 @@ function tuningLabel(row: LiveUnitRow) {
   return "unchanged";
 }
 
-export default function LiveUnitsClient({ rows, source, initialReviewState }: Props) {
+function entityIdFor(row: LiveUnitRow) {
+  return row.entity_id || row.live_unit_id;
+}
+
+function linkedGoogleCount(row: LiveUnitRow) {
+  return row.raw_snippets?.google ? 1 : 0;
+}
+
+function linkedDoraCount(row: LiveUnitRow) {
+  return row.raw_snippets?.dora?.license_row_ids?.length || (row.dora_license_id ? 1 : 0);
+}
+
+function duplicateCountCollapsed(row: LiveUnitRow) {
+  return 0;
+}
+
+function techReviewKey(entityId: string, techId: string) {
+  return `${entityId}::${techId}`;
+}
+
+export default function LiveUnitsClient({
+  rows,
+  source,
+  initialReviewState,
+  initialSalonTechReviewState,
+  shopIndex,
+  techAssociations,
+}: Props) {
   const [confidence, setConfidence] = useState<"all" | Confidence>("all");
   const [signalMix, setSignalMix] = useState("all");
   const [category, setCategory] = useState("all");
@@ -267,9 +347,14 @@ export default function LiveUnitsClient({ rows, source, initialReviewState }: Pr
   const [tuningFilter, setTuningFilter] = useState<TuningFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("tuned_score");
   const [reviewState, setReviewState] = useState<Record<string, ReviewDecision>>(initialReviewState);
+  const [salonTechReviewState, setSalonTechReviewState] = useState<Record<string, SalonTechLinkReviewDecision>>(
+    initialSalonTechReviewState
+  );
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [openEntityId, setOpenEntityId] = useState<string | null>(null);
   const [savingLiveUnitId, setSavingLiveUnitId] = useState<string | null>(null);
   const [savingBulkAction, setSavingBulkAction] = useState<string | null>(null);
+  const [savingTechActionKey, setSavingTechActionKey] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const counts = useMemo(() => summaryCounts(rows), [rows]);
@@ -373,6 +458,67 @@ export default function LiveUnitsClient({ rows, source, initialReviewState }: Pr
   );
   const allVisibleSelected = visibleIds.length > 0 && selectedVisibleIds.length === visibleIds.length;
   const someVisibleSelected = selectedVisibleIds.length > 0 && !allVisibleSelected;
+  const selectedEntity = useMemo(
+    () => filteredRows.find((row) => entityIdFor(row) === openEntityId) || rows.find((row) => entityIdFor(row) === openEntityId) || null,
+    [filteredRows, openEntityId, rows]
+  );
+  const shopByLicenseId = useMemo(
+    () => new Map(shopIndex.map((shop) => [shop.license_id, shop] as const)),
+    [shopIndex]
+  );
+  const selectedEntityTechCandidates = useMemo(() => {
+    if (!selectedEntity) return [];
+
+    const entityId = entityIdFor(selectedEntity);
+    const linkedDoraIds = new Set(selectedEntity.raw_snippets?.dora?.license_row_ids || []);
+    const candidates = techAssociations
+      .filter((tech) => {
+        if (selectedEntity.shop_license && tech.shop_license_id === selectedEntity.shop_license) return true;
+        if (linkedDoraIds.has(tech.tech_row_id)) return true;
+        return false;
+      })
+      .map((tech) => {
+        const techId = tech.tech_row_id || tech.tech_license_id;
+        const review = salonTechReviewState[techReviewKey(entityId, techId)];
+        const currentStatus =
+          review?.review_status ||
+          (tech.association_confidence === "strong" ? "likely" : tech.association_confidence === "likely" ? "likely" : "nearby");
+        return {
+          ...tech,
+          tech_id: techId,
+          entity_id: entityId,
+          current_status: currentStatus as "confirmed" | "likely" | "nearby" | "rejected" | "watch" | "unreviewed",
+          review,
+          evidence_summary:
+            linkedDoraIds.has(tech.tech_row_id)
+              ? "Linked through matched DORA evidence"
+              : tech.association_confidence === "strong"
+                ? "Same building as linked shop anchor"
+                : tech.association_confidence === "likely"
+                  ? "Same complex as linked shop anchor"
+                  : "Nearby cluster to linked shop anchor",
+        };
+      })
+      .sort((a, b) => {
+        const rank = (status: typeof a.current_status) =>
+          status === "confirmed" ? 5 : status === "likely" ? 4 : status === "nearby" ? 3 : status === "watch" ? 2 : status === "rejected" ? 1 : 0;
+        if (rank(b.current_status) !== rank(a.current_status)) return rank(b.current_status) - rank(a.current_status);
+        return a.distance_to_shop - b.distance_to_shop;
+      });
+
+    return Array.from(new Map(candidates.map((candidate) => [candidate.tech_id, candidate] as const)).values());
+  }, [openEntityId, salonTechReviewState, selectedEntity, techAssociations]);
+
+  useEffect(() => {
+    if (!openEntityId) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpenEntityId(null);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [openEntityId]);
 
   async function updateReviewStatus(liveUnitId: string, reviewStatus: ReviewStatus) {
     setSavingLiveUnitId(liveUnitId);
@@ -435,6 +581,44 @@ export default function LiveUnitsClient({ rows, source, initialReviewState }: Pr
       setSaveError(error?.message || "Failed to save bulk review action");
     } finally {
       setSavingBulkAction(null);
+    }
+  }
+
+  async function updateSalonTechReview(
+    entityId: string,
+    techId: string,
+    action: "confirmed" | "rejected" | "watch" | "clear"
+  ) {
+    const key = techReviewKey(entityId, techId);
+    setSavingTechActionKey(key);
+    setSaveError(null);
+    try {
+      const response = await fetch("/api/admin/live-units/salon-tech-links", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          action === "clear"
+            ? {
+                entity_id: entityId,
+                tech_id: techId,
+                clear: true,
+              }
+            : {
+                entity_id: entityId,
+                tech_id: techId,
+                review_status: action,
+              }
+        ),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.ok || !payload?.reviewState?.links) {
+        throw new Error(payload?.error || "Failed to save tech review");
+      }
+      setSalonTechReviewState(payload.reviewState.links as Record<string, SalonTechLinkReviewDecision>);
+    } catch (error: any) {
+      setSaveError(error?.message || "Failed to save tech review");
+    } finally {
+      setSavingTechActionKey(null);
     }
   }
 
@@ -801,10 +985,10 @@ export default function LiveUnitsClient({ rows, source, initialReviewState }: Pr
 
       <section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-neutral-200 text-sm">
+          <table className="min-w-[1680px] divide-y divide-neutral-200 text-sm">
             <thead className="bg-neutral-50">
               <tr className="text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                <th className="px-4 py-3">
+                <th className="px-3 py-2.5">
                   <input
                     type="checkbox"
                     checked={allVisibleSelected}
@@ -815,22 +999,22 @@ export default function LiveUnitsClient({ rows, source, initialReviewState }: Pr
                     aria-label="Select all visible rows"
                   />
                 </th>
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Category</th>
-                <th className="px-4 py-3">Confidence</th>
-                <th className="px-4 py-3">Review Status</th>
-                <th className="px-4 py-3">Signal Mix</th>
-                <th className="px-4 py-3">Zone</th>
-                <th className="px-4 py-3">City</th>
-                <th className="px-4 py-3">Zip</th>
-                <th className="px-4 py-3">Nearby Shop License</th>
-                <th className="px-4 py-3">Distance</th>
-                <th className="px-4 py-3">Nearby Techs</th>
-                <th className="px-4 py-3">Original Score</th>
-                <th className="px-4 py-3">Tuned Score</th>
-                <th className="px-4 py-3">Feedback</th>
-                <th className="px-4 py-3">Explanation</th>
-                <th className="px-4 py-3">Actions</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Name</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Category</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Confidence</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Review Status</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Signal Mix</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Zone</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">City</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Zip</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Nearby Shop License</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Distance</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Nearby Techs</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Original Score</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Tuned Score</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Feedback</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Explanation</th>
+                <th className="px-3 py-2.5 whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200">
@@ -840,44 +1024,64 @@ export default function LiveUnitsClient({ rows, source, initialReviewState }: Pr
                 const isSaving = savingLiveUnitId === row.live_unit_id;
 
                 return (
-                  <tr key={row.live_unit_id} className="align-top">
-                    <td className="px-4 py-3">
+                  <tr
+                    key={row.live_unit_id}
+                    className={`align-top transition hover:bg-neutral-50 ${openEntityId === entityIdFor(row) ? "bg-sky-50" : ""}`}
+                    onClick={() => setOpenEntityId(entityIdFor(row))}
+                  >
+                    <td className="px-3 py-2.5">
                       <input
                         type="checkbox"
                         checked={selectedIds.includes(row.live_unit_id)}
+                        onClick={(event) => event.stopPropagation()}
                         onChange={(event) => toggleRowSelection(row.live_unit_id, event.target.checked)}
                         aria-label={`Select ${row.name_display}`}
                       />
                     </td>
-                    <td className="px-4 py-3 font-medium text-neutral-900">{row.name_display}</td>
-                    <td className="px-4 py-3 text-neutral-700">{row.operational_category}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2.5 font-medium text-neutral-900">
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setOpenEntityId(entityIdFor(row));
+                        }}
+                        className="text-left transition hover:text-sky-700"
+                      >
+                        {row.name_display}
+                      </button>
+                    </td>
+                    <td className="px-3 py-2.5 text-neutral-700 whitespace-nowrap">{row.operational_category}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">
                       <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${confidenceBadgeClass(row.confidence)}`}>
                         {getEffectiveConfidence(row)}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2.5 whitespace-nowrap">
                       <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${reviewBadgeClass(currentStatus)}`}>
                         {formatReviewLabel(currentStatus)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-neutral-700">{formatSignalMix(row.signal_mix)}</td>
-                    <td className="px-4 py-3 text-neutral-700">{getZoneName(row)}</td>
-                    <td className="px-4 py-3 text-neutral-700">{row.city || "-"}</td>
-                    <td className="px-4 py-3 text-neutral-700">{row.zip || "-"}</td>
-                    <td className="px-4 py-3 text-neutral-700">
+                    <td className="px-3 py-2.5 text-neutral-700 whitespace-nowrap">
+                      <span className="inline-flex rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-700">
+                        {formatSignalMix(row.signal_mix)}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 text-neutral-700 whitespace-nowrap">{getZoneName(row)}</td>
+                    <td className="px-3 py-2.5 text-neutral-700 whitespace-nowrap">{row.city || "-"}</td>
+                    <td className="px-3 py-2.5 text-neutral-700 whitespace-nowrap">{row.zip || "-"}</td>
+                    <td className="px-3 py-2.5 text-neutral-700">
                       {row.shop_license_name ? (
-                        <div className="space-y-1">
+                        <div className="min-w-[180px]">
                           <div className="font-medium text-neutral-900">{row.shop_license_name}</div>
-                          <div className="text-xs text-neutral-500">{row.shop_license}</div>
+                          <div className="text-xs text-neutral-500 whitespace-nowrap">{row.shop_license}</div>
                         </div>
                       ) : (
                         "-"
                       )}
                     </td>
-                    <td className="px-4 py-3 text-neutral-700">
+                    <td className="px-3 py-2.5 text-neutral-700 whitespace-nowrap">
                       {typeof row.shop_distance === "number" ? (
-                        <div className="space-y-1">
+                        <div className="space-y-0.5">
                           <div>{row.shop_distance.toFixed(2)} mi</div>
                           {row.association_confidence ? (
                             <span className="inline-flex rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-semibold text-neutral-700">
@@ -889,21 +1093,21 @@ export default function LiveUnitsClient({ rows, source, initialReviewState }: Pr
                         "-"
                       )}
                     </td>
-                    <td className="px-4 py-3 text-neutral-700">{row.tech_count_nearby ?? 0}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2.5 text-neutral-700 whitespace-nowrap">{row.tech_count_nearby ?? 0}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">
                       <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${scoreBadgeClass(row.entity_score)}`}>
                         {row.entity_score}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col gap-1">
+                    <td className="px-3 py-2.5 whitespace-nowrap">
+                      <div className="flex flex-col gap-0.5">
                         <span className={`inline-flex w-fit rounded-full px-2.5 py-1 text-xs font-semibold ${scoreBadgeClass(getEffectiveScore(row))}`}>
                           {typeof row.tuned_entity_score === "number" ? row.tuned_entity_score : row.entity_score}
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col gap-1">
+                    <td className="px-3 py-2.5 whitespace-nowrap">
+                      <div className="flex flex-col gap-0.5">
                         {hasFeedbackTuning(row) ? (
                           <span className={`inline-flex w-fit rounded-full px-2 py-0.5 text-[11px] font-semibold ${tuningBadgeClass(row)}`}>
                             {tuningLabel(row)}
@@ -915,8 +1119,8 @@ export default function LiveUnitsClient({ rows, source, initialReviewState }: Pr
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-neutral-600">
-                      <div>{row.explanation}</div>
+                    <td className="px-3 py-2.5 text-neutral-600">
+                      <div className="max-w-[280px] text-sm leading-5">{row.explanation}</div>
                       {row.feedback_tuning?.explanation ? (
                         <div className="mt-1 text-xs text-neutral-500">{row.feedback_tuning.explanation}</div>
                       ) : null}
@@ -927,15 +1131,18 @@ export default function LiveUnitsClient({ rows, source, initialReviewState }: Pr
                         </div>
                       ) : null}
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex min-w-[240px] flex-wrap gap-2">
+                    <td className="px-3 py-2.5">
+                      <div className="flex min-w-[240px] flex-wrap gap-1.5">
                         {REVIEW_ACTIONS.map((status) => {
                           const active = currentReview?.review_status === status;
                           return (
                             <button
                               key={status}
                               type="button"
-                              onClick={() => void updateReviewStatus(row.live_unit_id, status)}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                void updateReviewStatus(row.live_unit_id, status);
+                              }}
                               disabled={isSaving}
                               className={`rounded-full border px-2.5 py-1 text-xs font-semibold transition ${
                                 active
@@ -961,7 +1168,10 @@ export default function LiveUnitsClient({ rows, source, initialReviewState }: Pr
                         })}
                         <button
                           type="button"
-                          onClick={() => void applyReviewAction([row.live_unit_id], "clear", "row")}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void applyReviewAction([row.live_unit_id], "clear", "row");
+                          }}
                           disabled={!!savingBulkAction}
                           className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
                         >
@@ -983,6 +1193,211 @@ export default function LiveUnitsClient({ rows, source, initialReviewState }: Pr
           </table>
         </div>
       </section>
+
+      {selectedEntity ? (
+        <>
+          <button
+            type="button"
+            aria-label="Close salon detail panel"
+            onClick={() => setOpenEntityId(null)}
+            className="fixed inset-0 z-40 bg-neutral-950/30"
+          />
+          <aside className="fixed right-0 top-0 z-50 h-full w-full max-w-2xl overflow-y-auto border-l border-neutral-200 bg-white shadow-2xl">
+            <div className="sticky top-0 flex items-start justify-between gap-3 border-b border-neutral-200 bg-white px-6 py-4">
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Salon Detail</div>
+                <h2 className="mt-1 text-lg font-semibold text-neutral-900">{selectedEntity.name_display}</h2>
+                <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                  <span className={`inline-flex rounded-full px-2.5 py-1 font-semibold ${confidenceBadgeClass(getEffectiveConfidence(selectedEntity))}`}>
+                    {getEffectiveConfidence(selectedEntity)}
+                  </span>
+                  <span className={`inline-flex rounded-full px-2.5 py-1 font-semibold ${reviewBadgeClass(reviewState[selectedEntity.live_unit_id]?.review_status || "unreviewed")}`}>
+                    {formatReviewLabel(reviewState[selectedEntity.live_unit_id]?.review_status || "unreviewed")}
+                  </span>
+                  <span className={`inline-flex rounded-full px-2.5 py-1 font-semibold ${scoreBadgeClass(getEffectiveScore(selectedEntity))}`}>
+                    tuned {getEffectiveScore(selectedEntity)}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpenEntityId(null)}
+                className="rounded-full border border-neutral-300 bg-white px-3 py-1 text-sm font-semibold text-neutral-700 transition hover:border-neutral-500"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="space-y-6 px-6 py-5">
+              <section className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Category</div>
+                    <div className="mt-1 text-sm text-neutral-900">{selectedEntity.operational_category}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Subtype</div>
+                    <div className="mt-1 text-sm text-neutral-900">{selectedEntity.subtype || "unknown"}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">City / Zip</div>
+                    <div className="mt-1 text-sm text-neutral-900">
+                      {selectedEntity.city || "-"} / {selectedEntity.zip || "-"}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Zone</div>
+                    <div className="mt-1 text-sm text-neutral-900">
+                      {getZoneId(selectedEntity)} / {getZoneName(selectedEntity)}
+                    </div>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Entity Explanation</div>
+                    <div className="mt-1 text-sm text-neutral-700">{selectedEntity.explanation}</div>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2 text-xs">
+                  <span className="inline-flex rounded-full bg-white px-2.5 py-1 font-semibold text-neutral-700">
+                    Google linked {linkedGoogleCount(selectedEntity)}
+                  </span>
+                  <span className="inline-flex rounded-full bg-white px-2.5 py-1 font-semibold text-neutral-700">
+                    DORA linked {linkedDoraCount(selectedEntity)}
+                  </span>
+                  <span className="inline-flex rounded-full bg-white px-2.5 py-1 font-semibold text-neutral-700">
+                    Shop anchor {selectedEntity.shop_license ? "yes" : "no"}
+                  </span>
+                  <span className="inline-flex rounded-full bg-white px-2.5 py-1 font-semibold text-neutral-700">
+                    Duplicates collapsed {duplicateCountCollapsed(selectedEntity)}
+                  </span>
+                  <span className="inline-flex rounded-full bg-white px-2.5 py-1 font-semibold text-neutral-700">
+                    {formatSignalMix(selectedEntity.signal_mix)}
+                  </span>
+                </div>
+              </section>
+
+              <section className="rounded-2xl border border-neutral-200 bg-white p-4">
+                <div className="text-sm font-semibold text-neutral-900">Shop Anchor</div>
+                {selectedEntity.shop_license ? (
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2 text-sm">
+                    <div>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Shop Name</div>
+                      <div className="mt-1 text-neutral-900">
+                        {shopByLicenseId.get(selectedEntity.shop_license)?.shop_name || selectedEntity.shop_license_name || "-"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">License Id</div>
+                      <div className="mt-1 text-neutral-900">{selectedEntity.shop_license}</div>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Address</div>
+                      <div className="mt-1 text-neutral-900">
+                        {shopByLicenseId.get(selectedEntity.shop_license)?.address || "Address unavailable"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">City / Zip</div>
+                      <div className="mt-1 text-neutral-900">
+                        {shopByLicenseId.get(selectedEntity.shop_license)?.city || "-"} / {shopByLicenseId.get(selectedEntity.shop_license)?.zip || "-"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Distance To Entity</div>
+                      <div className="mt-1 text-neutral-900">
+                        {typeof selectedEntity.shop_distance === "number" ? `${selectedEntity.shop_distance.toFixed(2)} mi` : "n/a"}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-3 text-sm text-neutral-600">No DORA shop anchor linked.</div>
+                )}
+              </section>
+
+              {[
+                {
+                  title: "Confirmed Techs",
+                  rows: selectedEntityTechCandidates.filter((tech) => tech.current_status === "confirmed"),
+                },
+                {
+                  title: "Candidate Techs",
+                  rows: selectedEntityTechCandidates.filter((tech) =>
+                    ["likely", "nearby", "unreviewed"].includes(tech.current_status)
+                  ),
+                },
+                {
+                  title: "Rejected / Watch",
+                  rows: selectedEntityTechCandidates.filter((tech) =>
+                    ["rejected", "watch"].includes(tech.current_status)
+                  ),
+                },
+              ].map((section) => (
+                <section key={section.title} className="rounded-2xl border border-neutral-200 bg-white p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-sm font-semibold text-neutral-900">{section.title}</div>
+                    <div className="text-xs text-neutral-500">{section.rows.length} rows</div>
+                  </div>
+                  {section.rows.length ? (
+                    <div className="mt-3 space-y-3">
+                      {section.rows.map((tech) => (
+                        <div key={tech.tech_id} className="rounded-xl border border-neutral-200 p-3">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                              <div className="font-medium text-neutral-900">{tech.tech_name}</div>
+                              <div className="mt-1 text-sm text-neutral-600">
+                                {tech.license_type || "Profession unavailable"} · {tech.tech_category}
+                              </div>
+                              <div className="mt-1 text-sm text-neutral-600">
+                                {tech.city || "-"} / {tech.zip || "-"}
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2 text-xs">
+                              <span className={`inline-flex rounded-full px-2.5 py-1 font-semibold ${techAssociationBadgeClass(tech.current_status)}`}>
+                                {formatReviewLabel(tech.current_status)}
+                              </span>
+                              <span className="inline-flex rounded-full bg-neutral-100 px-2.5 py-1 font-semibold text-neutral-700">
+                                {tech.distance_to_shop.toFixed(3)} mi
+                              </span>
+                            </div>
+                          </div>
+                          <div className="mt-2 text-sm text-neutral-600">{tech.evidence_summary}</div>
+                          <div className="mt-1 text-xs text-neutral-500">{tech.address_key}</div>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {[
+                              { label: "Confirm Link", value: "confirmed" as const },
+                              { label: "Reject Link", value: "rejected" as const },
+                              { label: "Watch", value: "watch" as const },
+                            ].map((action) => (
+                              <button
+                                key={action.value}
+                                type="button"
+                                onClick={() => void updateSalonTechReview(tech.entity_id, tech.tech_id, action.value)}
+                                disabled={savingTechActionKey === techReviewKey(tech.entity_id, tech.tech_id)}
+                                className="rounded-full border border-neutral-300 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
+                              >
+                                {action.label}
+                              </button>
+                            ))}
+                            <button
+                              type="button"
+                              onClick={() => void updateSalonTechReview(tech.entity_id, tech.tech_id, "clear")}
+                              disabled={savingTechActionKey === techReviewKey(tech.entity_id, tech.tech_id)}
+                              className="rounded-full border border-neutral-300 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
+                            >
+                              Clear
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="mt-3 text-sm text-neutral-500">No tech candidates in this section.</div>
+                  )}
+                </section>
+              ))}
+            </div>
+          </aside>
+        </>
+      ) : null}
     </div>
   );
 }

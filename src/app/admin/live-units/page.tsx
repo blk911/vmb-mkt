@@ -2,9 +2,14 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import LiveUnitsClient from "./LiveUnitsClient";
 import { readReviewState, type ReviewDecision } from "@/app/admin/_lib/live-units/review-state";
+import {
+  readSalonTechLinksReviewState,
+  type SalonTechLinkReviewDecision,
+} from "@/app/admin/_lib/live-units/salon-tech-links-review-state";
 
 type LiveUnitRow = {
   live_unit_id: string;
+  entity_id?: string;
   name_display: string;
   operational_category: string;
   subtype?: string;
@@ -40,6 +45,41 @@ type LiveUnitsFile = {
 };
 
 type ReviewStateMap = Record<string, ReviewDecision>;
+type SalonTechReviewStateMap = Record<string, SalonTechLinkReviewDecision>;
+
+type ShopIndexRow = {
+  shop_name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  license_id: string;
+};
+
+type ShopIndexFile = {
+  rows?: ShopIndexRow[];
+};
+
+type TechAssociationRow = {
+  shop_license_id: string;
+  shop_name: string;
+  tech_row_id: string;
+  tech_license_id: string;
+  tech_name: string;
+  tech_category: string;
+  address_key: string;
+  distance_to_shop: number;
+  association_confidence: "strong" | "likely" | "weak";
+  city?: string;
+  zip?: string;
+  license_type?: string;
+  tech_lat?: number | null;
+  tech_lon?: number | null;
+};
+
+type TechAssociationsFile = {
+  rows?: TechAssociationRow[];
+};
 
 type LoadedLiveUnits = {
   rows: LiveUnitRow[];
@@ -70,14 +110,50 @@ function loadReviewState(): ReviewStateMap {
   return readReviewState().decisions;
 }
 
+function loadSalonTechReviewState(): SalonTechReviewStateMap {
+  return readSalonTechLinksReviewState().links;
+}
+
+function loadShopIndex(): ShopIndexRow[] {
+  const filePath = path.join(
+    process.cwd(),
+    "data",
+    "co",
+    "dora",
+    "denver_metro",
+    "dora",
+    "derived",
+    "dora_shop_index.v1.json"
+  );
+  if (!existsSync(filePath)) return [];
+  const parsed = JSON.parse(readFileSync(filePath, "utf8")) as ShopIndexFile;
+  return Array.isArray(parsed.rows) ? parsed.rows : [];
+}
+
+function loadTechAssociations(): TechAssociationRow[] {
+  const filePath = path.join(process.cwd(), "data", "markets", "dora_shop_tech_associations.v1.json");
+  if (!existsSync(filePath)) return [];
+  const parsed = JSON.parse(readFileSync(filePath, "utf8")) as TechAssociationsFile;
+  return Array.isArray(parsed.rows) ? parsed.rows : [];
+}
+
 export default function LiveUnitsPage() {
   const liveUnits = loadLiveUnits();
   const reviewState = loadReviewState();
+  const salonTechReviewState = loadSalonTechReviewState();
+  const shopIndex = loadShopIndex();
+  const techAssociations = loadTechAssociations();
   return (
     <LiveUnitsClient
-      rows={liveUnits.rows}
+      rows={liveUnits.rows.map((row) => ({
+        ...row,
+        entity_id: row.entity_id || row.live_unit_id,
+      }))}
       source={liveUnits.source}
       initialReviewState={reviewState}
+      initialSalonTechReviewState={salonTechReviewState}
+      shopIndex={shopIndex}
+      techAssociations={techAssociations}
     />
   );
 }

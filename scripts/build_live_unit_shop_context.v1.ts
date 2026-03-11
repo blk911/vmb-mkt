@@ -242,6 +242,11 @@ function main() {
             tech_name: entry.fullName,
             tech_category: classifyLicenseType(entry.licenseType || ""),
             address_key: entry.addressKey,
+            city: s(entry.city),
+            zip: s(entry.zip),
+            license_type: s(entry.licenseType),
+            tech_lat: coord.lat,
+            tech_lon: coord.lon,
             distance_to_shop: Number(distance.toFixed(3)),
             association_confidence:
               s(entry.addressKey) === shop.address_key || s(entry.addressKey) === shop.address_key_base
