@@ -1,0 +1,184 @@
+{
+  "generated_at": "2026-03-11T15:45:41.807Z",
+  "input_paths": {
+    "live_units": "C:\\dev\\vmb-mkt\\data\\markets\\beauty_live_units.v1.json",
+    "review_state": "C:\\dev\\vmb-mkt\\data\\markets\\beauty_live_units_review_state.v1.json",
+    "approved": "C:\\dev\\vmb-mkt\\data\\markets\\beauty_live_units_approved.v1.json",
+    "feedback": "C:\\dev\\vmb-mkt\\data\\markets\\beauty_live_units_feedback.v1.json"
+  },
+  "summary": {
+    "approved_count": 1,
+    "rejected_count": 0,
+    "watch_count": 1,
+    "needs_research_count": 1
+  },
+  "pattern_summaries": {
+    "approval_patterns": [
+      {
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "signal_mix": "google+dora+online",
+        "operational_category": "hair",
+        "subtype": "storefront",
+        "support_count": 1,
+        "avg_entity_score": 90
+      }
+    ],
+    "caution_patterns": [
+      {
+        "review_status": "needs_research",
+        "zone_id": "DTC01",
+        "zone_name": "DTC Belleview Corridor",
+        "signal_mix": "google+dora+online",
+        "operational_category": "hair",
+        "subtype": "storefront",
+        "score_band": "55-69",
+        "support_count": 1,
+        "avg_entity_score": 61,
+        "confidence": "ambiguous"
+      },
+      {
+        "review_status": "watch",
+        "zone_id": "DTC01",
+        "zone_name": "DTC Belleview Corridor",
+        "signal_mix": "google+dora+online",
+        "operational_category": "hair",
+        "subtype": "suite",
+        "score_band": "55-69",
+        "support_count": 1,
+        "avg_entity_score": 64,
+        "confidence": "candidate_review"
+      }
+    ]
+  },
+  "rules": [
+    {
+      "rule_id": "boost_broad_hair_storefront_google_dora_online",
+      "effect": "boost",
+      "review_source": "approved",
+      "support_count": 1,
+      "label": "approved hair google+dora+online storefront pattern",
+      "score_delta": 1,
+      "match": {
+        "operational_category": "hair",
+        "signal_mix": "google+dora+online",
+        "subtype": "storefront",
+        "min_entity_score": 70
+      },
+      "rationale": "Broad approved pattern gets only a small boost to avoid overfitting."
+    },
+    {
+      "rule_id": "boost_zone_CC01_hair_storefront_google_dora_online",
+      "effect": "boost",
+      "review_source": "approved",
+      "support_count": 1,
+      "label": "approved CC01 hair google+dora+online storefront pattern",
+      "score_delta": 3,
+      "match": {
+        "zone_id": "CC01",
+        "operational_category": "hair",
+        "signal_mix": "google+dora+online",
+        "subtype": "storefront",
+        "min_entity_score": 65
+      },
+      "rationale": "Approved reviewed unit supports a modest boost for similar same-zone patterns."
+    },
+    {
+      "rule_id": "caution_band_needs_research_hair_google_dora_online_55_69",
+      "effect": "caution",
+      "review_source": "needs_research",
+      "support_count": 1,
+      "label": "needs_research hair google+dora+online 55-69 band",
+      "score_delta": -1,
+      "match": {
+        "operational_category": "hair",
+        "signal_mix": "google+dora+online",
+        "min_entity_score": 55,
+        "max_entity_score": 69
+      },
+      "rationale": "Reviewed score band suggests caution for similar evidence quality."
+    },
+    {
+      "rule_id": "caution_band_watch_hair_google_dora_online_55_69",
+      "effect": "caution",
+      "review_source": "watch",
+      "support_count": 1,
+      "label": "watch hair google+dora+online 55-69 band",
+      "score_delta": -1,
+      "match": {
+        "operational_category": "hair",
+        "signal_mix": "google+dora+online",
+        "min_entity_score": 55,
+        "max_entity_score": 69
+      },
+      "rationale": "Reviewed score band suggests caution for similar evidence quality."
+    },
+    {
+      "rule_id": "caution_pattern_needs_research_hair_storefront_google_dora_online",
+      "effect": "caution",
+      "review_source": "needs_research",
+      "support_count": 1,
+      "label": "needs_research hair google+dora+online storefront pattern",
+      "score_delta": -3,
+      "match": {
+        "operational_category": "hair",
+        "signal_mix": "google+dora+online",
+        "subtype": "storefront",
+        "min_entity_score": 51,
+        "max_entity_score": 71
+      },
+      "rationale": "Human review flagged this exact pattern as requiring caution."
+    },
+    {
+      "rule_id": "caution_pattern_watch_hair_suite_google_dora_online",
+      "effect": "caution",
+      "review_source": "watch",
+      "support_count": 1,
+      "label": "watch hair google+dora+online suite pattern",
+      "score_delta": -2,
+      "match": {
+        "operational_category": "hair",
+        "signal_mix": "google+dora+online",
+        "subtype": "suite",
+        "min_entity_score": 54,
+        "max_entity_score": 74
+      },
+      "rationale": "Human review flagged this exact pattern as requiring caution."
+    },
+    {
+      "rule_id": "caution_zone_needs_research_DTC01_hair_storefront_google_dora_online",
+      "effect": "caution",
+      "review_source": "needs_research",
+      "support_count": 1,
+      "label": "needs_research DTC01 hair google+dora+online storefront pattern",
+      "score_delta": -2,
+      "match": {
+        "zone_id": "DTC01",
+        "operational_category": "hair",
+        "signal_mix": "google+dora+online",
+        "subtype": "storefront"
+      },
+      "rationale": "Reviewed caution observed in DTC Belleview Corridor."
+    },
+    {
+      "rule_id": "caution_zone_watch_DTC01_hair_suite_google_dora_online",
+      "effect": "caution",
+      "review_source": "watch",
+      "support_count": 1,
+      "label": "watch DTC01 hair google+dora+online suite pattern",
+      "score_delta": -2,
+      "match": {
+        "zone_id": "DTC01",
+        "operational_category": "hair",
+        "signal_mix": "google+dora+online",
+        "subtype": "suite"
+      },
+      "rationale": "Reviewed caution observed in DTC Belleview Corridor."
+    }
+  ],
+  "notes": [
+    "Rules are heuristic and deterministic; they only modestly boost or suppress similar reviewed patterns.",
+    "Strong direct evidence still dominates; ambiguous rows are never auto-promoted by feedback.",
+    "Sparse review coverage means current rules are intentionally narrow."
+  ]
+}

@@ -14,6 +14,7 @@ type AppLink = {
 const MARKETING_LINK: AppLink = { id: "marketing", label: "MARKETING", href: "/marketing-decks" };
 const LOGIN_LINK: AppLink = { id: "login", label: "LOGIN", href: "/auth/login" };
 const MARKETS_LINK: AppLink = { id: "markets", label: "MARKETS", href: "/admin/markets" };
+const LIVE_UNITS_LINK: AppLink = { id: "liveunits", label: "LIVE UNITS", href: "/admin/live-units" };
 const DATASTORE_LINK: AppLink = { id: "datastore", label: "DATA STORE", href: "/dashboard/targets" };
 const TEAM_LINK: AppLink = { id: "team", label: "TEAM", href: "/team" };
 const ADMIN_LINK: AppLink = { id: "admin", label: "ADMIN", href: "/admin" };
@@ -30,7 +31,7 @@ type Props = {
 
 export default function AppSwitchNav({ sessionUser }: Props) {
   const pathname = usePathname() || "/";
-  const links: AppLink[] = [MARKETING_LINK, LOGIN_LINK, MARKETS_LINK, DATASTORE_LINK, TEAM_LINK, ADMIN_LINK].filter(
+  const links: AppLink[] = [MARKETING_LINK, LOGIN_LINK, MARKETS_LINK, LIVE_UNITS_LINK, DATASTORE_LINK, TEAM_LINK, ADMIN_LINK].filter(
     (link) => canShowNavItem(link.id, sessionUser)
   );
   const onLogout = useCallback(async () => {

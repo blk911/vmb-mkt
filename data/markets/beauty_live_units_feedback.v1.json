@@ -1,0 +1,123 @@
+{
+  "generated_at": "2026-03-11T15:35:43.616Z",
+  "input_paths": {
+    "live_units": "C:\\dev\\vmb-mkt\\data\\markets\\beauty_live_units.v1.json",
+    "review_state": "C:\\dev\\vmb-mkt\\data\\markets\\beauty_live_units_review_state.v1.json"
+  },
+  "counts": {
+    "approved": 1,
+    "rejected": 0,
+    "ambiguous": 1,
+    "needs_research": 1,
+    "watch": 1
+  },
+  "count": 2,
+  "rows": [
+    {
+      "live_unit_id": "5efbdd505b317c1e",
+      "review_status": "needs_research",
+      "reviewed_at": "2026-03-11T15:33:36.606Z",
+      "reviewed_by": "local_smoke_test",
+      "name_display": "Color Crush Hair Studio",
+      "operational_category": "hair",
+      "subtype": "storefront",
+      "confidence": "ambiguous",
+      "signal_mix": "google+dora+online",
+      "entity_score": 61,
+      "city": "Denver",
+      "state": "CO",
+      "zip": "80237",
+      "lat": 39.6383663,
+      "lon": -104.8969615,
+      "explanation": "Google place + active DORA hair signal + online identity candidate + multiple plausible pairings",
+      "raw_snippets": {
+        "google": {
+          "id": "color_crush_hair_studio_8000_e_quincy_ave_ste_100_denver_co_80237_usa_dtc01",
+          "name": "Color Crush Hair Studio",
+          "address": "8000 E Quincy Ave ste 100, Denver, CO 80237, USA",
+          "zone_id": "DTC01",
+          "zone_name": "DTC Belleview Corridor",
+          "website_domain": "colorcrushhair.com"
+        },
+        "dora": {
+          "address_key": "8000 E QUINCY AVE | DENVER | CO | 80237",
+          "raw_license_types": [
+            "COS"
+          ],
+          "raw_names": [
+            "TANYA G MASON"
+          ],
+          "license_row_ids": [
+            "37636"
+          ]
+        },
+        "online_identity": {
+          "search_priority": "high",
+          "sample_queries": [
+            "\"TANYA G MASON\" 80237",
+            "\"TANYA G MASON\" cosmetology",
+            "\"TANYA G MASON\" cosmetology DENVER",
+            "\"TANYA G MASON\" DENVER",
+            "\"TANYA G MASON\" hair"
+          ],
+          "candidate_ids": [
+            "14c1ec44b9f8b37d"
+          ]
+        }
+      }
+    },
+    {
+      "live_unit_id": "7f00e338b978a34e",
+      "review_status": "watch",
+      "reviewed_at": "2026-03-11T15:33:36.606Z",
+      "reviewed_by": "local_smoke_test",
+      "name_display": "Sola Salons",
+      "operational_category": "hair",
+      "subtype": "suite",
+      "confidence": "candidate_review",
+      "signal_mix": "google+dora+online",
+      "entity_score": 64,
+      "city": "Greenwood Village",
+      "state": "CO",
+      "zip": "80111",
+      "lat": 39.6070263,
+      "lon": -104.8891272,
+      "explanation": "Google place + active DORA hair signal + online identity candidate",
+      "raw_snippets": {
+        "google": {
+          "id": "sola_salons_6001_s_willow_dr_greenwood_village_co_80111_usa_dtc01",
+          "name": "Sola Salons",
+          "address": "6001 S Willow Dr, Greenwood Village, CO 80111, USA",
+          "zone_id": "DTC01",
+          "zone_name": "DTC Belleview Corridor",
+          "website_domain": "solasalonstudios.com"
+        },
+        "dora": {
+          "address_key": "6001 S WILLOW DR | GREENWOOD VILLAGE | CO | 80111",
+          "raw_license_types": [
+            "COS"
+          ],
+          "raw_names": [
+            "PRIMAVERA Z ROMERO"
+          ],
+          "license_row_ids": [
+            "54390"
+          ]
+        },
+        "online_identity": {
+          "search_priority": "high",
+          "sample_queries": [
+            "\"PRIMAVERA ROMERO\" hair",
+            "\"PRIMAVERA Z ROMERO\" 80111",
+            "\"PRIMAVERA Z ROMERO\" cosmetology",
+            "\"PRIMAVERA Z ROMERO\" cosmetology GREENWOOD VILLAGE",
+            "\"PRIMAVERA Z ROMERO\" GREENWOOD VILLAGE"
+          ],
+          "candidate_ids": [
+            "7a2ca61675d6418f"
+          ]
+        }
+      }
+    }
+  ]
+}

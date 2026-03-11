@@ -77,6 +77,30 @@ export type EnrichedBeautyZoneMember = BeautyZoneMember & {
   in_largest_cluster: boolean;
 };
 
+export type ApprovedLiveUnit = {
+  live_unit_id: string;
+  name_display: string;
+  operational_category: string;
+  subtype: string;
+  signal_mix: string;
+  confidence: string;
+  entity_score: number;
+  city: string;
+  state: string;
+  zip: string;
+  lat: number | null;
+  lon: number | null;
+  primary_zone_id: string | null;
+  primary_zone_name: string | null;
+  linked_zones: Array<{
+    zone_id: string;
+    zone_name: string;
+    market: string;
+    distance_miles?: number;
+  }>;
+  explanation: string;
+};
+
 type RegionsFile = {
   regions: BeautyRegion[];
 };
@@ -94,6 +118,10 @@ type ZoneMembersFile = {
   members: BeautyZoneMember[];
 };
 
+type ApprovedLiveUnitsFile = {
+  rows?: ApprovedLiveUnit[];
+};
+
 function loadRegions(): RegionsFile {
   const filePath = path.join(process.cwd(), "data", "markets", "beauty_regions.json");
   return JSON.parse(readFileSync(filePath, "utf8")) as RegionsFile;
@@ -109,6 +137,12 @@ function loadZoneMembers(): ZoneMembersFile {
   const basePath = path.join(process.cwd(), "data", "markets", "beauty_zone_members.json");
   const filePath = existsSync(enrichedPath) ? enrichedPath : basePath;
   return JSON.parse(readFileSync(filePath, "utf8")) as ZoneMembersFile;
+}
+
+function loadApprovedLiveUnits(): ApprovedLiveUnitsFile {
+  const filePath = path.join(process.cwd(), "data", "markets", "beauty_live_units_approved.v1.json");
+  if (!existsSync(filePath)) return { rows: [] };
+  return JSON.parse(readFileSync(filePath, "utf8")) as ApprovedLiveUnitsFile;
 }
 
 export function getRegions(): BeautyRegion[] {
@@ -129,6 +163,10 @@ export function getMarketById(id: string): BeautyZone | undefined {
 
 export function getZoneMembers(): BeautyZoneMember[] {
   return loadZoneMembers().members;
+}
+
+export function getApprovedLiveUnits(): ApprovedLiveUnit[] {
+  return loadApprovedLiveUnits().rows || [];
 }
 
 function toRad(value: number): number {

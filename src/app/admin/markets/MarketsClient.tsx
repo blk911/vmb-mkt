@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import MarketZoneFilters from "@/components/admin/MarketZoneFilters";
 import type {
+  ApprovedLiveUnit,
   BeautyRegion,
   BeautyZone,
   BeautyZoneCluster,
@@ -42,9 +43,10 @@ type Props = {
   zones: BeautyZone[];
   members: EnrichedBeautyZoneMember[];
   clusters: BeautyZoneCluster[];
+  approvedLiveUnits: ApprovedLiveUnit[];
 };
 
-export default function MarketsClient({ regions, zones, members, clusters }: Props) {
+export default function MarketsClient({ regions, zones, members, clusters, approvedLiveUnits }: Props) {
   const [filters, setFilters] = useState({
     regionId: "DEN",
     zoneId: "ALL",
@@ -127,6 +129,16 @@ export default function MarketsClient({ regions, zones, members, clusters }: Pro
       suite: selectedZoneMembers.filter((member) => member.subtype === "suite").length,
     };
   }, [selectedZoneMembers]);
+
+  const selectedZoneApprovedLiveUnits = useMemo(() => {
+    if (filters.zoneId === "ALL") return [];
+    return approvedLiveUnits
+      .filter((unit) => unit.linked_zones.some((zone) => zone.zone_id === filters.zoneId))
+      .sort((a, b) => {
+        if (b.entity_score !== a.entity_score) return b.entity_score - a.entity_score;
+        return a.name_display.localeCompare(b.name_display);
+      });
+  }, [approvedLiveUnits, filters.zoneId]);
 
   const selectedZoneClusters = useMemo(() => {
     if (filters.zoneId === "ALL") return [];
@@ -232,7 +244,7 @@ export default function MarketsClient({ regions, zones, members, clusters }: Pro
           </div>
 
           <div className="border-b border-neutral-200 px-4 py-4">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-8">
               {[
                 { label: "Total Members", value: selectedZoneSummary.total },
                 { label: "Hair", value: selectedZoneSummary.hair },
@@ -241,6 +253,7 @@ export default function MarketsClient({ regions, zones, members, clusters }: Pro
                 { label: "Barber", value: selectedZoneSummary.barber },
                 { label: "Spa", value: selectedZoneSummary.spa },
                 { label: "Suite", value: selectedZoneSummary.suite },
+                { label: "Approved Units", value: selectedZoneApprovedLiveUnits.length },
               ].map((item) => (
                 <div key={item.label} className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2">
                   <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
@@ -473,6 +486,59 @@ export default function MarketsClient({ regions, zones, members, clusters }: Pro
               No matched businesses yet for this zone.
             </p>
           )}
+
+          <div className="border-t border-neutral-200 px-4 py-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold text-neutral-900">Approved Live Units</h3>
+                <p className="text-xs text-neutral-500">
+                  Reviewed-and-approved entity layer for this selected zone
+                </p>
+              </div>
+              <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">
+                {selectedZoneApprovedLiveUnits.length} approved
+              </span>
+            </div>
+
+            {selectedZoneApprovedLiveUnits.length ? (
+              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {selectedZoneApprovedLiveUnits.map((unit) => (
+                  <article
+                    key={unit.live_unit_id}
+                    className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-3"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="text-sm font-semibold text-neutral-900">{unit.name_display}</div>
+                        <div className="mt-1 text-xs text-neutral-600">
+                          {unit.operational_category} · {unit.subtype}
+                        </div>
+                      </div>
+                      <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">
+                        {unit.entity_score}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <span className="inline-flex rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700">
+                        {unit.confidence}
+                      </span>
+                      <span className="inline-flex rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700">
+                        {unit.signal_mix}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 text-sm text-neutral-600">
+                      {[unit.city, unit.state, unit.zip].filter(Boolean).join(", ")}
+                    </div>
+                    <p className="mt-2 text-sm text-neutral-600">{unit.explanation}</p>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-neutral-600">No approved live units linked to this zone yet.</p>
+            )}
+          </div>
         </section>
       ) : null}
     </div>

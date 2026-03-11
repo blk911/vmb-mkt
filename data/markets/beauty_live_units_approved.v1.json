@@ -1,0 +1,36 @@
+{
+  "generated_at": "2026-03-11T15:35:43.616Z",
+  "input_paths": {
+    "live_units": "C:\\dev\\vmb-mkt\\data\\markets\\beauty_live_units.v1.json",
+    "review_state": "C:\\dev\\vmb-mkt\\data\\markets\\beauty_live_units_review_state.v1.json",
+    "zones": "C:\\dev\\vmb-mkt\\data\\markets\\beauty_zones.json"
+  },
+  "count": 1,
+  "rows": [
+    {
+      "live_unit_id": "93c53bb6b078822a",
+      "name_display": "Tolga Taskin Salon",
+      "operational_category": "hair",
+      "subtype": "storefront",
+      "signal_mix": "google+dora+online",
+      "confidence": "strong",
+      "entity_score": 90,
+      "city": "Denver",
+      "state": "CO",
+      "zip": "80206",
+      "lat": 39.7208275,
+      "lon": -104.9554734,
+      "primary_zone_id": "CC01",
+      "primary_zone_name": "Cherry Creek Core",
+      "linked_zones": [
+        {
+          "zone_id": "CC01",
+          "zone_name": "Cherry Creek Core",
+          "market": "Cherry Creek",
+          "distance_miles": 0.13
+        }
+      ],
+      "explanation": "Google place + active DORA hair signal + online identity candidate"
+    }
+  ]
+}

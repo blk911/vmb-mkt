@@ -1,0 +1,3315 @@
+{
+  "generated_at": "2026-03-11T14:31:03.545Z",
+  "input_google_path": "C:\\dev\\vmb-mkt\\data\\markets\\beauty_zone_members.json",
+  "input_google_candidates_path": "C:\\dev\\vmb-mkt\\data\\co\\dora\\denver_metro\\places\\derived\\places_candidates.v1.json",
+  "input_dora_roster_path": "C:\\dev\\vmb-mkt\\data\\co\\dora\\denver_metro\\dora\\derived\\dora_roster_index.v1.json",
+  "input_dora_coords_path": "C:\\dev\\vmb-mkt\\data\\co\\dora\\denver_metro\\dora\\derived\\dora_address_coords.v1.json",
+  "thresholds": {
+    "min_match_score": 50,
+    "strong_match_score": 80,
+    "likely_match_score": 65,
+    "max_distance_miles": 0.5
+  },
+  "counts": {
+    "google_rows_loaded": 278,
+    "dora_address_groups_loaded": 324,
+    "dora_active_licenses_loaded": 614,
+    "strong_matches": 1,
+    "likely_matches": 5,
+    "weak_matches": 27,
+    "total_match_records": 33,
+    "matched_google_rows": 28,
+    "matched_dora_address_groups": 15,
+    "unmatched_google_rows": 250,
+    "unmatched_dora_licenses": 586,
+    "dora_active_licenses_skipped_without_coords": 34971
+  },
+  "matches": [
+    {
+      "match_id": "67e30dafff664d49",
+      "google": {
+        "id": "tolga_taskin_salon_2708_e_3rd_ave_denver_co_80206_usa_cc01",
+        "location_id": "tolga_taskin_salon_2708_e_3rd_ave_denver_co_80206_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "Tolga Taskin Salon",
+        "address": "2708 E 3rd Ave, Denver, CO 80206, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7208275,
+        "lon": -104.9554734,
+        "category": "hair",
+        "category_raw": "beauty_salon",
+        "category_source_labels_raw": [
+          "beauty_salon",
+          "hair_care",
+          "salon",
+          "hair",
+          "beauty"
+        ],
+        "google_types_raw": [
+          "beauty_salon",
+          "establishment",
+          "hair_care",
+          "health",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 6,
+        "is_anchor": false,
+        "phone": "(303) 399-8999",
+        "website": "https://www.tolgataskinsalons.com/",
+        "website_domain": "tolgataskinsalons.com",
+        "top_place_id": "ChIJ9abAEpZ-bIcRmV3R3IDv6qQ",
+        "chosen_place_id": "ChIJ9abAEpZ-bIcRmV3R3IDv6qQ"
+      },
+      "dora": {
+        "id": "2708 E 3RD AVE | DENVER | CO | 80206",
+        "address_key": "2708 E 3RD AVE | DENVER | CO | 80206",
+        "address_key_base": "2708 E 3RD AVE | DENVER | CO | 80206",
+        "street": "2708 E 3RD AVE",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7208188,
+        "lon": -104.9554927,
+        "coord_source": "google_geocode",
+        "active_license_count": 4,
+        "operational_mix": {
+          "hair": 4,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "TOLGA TASKIN"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "52994",
+          "61663",
+          "61664",
+          "74719"
+        ]
+      },
+      "normalized": {
+        "google_name": "tolga taskin",
+        "dora_name": "tolga taskin",
+        "google_address_key": "2708 e 3rd ave|denver|co|80206",
+        "dora_address_key": "2708 e 3rd ave|denver|co|80206",
+        "exact_address_match": true,
+        "base_address_match": false,
+        "distance_miles": 0.0012,
+        "distance_meters": 2,
+        "token_overlap": 1,
+        "fuzzy_similarity": 1,
+        "exact_name_match": true
+      },
+      "scores": {
+        "name_score": 25,
+        "address_score": 25,
+        "distance_score": 25,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 90
+      },
+      "match_confidence": "strong"
+    },
+    {
+      "match_id": "1dc237494deaa99a",
+      "google": {
+        "id": "angel_glow_artistry_salon_lofts_3330_e_1st_ave_denver_co_80206_usa_cc01",
+        "location_id": "angel_glow_artistry_salon_lofts_3330_e_1st_ave_denver_co_80206_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "Angel Glow Artistry",
+        "address": "Salon Lofts, 3330 E 1st Ave, Denver, CO 80206, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7175907,
+        "lon": -104.9479084,
+        "category": "hair",
+        "category_raw": "beauty_salon",
+        "category_source_labels_raw": [
+          "beauty_salon",
+          "salon",
+          "beauty"
+        ],
+        "google_types_raw": [
+          "beauty_salon",
+          "establishment",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 5,
+        "is_anchor": false,
+        "phone": "(720) 841-6680",
+        "website": "https://angelglowartistry.com/",
+        "website_domain": "angelglowartistry.com",
+        "top_place_id": "ChIJ6ZmR1Jl_bIcRYiwHWpZ6lhM",
+        "chosen_place_id": "ChIJ6ZmR1Jl_bIcRYiwHWpZ6lhM"
+      },
+      "dora": {
+        "id": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "address_key": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "address_key_base": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "street": "3330 E 1ST AVE",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7175907,
+        "lon": -104.9479084,
+        "coord_source": "beauty_zone_member",
+        "active_license_count": 3,
+        "operational_mix": {
+          "hair": 3,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "ANGEL VYVY HOANG",
+          "BERNADITA RODRIGUEZ",
+          "BRITNI LEIGH BARNELLO"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "25896",
+          "3208",
+          "45718"
+        ]
+      },
+      "normalized": {
+        "google_name": "angel glow artistry",
+        "dora_name": "angel vyvy hoang",
+        "google_address_key": "3330 e 1st ave|denver|co|80206",
+        "dora_address_key": "3330 e 1st ave|denver|co|80206",
+        "exact_address_match": true,
+        "base_address_match": false,
+        "distance_miles": 0,
+        "distance_meters": 0,
+        "token_overlap": 0.2,
+        "fuzzy_similarity": 0.368,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 8,
+        "address_score": 25,
+        "distance_score": 25,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 73
+      },
+      "match_confidence": "likely"
+    },
+    {
+      "match_id": "e0719cd0c80a7458",
+      "google": {
+        "id": "define_hair_salon_62_w_11th_ave_denver_co_80204_usa_dt01",
+        "location_id": "define_hair_salon_62_w_11th_ave_denver_co_80204_usa_dt01",
+        "zone_id": "DT01",
+        "zone_name": "Downtown Denver Beauty Corridor",
+        "market": "Downtown Denver",
+        "name": "Define Hair Salon ✂",
+        "address": "62 W 11th Ave, Denver, CO 80204, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80204",
+        "lat": 39.7337148,
+        "lon": -104.9884968,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "salon",
+          "hair"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 5,
+        "is_anchor": false,
+        "phone": "(720) 638-9499",
+        "website": "http://www.definehairsalon.com/",
+        "website_domain": "definehairsalon.com",
+        "top_place_id": "ChIJUdB7Nyp_bIcRNlm2u_aEMc8",
+        "chosen_place_id": "ChIJUdB7Nyp_bIcRNlm2u_aEMc8"
+      },
+      "dora": {
+        "id": "62 W 11TH AVE | DENVER | CO | 80204",
+        "address_key": "62 W 11TH AVE | DENVER | CO | 80204",
+        "address_key_base": "62 W 11TH AVE | DENVER | CO | 80204",
+        "street": "62 W 11TH AVE",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80204",
+        "lat": 39.7337148,
+        "lon": -104.9884968,
+        "coord_source": "google_geocode",
+        "active_license_count": 2,
+        "operational_mix": {
+          "hair": 2,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "CHARLSEY DANIELLE MCMAHON",
+          "LINDSEY MARIE MORGAN"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "36044",
+          "72316"
+        ]
+      },
+      "normalized": {
+        "google_name": "define hair",
+        "dora_name": "lindsey marie morgan",
+        "google_address_key": "62 w 11th ave|denver|co|80204",
+        "dora_address_key": "62 w 11th ave|denver|co|80204",
+        "exact_address_match": true,
+        "base_address_match": false,
+        "distance_miles": 0,
+        "distance_meters": 0,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.25,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 5,
+        "address_score": 25,
+        "distance_score": 25,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 70
+      },
+      "match_confidence": "likely"
+    },
+    {
+      "match_id": "35e0bec6bc282929",
+      "google": {
+        "id": "perlino_cherry_creek_3375_e_ellsworth_ave_denver_co_80209_usa_cc01",
+        "location_id": "perlino_cherry_creek_3375_e_ellsworth_ave_denver_co_80209_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "Perlino - Cherry Creek ✂",
+        "address": "3375 E Ellsworth Ave, Denver, CO 80209, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80209",
+        "lat": 39.7164246,
+        "lon": -104.947733,
+        "category": "hair",
+        "category_raw": "beauty_salon",
+        "category_source_labels_raw": [
+          "beauty_salon",
+          "hair_care",
+          "salon",
+          "hair",
+          "beauty"
+        ],
+        "google_types_raw": [
+          "beauty_salon",
+          "establishment",
+          "hair_care",
+          "health",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 6,
+        "is_anchor": false,
+        "phone": "(720) 706-8880",
+        "website": "https://tinyurl.com/perlinobeauty",
+        "website_domain": "tinyurl.com",
+        "top_place_id": "ChIJ3zEnTZp-bIcRj3CPvEY85X4",
+        "chosen_place_id": "ChIJ3zEnTZp-bIcRj3CPvEY85X4"
+      },
+      "dora": {
+        "id": "3375 E ELLSWORTH AVE | DENVER | CO | 80209",
+        "address_key": "3375 E ELLSWORTH AVE | DENVER | CO | 80209",
+        "address_key_base": "3375 E ELLSWORTH AVE | DENVER | CO | 80209",
+        "street": "3375 E ELLSWORTH AVE",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80209",
+        "lat": 39.7163635,
+        "lon": -104.9478238,
+        "coord_source": "google_geocode",
+        "active_license_count": 3,
+        "operational_mix": {
+          "hair": 3,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "BROOKE HOBBS",
+          "HALEY JO JOHNSON",
+          "ROMAINE MARIE MENDICINO-PEARMAN"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "25154",
+          "29920",
+          "41816"
+        ]
+      },
+      "normalized": {
+        "google_name": "perlino cherry creek",
+        "dora_name": "brooke hobbs",
+        "google_address_key": "3375 e ellsworth ave|denver|co|80209",
+        "dora_address_key": "3375 e ellsworth ave|denver|co|80209",
+        "exact_address_match": true,
+        "base_address_match": false,
+        "distance_miles": 0.0064,
+        "distance_meters": 10,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.2,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 4,
+        "address_score": 25,
+        "distance_score": 25,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 69
+      },
+      "match_confidence": "likely"
+    },
+    {
+      "match_id": "860b918bc163898e",
+      "google": {
+        "id": "salon_lofts_3330_e_1st_ave_denver_co_80206_usa_cc01",
+        "location_id": "salon_lofts_3330_e_1st_ave_denver_co_80206_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "Salon Lofts",
+        "address": "3330 E 1st Ave, Denver, CO 80206, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7175907,
+        "lon": -104.9479084,
+        "category": "hair",
+        "category_raw": "beauty_salon",
+        "category_source_labels_raw": [
+          "beauty_salon",
+          "hair_care",
+          "salon",
+          "hair",
+          "beauty"
+        ],
+        "google_types_raw": [
+          "beauty_salon",
+          "establishment",
+          "hair_care",
+          "health",
+          "point_of_interest"
+        ],
+        "subtype": "suite",
+        "source": "places_candidates.v1.json",
+        "priority_score": 11,
+        "is_anchor": true,
+        "phone": "(303) 647-7440",
+        "website": "https://salonlofts.com/salons/cherry_creek?utm_source=apple_maps&utm_medium=organic&utm_campaign=yext",
+        "website_domain": "salonlofts.com",
+        "top_place_id": "ChIJc0gPxXN_bIcRqNBI5pQotKE",
+        "chosen_place_id": "ChIJc0gPxXN_bIcRqNBI5pQotKE"
+      },
+      "dora": {
+        "id": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "address_key": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "address_key_base": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "street": "3330 E 1ST AVE",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7175907,
+        "lon": -104.9479084,
+        "coord_source": "beauty_zone_member",
+        "active_license_count": 3,
+        "operational_mix": {
+          "hair": 3,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "ANGEL VYVY HOANG",
+          "BERNADITA RODRIGUEZ",
+          "BRITNI LEIGH BARNELLO"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "25896",
+          "3208",
+          "45718"
+        ]
+      },
+      "normalized": {
+        "google_name": "lofts",
+        "dora_name": "angel vyvy hoang",
+        "google_address_key": "3330 e 1st ave|denver|co|80206",
+        "dora_address_key": "3330 e 1st ave|denver|co|80206",
+        "exact_address_match": true,
+        "base_address_match": false,
+        "distance_miles": 0,
+        "distance_meters": 0,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.125,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 3,
+        "address_score": 25,
+        "distance_score": 25,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 68
+      },
+      "match_confidence": "likely"
+    },
+    {
+      "match_id": "315491fb6d3d9965",
+      "google": {
+        "id": "klm_hair_denver_44_cook_st_suite_200_studio_31_denver_co_80206_usa_cc01",
+        "location_id": "klm_hair_denver_44_cook_st_suite_200_studio_31_denver_co_80206_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "KLM Hair Denver",
+        "address": "44 Cook St Suite 200, Studio 31, Denver, CO 80206, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7167326,
+        "lon": -104.9468709,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "hair"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 4,
+        "is_anchor": false,
+        "phone": "",
+        "website": "http://www.kelseylynnmorrison.com/",
+        "website_domain": "kelseylynnmorrison.com",
+        "top_place_id": "ChIJc3axe3Z9bIcRyy-k2JCmHBE",
+        "chosen_place_id": "ChIJc3axe3Z9bIcRyy-k2JCmHBE"
+      },
+      "dora": {
+        "id": "44 COOK ST | DENVER | CO | 80206",
+        "address_key": "44 COOK ST | DENVER | CO | 80206",
+        "address_key_base": "44 COOK ST | DENVER | CO | 80206",
+        "street": "44 COOK ST",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7167326,
+        "lon": -104.9468709,
+        "coord_source": "beauty_zone_member",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "BLAIR SMITH"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "66618"
+        ]
+      },
+      "normalized": {
+        "google_name": "klm hair denver",
+        "dora_name": "blair smith",
+        "google_address_key": "44 cook st suite 200 studio 31|denver|co|80206",
+        "dora_address_key": "44 cook st|denver|co|80206",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0,
+        "distance_meters": 0,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.333,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 7,
+        "address_score": 18,
+        "distance_score": 25,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 65
+      },
+      "match_confidence": "likely"
+    },
+    {
+      "match_id": "cea96e6bff504684",
+      "google": {
+        "id": "allure_hair_studio_44_cook_st_suite_200_unit_29_denver_co_80206_usa_cc01",
+        "location_id": "allure_hair_studio_44_cook_st_suite_200_unit_29_denver_co_80206_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "Allure Hair Studio",
+        "address": "44 Cook St Suite 200 Unit 29, Denver, CO 80206, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7167326,
+        "lon": -104.9468709,
+        "category": "hair",
+        "category_raw": "beauty_salon",
+        "category_source_labels_raw": [
+          "beauty_salon",
+          "hair_care",
+          "salon",
+          "hair",
+          "beauty",
+          "studio"
+        ],
+        "google_types_raw": [
+          "beauty_salon",
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 6,
+        "is_anchor": false,
+        "phone": "(303) 715-1000",
+        "website": "http://www.allurehairstudio.com/",
+        "website_domain": "allurehairstudio.com",
+        "top_place_id": "ChIJQ0WvoeN-bIcRxb5Y9rdbsOI",
+        "chosen_place_id": "ChIJQ0WvoeN-bIcRxb5Y9rdbsOI"
+      },
+      "dora": {
+        "id": "44 COOK ST | DENVER | CO | 80206",
+        "address_key": "44 COOK ST | DENVER | CO | 80206",
+        "address_key_base": "44 COOK ST | DENVER | CO | 80206",
+        "street": "44 COOK ST",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7167326,
+        "lon": -104.9468709,
+        "coord_source": "beauty_zone_member",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "BLAIR SMITH"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "66618"
+        ]
+      },
+      "normalized": {
+        "google_name": "allure hair",
+        "dora_name": "blair smith",
+        "google_address_key": "44 cook st suite 200 unit 29|denver|co|80206",
+        "dora_address_key": "44 cook st|denver|co|80206",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0,
+        "distance_meters": 0,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.273,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 6,
+        "address_score": 18,
+        "distance_score": 25,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 64
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "184feab3396f1c5b",
+      "google": {
+        "id": "bass_haven_salon_44_cook_st_unit_200_suite_28_denver_co_80206_usa_cc01",
+        "location_id": "bass_haven_salon_44_cook_st_unit_200_suite_28_denver_co_80206_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "Bass Haven Salon",
+        "address": "44 Cook St Unit 200 Suite 28, Denver, CO 80206, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7167326,
+        "lon": -104.9468709,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "salon",
+          "hair"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 4,
+        "is_anchor": false,
+        "phone": "(720) 756-6945",
+        "website": "https://www.ravebabesalon.com/",
+        "website_domain": "ravebabesalon.com",
+        "top_place_id": "ChIJCa78L0d_bIcRS63D2BcbSlo",
+        "chosen_place_id": "ChIJCa78L0d_bIcRS63D2BcbSlo"
+      },
+      "dora": {
+        "id": "44 COOK ST | DENVER | CO | 80206",
+        "address_key": "44 COOK ST | DENVER | CO | 80206",
+        "address_key_base": "44 COOK ST | DENVER | CO | 80206",
+        "street": "44 COOK ST",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7167326,
+        "lon": -104.9468709,
+        "coord_source": "beauty_zone_member",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "BLAIR SMITH"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "66618"
+        ]
+      },
+      "normalized": {
+        "google_name": "bass haven",
+        "dora_name": "blair smith",
+        "google_address_key": "44 cook st unit 200 suite 28|denver|co|80206",
+        "dora_address_key": "44 cook st|denver|co|80206",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0,
+        "distance_meters": 0,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.273,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 6,
+        "address_score": 18,
+        "distance_score": 25,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 64
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "fae48378f6795768",
+      "google": {
+        "id": "sola_salons_6001_s_willow_dr_greenwood_village_co_80111_usa_dtc01",
+        "location_id": "sola_salons_6001_s_willow_dr_greenwood_village_co_80111_usa_dtc01",
+        "zone_id": "DTC01",
+        "zone_name": "DTC Belleview Corridor",
+        "market": "DTC / Greenwood Village",
+        "name": "Sola Salons",
+        "address": "6001 S Willow Dr, Greenwood Village, CO 80111, USA",
+        "city": "Greenwood Village",
+        "state": "CO",
+        "zip": "80111",
+        "lat": 39.6070263,
+        "lon": -104.8891272,
+        "category": "hair",
+        "category_raw": "beauty_salon",
+        "category_source_labels_raw": [
+          "beauty_salon",
+          "hair_care",
+          "salon",
+          "hair",
+          "beauty"
+        ],
+        "google_types_raw": [
+          "beauty_salon",
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "suite",
+        "source": "places_candidates.v1.json",
+        "priority_score": 11,
+        "is_anchor": true,
+        "phone": "(303) 641-3208",
+        "website": "https://www.solasalonstudios.com/locations/denver-tech-center?utm_source=gmb&utm_medium=organic",
+        "website_domain": "solasalonstudios.com",
+        "top_place_id": "ChIJP4ZpAGGGbIcRfh1Uo5axhWc",
+        "chosen_place_id": "ChIJP4ZpAGGGbIcRfh1Uo5axhWc"
+      },
+      "dora": {
+        "id": "6001 S WILLOW DR | GREENWOOD VILLAGE | CO | 80111",
+        "address_key": "6001 S WILLOW DR | GREENWOOD VILLAGE | CO | 80111",
+        "address_key_base": "6001 S WILLOW DR | GREENWOOD VILLAGE | CO | 80111",
+        "street": "6001 S WILLOW DR",
+        "city": "GREENWOOD VILLAGE",
+        "state": "CO",
+        "zip": "80111",
+        "lat": 39.6073025,
+        "lon": -104.8893892,
+        "coord_source": "beauty_zone_member",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "PRIMAVERA Z ROMERO"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "54390"
+        ]
+      },
+      "normalized": {
+        "google_name": "sola salons",
+        "dora_name": "primavera z romero",
+        "google_address_key": "6001 s willow dr|greenwood village|co|80111",
+        "dora_address_key": "6001 s willow dr|greenwood village|co|80111",
+        "exact_address_match": true,
+        "base_address_match": false,
+        "distance_miles": 0.0236,
+        "distance_meters": 38,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.167,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 4,
+        "address_score": 25,
+        "distance_score": 20,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 64
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "f3d76adc6a09534a",
+      "google": {
+        "id": "black_moon_collective_1111_n_broadway_suite_309_denver_co_80203_usa_dt01",
+        "location_id": "black_moon_collective_1111_n_broadway_suite_309_denver_co_80203_usa_dt01",
+        "zone_id": "DT01",
+        "zone_name": "Downtown Denver Beauty Corridor",
+        "market": "Downtown Denver",
+        "name": "Black Moon Collective",
+        "address": "1111 N Broadway Suite 309, Denver, CO 80203, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80203",
+        "lat": 39.7489202,
+        "lon": -104.9873656,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "hair"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 4,
+        "is_anchor": false,
+        "phone": "(303) 481-2857",
+        "website": "http://blackmooncollective.square.site/",
+        "website_domain": "blackmooncollective.square.site",
+        "top_place_id": "ChIJndM3bqR_bIcRX4Ya2Pp-tMw",
+        "chosen_place_id": "ChIJndM3bqR_bIcRX4Ya2Pp-tMw"
+      },
+      "dora": {
+        "id": "1111 N BROADWAY | DENVER | CO | 80203",
+        "address_key": "1111 N BROADWAY | DENVER | CO | 80203",
+        "address_key_base": "1111 N BROADWAY | DENVER | CO | 80203",
+        "street": "1111 N BROADWAY",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80203",
+        "lat": 39.7489202,
+        "lon": -104.9873656,
+        "coord_source": "beauty_zone_member",
+        "active_license_count": 4,
+        "operational_mix": {
+          "hair": 4,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "ABREAN SOPHIA MARI WEIDELL",
+          "RILEY J FEDEL",
+          "SAMANTHA PIPER PRICE",
+          "TAMI WARD"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "15044",
+          "46442",
+          "64466",
+          "67909"
+        ]
+      },
+      "normalized": {
+        "google_name": "black moon collective",
+        "dora_name": "abrean sophia mari weidell",
+        "google_address_key": "1111 n broadway suite 309|denver|co|80203",
+        "dora_address_key": "1111 n broadway|denver|co|80203",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0,
+        "distance_meters": 0,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.231,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 5,
+        "address_score": 18,
+        "distance_score": 25,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 63
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "a588cc43f69e31e8",
+      "google": {
+        "id": "dank_hair_3330_e_1st_ave_ste_48_denver_co_80206_usa_cc01",
+        "location_id": "dank_hair_3330_e_1st_ave_ste_48_denver_co_80206_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "Dank Hair",
+        "address": "3330 E 1st Ave ste 48, Denver, CO 80206, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7175907,
+        "lon": -104.9479084,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "hair"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 4,
+        "is_anchor": false,
+        "phone": "",
+        "website": "https://www.dank.hair/",
+        "website_domain": "dank.hair",
+        "top_place_id": "ChIJRSN-Dzx_bIcRNYda6B7I0R8",
+        "chosen_place_id": "ChIJRSN-Dzx_bIcRNYda6B7I0R8"
+      },
+      "dora": {
+        "id": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "address_key": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "address_key_base": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "street": "3330 E 1ST AVE",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7175907,
+        "lon": -104.9479084,
+        "coord_source": "beauty_zone_member",
+        "active_license_count": 3,
+        "operational_mix": {
+          "hair": 3,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "ANGEL VYVY HOANG",
+          "BERNADITA RODRIGUEZ",
+          "BRITNI LEIGH BARNELLO"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "25896",
+          "3208",
+          "45718"
+        ]
+      },
+      "normalized": {
+        "google_name": "dank hair",
+        "dora_name": "angel vyvy hoang",
+        "google_address_key": "3330 e 1st ave ste 48|denver|co|80206",
+        "dora_address_key": "3330 e 1st ave|denver|co|80206",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0,
+        "distance_meters": 0,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.25,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 5,
+        "address_score": 18,
+        "distance_score": 25,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 63
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "f1513331b9c45380",
+      "google": {
+        "id": "color_crush_hair_studio_8000_e_quincy_ave_ste_100_denver_co_80237_usa_dtc01",
+        "location_id": "color_crush_hair_studio_8000_e_quincy_ave_ste_100_denver_co_80237_usa_dtc01",
+        "zone_id": "DTC01",
+        "zone_name": "DTC Belleview Corridor",
+        "market": "DTC / Greenwood Village",
+        "name": "Color Crush Hair Studio",
+        "address": "8000 E Quincy Ave ste 100, Denver, CO 80237, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80237",
+        "lat": 39.6383663,
+        "lon": -104.8969615,
+        "category": "hair",
+        "category_raw": "beauty_salon",
+        "category_source_labels_raw": [
+          "beauty_salon",
+          "hair_care",
+          "salon",
+          "hair",
+          "beauty",
+          "studio"
+        ],
+        "google_types_raw": [
+          "beauty_salon",
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 6,
+        "is_anchor": false,
+        "phone": "(720) 899-0826",
+        "website": "http://www.colorcrushhair.com/",
+        "website_domain": "colorcrushhair.com",
+        "top_place_id": "ChIJ80nFZESHbIcRNlKozVWkaYM",
+        "chosen_place_id": "ChIJ80nFZESHbIcRNlKozVWkaYM"
+      },
+      "dora": {
+        "id": "8000 E QUINCY AVE | DENVER | CO | 80237",
+        "address_key": "8000 E QUINCY AVE | DENVER | CO | 80237",
+        "address_key_base": "8000 E QUINCY AVE | DENVER | CO | 80237",
+        "street": "8000 E QUINCY AVE",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80237",
+        "lat": 39.6383663,
+        "lon": -104.8969615,
+        "coord_source": "beauty_zone_member",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "TANYA G MASON"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "37636"
+        ]
+      },
+      "normalized": {
+        "google_name": "color crush hair",
+        "dora_name": "tanya g mason",
+        "google_address_key": "8000 e quincy ave ste 100|denver|co|80237",
+        "dora_address_key": "8000 e quincy ave|denver|co|80237",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0,
+        "distance_meters": 0,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.125,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 3,
+        "address_score": 18,
+        "distance_score": 25,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 61
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "e50025834832c0fd",
+      "google": {
+        "id": "dh_salons_in_cherry_creek_44_cook_st_suite_200_studio_25_denver_co_80206_usa_cc01",
+        "location_id": "dh_salons_in_cherry_creek_44_cook_st_suite_200_studio_25_denver_co_80206_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "DH Salons in Cherry Creek",
+        "address": "44 Cook St suite 200 studio 25, Denver, CO 80206, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7167326,
+        "lon": -104.9468709,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "salon",
+          "hair"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 4,
+        "is_anchor": false,
+        "phone": "(720) 469-1898",
+        "website": "https://diegohuizar.glossgenius.com/",
+        "website_domain": "diegohuizar.glossgenius.com",
+        "top_place_id": "ChIJh86Y9ld_bIcRbG-nwBj3zSA",
+        "chosen_place_id": "ChIJh86Y9ld_bIcRbG-nwBj3zSA"
+      },
+      "dora": {
+        "id": "44 COOK ST | DENVER | CO | 80206",
+        "address_key": "44 COOK ST | DENVER | CO | 80206",
+        "address_key_base": "44 COOK ST | DENVER | CO | 80206",
+        "street": "44 COOK ST",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7167326,
+        "lon": -104.9468709,
+        "coord_source": "beauty_zone_member",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "BLAIR SMITH"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "66618"
+        ]
+      },
+      "normalized": {
+        "google_name": "dh salons in cherry creek",
+        "dora_name": "blair smith",
+        "google_address_key": "44 cook st suite 200 studio 25|denver|co|80206",
+        "dora_address_key": "44 cook st|denver|co|80206",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0,
+        "distance_meters": 0,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.16,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 3,
+        "address_score": 18,
+        "distance_score": 25,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 61
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "5d9daaddcfd7d786",
+      "google": {
+        "id": "alfandi_hair_studio_44_cook_st_ste_200_studio_15_denver_co_80206_usa_cc01",
+        "location_id": "alfandi_hair_studio_44_cook_st_ste_200_studio_15_denver_co_80206_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "Alfandi Hair Studio",
+        "address": "44 Cook St Ste 200 STUDIO 15, Denver, CO 80206, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7166602,
+        "lon": -104.9470714,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "hair",
+          "studio"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 4,
+        "is_anchor": false,
+        "phone": "",
+        "website": "https://jaclynalfandi.glossgenius.com/",
+        "website_domain": "jaclynalfandi.glossgenius.com",
+        "top_place_id": "ChIJYTRVZ_2_aKgRx4UibMBHEtQ",
+        "chosen_place_id": "ChIJYTRVZ_2_aKgRx4UibMBHEtQ"
+      },
+      "dora": {
+        "id": "44 COOK ST | DENVER | CO | 80206",
+        "address_key": "44 COOK ST | DENVER | CO | 80206",
+        "address_key_base": "44 COOK ST | DENVER | CO | 80206",
+        "street": "44 COOK ST",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7167326,
+        "lon": -104.9468709,
+        "coord_source": "beauty_zone_member",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "BLAIR SMITH"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "66618"
+        ]
+      },
+      "normalized": {
+        "google_name": "alfandi hair",
+        "dora_name": "blair smith",
+        "google_address_key": "44 cook st ste 200 studio 15|denver|co|80206",
+        "dora_address_key": "44 cook st|denver|co|80206",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0.0118,
+        "distance_meters": 19,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.25,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 5,
+        "address_score": 18,
+        "distance_score": 20,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 58
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "2abcd90b586a8b52",
+      "google": {
+        "id": "the_modern_salonstudios_8000_e_quincy_ave_denver_co_80237_usa_dtc01",
+        "location_id": "the_modern_salonstudios_8000_e_quincy_ave_denver_co_80237_usa_dtc01",
+        "zone_id": "DTC01",
+        "zone_name": "DTC Belleview Corridor",
+        "market": "DTC / Greenwood Village",
+        "name": "the MODERN SalonStudios",
+        "address": "8000 E Quincy Ave, Denver, CO 80237, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80237",
+        "lat": 39.6375661,
+        "lon": -104.8979744,
+        "category": "hair",
+        "category_raw": "beauty_salon",
+        "category_source_labels_raw": [
+          "beauty_salon",
+          "hair_care",
+          "salon",
+          "hair",
+          "beauty",
+          "studio"
+        ],
+        "google_types_raw": [
+          "beauty_salon",
+          "establishment",
+          "hair_care",
+          "health",
+          "point_of_interest",
+          "real_estate_agency"
+        ],
+        "subtype": "suite",
+        "source": "places_candidates.v1.json",
+        "priority_score": 11,
+        "is_anchor": true,
+        "phone": "(720) 838-3114",
+        "website": "http://www.modernsalonstudios.com/",
+        "website_domain": "modernsalonstudios.com",
+        "top_place_id": "ChIJt4_UZa-HbIcRIcVI8wHygkc",
+        "chosen_place_id": "ChIJt4_UZa-HbIcRIcVI8wHygkc"
+      },
+      "dora": {
+        "id": "8000 E QUINCY AVE | DENVER | CO | 80237",
+        "address_key": "8000 E QUINCY AVE | DENVER | CO | 80237",
+        "address_key_base": "8000 E QUINCY AVE | DENVER | CO | 80237",
+        "street": "8000 E QUINCY AVE",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80237",
+        "lat": 39.6383663,
+        "lon": -104.8969615,
+        "coord_source": "beauty_zone_member",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "TANYA G MASON"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "37636"
+        ]
+      },
+      "normalized": {
+        "google_name": "the modern salonstudios",
+        "dora_name": "tanya g mason",
+        "google_address_key": "8000 e quincy ave|denver|co|80237",
+        "dora_address_key": "8000 e quincy ave|denver|co|80237",
+        "exact_address_match": true,
+        "base_address_match": false,
+        "distance_miles": 0.0772,
+        "distance_meters": 124,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.217,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 5,
+        "address_score": 25,
+        "distance_score": 12,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 57
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "394fc1f68e43e9e2",
+      "google": {
+        "id": "the_parlour_lower_downtown_1736_wynkoop_st_denver_co_80202_usa_dt01",
+        "location_id": "the_parlour_lower_downtown_1736_wynkoop_st_denver_co_80202_usa_dt01",
+        "zone_id": "DT01",
+        "zone_name": "Downtown Denver Beauty Corridor",
+        "market": "Downtown Denver",
+        "name": "The Parlour Lower Downtown",
+        "address": "1736 Wynkoop St, Denver, CO 80202, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80202",
+        "lat": 39.7531653,
+        "lon": -104.9990414,
+        "category": "hair",
+        "category_raw": "beauty_salon",
+        "category_source_labels_raw": [
+          "beauty_salon",
+          "salon",
+          "beauty"
+        ],
+        "google_types_raw": [
+          "beauty_salon",
+          "establishment",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 5,
+        "is_anchor": false,
+        "phone": "(303) 296-7490",
+        "website": "http://theparlour.net/",
+        "website_domain": "theparlour.net",
+        "top_place_id": "ChIJJy87FMN4bIcRklrkCt1NfEI",
+        "chosen_place_id": "ChIJJy87FMN4bIcRklrkCt1NfEI"
+      },
+      "dora": {
+        "id": "1736 WYNKOOP | DENVER | CO | 80202",
+        "address_key": "1736 WYNKOOP | DENVER | CO | 80202",
+        "address_key_base": "1736 WYNKOOP | DENVER | CO | 80202",
+        "street": "1736 WYNKOOP",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80202",
+        "lat": 39.753218,
+        "lon": -104.9989754,
+        "coord_source": "google_geocode",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "EMMA ISABELLA HANSEN"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "21982"
+        ]
+      },
+      "normalized": {
+        "google_name": "the parlour lower downtown",
+        "dora_name": "emma isabella hansen",
+        "google_address_key": "1736 wynkoop st|denver|co|80202",
+        "dora_address_key": "1736 wynkoop|denver|co|80202",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0.0051,
+        "distance_meters": 8,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.231,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 5,
+        "address_score": 12,
+        "distance_score": 25,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 57
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "82956a92f830a07b",
+      "google": {
+        "id": "paris_productions_barbershop_and_salon_3330_e_1st_ave_suite_35_denver_co_80206_usa_cc01",
+        "location_id": "paris_productions_barbershop_and_salon_3330_e_1st_ave_suite_35_denver_co_80206_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "Paris Productions Barbershop & Salon",
+        "address": "3330 E 1st Ave Suite 35, Denver, CO 80206, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7175907,
+        "lon": -104.9479084,
+        "category": "barber",
+        "category_raw": "barber",
+        "category_source_labels_raw": [
+          "barber",
+          "hair_care",
+          "salon",
+          "hair"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "health",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 4,
+        "is_anchor": false,
+        "phone": "(720) 252-5765",
+        "website": "https://www.vagaro.com/parisproductionsaturbanluxurysalon",
+        "website_domain": "vagaro.com",
+        "top_place_id": "ChIJ-zhjmGB5bIcRaieXGIcrxmk",
+        "chosen_place_id": "ChIJ-zhjmGB5bIcRaieXGIcrxmk"
+      },
+      "dora": {
+        "id": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "address_key": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "address_key_base": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "street": "3330 E 1ST AVE",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7175907,
+        "lon": -104.9479084,
+        "coord_source": "beauty_zone_member",
+        "active_license_count": 3,
+        "operational_mix": {
+          "hair": 3,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "ANGEL VYVY HOANG",
+          "BERNADITA RODRIGUEZ",
+          "BRITNI LEIGH BARNELLO"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "25896",
+          "3208",
+          "45718"
+        ]
+      },
+      "normalized": {
+        "google_name": "paris productions barbershop",
+        "dora_name": "britni leigh barnello",
+        "google_address_key": "3330 e 1st ave suite 35|denver|co|80206",
+        "dora_address_key": "3330 e 1st ave|denver|co|80206",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0,
+        "distance_meters": 0,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.321,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 7,
+        "address_score": 18,
+        "distance_score": 25,
+        "category_score": 5,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 55
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "5dc3f11266b66cb9",
+      "google": {
+        "id": "routine_barbering_3330_e_1st_ave_suite_6_denver_co_80206_usa_cc01",
+        "location_id": "routine_barbering_3330_e_1st_ave_suite_6_denver_co_80206_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "ROUTINE BARBERING",
+        "address": "3330 E 1st Ave Suite 6, Denver, CO 80206, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7175907,
+        "lon": -104.9479084,
+        "category": "barber",
+        "category_raw": "barber",
+        "category_source_labels_raw": [
+          "barber",
+          "hair_care",
+          "hair"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "health",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 3,
+        "is_anchor": false,
+        "phone": "(651) 210-3505",
+        "website": "http://routine.glossgenius.com/",
+        "website_domain": "routine.glossgenius.com",
+        "top_place_id": "ChIJ8VSv5xV_bIcRvNfYTgQSJxM",
+        "chosen_place_id": "ChIJ8VSv5xV_bIcRvNfYTgQSJxM"
+      },
+      "dora": {
+        "id": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "address_key": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "address_key_base": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "street": "3330 E 1ST AVE",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7175907,
+        "lon": -104.9479084,
+        "coord_source": "beauty_zone_member",
+        "active_license_count": 3,
+        "operational_mix": {
+          "hair": 3,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "ANGEL VYVY HOANG",
+          "BERNADITA RODRIGUEZ",
+          "BRITNI LEIGH BARNELLO"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "25896",
+          "3208",
+          "45718"
+        ]
+      },
+      "normalized": {
+        "google_name": "routine barbering",
+        "dora_name": "britni leigh barnello",
+        "google_address_key": "3330 e 1st ave suite 6|denver|co|80206",
+        "dora_address_key": "3330 e 1st ave|denver|co|80206",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0,
+        "distance_meters": 0,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.333,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 7,
+        "address_score": 18,
+        "distance_score": 25,
+        "category_score": 5,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 55
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "a5eb963c990ddd6c",
+      "google": {
+        "id": "alfandi_hair_studio_44_cook_st_ste_200_studio_15_denver_co_80206_usa_cc01",
+        "location_id": "alfandi_hair_studio_44_cook_st_ste_200_studio_15_denver_co_80206_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "Alfandi Hair Studio",
+        "address": "44 Cook St Ste 200 STUDIO 15, Denver, CO 80206, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7166602,
+        "lon": -104.9470714,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "hair",
+          "studio"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 4,
+        "is_anchor": false,
+        "phone": "",
+        "website": "https://jaclynalfandi.glossgenius.com/",
+        "website_domain": "jaclynalfandi.glossgenius.com",
+        "top_place_id": "ChIJYTRVZ_2_aKgRx4UibMBHEtQ",
+        "chosen_place_id": "ChIJYTRVZ_2_aKgRx4UibMBHEtQ"
+      },
+      "dora": {
+        "id": "55 COOK ST | DENVER | CO | 80206",
+        "address_key": "55 COOK ST | DENVER | CO | 80206",
+        "address_key_base": "55 COOK ST | DENVER | CO | 80206",
+        "street": "55 COOK ST",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7168959,
+        "lon": -104.9477264,
+        "coord_source": "google_geocode",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "RACHEL ANN ULBERG"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "56452"
+        ]
+      },
+      "normalized": {
+        "google_name": "alfandi hair",
+        "dora_name": "rachel ann ulberg",
+        "google_address_key": "44 cook st ste 200 studio 15|denver|co|80206",
+        "dora_address_key": "55 cook st|denver|co|80206",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0.0384,
+        "distance_meters": 62,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.294,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 6,
+        "address_score": 12,
+        "distance_score": 20,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 53
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "f45b94df8bf16f19",
+      "google": {
+        "id": "allure_hair_studio_44_cook_st_suite_200_unit_29_denver_co_80206_usa_cc01",
+        "location_id": "allure_hair_studio_44_cook_st_suite_200_unit_29_denver_co_80206_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "Allure Hair Studio",
+        "address": "44 Cook St Suite 200 Unit 29, Denver, CO 80206, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7167326,
+        "lon": -104.9468709,
+        "category": "hair",
+        "category_raw": "beauty_salon",
+        "category_source_labels_raw": [
+          "beauty_salon",
+          "hair_care",
+          "salon",
+          "hair",
+          "beauty",
+          "studio"
+        ],
+        "google_types_raw": [
+          "beauty_salon",
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 6,
+        "is_anchor": false,
+        "phone": "(303) 715-1000",
+        "website": "http://www.allurehairstudio.com/",
+        "website_domain": "allurehairstudio.com",
+        "top_place_id": "ChIJQ0WvoeN-bIcRxb5Y9rdbsOI",
+        "chosen_place_id": "ChIJQ0WvoeN-bIcRxb5Y9rdbsOI"
+      },
+      "dora": {
+        "id": "55 COOK ST | DENVER | CO | 80206",
+        "address_key": "55 COOK ST | DENVER | CO | 80206",
+        "address_key_base": "55 COOK ST | DENVER | CO | 80206",
+        "street": "55 COOK ST",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7168959,
+        "lon": -104.9477264,
+        "coord_source": "google_geocode",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "RACHEL ANN ULBERG"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "56452"
+        ]
+      },
+      "normalized": {
+        "google_name": "allure hair",
+        "dora_name": "rachel ann ulberg",
+        "google_address_key": "44 cook st suite 200 unit 29|denver|co|80206",
+        "dora_address_key": "55 cook st|denver|co|80206",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0.0468,
+        "distance_meters": 75,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.235,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 5,
+        "address_score": 12,
+        "distance_score": 20,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 52
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "879e5dece2939e0d",
+      "google": {
+        "id": "drybar_denver_cherry_creek_3290_e_1st_ave_denver_co_80206_usa_cc01",
+        "location_id": "drybar_denver_cherry_creek_3290_e_1st_ave_denver_co_80206_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "Drybar Denver - Cherry Creek",
+        "address": "3290 E 1st Ave, Denver, CO 80206, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.717576,
+        "lon": -104.9488461,
+        "category": "hair",
+        "category_raw": "beauty_salon",
+        "category_source_labels_raw": [
+          "beauty_salon",
+          "hair_care",
+          "salon",
+          "hair",
+          "beauty"
+        ],
+        "google_types_raw": [
+          "beauty_salon",
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 6,
+        "is_anchor": false,
+        "phone": "(303) 242-3513",
+        "website": "https://www.drybarshops.com/service/locator/detail/?slug=cherry-creek&utm_source=Google&utm_medium=SoCi",
+        "website_domain": "drybarshops.com",
+        "top_place_id": "ChIJ03qwJpp-bIcRqcM0Kvjz8iA",
+        "chosen_place_id": "ChIJ03qwJpp-bIcRqcM0Kvjz8iA"
+      },
+      "dora": {
+        "id": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "address_key": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "address_key_base": "3330 E 1ST AVE | DENVER | CO | 80206",
+        "street": "3330 E 1ST AVE",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7175907,
+        "lon": -104.9479084,
+        "coord_source": "beauty_zone_member",
+        "active_license_count": 3,
+        "operational_mix": {
+          "hair": 3,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "ANGEL VYVY HOANG",
+          "BERNADITA RODRIGUEZ",
+          "BRITNI LEIGH BARNELLO"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "25896",
+          "3208",
+          "45718"
+        ]
+      },
+      "normalized": {
+        "google_name": "drybar denver cherry creek",
+        "dora_name": "angel vyvy hoang",
+        "google_address_key": "3290 e 1st ave|denver|co|80206",
+        "dora_address_key": "3330 e 1st ave|denver|co|80206",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0.0498,
+        "distance_meters": 80,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.231,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 5,
+        "address_score": 12,
+        "distance_score": 20,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 52
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "568b4b282b4cd72f",
+      "google": {
+        "id": "bass_haven_salon_44_cook_st_unit_200_suite_28_denver_co_80206_usa_cc01",
+        "location_id": "bass_haven_salon_44_cook_st_unit_200_suite_28_denver_co_80206_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "Bass Haven Salon",
+        "address": "44 Cook St Unit 200 Suite 28, Denver, CO 80206, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7167326,
+        "lon": -104.9468709,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "salon",
+          "hair"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 4,
+        "is_anchor": false,
+        "phone": "(720) 756-6945",
+        "website": "https://www.ravebabesalon.com/",
+        "website_domain": "ravebabesalon.com",
+        "top_place_id": "ChIJCa78L0d_bIcRS63D2BcbSlo",
+        "chosen_place_id": "ChIJCa78L0d_bIcRS63D2BcbSlo"
+      },
+      "dora": {
+        "id": "55 COOK ST | DENVER | CO | 80206",
+        "address_key": "55 COOK ST | DENVER | CO | 80206",
+        "address_key_base": "55 COOK ST | DENVER | CO | 80206",
+        "street": "55 COOK ST",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7168959,
+        "lon": -104.9477264,
+        "coord_source": "google_geocode",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "RACHEL ANN ULBERG"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "56452"
+        ]
+      },
+      "normalized": {
+        "google_name": "bass haven",
+        "dora_name": "rachel ann ulberg",
+        "google_address_key": "44 cook st unit 200 suite 28|denver|co|80206",
+        "dora_address_key": "55 cook st|denver|co|80206",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0.0468,
+        "distance_meters": 75,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.176,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 4,
+        "address_score": 12,
+        "distance_score": 20,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 51
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "80a8fb659ee55e00",
+      "google": {
+        "id": "black_moon_hair_collective_1111_broadway_suite_309_denver_co_80203_usa_dt01",
+        "location_id": "black_moon_hair_collective_1111_broadway_suite_309_denver_co_80203_usa_dt01",
+        "zone_id": "DT01",
+        "zone_name": "Downtown Denver Beauty Corridor",
+        "market": "Downtown Denver",
+        "name": "BLACK MOON HAIR COLLECTIVE",
+        "address": "1111 Broadway Suite 309, Denver, CO 80203, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80203",
+        "lat": 39.7341499,
+        "lon": -104.9877516,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "hair"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 5,
+        "is_anchor": false,
+        "phone": "(303) 481-2857",
+        "website": "http://www.sageandserpenthair.com/",
+        "website_domain": "sageandserpenthair.com",
+        "top_place_id": "ChIJUzygwlB5bIcRAgvQlTyGLmI",
+        "chosen_place_id": "ChIJUzygwlB5bIcRAgvQlTyGLmI"
+      },
+      "dora": {
+        "id": "1135 BROADWAY | DENVER | CO | 80203",
+        "address_key": "1135 BROADWAY | DENVER | CO | 80203",
+        "address_key_base": "1135 BROADWAY | DENVER | CO | 80203",
+        "street": "1135 BROADWAY",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80203",
+        "lat": 39.734542,
+        "lon": -104.9878998,
+        "coord_source": "google_geocode",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "PAUL MARCO ESCORZA-VELASQUEZ"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "68660"
+        ]
+      },
+      "normalized": {
+        "google_name": "black moon hair collective",
+        "dora_name": "paul marco escorza velasquez",
+        "google_address_key": "1111 broadway suite 309|denver|co|80203",
+        "dora_address_key": "1135 broadway|denver|co|80203",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0.0282,
+        "distance_meters": 45,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.179,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 4,
+        "address_score": 12,
+        "distance_score": 20,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 51
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "a7cdf6772b4a5990",
+      "google": {
+        "id": "foundation_hair_studio_1111_broadway_suite_401_denver_co_80203_usa_dt01",
+        "location_id": "foundation_hair_studio_1111_broadway_suite_401_denver_co_80203_usa_dt01",
+        "zone_id": "DT01",
+        "zone_name": "Downtown Denver Beauty Corridor",
+        "market": "Downtown Denver",
+        "name": "Foundation Hair Studio",
+        "address": "1111 Broadway Suite 401, Denver, CO 80203, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80203",
+        "lat": 39.7339714,
+        "lon": -104.9877952,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "hair",
+          "studio"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "health",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 5,
+        "is_anchor": false,
+        "phone": "(720) 542-9511",
+        "website": "http://foundation-hairstudio.com/",
+        "website_domain": "foundation-hairstudio.com",
+        "top_place_id": "ChIJbejG9JZ-bIcRnj8SYIxCS4c",
+        "chosen_place_id": "ChIJbejG9JZ-bIcRnj8SYIxCS4c"
+      },
+      "dora": {
+        "id": "1135 BROADWAY | DENVER | CO | 80203",
+        "address_key": "1135 BROADWAY | DENVER | CO | 80203",
+        "address_key_base": "1135 BROADWAY | DENVER | CO | 80203",
+        "street": "1135 BROADWAY",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80203",
+        "lat": 39.734542,
+        "lon": -104.9878998,
+        "coord_source": "google_geocode",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "PAUL MARCO ESCORZA-VELASQUEZ"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "68660"
+        ]
+      },
+      "normalized": {
+        "google_name": "foundation hair",
+        "dora_name": "paul marco escorza velasquez",
+        "google_address_key": "1111 broadway suite 401|denver|co|80203",
+        "dora_address_key": "1135 broadway|denver|co|80203",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0.0398,
+        "distance_meters": 64,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.179,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 4,
+        "address_score": 12,
+        "distance_score": 20,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 51
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "de50e937134ff680",
+      "google": {
+        "id": "klm_hair_denver_44_cook_st_suite_200_studio_31_denver_co_80206_usa_cc01",
+        "location_id": "klm_hair_denver_44_cook_st_suite_200_studio_31_denver_co_80206_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "KLM Hair Denver",
+        "address": "44 Cook St Suite 200, Studio 31, Denver, CO 80206, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7167326,
+        "lon": -104.9468709,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "hair"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 4,
+        "is_anchor": false,
+        "phone": "",
+        "website": "http://www.kelseylynnmorrison.com/",
+        "website_domain": "kelseylynnmorrison.com",
+        "top_place_id": "ChIJc3axe3Z9bIcRyy-k2JCmHBE",
+        "chosen_place_id": "ChIJc3axe3Z9bIcRyy-k2JCmHBE"
+      },
+      "dora": {
+        "id": "55 COOK ST | DENVER | CO | 80206",
+        "address_key": "55 COOK ST | DENVER | CO | 80206",
+        "address_key_base": "55 COOK ST | DENVER | CO | 80206",
+        "street": "55 COOK ST",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7168959,
+        "lon": -104.9477264,
+        "coord_source": "google_geocode",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "RACHEL ANN ULBERG"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "56452"
+        ]
+      },
+      "normalized": {
+        "google_name": "klm hair denver",
+        "dora_name": "rachel ann ulberg",
+        "google_address_key": "44 cook st suite 200 studio 31|denver|co|80206",
+        "dora_address_key": "55 cook st|denver|co|80206",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0.0468,
+        "distance_meters": 75,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.176,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 4,
+        "address_score": 12,
+        "distance_score": 20,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 51
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "20c4a41ffdf2edcd",
+      "google": {
+        "id": "let_em_have_it_salon_490_e_20th_ave_denver_co_80205_usa_dt01",
+        "location_id": "let_em_have_it_salon_490_e_20th_ave_denver_co_80205_usa_dt01",
+        "zone_id": "DT01",
+        "zone_name": "Downtown Denver Beauty Corridor",
+        "market": "Downtown Denver",
+        "name": "Let Em Have It Salon ✂",
+        "address": "490 E 20th Ave, Denver, CO 80205, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80205",
+        "lat": 39.7474205,
+        "lon": -104.9814664,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "salon",
+          "hair"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 5,
+        "is_anchor": false,
+        "phone": "(720) 638-4619",
+        "website": "https://www.letemhaveitsalon.com/",
+        "website_domain": "letemhaveitsalon.com",
+        "top_place_id": "ChIJeyj0wyh5bIcRtA-jeiCn9hs",
+        "chosen_place_id": "ChIJeyj0wyh5bIcRtA-jeiCn9hs"
+      },
+      "dora": {
+        "id": "530 E 20TH AVE | DENVER | CO | 80205",
+        "address_key": "530 E 20TH AVE | DENVER | CO | 80205",
+        "address_key_base": "530 E 20TH AVE | DENVER | CO | 80205",
+        "street": "530 E 20TH AVE",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80205",
+        "lat": 39.7473499,
+        "lon": -104.9806425,
+        "coord_source": "google_geocode",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "VANESSA LOUISE PICCOLA"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "42843"
+        ]
+      },
+      "normalized": {
+        "google_name": "let em have it",
+        "dora_name": "vanessa louise piccola",
+        "google_address_key": "490 e 20th ave|denver|co|80205",
+        "dora_address_key": "530 e 20th ave|denver|co|80205",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0.044,
+        "distance_meters": 71,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.182,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 4,
+        "address_score": 12,
+        "distance_score": 20,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 51
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "6e65ae9c130eb0e7",
+      "google": {
+        "id": "salon_goldyn_100_s_madison_st_unit_1a_denver_co_80209_usa_cc01",
+        "location_id": "salon_goldyn_100_s_madison_st_unit_1a_denver_co_80209_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "Salon Goldyn ✂",
+        "address": "100 S Madison St UNIT 1A, Denver, CO 80209, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80209",
+        "lat": 39.7144983,
+        "lon": -104.9457855,
+        "category": "hair",
+        "category_raw": "beauty_salon",
+        "category_source_labels_raw": [
+          "beauty_salon",
+          "hair_care",
+          "salon",
+          "hair",
+          "beauty"
+        ],
+        "google_types_raw": [
+          "beauty_salon",
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 6,
+        "is_anchor": false,
+        "phone": "(303) 809-8897",
+        "website": "http://www.salongoldyn.com/",
+        "website_domain": "salongoldyn.com",
+        "top_place_id": "ChIJ23OAQZt-bIcRr0tfvVTEgek",
+        "chosen_place_id": "ChIJ23OAQZt-bIcRr0tfvVTEgek"
+      },
+      "dora": {
+        "id": "121 S MADISON ST | DENVER | CO | 80209",
+        "address_key": "121 S MADISON ST | DENVER | CO | 80209",
+        "address_key_base": "121 S MADISON ST | DENVER | CO | 80209",
+        "street": "121 S MADISON ST",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80209",
+        "lat": 39.7142921,
+        "lon": -104.9465487,
+        "coord_source": "beauty_zone_member",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "JARAY DANIEL"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "12078"
+        ]
+      },
+      "normalized": {
+        "google_name": "goldyn",
+        "dora_name": "jaray daniel",
+        "google_address_key": "100 s madison st unit 1a|denver|co|80209",
+        "dora_address_key": "121 s madison st|denver|co|80209",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0.043,
+        "distance_meters": 69,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.167,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 4,
+        "address_score": 12,
+        "distance_score": 20,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 51
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "69954b12dd8547ba",
+      "google": {
+        "id": "teaze_salon_100_s_madison_st_denver_co_80209_usa_cc01",
+        "location_id": "teaze_salon_100_s_madison_st_denver_co_80209_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "TeaZe Salon",
+        "address": "100 S Madison St, Denver, CO 80209, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80209",
+        "lat": 39.7144744,
+        "lon": -104.9458385,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "salon",
+          "hair"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 4,
+        "is_anchor": false,
+        "phone": "(303) 921-2519",
+        "website": "https://www.teazesaloncherrycreek.com/",
+        "website_domain": "teazesaloncherrycreek.com",
+        "top_place_id": "ChIJ23OAQZt-bIcRUjUz5AAFhpo",
+        "chosen_place_id": "ChIJ23OAQZt-bIcRUjUz5AAFhpo"
+      },
+      "dora": {
+        "id": "121 S MADISON ST | DENVER | CO | 80209",
+        "address_key": "121 S MADISON ST | DENVER | CO | 80209",
+        "address_key_base": "121 S MADISON ST | DENVER | CO | 80209",
+        "street": "121 S MADISON ST",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80209",
+        "lat": 39.7142921,
+        "lon": -104.9465487,
+        "coord_source": "beauty_zone_member",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "JARAY DANIEL"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "12078"
+        ]
+      },
+      "normalized": {
+        "google_name": "teaze",
+        "dora_name": "jaray daniel",
+        "google_address_key": "100 s madison st|denver|co|80209",
+        "dora_address_key": "121 s madison st|denver|co|80209",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0.0398,
+        "distance_meters": 64,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.167,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 4,
+        "address_score": 12,
+        "distance_score": 20,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 51
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "3c9048e9d76b26c2",
+      "google": {
+        "id": "the_organic_salon_denver_43_w_11th_ave_denver_co_80204_usa_dt01",
+        "location_id": "the_organic_salon_denver_43_w_11th_ave_denver_co_80204_usa_dt01",
+        "zone_id": "DT01",
+        "zone_name": "Downtown Denver Beauty Corridor",
+        "market": "Downtown Denver",
+        "name": "The Organic Salon Denver ✂",
+        "address": "43 W 11th Ave, Denver, CO 80204, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80204",
+        "lat": 39.73398150000001,
+        "lon": -104.9885142,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "salon",
+          "hair"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 5,
+        "is_anchor": false,
+        "phone": "(720) 815-5701",
+        "website": "http://www.theorganicsalondenver.com/",
+        "website_domain": "theorganicsalondenver.com",
+        "top_place_id": "ChIJHUmmkNZ4bIcRVp526kEAz_Y",
+        "chosen_place_id": "ChIJHUmmkNZ4bIcRVp526kEAz_Y"
+      },
+      "dora": {
+        "id": "62 W 11TH AVE | DENVER | CO | 80204",
+        "address_key": "62 W 11TH AVE | DENVER | CO | 80204",
+        "address_key_base": "62 W 11TH AVE | DENVER | CO | 80204",
+        "street": "62 W 11TH AVE",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80204",
+        "lat": 39.7337148,
+        "lon": -104.9884968,
+        "coord_source": "google_geocode",
+        "active_license_count": 2,
+        "operational_mix": {
+          "hair": 2,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "CHARLSEY DANIELLE MCMAHON",
+          "LINDSEY MARIE MORGAN"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "36044",
+          "72316"
+        ]
+      },
+      "normalized": {
+        "google_name": "the organic denver",
+        "dora_name": "charlsey danielle mcmahon",
+        "google_address_key": "43 w 11th ave|denver|co|80204",
+        "dora_address_key": "62 w 11th ave|denver|co|80204",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0.0185,
+        "distance_meters": 30,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.2,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 4,
+        "address_score": 12,
+        "distance_score": 20,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 51
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "b7ce945200e75ca9",
+      "google": {
+        "id": "d_brooke_salon_475_w_12th_ave_denver_co_80204_usa_dt01",
+        "location_id": "d_brooke_salon_475_w_12th_ave_denver_co_80204_usa_dt01",
+        "zone_id": "DT01",
+        "zone_name": "Downtown Denver Beauty Corridor",
+        "market": "Downtown Denver",
+        "name": "D. Brooke Salon",
+        "address": "475 W 12th Ave, Denver, CO 80204, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80204",
+        "lat": 39.7356555,
+        "lon": -104.9938055,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "salon",
+          "hair"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 4,
+        "is_anchor": false,
+        "phone": "",
+        "website": "http://www.dbrookesalon.com/",
+        "website_domain": "dbrookesalon.com",
+        "top_place_id": "ChIJj_u25Sx_bIcR8Qziz7ji3-0",
+        "chosen_place_id": "ChIJj_u25Sx_bIcR8Qziz7ji3-0"
+      },
+      "dora": {
+        "id": "420 W 12TH AVE | DENVER | CO | 80204",
+        "address_key": "420 W 12TH AVE | DENVER | CO | 80204",
+        "address_key_base": "420 W 12TH AVE | DENVER | CO | 80204",
+        "street": "420 W 12TH AVE",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80204",
+        "lat": 39.7350666,
+        "lon": -104.9938014,
+        "coord_source": "google_geocode",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "KELLY ELIZABETH CZEPONIS"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "17493"
+        ]
+      },
+      "normalized": {
+        "google_name": "d brooke",
+        "dora_name": "kelly elizabeth czeponis",
+        "google_address_key": "475 w 12th ave|denver|co|80204",
+        "dora_address_key": "420 w 12th ave|denver|co|80204",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0.0407,
+        "distance_meters": 65,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.125,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 3,
+        "address_score": 12,
+        "distance_score": 20,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 50
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "712cc5841ed67de2",
+      "google": {
+        "id": "dh_salons_in_cherry_creek_44_cook_st_suite_200_studio_25_denver_co_80206_usa_cc01",
+        "location_id": "dh_salons_in_cherry_creek_44_cook_st_suite_200_studio_25_denver_co_80206_usa_cc01",
+        "zone_id": "CC01",
+        "zone_name": "Cherry Creek Core",
+        "market": "Cherry Creek",
+        "name": "DH Salons in Cherry Creek",
+        "address": "44 Cook St suite 200 studio 25, Denver, CO 80206, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7167326,
+        "lon": -104.9468709,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "salon",
+          "hair"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 4,
+        "is_anchor": false,
+        "phone": "(720) 469-1898",
+        "website": "https://diegohuizar.glossgenius.com/",
+        "website_domain": "diegohuizar.glossgenius.com",
+        "top_place_id": "ChIJh86Y9ld_bIcRbG-nwBj3zSA",
+        "chosen_place_id": "ChIJh86Y9ld_bIcRbG-nwBj3zSA"
+      },
+      "dora": {
+        "id": "55 COOK ST | DENVER | CO | 80206",
+        "address_key": "55 COOK ST | DENVER | CO | 80206",
+        "address_key_base": "55 COOK ST | DENVER | CO | 80206",
+        "street": "55 COOK ST",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80206",
+        "lat": 39.7168959,
+        "lon": -104.9477264,
+        "coord_source": "google_geocode",
+        "active_license_count": 1,
+        "operational_mix": {
+          "hair": 1,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "RACHEL ANN ULBERG"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "56452"
+        ]
+      },
+      "normalized": {
+        "google_name": "dh salons in cherry creek",
+        "dora_name": "rachel ann ulberg",
+        "google_address_key": "44 cook st suite 200 studio 25|denver|co|80206",
+        "dora_address_key": "55 cook st|denver|co|80206",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0.0468,
+        "distance_meters": 75,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.16,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 3,
+        "address_score": 12,
+        "distance_score": 20,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 50
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "aac318700af15e05",
+      "google": {
+        "id": "peleet_studio_58_w_11th_ave_denver_co_80204_usa_dt01",
+        "location_id": "peleet_studio_58_w_11th_ave_denver_co_80204_usa_dt01",
+        "zone_id": "DT01",
+        "zone_name": "Downtown Denver Beauty Corridor",
+        "market": "Downtown Denver",
+        "name": "Peleet Studio",
+        "address": "58 W 11th Ave, Denver, CO 80204, USA",
+        "city": "Denver",
+        "state": "CO",
+        "zip": "80204",
+        "lat": 39.7337099,
+        "lon": -104.9882494,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "hair",
+          "studio"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 5,
+        "is_anchor": false,
+        "phone": "",
+        "website": "http://peleet.com/",
+        "website_domain": "peleet.com",
+        "top_place_id": "ChIJiU4CapZ-bIcRZgsFhdD_V1w",
+        "chosen_place_id": "ChIJiU4CapZ-bIcRZgsFhdD_V1w"
+      },
+      "dora": {
+        "id": "62 W 11TH AVE | DENVER | CO | 80204",
+        "address_key": "62 W 11TH AVE | DENVER | CO | 80204",
+        "address_key_base": "62 W 11TH AVE | DENVER | CO | 80204",
+        "street": "62 W 11TH AVE",
+        "city": "DENVER",
+        "state": "CO",
+        "zip": "80204",
+        "lat": 39.7337148,
+        "lon": -104.9884968,
+        "coord_source": "google_geocode",
+        "active_license_count": 2,
+        "operational_mix": {
+          "hair": 2,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "CHARLSEY DANIELLE MCMAHON",
+          "LINDSEY MARIE MORGAN"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "36044",
+          "72316"
+        ]
+      },
+      "normalized": {
+        "google_name": "peleet",
+        "dora_name": "charlsey danielle mcmahon",
+        "google_address_key": "58 w 11th ave|denver|co|80204",
+        "dora_address_key": "62 w 11th ave|denver|co|80204",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0.0131,
+        "distance_meters": 21,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.12,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 3,
+        "address_score": 12,
+        "distance_score": 20,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 50
+      },
+      "match_confidence": "weak"
+    },
+    {
+      "match_id": "e72743b7b3281e1e",
+      "google": {
+        "id": "scissors_and_scotch_7600_landmark_way_107_greenwood_village_co_80111_usa_dtc01",
+        "location_id": "scissors_and_scotch_7600_landmark_way_107_greenwood_village_co_80111_usa_dtc01",
+        "zone_id": "DTC01",
+        "zone_name": "DTC Belleview Corridor",
+        "market": "DTC / Greenwood Village",
+        "name": "Scissors & Scotch",
+        "address": "7600 Landmark Way #107, Greenwood Village, CO 80111, USA",
+        "city": "Greenwood Village",
+        "state": "CO",
+        "zip": "80111",
+        "lat": 39.6174643,
+        "lon": -104.9003805,
+        "category": "hair",
+        "category_raw": "hair_care",
+        "category_source_labels_raw": [
+          "hair_care",
+          "hair"
+        ],
+        "google_types_raw": [
+          "establishment",
+          "hair_care",
+          "health",
+          "point_of_interest"
+        ],
+        "subtype": "storefront",
+        "source": "places_candidates.v1.json",
+        "priority_score": 5,
+        "is_anchor": false,
+        "phone": "(720) 372-7859",
+        "website": "https://scissorsscotch.com/locations/co/greenwood-village/denver-tech-center/",
+        "website_domain": "scissorsscotch.com",
+        "top_place_id": "ChIJqYJokvCGbIcRYKIjla4fWoI",
+        "chosen_place_id": "ChIJqYJokvCGbIcRYKIjla4fWoI"
+      },
+      "dora": {
+        "id": "7600 LANDMARK WAY | GREENWOOD VILLAGE | CO | 80111",
+        "address_key": "7600 LANDMARK WAY | GREENWOOD VILLAGE | CO | 80111",
+        "address_key_base": "7600 LANDMARK WAY | GREENWOOD VILLAGE | CO | 80111",
+        "street": "7600 LANDMARK WAY",
+        "city": "GREENWOOD VILLAGE",
+        "state": "CO",
+        "zip": "80111",
+        "lat": 39.6176219,
+        "lon": -104.9004643,
+        "coord_source": "google_geocode",
+        "active_license_count": 3,
+        "operational_mix": {
+          "hair": 3,
+          "nail": 0,
+          "esthe": 0,
+          "barber": 0,
+          "spa": 0
+        },
+        "raw_license_types": [
+          "COS"
+        ],
+        "raw_license_statuses": [
+          "ACTIVE"
+        ],
+        "raw_profession_labels": [
+          "COS"
+        ],
+        "raw_names": [
+          "AMANDA KAY RAGULSKY JOHNSTON",
+          "DESTINY DAWN MARVIN",
+          "JEAN KATHERINE JULIAN"
+        ],
+        "raw_entity_names": [],
+        "license_row_ids": [
+          "38191",
+          "47214",
+          "70714"
+        ]
+      },
+      "normalized": {
+        "google_name": "scissors scotch",
+        "dora_name": "destiny dawn marvin",
+        "google_address_key": "7600 land mark way 107|greenwood village|co|80111",
+        "dora_address_key": "7600 landmark way|greenwood village|co|80111",
+        "exact_address_match": false,
+        "base_address_match": false,
+        "distance_miles": 0.0118,
+        "distance_meters": 19,
+        "token_overlap": 0,
+        "fuzzy_similarity": 0.158,
+        "exact_name_match": false
+      },
+      "scores": {
+        "name_score": 3,
+        "address_score": 12,
+        "distance_score": 20,
+        "category_score": 15,
+        "phone_score": 0,
+        "website_score": 0,
+        "final_match_score": 50
+      },
+      "match_confidence": "weak"
+    }
+  ]
+}

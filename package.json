@@ -10,7 +10,12 @@
     "zones:assign": "ts-node ./scripts/assign_beauty_zones.ts",
     "assign_beauty_zones": "ts-node ./scripts/assign_beauty_zones.ts",
     "places:pull:beauty": "ts-node ./scripts/places_pull_google.v1.ts",
-    "markets:enrich:dora": "ts-node ./scripts/enrich_beauty_zone_members_dora_density.ts"
+    "markets:enrich:dora": "ts-node ./scripts/enrich_beauty_zone_members_dora_density.ts",
+    "markets:match": "ts-node ./scripts/build_beauty_google_dora_match.v1.ts",
+    "markets:online-candidates": "ts-node ./scripts/build_beauty_online_identity_candidates.v1.ts",
+    "markets:live-units": "ts-node ./scripts/build_beauty_live_units.v1.ts",
+    "markets:live-unit-review-outputs": "ts-node ./scripts/build_live_unit_review_outputs.v1.ts",
+    "markets:feedback-rules": "ts-node ./scripts/build_match_feedback_rules.v1.ts"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",

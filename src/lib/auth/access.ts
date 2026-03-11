@@ -87,6 +87,7 @@ export function canShowNavItem(id: string, user: SessionUser): boolean {
   if (id === "marketing") return true;
   if (id === "login") return !user;
   if (id === "markets") return !!user;
+  if (id === "liveunits") return user?.role === "admin";
   if (id === "datastore") return !!user;
   if (id === "team") return !!user;
   if (id === "admin") return user?.role === "admin";

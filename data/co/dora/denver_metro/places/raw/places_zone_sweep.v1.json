@@ -1,0 +1,482 @@
+{
+  "ok": true,
+  "updatedAt": "2026-03-08T18:47:38.245Z",
+  "requestLog": [
+    {
+      "zone_id": "CC01",
+      "query": "nail salon",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 18
+    },
+    {
+      "zone_id": "CC01",
+      "query": "hair salon",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "CC01",
+      "query": "hair salon",
+      "page": 2,
+      "status": "OK",
+      "resultCount": 12
+    },
+    {
+      "zone_id": "CC01",
+      "query": "hair stylist",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 18
+    },
+    {
+      "zone_id": "CC01",
+      "query": "beauty salon",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "CC01",
+      "query": "beauty salon",
+      "page": 2,
+      "status": "OK",
+      "resultCount": 15
+    },
+    {
+      "zone_id": "CC01",
+      "query": "spa",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 15
+    },
+    {
+      "zone_id": "CC01",
+      "query": "day spa",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 6
+    },
+    {
+      "zone_id": "CC01",
+      "query": "eyebrow bar",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 15
+    },
+    {
+      "zone_id": "CC01",
+      "query": "lash studio",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 16
+    },
+    {
+      "zone_id": "CC01",
+      "query": "barber shop",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 10
+    },
+    {
+      "zone_id": "CC01",
+      "query": "salon suites",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 4
+    },
+    {
+      "zone_id": "CC01",
+      "query": "beauty suites",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 3
+    },
+    {
+      "zone_id": "DT01",
+      "query": "nail salon",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "DT01",
+      "query": "nail salon",
+      "page": 2,
+      "status": "OK",
+      "resultCount": 11
+    },
+    {
+      "zone_id": "DT01",
+      "query": "hair salon",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "DT01",
+      "query": "hair salon",
+      "page": 2,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "DT01",
+      "query": "hair salon",
+      "page": 3,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "DT01",
+      "query": "hair stylist",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "DT01",
+      "query": "hair stylist",
+      "page": 2,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "DT01",
+      "query": "hair stylist",
+      "page": 3,
+      "status": "OK",
+      "resultCount": 17
+    },
+    {
+      "zone_id": "DT01",
+      "query": "beauty salon",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "DT01",
+      "query": "beauty salon",
+      "page": 2,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "DT01",
+      "query": "beauty salon",
+      "page": 3,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "DT01",
+      "query": "spa",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "DT01",
+      "query": "spa",
+      "page": 2,
+      "status": "OK",
+      "resultCount": 15
+    },
+    {
+      "zone_id": "DT01",
+      "query": "day spa",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 18
+    },
+    {
+      "zone_id": "DT01",
+      "query": "eyebrow bar",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 12
+    },
+    {
+      "zone_id": "DT01",
+      "query": "lash studio",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 16
+    },
+    {
+      "zone_id": "DT01",
+      "query": "barber shop",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "DT01",
+      "query": "barber shop",
+      "page": 2,
+      "status": "OK",
+      "resultCount": 15
+    },
+    {
+      "zone_id": "DT01",
+      "query": "salon suites",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 2
+    },
+    {
+      "zone_id": "DT01",
+      "query": "beauty suites",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 2
+    },
+    {
+      "zone_id": "DTC01",
+      "query": "nail salon",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 19
+    },
+    {
+      "zone_id": "DTC01",
+      "query": "hair salon",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 18
+    },
+    {
+      "zone_id": "DTC01",
+      "query": "hair stylist",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 10
+    },
+    {
+      "zone_id": "DTC01",
+      "query": "beauty salon",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 18
+    },
+    {
+      "zone_id": "DTC01",
+      "query": "spa",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 13
+    },
+    {
+      "zone_id": "DTC01",
+      "query": "day spa",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "DTC01",
+      "query": "day spa",
+      "page": 2,
+      "status": "ZERO_RESULTS",
+      "resultCount": 0
+    },
+    {
+      "zone_id": "DTC01",
+      "query": "eyebrow bar",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 7
+    },
+    {
+      "zone_id": "DTC01",
+      "query": "lash studio",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 14
+    },
+    {
+      "zone_id": "DTC01",
+      "query": "barber shop",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 11
+    },
+    {
+      "zone_id": "DTC01",
+      "query": "salon suites",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 2
+    },
+    {
+      "zone_id": "DTC01",
+      "query": "beauty suites",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 1
+    },
+    {
+      "zone_id": "TH01",
+      "query": "nail salon",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "TH01",
+      "query": "nail salon",
+      "page": 2,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "TH01",
+      "query": "nail salon",
+      "page": 3,
+      "status": "OK",
+      "resultCount": 11
+    },
+    {
+      "zone_id": "TH01",
+      "query": "hair salon",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "TH01",
+      "query": "hair salon",
+      "page": 2,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "TH01",
+      "query": "hair salon",
+      "page": 3,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "TH01",
+      "query": "hair stylist",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "TH01",
+      "query": "hair stylist",
+      "page": 2,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "TH01",
+      "query": "hair stylist",
+      "page": 3,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "TH01",
+      "query": "beauty salon",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "TH01",
+      "query": "beauty salon",
+      "page": 2,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "TH01",
+      "query": "beauty salon",
+      "page": 3,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "TH01",
+      "query": "spa",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "TH01",
+      "query": "spa",
+      "page": 2,
+      "status": "OK",
+      "resultCount": 14
+    },
+    {
+      "zone_id": "TH01",
+      "query": "day spa",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 14
+    },
+    {
+      "zone_id": "TH01",
+      "query": "eyebrow bar",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "TH01",
+      "query": "eyebrow bar",
+      "page": 2,
+      "status": "OK",
+      "resultCount": 12
+    },
+    {
+      "zone_id": "TH01",
+      "query": "lash studio",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "TH01",
+      "query": "lash studio",
+      "page": 2,
+      "status": "OK",
+      "resultCount": 5
+    },
+    {
+      "zone_id": "TH01",
+      "query": "barber shop",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 20
+    },
+    {
+      "zone_id": "TH01",
+      "query": "barber shop",
+      "page": 2,
+      "status": "OK",
+      "resultCount": 18
+    },
+    {
+      "zone_id": "TH01",
+      "query": "salon suites",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 10
+    },
+    {
+      "zone_id": "TH01",
+      "query": "beauty suites",
+      "page": 1,
+      "status": "OK",
+      "resultCount": 10
+    }
+  ]
+}

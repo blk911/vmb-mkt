@@ -1,0 +1,261 @@
+{
+  "id": "tgt_20260225_31mrnq",
+  "name": "suite-centers-2026-02-25",
+  "scope": "facility",
+  "createdAt": "2026-02-25T01:52:59.399Z",
+  "updatedAt": "2026-02-25T01:52:59.405Z",
+  "items": [
+    {
+      "kind": "facility",
+      "refId": "1560 BROADWAY | DENVER | CO | 80202",
+      "addressId": "1560 BROADWAY | DENVER | CO | 80202",
+      "label": "Salon Lofts",
+      "city": "DENVER",
+      "zip": "80202",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "1001 E 62ND AVE | DENVER | CO | 80216",
+      "addressId": "1001 E 62ND AVE | DENVER | CO | 80216",
+      "label": "1001 E 62ND AVE | DENVER | CO | 80216",
+      "city": "DENVER",
+      "zip": "80216",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "3300 S TAMARAC DR | DENVER | CO | 80231",
+      "addressId": "3300 S TAMARAC DR | DENVER | CO | 80231",
+      "label": "Phenix Salon Suites - Tamarac",
+      "city": "DENVER",
+      "zip": "80231",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "10555 W JEWELL AVE | LAKEWOOD | CO | 80232",
+      "addressId": "10555 W JEWELL AVE | LAKEWOOD | CO | 80232",
+      "label": "Cutie Nails & Tan",
+      "city": "LAKEWOOD",
+      "zip": "80232",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "9888 E VASSAR DR | DENVER | CO | 80231",
+      "addressId": "9888 E VASSAR DR | DENVER | CO | 80231",
+      "label": "LUX Nails & Lashes",
+      "city": "DENVER",
+      "zip": "80231",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "1401 W 17TH ST | PUEBLO | CO | 81003",
+      "addressId": "1401 W 17TH ST | PUEBLO | CO | 81003",
+      "label": "1401 W 17TH ST | PUEBLO | CO | 81003",
+      "city": "PUEBLO",
+      "zip": "81003",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "2525 E 104TH AVE | THORNTON | CO | 80233",
+      "addressId": "2525 E 104TH AVE | THORNTON | CO | 80233",
+      "label": "So Sexy Nail & Spa",
+      "city": "THORNTON",
+      "zip": "80233",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "4901 W 93RD AVE | WESTMINSTER | CO | 80031",
+      "addressId": "4901 W 93RD AVE | WESTMINSTER | CO | 80031",
+      "label": "Sola Salon Studios",
+      "city": "WESTMINSTER",
+      "zip": "80031",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "8000 W CRESTLINE AVE | LITTLETON | CO | 80123",
+      "addressId": "8000 W CRESTLINE AVE | LITTLETON | CO | 80123",
+      "label": "Angelic Nails and Lash",
+      "city": "LITTLETON",
+      "zip": "80123",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "4725 W QUINCY AVE | DENVER | CO | 80236",
+      "addressId": "4725 W QUINCY AVE | DENVER | CO | 80236",
+      "label": "4725 W QUINCY AVE | DENVER | CO | 80236",
+      "city": "DENVER",
+      "zip": "80236",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "4380 S MONACO ST | DENVER | CO | 80237",
+      "addressId": "4380 S MONACO ST | DENVER | CO | 80237",
+      "label": "4380 S MONACO ST | DENVER | CO | 80237",
+      "city": "DENVER",
+      "zip": "80237",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "1995 E COALTON RD | SUPERIOR | CO | 80027",
+      "addressId": "1995 E COALTON RD | SUPERIOR | CO | 80027",
+      "label": "Bella Nails",
+      "city": "SUPERIOR",
+      "zip": "80027",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "10200 PARK MEADOWS DR | LONE TREE | CO | 80124",
+      "addressId": "10200 PARK MEADOWS DR | LONE TREE | CO | 80124",
+      "label": "The Glam House",
+      "city": "LONE TREE",
+      "zip": "80124",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "2680 B 1/2 RD | GRAND JUNCTION | CO | 81503",
+      "addressId": "2680 B 1/2 RD | GRAND JUNCTION | CO | 81503",
+      "label": "Shelana's Hair Creations",
+      "city": "GRAND JUNCTION",
+      "zip": "81503",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "4500 S MONACO ST | DENVER | CO | 80237",
+      "addressId": "4500 S MONACO ST | DENVER | CO | 80237",
+      "label": "Purluxe Beauty Bar DTC",
+      "city": "DENVER",
+      "zip": "80237",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "5151 W 29TH ST | GREELEY | CO | 80634",
+      "addressId": "5151 W 29TH ST | GREELEY | CO | 80634",
+      "label": "Sport Clips Haircuts of Greeley",
+      "city": "GREELEY",
+      "zip": "80634",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "1882 E 104TH AVE | THORNTON | CO | 80233",
+      "addressId": "1882 E 104TH AVE | THORNTON | CO | 80233",
+      "label": "Shine On Beauty Studio",
+      "city": "THORNTON",
+      "zip": "80233",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "16363 E FREMONT AVE | AURORA | CO | 80016",
+      "addressId": "16363 E FREMONT AVE | AURORA | CO | 80016",
+      "label": "The Beauty Palace",
+      "city": "AURORA",
+      "zip": "80016",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "15601 E JAMISON DR | ENGLEWOOD | CO | 80112",
+      "addressId": "15601 E JAMISON DR | ENGLEWOOD | CO | 80112",
+      "label": "More Than Curly Salon",
+      "city": "ENGLEWOOD",
+      "zip": "80112",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "516 31 1/2 RD | GRAND JUNCTION | CO | 81504",
+      "addressId": "516 31 1/2 RD | GRAND JUNCTION | CO | 81504",
+      "label": "PIN UP STUDIO LLC",
+      "city": "GRAND JUNCTION",
+      "zip": "81504",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    },
+    {
+      "kind": "facility",
+      "refId": "4500 19TH ST | BOULDER | CO | 80304",
+      "addressId": "4500 19TH ST | BOULDER | CO | 80304",
+      "label": "4500 19TH ST | BOULDER | CO | 80304",
+      "city": "BOULDER",
+      "zip": "80304",
+      "tags": [
+        "suite_center"
+      ],
+      "addedAt": "2026-02-25T01:52:59.405Z"
+    }
+  ]
+}
