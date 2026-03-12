@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Suspense } from "react";
 import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -53,8 +54,10 @@ function LoginForm() {
 
   return (
     <form onSubmit={onSubmit} className="w-full max-w-md rounded-2xl border bg-white p-6 shadow-sm md:p-8">
-      <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Admin Sign In</h1>
-      <p className="mt-2 text-sm text-neutral-600">Protected areas require a valid session.</p>
+      <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Secure Sign In</h1>
+      <p className="mt-2 text-sm text-neutral-600">
+        Continue into the protected VMB workspace for targets, reviews, and admin workflows.
+      </p>
 
       <label className="mt-5 block text-sm font-medium text-neutral-800">
         Username
@@ -98,6 +101,18 @@ function LoginForm() {
       >
         {loading ? "Signing In..." : "Sign In"}
       </button>
+
+      <p className="mt-4 text-center text-xs text-neutral-500">
+        Need the product overview first?{" "}
+        <Link href="/" className="font-medium text-neutral-700 underline underline-offset-4">
+          Return to the access page
+        </Link>
+        . Need credentials?{" "}
+        <Link href="/access/request" className="font-medium text-neutral-700 underline underline-offset-4">
+          Request access
+        </Link>
+        .
+      </p>
     </form>
   );
 }

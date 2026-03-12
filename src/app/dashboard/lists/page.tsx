@@ -3,15 +3,28 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useDashboardActions } from "../DashboardShell";
+import { WORKFLOW_DISPOSITIONS, WORKFLOW_STAGES, normalizeTargetWorkflow } from "@/lib/ops/targetWorkflow";
 
 type TargetList = {
   id: string;
   name: string;
   createdAt: string;
   updatedAt: string;
-  filters?: any;
+  filters?: Record<string, unknown>;
   techIds: string[];
   notes?: string;
+  workflow?: {
+    owner?: string;
+    stage?: string;
+    disposition?: string;
+    nextActionAt?: string;
+    pinned?: boolean;
+  };
+  activity?: Array<{
+    at: string;
+    type: string;
+    detail: string;
+  }>;
 };
 
 async function apiGetLists(): Promise<TargetList[]> {
@@ -20,13 +33,13 @@ async function apiGetLists(): Promise<TargetList[]> {
   return (j?.lists || []) as TargetList[];
 }
 
-async function apiPost(body: any): Promise<any> {
+async function apiPost(body: Record<string, unknown>): Promise<Record<string, unknown>> {
   const res = await fetch("/api/targets/lists", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  return await res.json();
+  return (await res.json()) as Record<string, unknown>;
 }
 
 function fmtDate(iso?: string) {
@@ -36,7 +49,7 @@ function fmtDate(iso?: string) {
   return d.toLocaleString();
 }
 
-function safeJsonPreview(v: any, maxLen = 280) {
+function safeJsonPreview(v: unknown, maxLen = 280) {
   try {
     const s = JSON.stringify(v ?? {}, null, 0);
     if (s.length <= maxLen) return s;
@@ -61,6 +74,13 @@ export default function ListsPage() {
   const [q, setQ] = useState("");
   const [newName, setNewName] = useState("");
   const [notesDraft, setNotesDraft] = useState("");
+  const [workflowDraft, setWorkflowDraft] = useState({
+    owner: "",
+    stage: "new",
+    disposition: "open",
+    nextActionAt: "",
+    pinned: false,
+  });
 
   async function refresh() {
     setLoading(true);
@@ -79,7 +99,15 @@ export default function ListsPage() {
   useEffect(() => {
     setNotesDraft(active?.notes || "");
     setNewName(active?.name || "");
-  }, [active?.id]); // intentionally key by id
+    const workflow = normalizeTargetWorkflow(active?.workflow);
+    setWorkflowDraft({
+      owner: workflow.owner,
+      stage: workflow.stage,
+      disposition: workflow.disposition,
+      nextActionAt: workflow.nextActionAt ? workflow.nextActionAt.slice(0, 16) : "",
+      pinned: workflow.pinned,
+    });
+  }, [active]);
 
   // Header actions: export/print/open targets/delete (for active list)
   useEffect(() => {
@@ -113,13 +141,14 @@ export default function ListsPage() {
     ]);
 
     return () => clearActions();
-  }, [active?.id, setActions, clearActions]);
+  }, [active, setActions, clearActions]);
 
   const filtered = useMemo(() => {
     const qq = q.trim().toLowerCase();
     if (!qq) return lists;
     return lists.filter((l) => {
-      const hay = `${l.name} ${l.id} ${(l.notes || "")}`.toLowerCase();
+      const workflow = normalizeTargetWorkflow(l.workflow);
+      const hay = `${l.name} ${l.id} ${(l.notes || "")} ${workflow.owner} ${workflow.stage} ${workflow.disposition}`.toLowerCase();
       return hay.includes(qq);
     });
   }, [lists, q]);
@@ -157,6 +186,22 @@ export default function ListsPage() {
     }
   }
 
+  async function onSaveWorkflow() {
+    if (!active) return;
+    const out = await apiPost({
+      op: "setWorkflow",
+      id: active.id,
+      workflow: {
+        owner: workflowDraft.owner,
+        stage: workflowDraft.stage,
+        disposition: workflowDraft.disposition,
+        nextActionAt: workflowDraft.nextActionAt || "",
+        pinned: workflowDraft.pinned,
+      },
+    });
+    if (out?.ok) await refresh();
+  }
+
   return (
     <div style={{ display: "flex", gap: 16 }}>
       {/* LEFT: list index */}
@@ -191,6 +236,7 @@ export default function ListsPage() {
         <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
           {filtered.map((l) => {
             const activeNow = l.id === activeId;
+            const workflow = normalizeTargetWorkflow(l.workflow);
             return (
               <button
                 key={l.id}
@@ -204,9 +250,15 @@ export default function ListsPage() {
                   cursor: "pointer",
                 }}
               >
-                <div style={{ fontWeight: 800 }}>{l.name}</div>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                  <div style={{ fontWeight: 800 }}>{l.name}</div>
+                  {workflow.pinned ? <div style={{ fontSize: 10, fontWeight: 900, color: "#1d4ed8" }}>PINNED</div> : null}
+                </div>
                 <div style={{ fontSize: 12, opacity: 0.75 }}>
                   {l.techIds?.length || 0} targets · updated {fmtDate(l.updatedAt)}
+                </div>
+                <div style={{ fontSize: 11, opacity: 0.68, marginTop: 4 }}>
+                  {(workflow.stage || "new").toUpperCase()} · {(workflow.owner || "Unassigned").toUpperCase()}
                 </div>
                 <div style={{ fontSize: 11, opacity: 0.6 }}>{l.id}</div>
               </button>
@@ -257,6 +309,69 @@ export default function ListsPage() {
             </div>
 
             {/* Rename */}
+            <div style={{ marginTop: 14, padding: 12, border: "1px solid rgba(0,0,0,0.10)", borderRadius: 16 }}>
+              <div style={{ fontWeight: 800, marginBottom: 8 }}>Workflow</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
+                <label style={{ fontSize: 12 }}>
+                  Owner
+                  <input
+                    value={workflowDraft.owner}
+                    onChange={(e) => setWorkflowDraft((current) => ({ ...current, owner: e.target.value }))}
+                    style={{ width: "100%" }}
+                    placeholder="Assigned operator"
+                  />
+                </label>
+                <label style={{ fontSize: 12 }}>
+                  Next action
+                  <input
+                    type="datetime-local"
+                    value={workflowDraft.nextActionAt}
+                    onChange={(e) => setWorkflowDraft((current) => ({ ...current, nextActionAt: e.target.value }))}
+                    style={{ width: "100%" }}
+                  />
+                </label>
+                <label style={{ fontSize: 12 }}>
+                  Stage
+                  <select
+                    value={workflowDraft.stage}
+                    onChange={(e) => setWorkflowDraft((current) => ({ ...current, stage: e.target.value }))}
+                    style={{ width: "100%" }}
+                  >
+                    {WORKFLOW_STAGES.map((stage) => (
+                      <option key={stage} value={stage}>
+                        {stage}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label style={{ fontSize: 12 }}>
+                  Disposition
+                  <select
+                    value={workflowDraft.disposition}
+                    onChange={(e) => setWorkflowDraft((current) => ({ ...current, disposition: e.target.value }))}
+                    style={{ width: "100%" }}
+                  >
+                    {WORKFLOW_DISPOSITIONS.map((disposition) => (
+                      <option key={disposition} value={disposition}>
+                        {disposition}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <label style={{ marginTop: 10, display: "inline-flex", gap: 8, alignItems: "center", fontSize: 12 }}>
+                <input
+                  type="checkbox"
+                  checked={workflowDraft.pinned}
+                  onChange={(e) => setWorkflowDraft((current) => ({ ...current, pinned: e.target.checked }))}
+                />
+                Pin this list for ops review
+              </label>
+              <div style={{ marginTop: 8 }}>
+                <button onClick={onSaveWorkflow}>Save workflow</button>
+              </div>
+            </div>
+
             <div style={{ marginTop: 14, padding: 12, border: "1px solid rgba(0,0,0,0.10)", borderRadius: 16 }}>
               <div style={{ fontWeight: 800, marginBottom: 8 }}>Rename</div>
               <div style={{ display: "flex", gap: 8 }}>
@@ -331,6 +446,21 @@ export default function ListsPage() {
               </div>
               <div style={{ marginTop: 8, fontSize: 12, opacity: 0.75 }}>
                 Targets count: <b>{active.techIds?.length || 0}</b>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 14, padding: 12, border: "1px solid rgba(0,0,0,0.10)", borderRadius: 16 }}>
+              <div style={{ fontWeight: 800, marginBottom: 8 }}>Recent activity</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {(active.activity || []).slice(0, 8).map((entry) => (
+                  <div key={`${entry.at}-${entry.type}`} style={{ fontSize: 12, opacity: 0.82 }}>
+                    <div style={{ fontWeight: 700 }}>{entry.detail}</div>
+                    <div style={{ opacity: 0.65 }}>
+                      {entry.type} · {fmtDate(entry.at)}
+                    </div>
+                  </div>
+                ))}
+                {!active.activity?.length ? <div style={{ fontSize: 12, opacity: 0.72 }}>No workflow activity yet.</div> : null}
               </div>
             </div>
           </div>

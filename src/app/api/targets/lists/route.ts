@@ -9,15 +9,19 @@ import {
   updateListMeta,
 } from "@/app/admin/_lib/targets/store";
 import { canAccessAdmin, getSessionUserFromCookieHeader } from "@/lib/auth/access";
+import { appendTargetActivity, normalizeTargetWorkflow } from "@/lib/ops/targetWorkflow";
+import type { TargetActivity, TargetWorkflow } from "@/lib/ops/targetWorkflow";
 
 type DashboardTargetList = {
   id: string;
   name: string;
   createdAt: string;
   updatedAt: string;
-  filters?: any;
+  filters?: Record<string, unknown>;
   techIds: string[];
   notes?: string;
+  workflow: TargetWorkflow;
+  activity: TargetActivity[];
 };
 
 type Store = {
@@ -43,13 +47,15 @@ function toDashboardList(list: Awaited<ReturnType<typeof readTargetList>>): Dash
     name: list.name,
     createdAt: list.createdAt,
     updatedAt: list.updatedAt,
-    filters: list.savedQuery ?? {},
+    filters: (list.savedQuery ?? {}) as Record<string, unknown>,
     techIds: uniqStrings(
       list.items
         .filter((item) => item.kind === "tech")
         .map((item) => item.refId)
     ),
     notes: list.notes ?? "",
+    workflow: normalizeTargetWorkflow(list.workflow),
+    activity: Array.isArray(list.activity) ? list.activity : [],
   };
 }
 
@@ -82,7 +88,7 @@ type PostBody =
   | {
       op: "create";
       name: string;
-      filters?: any;
+      filters?: Record<string, unknown>;
       notes?: string;
     }
   | {
@@ -98,7 +104,12 @@ type PostBody =
   | {
       op: "setFilters";
       id: string;
-      filters: any;
+      filters: Record<string, unknown>;
+    }
+  | {
+      op: "setWorkflow";
+      id: string;
+      workflow: Partial<TargetWorkflow>;
     }
   | {
       op: "addTech";
@@ -133,18 +144,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 });
   }
 
+  const sessionUser = await getSessionUserFromCookieHeader(req.headers.get("cookie") || "");
+
   const findList = async (id: string) => {
     const list = await readTargetList(id);
     if (!list || list.scope !== "tech") return null;
     return list;
   };
 
-  if (!body || !(body as any).op) {
+  const actor = sessionUser?.username || "system";
+
+  if (!body || !("op" in body)) {
     return NextResponse.json({ ok: false, error: "missing_op" }, { status: 400 });
   }
 
   if (body.op === "delete") {
-    const sessionUser = await getSessionUserFromCookieHeader(req.headers.get("cookie") || "");
     if (!canAccessAdmin(sessionUser)) {
       return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
     }
@@ -160,7 +174,13 @@ export async function POST(req: Request) {
         savedQuery: body.filters ?? {},
         notes: body.notes ?? "",
       });
-      return NextResponse.json({ ok: true, list: toDashboardList(list) }, { status: 200 });
+      const updated = await updateListMeta(list.id, {
+        activity: appendTargetActivity(list.activity, {
+          type: "created",
+          detail: `Created by ${actor}.`,
+        }),
+      });
+      return NextResponse.json({ ok: true, list: toDashboardList(updated) }, { status: 200 });
     }
 
     case "rename": {
@@ -168,6 +188,10 @@ export async function POST(req: Request) {
       if (!existing) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
       const list = await updateListMeta(body.id, {
         name: String(body.name || "").trim() || existing.name,
+        activity: appendTargetActivity(existing.activity, {
+          type: "renamed",
+          detail: `Renamed by ${actor}.`,
+        }),
       });
       return NextResponse.json({ ok: true, list: toDashboardList(list) }, { status: 200 });
     }
@@ -175,14 +199,45 @@ export async function POST(req: Request) {
     case "setNotes": {
       const existing = await findList(body.id);
       if (!existing) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
-      const list = await updateListMeta(body.id, { notes: String(body.notes ?? "") });
+      const list = await updateListMeta(body.id, {
+        notes: String(body.notes ?? ""),
+        activity: appendTargetActivity(existing.activity, {
+          type: "notes_updated",
+          detail: `Notes updated by ${actor}.`,
+        }),
+      });
       return NextResponse.json({ ok: true, list: toDashboardList(list) }, { status: 200 });
     }
 
     case "setFilters": {
       const existing = await findList(body.id);
       if (!existing) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
-      const list = await updateListMeta(body.id, { savedQuery: body.filters ?? {} });
+      const list = await updateListMeta(body.id, {
+        savedQuery: body.filters ?? {},
+        activity: appendTargetActivity(existing.activity, {
+          type: "filters_saved",
+          detail: `Saved filter snapshot refreshed by ${actor}.`,
+        }),
+      });
+      return NextResponse.json({ ok: true, list: toDashboardList(list) }, { status: 200 });
+    }
+
+    case "setWorkflow": {
+      const existing = await findList(body.id);
+      if (!existing) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
+      const nextWorkflow = normalizeTargetWorkflow({
+        ...existing.workflow,
+        ...body.workflow,
+      });
+      const list = await updateListMeta(body.id, {
+        workflow: nextWorkflow,
+        activity: appendTargetActivity(existing.activity, {
+          type: "workflow_updated",
+          detail: `Workflow updated by ${actor}: ${nextWorkflow.stage}/${nextWorkflow.disposition}${
+            nextWorkflow.owner ? ` owner=${nextWorkflow.owner}` : ""
+          }.`,
+        }),
+      });
       return NextResponse.json({ ok: true, list: toDashboardList(list) }, { status: 200 });
     }
 

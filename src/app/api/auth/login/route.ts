@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { resolveRoleForUser } from "@/lib/auth/access";
-import { getAdminPass, getAdminUser, getSessionSecret } from "@/lib/auth/config";
+import { getConfiguredAuthUser, getConfiguredAuthUsers, getSessionSecret } from "@/lib/auth/config";
 import { createSessionToken, SESSION_COOKIE, SESSION_TTL_SECONDS } from "@/lib/auth/session";
 
 type Body = {
@@ -12,12 +12,17 @@ type Body = {
 function sanitizeNextPath(next?: string) {
   const value = String(next || "").trim();
   if (!value.startsWith("/") || value.startsWith("//")) {
-    return "/admin/markets";
+    return "";
   }
   if (value === "/auth/login" || value.startsWith("/auth/login?")) {
-    return "/admin/markets";
+    return "";
   }
   return value;
+}
+
+function defaultNextPathForRole(role: "member" | "admin" | "external") {
+  if (role === "external") return "/";
+  return role === "admin" ? "/admin/markets" : "/dashboard/targets";
 }
 
 function safeEqual(a: string, b: string): boolean {
@@ -28,10 +33,9 @@ function safeEqual(a: string, b: string): boolean {
 }
 
 export async function POST(req: Request) {
-  const adminUser = getAdminUser();
-  const adminPass = getAdminPass();
+  const users = getConfiguredAuthUsers();
   const sessionSecret = getSessionSecret();
-  if (!adminUser || !adminPass || !sessionSecret) {
+  if (!users.length || !sessionSecret) {
     return NextResponse.json({ ok: false, error: "auth_not_configured" }, { status: 503 });
   }
 
@@ -45,14 +49,16 @@ export async function POST(req: Request) {
   const user = String(body.user || "");
   const pass = String(body.pass || "");
   const nextPath = sanitizeNextPath(body.next);
-
-  if (!safeEqual(user, adminUser) || !safeEqual(pass, adminPass)) {
+  const configuredUser = getConfiguredAuthUser(user);
+  if (!configuredUser || !safeEqual(pass, configuredUser.password)) {
     return NextResponse.json({ ok: false, error: "invalid_credentials" }, { status: 401 });
   }
 
   const role = resolveRoleForUser(user);
   const token = await createSessionToken(user, role, sessionSecret);
-  const res = NextResponse.json({ ok: true, next: nextPath, role });
+  const target =
+    role === "external" && nextPath && nextPath !== "/" ? "/" : nextPath || defaultNextPathForRole(role);
+  const res = NextResponse.json({ ok: true, next: target, role });
   res.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

@@ -3,6 +3,7 @@ import path from "node:path";
 import { targetsDirAbs } from "../../../api/admin/_lib/paths";
 import { writeJsonAtomic } from "../../../api/admin/_lib/atomic";
 import type { TargetList, TargetListIndex } from "./types";
+import { normalizeTargetWorkflow } from "@/lib/ops/targetWorkflow";
 
 const INDEX_FILE = "targets_index.json";
 
@@ -36,7 +37,7 @@ export async function readTargetList(listId: string): Promise<TargetList | null>
 export async function createTargetList(params: {
   name: string;
   scope: "facility" | "tech";
-  savedQuery?: any;
+  savedQuery?: TargetList["savedQuery"];
   notes?: string;
 }): Promise<TargetList> {
   const now = new Date().toISOString();
@@ -50,6 +51,14 @@ export async function createTargetList(params: {
     updatedAt: now,
     savedQuery: params.savedQuery,
     notes: params.notes,
+    workflow: normalizeTargetWorkflow(),
+    activity: [
+      {
+        at: now,
+        type: "created",
+        detail: "List created from saved filters.",
+      },
+    ],
     items: [],
   };
 
@@ -87,6 +96,7 @@ export async function addItems(
   if (!list) throw new Error(`Target list ${listId} not found`);
 
   const existingKeys = new Set(list.items.map((i) => `${i.kind}:${i.refId}`));
+  let addedCount = 0;
 
   for (const item of items) {
     const key = `${item.kind}:${item.refId}`;
@@ -96,10 +106,21 @@ export async function addItems(
         addedAt: new Date().toISOString(),
       });
       existingKeys.add(key);
+      addedCount += 1;
     }
   }
 
   list.updatedAt = new Date().toISOString();
+  if (addedCount) {
+    list.activity = [
+      {
+        at: list.updatedAt,
+        type: "targets_added",
+        detail: `Added ${addedCount} target${addedCount === 1 ? "" : "s"} to the list.`,
+      },
+      ...(list.activity || []),
+    ].slice(0, 25);
+  }
   await writeJsonAtomic(listPathAbs(listId), list);
 
   // Update index
@@ -119,9 +140,21 @@ export async function removeItems(listId: string, refIds: string[]): Promise<Tar
   if (!list) throw new Error(`Target list ${listId} not found`);
 
   const removeSet = new Set(refIds);
+  const beforeCount = list.items.length;
   list.items = list.items.filter((i) => !removeSet.has(i.refId));
 
   list.updatedAt = new Date().toISOString();
+  const removedCount = beforeCount - list.items.length;
+  if (removedCount > 0) {
+    list.activity = [
+      {
+        at: list.updatedAt,
+        type: "targets_removed",
+        detail: `Removed ${removedCount} target${removedCount === 1 ? "" : "s"} from the list.`,
+      },
+      ...(list.activity || []),
+    ].slice(0, 25);
+  }
   await writeJsonAtomic(listPathAbs(listId), list);
 
   // Update index
@@ -138,7 +171,13 @@ export async function removeItems(listId: string, refIds: string[]): Promise<Tar
 
 export async function updateListMeta(
   listId: string,
-  patch: { name?: string; savedQuery?: any; notes?: string }
+  patch: {
+    name?: string;
+    savedQuery?: TargetList["savedQuery"];
+    notes?: string;
+    workflow?: TargetList["workflow"];
+    activity?: TargetList["activity"];
+  }
 ): Promise<TargetList> {
   const list = await readTargetList(listId);
   if (!list) throw new Error(`Target list ${listId} not found`);
@@ -146,6 +185,8 @@ export async function updateListMeta(
   if (patch.name !== undefined) list.name = patch.name;
   if (patch.savedQuery !== undefined) list.savedQuery = patch.savedQuery;
   if (patch.notes !== undefined) list.notes = patch.notes;
+  if (patch.workflow !== undefined) list.workflow = normalizeTargetWorkflow(patch.workflow);
+  if (patch.activity !== undefined) list.activity = patch.activity;
 
   list.updatedAt = new Date().toISOString();
   await writeJsonAtomic(listPathAbs(listId), list);

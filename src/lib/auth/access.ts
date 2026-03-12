@@ -1,8 +1,8 @@
 import type { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
-import { getAdminUser, getSessionSecret } from "@/lib/auth/config";
+import { getAdminUser, getConfiguredAuthUser, getSessionSecret } from "@/lib/auth/config";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session";
 
-export type Role = "public" | "member" | "admin";
+export type Role = "public" | "member" | "admin" | "external";
 
 export type SessionUser = {
   username: string;
@@ -14,8 +14,8 @@ type SessionPayloadLike = {
   role?: string | null;
 } | null;
 
-export const PUBLIC_ROUTES = ["/", "/marketing", "/marketing-decks"];
-export const MEMBER_ROUTES = ["/admin/markets", "/dashboard", "/team", "/api/targets", "/api/derived"];
+export const PUBLIC_ROUTES = ["/", "/marketing", "/marketing-decks", "/access/request"];
+export const MEMBER_ROUTES = ["/admin/markets", "/dashboard", "/team", "/api/targets", "/api/derived", "/api/dashboard", "/api/integrations"];
 export const ADMIN_ROUTES = ["/admin", "/api/admin"];
 export const AUTH_ROUTES = ["/auth", "/api/auth"];
 
@@ -25,6 +25,8 @@ function routeMatches(pathname: string, prefix: string) {
 }
 
 export function resolveRoleForUser(username: string): Role {
+  const configured = getConfiguredAuthUser(username);
+  if (configured) return configured.role;
   return username === getAdminUser() ? "admin" : "member";
 }
 
@@ -32,7 +34,10 @@ export function sessionUserFromPayload(payload: SessionPayloadLike): SessionUser
   if (!payload?.u) return null;
   return {
     username: payload.u,
-    role: payload.role === "admin" || payload.role === "member" ? payload.role : resolveRoleForUser(payload.u),
+    role:
+      payload.role === "admin" || payload.role === "member" || payload.role === "external"
+        ? payload.role
+        : resolveRoleForUser(payload.u),
   };
 }
 
@@ -45,7 +50,7 @@ export function isAdmin(user: SessionUser) {
 }
 
 export function canAccessMemberArea(user: SessionUser) {
-  return !!user;
+  return user?.role === "member" || user?.role === "admin";
 }
 
 export function canAccessAdmin(user: SessionUser) {
@@ -77,7 +82,7 @@ export function canAccessRoute(pathname: string, user: SessionUser): boolean {
   }
 
   if (isMemberRoute(pathname)) {
-    return !!user;
+    return canAccessMemberArea(user);
   }
 
   return true;
@@ -85,11 +90,12 @@ export function canAccessRoute(pathname: string, user: SessionUser): boolean {
 
 export function canShowNavItem(id: string, user: SessionUser): boolean {
   if (id === "marketing") return true;
+  if (id === "request_access") return !user;
   if (id === "login") return !user;
-  if (id === "markets") return !!user;
+  if (id === "markets") return canAccessMemberArea(user);
   if (id === "liveunits") return user?.role === "admin";
-  if (id === "datastore") return !!user;
-  if (id === "team") return !!user;
+  if (id === "datastore") return canAccessMemberArea(user);
+  if (id === "team") return canAccessMemberArea(user);
   if (id === "admin") return user?.role === "admin";
   return false;
 }

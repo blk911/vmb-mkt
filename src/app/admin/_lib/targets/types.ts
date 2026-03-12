@@ -1,4 +1,5 @@
 import type { AdminQueryState } from "../adminQueryState";
+import type { TargetActivity, TargetWorkflow } from "@/lib/ops/targetWorkflow";
 
 export type TargetScope = "facility" | "tech";
 
@@ -9,9 +10,11 @@ export type TargetList = {
   createdAt: string;
   updatedAt: string;
   notes?: string;
+  workflow?: TargetWorkflow;
+  activity?: TargetActivity[];
 
   // This is the saved "view" (query state snapshot)
-  savedQuery?: AdminQueryState;
+  savedQuery?: AdminQueryState | Record<string, unknown>;
 
   // Items are normalized minimal refs
   items: Array<{
