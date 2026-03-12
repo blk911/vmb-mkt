@@ -32,6 +32,7 @@ type Props = {
 
 export default function AppSwitchNav({ sessionUser }: Props) {
   const pathname = usePathname() || "/";
+  const showMarketingQuickLinks = pathname === "/marketing-decks" || pathname.startsWith("/marketing-decks/");
   const links: AppLink[] = [
     MARKETING_LINK,
     REQUEST_ACCESS_LINK,
@@ -70,6 +71,18 @@ export default function AppSwitchNav({ sessionUser }: Props) {
       <div style={{ width: "100%", maxWidth: 1100, display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center" }}>
         <div />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          {showMarketingQuickLinks ? (
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: "#475569",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Quick Links:
+            </span>
+          ) : null}
           {links.map((link) => {
             const active = isActive(link.href, pathname);
             return (
