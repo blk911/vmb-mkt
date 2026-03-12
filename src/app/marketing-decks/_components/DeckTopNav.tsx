@@ -11,11 +11,12 @@ function tabClass(active: boolean) {
 export default function DeckTopNav({ active }: { active: TabKey }) {
   return (
     <div className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur">
-      <div className="mx-auto grid max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-3">
+      <div className="mx-auto grid max-w-[1100px] grid-cols-[auto_1fr_auto] items-center gap-4 px-4 py-3">
         <Link href="/marketing-decks" className="min-w-0 text-sm font-semibold text-neutral-900">
           Marketing
         </Link>
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        <div className="flex min-w-0 flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <span className="text-sm font-semibold text-neutral-500">Quick Links:</span>
           <Link
             href="https://venmebaby.com"
             target="_blank"
@@ -41,7 +42,14 @@ export default function DeckTopNav({ active }: { active: TabKey }) {
             FAQ
           </Link>
         </div>
-        <div />
+        <Link
+          href="https://vmbsalons.com"
+          target="_blank"
+          rel="noreferrer"
+          className="justify-self-end text-sm font-semibold text-neutral-900 hover:text-neutral-700"
+        >
+          VMB Salons
+        </Link>
       </div>
     </div>
   );
