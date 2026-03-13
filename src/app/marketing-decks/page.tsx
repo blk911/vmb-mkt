@@ -43,12 +43,21 @@ export default function MarketingDecksPage() {
 
       <section className="-mt-8 w-full pb-16">
         <div className="mx-auto max-w-4xl px-4">
-          <div className="flex justify-center rounded-3xl border bg-white p-4 shadow-sm">
-            <img
-              src="/door-sticker2.png"
-              alt="VMB gift request flyer"
-              className="h-auto w-full max-w-3xl rounded-2xl"
-            />
+          <div className="space-y-6">
+            <div className="flex justify-center rounded-3xl border bg-white p-4 shadow-sm">
+              <img
+                src="/door-sticker2.png"
+                alt="VMB gift request flyer"
+                className="h-auto w-full max-w-3xl rounded-2xl"
+              />
+            </div>
+            <div className="flex justify-center rounded-3xl border bg-white p-4 shadow-sm">
+              <img
+                src="/Sticker%20External%20Locations%203"
+                alt="VMB external locations sticker"
+                className="h-auto w-full max-w-3xl rounded-2xl"
+              />
+            </div>
           </div>
         </div>
       </section>
