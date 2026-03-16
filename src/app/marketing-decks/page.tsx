@@ -46,14 +46,14 @@ export default function MarketingDecksPage() {
           <div className="grid gap-6 md:grid-cols-2">
             <div className="flex h-full justify-center rounded-3xl border bg-white p-4 shadow-sm">
               <img
-                src="/door-sticker2.png"
-                alt="VMB gift request flyer"
+                src="/door-sticker3.webp"
+                alt="VMB promotional sticker"
                 className="h-auto w-full rounded-2xl"
               />
             </div>
             <div className="flex h-full justify-center rounded-3xl border bg-white p-4 shadow-sm">
               <img
-                src="/door-sticker3.webp"
+                src="/door-sticker3.png"
                 alt="VMB external locations sticker"
                 className="h-auto w-full rounded-2xl"
               />
