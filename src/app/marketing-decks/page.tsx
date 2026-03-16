@@ -53,7 +53,7 @@ export default function MarketingDecksPage() {
             </div>
             <div className="flex h-full justify-center rounded-3xl border bg-white p-4 shadow-sm">
               <img
-                src="/Sticker%20External%20Locations%203.webp"
+                src="/VMB%20Ext%20Prtnrs.png"
                 alt="VMB external locations sticker"
                 className="h-auto w-full rounded-2xl"
               />
