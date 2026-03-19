@@ -130,6 +130,7 @@ function getLineState(stage: ExplainerStage): {
     step1Active: { ...base, line1: 0, line2: 0, line3: 0 },
     lineOwnerToA: { ...base, line1: 1, line2: 0, line3: 0, showPulse1: true },
     clientAGlow: { ...base, line1: 1, line2: 0, line3: 0, fade1: true },
+    pauseBeforeStep2: { ...base, line1: 1, line2: 0, line3: 0, fade1: true },
     step2Active: { ...base, line1: 1, line2: 1, line3: 0, fade1: true, showPulse2: true },
     appointmentBooked: { ...base, line1: 1, line2: 1, line3: 0, fade1: true, fade2: true },
     step3Active: { ...base, line1: 1, line2: 1, line3: 1, fade1: true, fade2: true, showPulse3: true },

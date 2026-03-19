@@ -2,6 +2,7 @@ export const EXPLAINER_STAGES = [
   "step1Active",
   "lineOwnerToA",
   "clientAGlow",
+  "pauseBeforeStep2",
   "step2Active",
   "appointmentBooked",
   "step3Active",

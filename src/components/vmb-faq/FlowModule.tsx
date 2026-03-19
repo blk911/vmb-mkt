@@ -16,6 +16,7 @@ const PHASE1_DURATIONS_MS: Record<ExplainerStage, number> = {
   step1Active: 900,
   lineOwnerToA: 1000,
   clientAGlow: 1100,
+  pauseBeforeStep2: 350,
   step2Active: 900,
   appointmentBooked: 1100,
   step3Active: 900,
@@ -180,7 +181,7 @@ export function FlowModule({
   const p1Stage = stage as ExplainerStage;
   const sendInviteActive = ["step1Active", "lineOwnerToA", "clientAGlow"].includes(p1Stage);
   const paymentsActive = ["paymentReceived", "insightOverlay", "fadeOut"].includes(p1Stage);
-  const clientAHighlighted = ["clientAGlow", "step2Active", "appointmentBooked", "step3Active", "paymentReceived", "insightOverlay", "fadeOut"].includes(p1Stage);
+  const clientAHighlighted = ["clientAGlow", "pauseBeforeStep2", "step2Active", "appointmentBooked", "step3Active", "paymentReceived", "insightOverlay", "fadeOut"].includes(p1Stage);
   const appointmentActive = ["appointmentBooked", "step3Active", "paymentReceived", "insightOverlay", "fadeOut"].includes(p1Stage);
 
   return (

@@ -25,6 +25,7 @@ const STAGE_TO_ACTIVE_STEP: Record<ExplainerStage, number> = {
   step1Active: 1,
   lineOwnerToA: 1,
   clientAGlow: 1,
+  pauseBeforeStep2: 1,
   step2Active: 2,
   appointmentBooked: 2,
   step3Active: 3,
