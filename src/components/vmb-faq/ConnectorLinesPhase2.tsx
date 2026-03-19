@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 interface ConnectorLinesPhase2Props {
   step: number;
   containerRef: React.RefObject<HTMLDivElement | null>;
+  serviceValueRef: React.RefObject<HTMLDivElement | null>;
   clientARef: React.RefObject<HTMLDivElement | null>;
   clientDRef: React.RefObject<HTMLDivElement | null>;
   rightCardRef: React.RefObject<HTMLDivElement | null>;
@@ -20,12 +21,14 @@ interface Point {
 
 function computePathsPhase2(
   container: DOMRect,
+  serviceValue: DOMRect,
   clientA: DOMRect,
   rightCard: DOMRect,
   bookAppointment: DOMRect,
   payments: DOMRect,
   clientD: DOMRect | null
 ): {
+  path0: string;
   path1: string;
   path2: string;
   path3: string;
@@ -36,10 +39,13 @@ function computePathsPhase2(
   const ox = (r: DOMRect) => r.left - container.left;
   const oy = (r: DOMRect) => r.top - container.top;
 
+  const serviceValueRight = ox(serviceValue) + serviceValue.width;
+  const serviceValueCenterY = oy(serviceValue) + serviceValue.height / 2;
   const clientARight = ox(clientA) + clientA.width;
   const clientACenterY = oy(clientA) + clientA.height / 2;
   const clientABottom = oy(clientA) + clientA.height;
   const clientACenterX = ox(clientA) + clientA.width / 2;
+  const clientALeft = ox(clientA);
 
   const rightCardLeft = ox(rightCard);
   const rightCardCenterY = oy(rightCard) + rightCard.height / 2;
@@ -51,6 +57,9 @@ function computePathsPhase2(
   const paymentsCenterY = oy(payments) + payments.height / 2;
 
   const upperY = Math.min(clientACenterY, rightCardCenterY) - 12;
+
+  const serviceToAY = Math.min(serviceValueCenterY, clientACenterY) - 12;
+  const path0 = `M ${serviceValueRight} ${serviceValueCenterY} C ${(serviceValueRight + clientALeft) / 2 + 20} ${serviceToAY}, ${(serviceValueRight + clientALeft) / 2 - 20} ${serviceToAY}, ${clientALeft} ${clientACenterY}`;
 
   const path1 = `M ${clientARight} ${clientACenterY} C ${(clientARight + rightCardLeft) / 2 + 24} ${upperY}, ${(clientARight + rightCardLeft) / 2 - 24} ${upperY}, ${rightCardLeft} ${rightCardCenterY}`;
 
@@ -65,32 +74,35 @@ function computePathsPhase2(
 
   const pulse = { x: (clientARight + rightCardLeft) / 2, y: upperY };
 
-  return { path1, path2, path3, pulse, width: container.width, height: container.height };
+  return { path0, path1, path2, path3, pulse, width: container.width, height: container.height };
 }
 
 function getLineState(step: number): {
+  line0: number;
   line1: number;
   line2: number;
   line3: number;
+  fade0: boolean;
   fade1: boolean;
   fade2: boolean;
   fade3: boolean;
   showPulse: boolean;
 } {
-  if (step === 0) return { line1: 0, line2: 0, line3: 0, fade1: false, fade2: false, fade3: false, showPulse: false };
-  if (step === 1) return { line1: 1, line2: 0, line3: 0, fade1: false, fade2: false, fade3: false, showPulse: true };
-  if (step === 2) return { line1: 1, line2: 0, line3: 0, fade1: false, fade2: false, fade3: false, showPulse: false };
-  if (step === 3) return { line1: 1, line2: 1, line3: 0, fade1: false, fade2: false, fade3: false, showPulse: false };
-  if (step === 4) return { line1: 1, line2: 1, line3: 0, fade1: false, fade2: false, fade3: false, showPulse: false };
-  if (step === 5) return { line1: 0, line2: 0, line3: 1, fade1: true, fade2: true, fade3: false, showPulse: false };
-  if (step === 6) return { line1: 0, line2: 0, line3: 0, fade1: true, fade2: true, fade3: true, showPulse: false };
-  if (step === 7) return { line1: 0, line2: 0, line3: 0, fade1: true, fade2: true, fade3: true, showPulse: false };
-  return { line1: 0, line2: 0, line3: 0, fade1: true, fade2: true, fade3: true, showPulse: false };
+  if (step === 0) return { line0: 0, line1: 0, line2: 0, line3: 0, fade0: false, fade1: false, fade2: false, fade3: false, showPulse: false };
+  if (step === 1) return { line0: 1, line1: 1, line2: 0, line3: 0, fade0: false, fade1: false, fade2: false, fade3: false, showPulse: true };
+  if (step === 2) return { line0: 1, line1: 1, line2: 0, line3: 0, fade0: false, fade1: false, fade2: false, fade3: false, showPulse: false };
+  if (step === 3) return { line0: 1, line1: 1, line2: 1, line3: 0, fade0: false, fade1: false, fade2: false, fade3: false, showPulse: false };
+  if (step === 4) return { line0: 1, line1: 1, line2: 1, line3: 0, fade0: false, fade1: false, fade2: false, fade3: false, showPulse: false };
+  if (step === 5) return { line0: 0, line1: 0, line2: 0, line3: 1, fade0: true, fade1: true, fade2: true, fade3: false, showPulse: false };
+  if (step === 6) return { line0: 0, line1: 0, line2: 0, line3: 0, fade0: true, fade1: true, fade2: true, fade3: true, showPulse: false };
+  if (step === 7) return { line0: 0, line1: 0, line2: 0, line3: 0, fade0: true, fade1: true, fade2: true, fade3: true, showPulse: false };
+  return { line0: 0, line1: 0, line2: 0, line3: 0, fade0: true, fade1: true, fade2: true, fade3: true, showPulse: false };
 }
 
 export function ConnectorLinesPhase2({
   step,
   containerRef,
+  serviceValueRef,
   clientARef,
   clientDRef,
   rightCardRef,
@@ -98,6 +110,7 @@ export function ConnectorLinesPhase2({
   paymentsRef,
 }: ConnectorLinesPhase2Props) {
   const [pathData, setPathData] = useState<{
+    path0: string;
     path1: string;
     path2: string;
     path3: string;
@@ -112,15 +125,17 @@ export function ConnectorLinesPhase2({
   useEffect(() => {
     const measure = () => {
       const container = containerRef.current;
+      const serviceValue = serviceValueRef.current;
       const clientA = clientARef.current;
       const clientD = clientDRef.current;
       const rightCard = rightCardRef.current;
       const bookAppointment = bookAppointmentRef.current;
       const payments = paymentsRef.current;
 
-      if (!container || !clientA || !rightCard || !payments) return;
+      if (!container || !serviceValue || !clientA || !rightCard || !payments) return;
 
       const containerRect = container.getBoundingClientRect();
+      const serviceValueRect = serviceValue.getBoundingClientRect();
       const clientARect = clientA.getBoundingClientRect();
       const rightCardRect = rightCard.getBoundingClientRect();
       const paymentsRect = payments.getBoundingClientRect();
@@ -135,7 +150,7 @@ export function ConnectorLinesPhase2({
       const clientDRect = clientD?.getBoundingClientRect?.() ?? null;
 
       setPathData(
-        computePathsPhase2(containerRect, clientARect, rightCardRect, bookAppRect, paymentsRect, clientDRect)
+        computePathsPhase2(containerRect, serviceValueRect, clientARect, rightCardRect, bookAppRect, paymentsRect, clientDRect)
       );
     };
 
@@ -153,7 +168,7 @@ export function ConnectorLinesPhase2({
       cancelAnimationFrame(t);
       ro.disconnect();
     };
-  }, [step, containerRef, clientARef, clientDRef, rightCardRef, bookAppointmentRef, paymentsRef, showPath2, showPath3]);
+  }, [step, containerRef, serviceValueRef, clientARef, clientDRef, rightCardRef, bookAppointmentRef, paymentsRef, showPath2, showPath3]);
 
   const state = getLineState(step);
 
@@ -176,6 +191,19 @@ export function ConnectorLinesPhase2({
         </filter>
       </defs>
 
+      <motion.path
+        d={pathData.path0}
+        stroke="rgb(236 72 153)"
+        strokeWidth="2.5"
+        strokeDasharray="8 8"
+        strokeLinecap="round"
+        fill="none"
+        animate={{
+          pathLength: state.line0,
+          opacity: state.fade0 ? 0 : state.line0 > 0 ? 1 : 0,
+        }}
+        transition={{ duration: 0.45, ease: "easeOut" }}
+      />
       <motion.path
         d={pathData.path1}
         stroke="rgb(236 72 153)"

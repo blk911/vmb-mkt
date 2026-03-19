@@ -5,9 +5,10 @@ import { motion } from "framer-motion";
 interface SalonOwnerCardPhase2Props {
   paymentsActive: boolean;
   paymentsRef: React.RefObject<HTMLDivElement | null>;
+  serviceValueRef: React.RefObject<HTMLDivElement | null>;
 }
 
-export function SalonOwnerCardPhase2({ paymentsActive, paymentsRef }: SalonOwnerCardPhase2Props) {
+export function SalonOwnerCardPhase2({ paymentsActive, paymentsRef, serviceValueRef }: SalonOwnerCardPhase2Props) {
   return (
     <div className="col-span-12 md:col-span-3">
       <div className="h-full rounded-[16px] border border-neutral-200 bg-white p-3 shadow-sm">
@@ -24,7 +25,7 @@ export function SalonOwnerCardPhase2({ paymentsActive, paymentsRef }: SalonOwner
         </div>
 
         <div className="space-y-1.5">
-          <div className="rounded-lg border border-neutral-200 bg-neutral-50/50 px-2.5 py-1.5">
+          <div ref={serviceValueRef} className="rounded-lg border border-neutral-200 bg-neutral-50/50 px-2.5 py-1.5">
             <div className="text-[9px] uppercase tracking-[0.14em] text-neutral-500">
               Salon Services
             </div>

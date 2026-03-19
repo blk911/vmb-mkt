@@ -43,6 +43,7 @@ export function FlowModule({
   const containerRef = useRef<HTMLDivElement>(null);
   const sendInviteRef = useRef<HTMLDivElement>(null);
   const paymentsRef = useRef<HTMLDivElement>(null);
+  const serviceValueRef = useRef<HTMLDivElement>(null);
   const clientARef = useRef<HTMLDivElement>(null);
   const clientDRef = useRef<HTMLDivElement>(null);
   const rightCardRef = useRef<HTMLDivElement>(null);
@@ -119,7 +120,11 @@ export function FlowModule({
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
             >
-              <SalonOwnerCardPhase2 paymentsActive={paymentsActive} paymentsRef={paymentsRef} />
+              <SalonOwnerCardPhase2
+                paymentsActive={paymentsActive}
+                paymentsRef={paymentsRef}
+                serviceValueRef={serviceValueRef}
+              />
               <ClientBookCluster
                 clientAHighlighted={clientAHighlighted}
                 clientARef={clientARef}
@@ -140,6 +145,7 @@ export function FlowModule({
               <ConnectorLinesPhase2
                 step={step}
                 containerRef={containerRef}
+                serviceValueRef={serviceValueRef}
                 clientARef={clientARef}
                 clientDRef={clientDRef}
                 rightCardRef={rightCardRef}
