@@ -9,6 +9,9 @@ const IMG = {
   card2: "/mscard2.jpg",
   card3: "/mscard3.jpg",
   card4: "/mscard4.jpg",
+  card2Extra1: "/mscard1.jpg",
+  card2Extra2: "/forclients6.jpg",
+  card2Extra3: "/forclient9.webp",
 } as const;
 
 type MoneyShotCard = {
@@ -89,6 +92,7 @@ const CARDS: MoneyShotCard[] = [
     id: "#2",
     title: "One for the money, Two for the Gold",
     detailTitle: "Client relationships are your most valuable asset",
+    gallery: [IMG.card2Extra1, IMG.card2Extra2, IMG.card2Extra3],
     content: {
       steps: [
         {
@@ -310,22 +314,32 @@ export default function MoneyShotsCards() {
                       role="img"
                     >
                       {card.id === "#2" ? (
-                        <button
-                          type="button"
-                          onClick={() => setShowGraphic2Modal(true)}
-                          className="overflow-hidden rounded-md border border-neutral-200 bg-white text-left shadow-sm transition hover:border-pink-300 hover:shadow-md"
-                        >
-                          <div className="border-b border-neutral-200 px-3 py-2">
-                            <p className="text-sm font-semibold text-neutral-900">Every Client Has a Plus One</p>
-                          </div>
-                          <div className="h-[150px] overflow-hidden bg-neutral-50">
-                            <div className="origin-top-left scale-[0.24]">
-                              <div className="w-[1000px]">
-                                <Graphic2Module />
+                        <div style={{ display: "flex", flexDirection: "column", gap: 80, paddingTop: 20 }}>
+                          <button
+                            type="button"
+                            onClick={() => setShowGraphic2Modal(true)}
+                            className="overflow-hidden rounded-md border border-neutral-200 bg-white text-left shadow-sm transition hover:border-pink-300 hover:shadow-md"
+                          >
+                            <div className="border-b border-neutral-200 px-3 py-2">
+                              <p className="text-sm font-semibold text-neutral-900">Every Client Has a Plus One</p>
+                            </div>
+                            <div className="h-[150px] overflow-hidden bg-neutral-50">
+                              <div className="origin-top-left scale-[0.24]">
+                                <div className="w-[1000px]">
+                                  <Graphic2Module />
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </button>
+                          </button>
+                          {card.gallery?.map((src, i) => (
+                            <img
+                              key={src}
+                              src={src}
+                              alt={`${card.id} media ${i + 1}`}
+                              className="h-[150px] w-full rounded-md border border-neutral-200 object-cover"
+                            />
+                          ))}
+                        </div>
                       ) : card.gallery && card.gallery.length ? (
                         <div style={{ display: "flex", flexDirection: "column", gap: 80, paddingTop: 20 }}>
                           {card.id === "#1" ? (
