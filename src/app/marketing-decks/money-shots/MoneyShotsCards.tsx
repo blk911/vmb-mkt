@@ -11,7 +11,6 @@ const IMG = {
   card4: "/mscard4.jpg",
   card2Extra1: "/mscard1.jpg",
   card2Extra2: "/forclients6.jpg",
-  card2Extra3: "/forclient9.webp",
 } as const;
 
 type MoneyShotCard = {
@@ -92,7 +91,7 @@ const CARDS: MoneyShotCard[] = [
     id: "#2",
     title: "One for the money, Two for the Gold",
     detailTitle: "Client relationships are your most valuable asset",
-    gallery: [IMG.card2Extra1, IMG.card2Extra2, IMG.card2Extra3],
+    gallery: [IMG.card2Extra1, IMG.card2Extra2],
     content: {
       steps: [
         {
