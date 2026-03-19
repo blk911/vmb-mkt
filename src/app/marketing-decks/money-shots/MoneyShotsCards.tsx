@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Graphic1Module } from "@/components/vmb-faq/Graphic1Module";
 
 const IMG = {
   card1: "/mscard1.jpg",
@@ -247,89 +248,128 @@ const CARDS: MoneyShotCard[] = [
 
 export default function MoneyShotsCards() {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
+  const [showGraphic1Modal, setShowGraphic1Modal] = useState(false);
 
   return (
-    <div className="mx-auto mt-8 max-w-5xl space-y-4 px-4 pb-16">
-      {CARDS.map((card, idx) => {
-        const open = openIdx === idx;
-        return (
-          <article key={card.id} className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-            <button
-              type="button"
-              onClick={() => setOpenIdx((prev) => (prev === idx ? null : idx))}
-              className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left"
-            >
-              <div className="min-w-0">
-                <h3 className="text-xl font-semibold leading-tight text-neutral-900">
-                  {card.id} {card.title}
-                </h3>
-              </div>
-              <span className="text-sm font-medium text-neutral-500">{open ? "Close" : "Open"}</span>
-            </button>
+    <>
+      <div className="mx-auto mt-8 max-w-5xl space-y-4 px-4 pb-16">
+        {CARDS.map((card, idx) => {
+          const open = openIdx === idx;
+          return (
+            <article key={card.id} className="overflow-hidden rounded-2xl border bg-white shadow-sm">
+              <button
+                type="button"
+                onClick={() => setOpenIdx((prev) => (prev === idx ? null : idx))}
+                className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left"
+              >
+                <div className="min-w-0">
+                  <h3 className="text-xl font-semibold leading-tight text-neutral-900">
+                    {card.id} {card.title}
+                  </h3>
+                </div>
+                <span className="text-sm font-medium text-neutral-500">{open ? "Close" : "Open"}</span>
+              </button>
 
-            {open ? (
-              <div className="border-t px-5 py-4">
-                <div className="grid items-stretch gap-4 md:grid-cols-[minmax(0,1fr)_280px]">
-                  <div className="min-h-[150px] rounded-xl border border-neutral-200 p-4">
-                    {card.content ? (
-                      <div className="mt-3 space-y-4 text-sm leading-relaxed text-neutral-700 md:text-base">
-                        {card.id === "#3" ? (
-                          <section className="space-y-1.5">
-                            <p className="text-base md:text-lg"><strong>Your time is priceless — VMB makes sure you get paid.</strong></p>
-                          </section>
-                        ) : null}
-                        {card.content.steps.map((step) => (
-                          <section key={step.heading} className="space-y-1.5">
-                            <h4 className="font-semibold text-neutral-900">{step.heading}</h4>
-                            {step.lines.map((line) => (
-                              <p
-                                key={line}
-                                dangerouslySetInnerHTML={{ __html: line }}
-                              />
-                            ))}
-                            {step.bullets ? (
-                              <ul className="list-disc space-y-1 pl-5">
-                                {step.bullets.map((item) => (
-                                  <li key={item}>{item}</li>
-                                ))}
-                              </ul>
-                            ) : null}
-                          </section>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                  <div
-                    className="w-full overflow-hidden"
-                    aria-label={`Money Shot ${card.id}`}
-                    role="img"
-                  >
-                    {card.gallery && card.gallery.length ? (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 80, paddingTop: 20 }}>
-                        {card.gallery.map((src, i) => (
-                          <img
-                            key={src}
-                            src={src}
-                            alt={`${card.id} media ${i + 1}`}
-                            className="h-[150px] w-full rounded-md border border-neutral-200 object-cover"
-                          />
-                        ))}
-                      </div>
-                    ) : card.image ? (
-                      <img
-                        src={card.image}
-                        alt={`Money Shot ${card.id}`}
-                        className="h-[150px] w-full object-cover"
-                      />
-                    ) : null
-                    }
+              {open ? (
+                <div className="border-t px-5 py-4">
+                  <div className="grid items-stretch gap-4 md:grid-cols-[minmax(0,1fr)_280px]">
+                    <div className="min-h-[150px] rounded-xl border border-neutral-200 p-4">
+                      {card.content ? (
+                        <div className="mt-3 space-y-4 text-sm leading-relaxed text-neutral-700 md:text-base">
+                          {card.id === "#3" ? (
+                            <section className="space-y-1.5">
+                              <p className="text-base md:text-lg"><strong>Your time is priceless — VMB makes sure you get paid.</strong></p>
+                            </section>
+                          ) : null}
+                          {card.content.steps.map((step) => (
+                            <section key={step.heading} className="space-y-1.5">
+                              <h4 className="font-semibold text-neutral-900">{step.heading}</h4>
+                              {step.lines.map((line) => (
+                                <p
+                                  key={line}
+                                  dangerouslySetInnerHTML={{ __html: line }}
+                                />
+                              ))}
+                              {step.bullets ? (
+                                <ul className="list-disc space-y-1 pl-5">
+                                  {step.bullets.map((item) => (
+                                    <li key={item}>{item}</li>
+                                  ))}
+                                </ul>
+                              ) : null}
+                            </section>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                    <div
+                      className="w-full overflow-hidden"
+                      aria-label={`Money Shot ${card.id}`}
+                      role="img"
+                    >
+                      {card.gallery && card.gallery.length ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 80, paddingTop: 20 }}>
+                          {card.id === "#1" ? (
+                            <button
+                              type="button"
+                              onClick={() => setShowGraphic1Modal(true)}
+                              className="overflow-hidden rounded-md border border-neutral-200 bg-white text-left shadow-sm transition hover:border-pink-300 hover:shadow-md"
+                            >
+                              <div className="border-b border-neutral-200 px-3 py-2">
+                                <p className="text-sm font-semibold text-neutral-900">EZ as 1, 2, 3?</p>
+                              </div>
+                              <div className="h-[150px] overflow-hidden bg-neutral-50">
+                                <div className="origin-top-left scale-[0.24]">
+                                  <div className="w-[1000px]">
+                                    <Graphic1Module />
+                                  </div>
+                                </div>
+                              </div>
+                            </button>
+                          ) : null}
+                          {card.gallery.slice(card.id === "#1" ? 1 : 0).map((src, i) => (
+                            <img
+                              key={src}
+                              src={src}
+                              alt={`${card.id} media ${card.id === "#1" ? i + 2 : i + 1}`}
+                              className="h-[150px] w-full rounded-md border border-neutral-200 object-cover"
+                            />
+                          ))}
+                        </div>
+                      ) : card.image ? (
+                        <img
+                          src={card.image}
+                          alt={`Money Shot ${card.id}`}
+                          className="h-[150px] w-full object-cover"
+                        />
+                      ) : null
+                      }
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : null}
-          </article>
-        );
-      })}
-    </div>
+              ) : null}
+            </article>
+          );
+        })}
+      </div>
+
+      {showGraphic1Modal ? (
+        <div className="fixed inset-0 z-[1400] flex items-center justify-center bg-black/55 px-4 py-8">
+          <div className="max-h-[90vh] w-full max-w-6xl overflow-auto rounded-3xl bg-white p-4 shadow-2xl md:p-6">
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <h3 className="text-lg font-semibold text-neutral-900">EZ as 1, 2, 3?</h3>
+              <button
+                type="button"
+                onClick={() => setShowGraphic1Modal(false)}
+                className="rounded-full border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+              >
+                Close
+              </button>
+            </div>
+            <Graphic1Module />
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
