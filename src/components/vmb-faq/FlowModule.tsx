@@ -21,7 +21,7 @@ const PHASE1_DURATIONS_MS: Record<ExplainerStage, number> = {
   appointmentBooked: 1100,
   step3Active: 900,
   paymentReceived: 1200,
-  insightOverlay: 3000,
+  insightOverlay: 4000,
   fadeOut: 800,
   reset: 600,
 };
@@ -93,7 +93,7 @@ export function FlowModule({
       t = setTimeout(() => {
         setShowD(false);
         setStep(0);
-      }, 2000); // D + New VMB Client hold 2s, then repeat
+      }, 3000); // D + New VMB Client hold 3s, then repeat
     }
 
     return () => clearTimeout(t);

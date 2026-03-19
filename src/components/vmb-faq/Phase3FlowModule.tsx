@@ -21,7 +21,7 @@ const RESET_STEP = TOTAL_SALON_STEPS + 2;
 
 function getNextStepDelay(step: number): number {
   if (step === RESET_STEP) return 600;
-  if (step === HOLD_STEP) return 2500;
+  if (step === HOLD_STEP) return 3500;
   if (step === CLOSING_STEP) return 800;
   if (step % STEPS_PER_SALON === 0) return 500; // salon lights + chips
   if (step % STEPS_PER_SALON === 1) return 550; // Co-Marketing Plan → salon
