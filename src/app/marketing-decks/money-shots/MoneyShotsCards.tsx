@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Graphic1Module } from "@/components/vmb-faq/Graphic1Module";
+import { Graphic2Module } from "@/components/vmb-faq/Graphic2Module";
 
 const IMG = {
   card1: "/mscard1.jpg",
@@ -249,6 +250,7 @@ const CARDS: MoneyShotCard[] = [
 export default function MoneyShotsCards() {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
   const [showGraphic1Modal, setShowGraphic1Modal] = useState(false);
+  const [showGraphic2Modal, setShowGraphic2Modal] = useState(false);
 
   return (
     <>
@@ -307,7 +309,24 @@ export default function MoneyShotsCards() {
                       aria-label={`Money Shot ${card.id}`}
                       role="img"
                     >
-                      {card.gallery && card.gallery.length ? (
+                      {card.id === "#2" ? (
+                        <button
+                          type="button"
+                          onClick={() => setShowGraphic2Modal(true)}
+                          className="overflow-hidden rounded-md border border-neutral-200 bg-white text-left shadow-sm transition hover:border-pink-300 hover:shadow-md"
+                        >
+                          <div className="border-b border-neutral-200 px-3 py-2">
+                            <p className="text-sm font-semibold text-neutral-900">Every Client Has a Plus One</p>
+                          </div>
+                          <div className="h-[150px] overflow-hidden bg-neutral-50">
+                            <div className="origin-top-left scale-[0.24]">
+                              <div className="w-[1000px]">
+                                <Graphic2Module />
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      ) : card.gallery && card.gallery.length ? (
                         <div style={{ display: "flex", flexDirection: "column", gap: 80, paddingTop: 20 }}>
                           {card.id === "#1" ? (
                             <button
@@ -367,6 +386,24 @@ export default function MoneyShotsCards() {
               </button>
             </div>
             <Graphic1Module />
+          </div>
+        </div>
+      ) : null}
+
+      {showGraphic2Modal ? (
+        <div className="fixed inset-0 z-[1400] flex items-center justify-center bg-black/55 px-4 py-8">
+          <div className="max-h-[90vh] w-full max-w-6xl overflow-auto rounded-3xl bg-white p-4 shadow-2xl md:p-6">
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <h3 className="text-lg font-semibold text-neutral-900">Every Client Has a Plus One</h3>
+              <button
+                type="button"
+                onClick={() => setShowGraphic2Modal(false)}
+                className="rounded-full border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+              >
+                Close
+              </button>
+            </div>
+            <Graphic2Module />
           </div>
         </div>
       ) : null}
