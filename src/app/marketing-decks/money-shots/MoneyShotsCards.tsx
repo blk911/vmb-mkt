@@ -340,7 +340,7 @@ export default function MoneyShotsCards() {
                           ))}
                         </div>
                       ) : card.gallery && card.gallery.length ? (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 80, paddingTop: 20 }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 54, paddingTop: 20 }}>
                           {card.id === "#1" ? (
                             <button
                               type="button"
