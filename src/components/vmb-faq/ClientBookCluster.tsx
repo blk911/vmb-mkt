@@ -74,15 +74,15 @@ export function ClientBookCluster({
                       : [
                           "0 0 0 2px rgb(245 158 11 / 0.5), 0 4px 16px rgba(245 158 11 / 0.25)",
                           "0 0 0 2px rgb(236 72 153 / 0.4), 0 4px 12px rgba(236 72 153 / 0.15)",
-                          "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+                          "0 0 0 2px rgb(236 72 153 / 0.4), 0 4px 12px rgba(236 72 153 / 0.15)",
                         ],
                     borderColor: dPulse
                       ? "rgb(236 72 153 / 0.5)"
-                      : ["rgb(245 158 11 / 0.6)", "rgb(236 72 153 / 0.5)", "rgb(229 229 229)"],
+                      : ["rgb(245 158 11 / 0.6)", "rgb(236 72 153 / 0.5)", "rgb(251 207 232)"],
                     backgroundColor: dPulse
                       ? "rgb(253 242 248)"
-                      : ["rgb(254 243 199)", "rgb(253 242 248)", "rgb(255 255 255)"],
-                    color: dPulse ? "rgb(190 24 93)" : ["rgb(180 83 9)", "rgb(190 24 93)", "rgb(64 64 64)"],
+                      : ["rgb(254 243 199)", "rgb(253 242 248)", "rgb(253 242 248)"],
+                    color: dPulse ? "rgb(190 24 93)" : ["rgb(180 83 9)", "rgb(190 24 93)", "rgb(190 24 93)"],
                   }}
                   transition={
                     dPulse
