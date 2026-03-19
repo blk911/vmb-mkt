@@ -89,13 +89,15 @@ function getLineState(step: number): {
   showPulse: boolean;
 } {
   if (step === 0) return { line0: 0, line1: 0, line2: 0, line3: 0, fade0: false, fade1: false, fade2: false, fade3: false, showPulse: false };
-  if (step === 1) return { line0: 1, line1: 1, line2: 0, line3: 0, fade0: false, fade1: false, fade2: false, fade3: false, showPulse: true };
-  if (step === 2) return { line0: 1, line1: 1, line2: 0, line3: 0, fade0: false, fade1: false, fade2: false, fade3: false, showPulse: false };
-  if (step === 3) return { line0: 1, line1: 1, line2: 1, line3: 0, fade0: false, fade1: false, fade2: false, fade3: false, showPulse: false };
-  if (step === 4) return { line0: 1, line1: 1, line2: 1, line3: 0, fade0: false, fade1: false, fade2: false, fade3: false, showPulse: false };
-  if (step === 5) return { line0: 0, line1: 0, line2: 0, line3: 1, fade0: true, fade1: true, fade2: true, fade3: false, showPulse: false };
-  if (step === 6) return { line0: 0, line1: 0, line2: 0, line3: 0, fade0: true, fade1: true, fade2: true, fade3: true, showPulse: false };
-  if (step === 7) return { line0: 0, line1: 0, line2: 0, line3: 0, fade0: true, fade1: true, fade2: true, fade3: true, showPulse: false };
+  if (step === 1) return { line0: 1, line1: 0, line2: 0, line3: 0, fade0: false, fade1: false, fade2: false, fade3: false, showPulse: false };
+  if (step === 2) return { line0: 1, line1: 0, line2: 0, line3: 0, fade0: true, fade1: false, fade2: false, fade3: false, showPulse: false };
+  if (step === 3) return { line0: 1, line1: 1, line2: 0, line3: 0, fade0: true, fade1: false, fade2: false, fade3: false, showPulse: true };
+  if (step === 4) return { line0: 1, line1: 1, line2: 0, line3: 0, fade0: true, fade1: false, fade2: false, fade3: false, showPulse: false };
+  if (step === 5) return { line0: 1, line1: 1, line2: 1, line3: 0, fade0: true, fade1: false, fade2: false, fade3: false, showPulse: false };
+  if (step === 6) return { line0: 1, line1: 1, line2: 1, line3: 0, fade0: true, fade1: false, fade2: false, fade3: false, showPulse: false };
+  if (step === 7) return { line0: 0, line1: 0, line2: 0, line3: 1, fade0: true, fade1: true, fade2: true, fade3: false, showPulse: false };
+  if (step === 8) return { line0: 0, line1: 0, line2: 0, line3: 0, fade0: true, fade1: true, fade2: true, fade3: true, showPulse: false };
+  if (step === 9) return { line0: 0, line1: 0, line2: 0, line3: 0, fade0: true, fade1: true, fade2: true, fade3: true, showPulse: false };
   return { line0: 0, line1: 0, line2: 0, line3: 0, fade0: true, fade1: true, fade2: true, fade3: true, showPulse: false };
 }
 

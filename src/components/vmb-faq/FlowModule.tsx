@@ -69,21 +69,27 @@ export function FlowModule({
     if (step === 0) {
       t = setTimeout(() => setStep(1), 600);
     } else if (step === 1) {
-      t = setTimeout(() => setStep(2), 600);
+      t = setTimeout(() => setStep(2), 700);
     } else if (step === 2) {
-      t = setTimeout(() => setStep(3), 700);
+      t = setTimeout(() => setStep(3), 450);
     } else if (step === 3) {
-      t = setTimeout(() => setStep(4), 800); // Book → Payment draw
+      t = setTimeout(() => setStep(4), 700);
     } else if (step === 4) {
+      t = setTimeout(() => setStep(5), 800); // Book appointment reveal
+    } else if (step === 5) {
+      t = setTimeout(() => {
+        setStep(6);
+      }, 1000); // Book → Payment draw
+    } else if (step === 6) {
       t = setTimeout(() => {
         setShowD(true);
-        setStep(5);
+        setStep(7);
       }, 1000); // Payment landed hold, then A → D + D reveal
-    } else if (step === 5) {
-      t = setTimeout(() => setStep(6), 1200); // A → D draw
-    } else if (step === 6) {
-      t = setTimeout(() => setStep(7), 500); // D flash
     } else if (step === 7) {
+      t = setTimeout(() => setStep(8), 1200); // A → D draw
+    } else if (step === 8) {
+      t = setTimeout(() => setStep(9), 500); // D flash
+    } else if (step === 9) {
       t = setTimeout(() => {
         setShowD(false);
         setStep(0);
@@ -95,13 +101,13 @@ export function FlowModule({
 
   if (phase === "phase2") {
     const clientAHighlighted = step >= 0;
-    const newClientActive = step >= 1;
-    const showBookAppointment = step >= 2;
-    const bookAppointmentHighlighted = step >= 3;
-    const paymentsActive = step >= 3 && step <= 4;
-    const showInviteLabel = step >= 1 && step <= 2;
-    const showNewVMBLabel = step === 5 || step === 6 || step === 7;
-    const dPulse = step === 6;
+    const newClientActive = step >= 3;
+    const showBookAppointment = step >= 4;
+    const bookAppointmentHighlighted = step >= 5;
+    const paymentsActive = step >= 5 && step <= 6;
+    const showInviteLabel = step >= 1 && step <= 3;
+    const showNewVMBLabel = step >= 7 && step <= 9;
+    const dPulse = step === 8;
 
     return (
       <div className="relative w-full overflow-hidden rounded-[24px] border border-neutral-200 bg-neutral-50 shadow-[0_8px_30px_rgba(0,0,0,0.06)]">
@@ -168,7 +174,7 @@ export function FlowModule({
 
             <div className="flex min-h-11 items-center justify-center border-t border-neutral-200/50 bg-neutral-50/80 py-[5px]">
               <InsightOverlay
-                visible={step === 7}
+                visible={step === 9}
                 text={resultNote ?? "Clients who care are clients who share"}
               />
             </div>

@@ -36,13 +36,13 @@ const STAGE_TO_ACTIVE_STEP: Record<ExplainerStage, number> = {
 };
 
 function getPhase2ActiveStep(step: number): number {
-  if (step <= 1) return 1;
-  if (step === 2) return 2;
+  if (step <= 3) return 1;
+  if (step <= 6) return 2;
   return 3;
 }
 
 function isPhase2Complete(step: number): boolean {
-  return step === 7;
+  return step === 9;
 }
 
 const STEPS_PER_SALON_P3 = 6;
