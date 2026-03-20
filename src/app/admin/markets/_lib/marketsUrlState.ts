@@ -90,6 +90,30 @@ export function parseMarketsUrlSearchParams(
   return { regionId, zoneId, category, subtype, sort, sortDir };
 }
 
+/** Stable identity for React `key` + syncing client state to URL-driven props. */
+export function marketsUrlStateKey(state: MarketsUrlState): string {
+  return [state.regionId, state.zoneId, state.category, state.subtype, state.sort, state.sortDir].join("|");
+}
+
+function normalizePathQuery(path: string): string {
+  const base = path.startsWith("http") ? path : `http://x.local${path.startsWith("/") ? "" : "/"}${path}`;
+  const u = new URL(base);
+  const p = new URLSearchParams(u.search);
+  const keys = [...new Set([...p.keys()])].sort();
+  const out = new URLSearchParams();
+  for (const k of keys) {
+    const v = p.get(k);
+    if (v != null) out.set(k, v);
+  }
+  const q = out.toString();
+  return `${u.pathname}${q ? `?${q}` : ""}`;
+}
+
+/** True if two /admin/markets paths match (query order–independent). */
+export function marketsListPathsEqual(a: string, b: string): boolean {
+  return normalizePathQuery(a) === normalizePathQuery(b);
+}
+
 /** Path + query for /admin/markets (only non-default query parts). */
 export function buildMarketsListPath(state: MarketsUrlState): string {
   const d = defaultMarketsUrlState();

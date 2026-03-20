@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import MarketZoneFilters from "@/components/admin/MarketZoneFilters";
 import type {
   ApprovedLiveUnit,
@@ -13,6 +14,8 @@ import type {
 import {
   buildMarketsListPath,
   buildMemberDetailPath,
+  marketsListPathsEqual,
+  marketsUrlStateKey,
   type MarketsSortDir as SortDir,
   type MarketsSortKey as SortKey,
   type MarketsUrlState,
@@ -160,6 +163,15 @@ export default function MarketsClient({
   /** Clusters: OPEN/CLOSE toggle. Loads collapsed; control reads OPEN until expanded. */
   const [clustersOpen, setClustersOpen] = useState(false);
 
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const currentPathWithQuery = useMemo(() => {
+    const q = searchParams.toString();
+    return q ? `${pathname}?${q}` : pathname;
+  }, [pathname, searchParams]);
+
   const marketsUrlState = useMemo(
     (): MarketsUrlState => ({
       regionId: filters.regionId,
@@ -171,6 +183,26 @@ export default function MarketsClient({
     }),
     [filters.regionId, filters.zoneId, categoryFilter, subtypeFilter, sortKey, sortDir]
   );
+
+  /** Keep filters in sync when URL-driven props change (e.g. client nav) even if React reuses the tree. */
+  const initialUrlStateKey = marketsUrlStateKey(initialUrlState);
+  useEffect(() => {
+    setFilters({ regionId: initialUrlState.regionId, zoneId: initialUrlState.zoneId });
+    setCategoryFilter(initialUrlState.category);
+    setSubtypeFilter(initialUrlState.subtype);
+    setSortKey(initialUrlState.sort);
+    setSortDir(initialUrlState.sortDir);
+    // Only re-run when URL-derived identity changes; RSC may pass a new object each render with the same key.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- initialUrlState fields are implied by initialUrlStateKey
+  }, [initialUrlStateKey]);
+
+  /** Keep the address bar aligned with dropdown/table state (same canonical path as quick links). */
+  useEffect(() => {
+    const next = buildMarketsListPath(marketsUrlState);
+    if (!marketsListPathsEqual(next, currentPathWithQuery)) {
+      router.replace(next);
+    }
+  }, [marketsUrlState, currentPathWithQuery, router]);
 
   const visibleZones = useMemo(() => {
     return zones.filter((zone) => {
