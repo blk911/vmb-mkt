@@ -86,6 +86,15 @@ export type BeautyZoneMember = {
   nearby_dora_instore_likely_count?: number;
   /** Remaining license rows in the density ring (further than instore threshold). */
   nearby_dora_ring_count?: number;
+  /** Optional: merged from `site_identity` / enriched pipeline (outbound links on crawled site). */
+  instagram_url?: string | null;
+  instagram_handle?: string | null;
+  facebook_url?: string | null;
+  tiktok_url?: string | null;
+  yelp_url?: string | null;
+  linktree_url?: string | null;
+  booking_url?: string | null;
+  booking_provider?: string | null;
 };
 
 export type BeautyZoneCluster = {

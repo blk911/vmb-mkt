@@ -347,6 +347,17 @@ def summarize_cluster(cluster_rows: list[dict[str, Any]], cluster_id: str) -> di
     }
 
     resolution.update(derive_cluster_review_status(resolution, cluster_rows))
+
+    distinct_booking_providers = sorted(
+        {
+            str(r.get("booking_provider")).strip()
+            for r in cluster_rows
+            if _nonempty(r.get("booking_provider"))
+        }
+    )
+    instagram_count = sum(1 for r in cluster_rows if _nonempty(r.get("instagram_url")))
+    resolution["distinct_booking_providers"] = distinct_booking_providers
+    resolution["instagram_count"] = instagram_count
     return resolution
 
 

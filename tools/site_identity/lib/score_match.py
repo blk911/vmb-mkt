@@ -4,6 +4,7 @@ Explainable composite scoring: site names vs Google / DORA / internal references
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -111,6 +112,9 @@ def resolve_row(
     extracted_phones: list[str],
     extracted_addresses: list[str],
     domain: str,
+    *,
+    instagram_handle: str | None = None,
+    booking_provider: str | None = None,
 ) -> ResolutionResult:
     refs: list[tuple[str, str]] = []
     if google_name:
@@ -139,6 +143,10 @@ def resolve_row(
 
     if not refs:
         evidence.append("No reference names (google/dora/internal) to compare.")
+        if instagram_handle:
+            evidence.append(f"Outbound Instagram handle on website: @{instagram_handle}")
+        if booking_provider:
+            evidence.append(f"Outbound booking provider on website: {booking_provider}")
         best_c = max(candidates, key=lambda x: (x.confidence_hint, -x.priority))
         return ResolutionResult(
             match_label=config.LABEL_NO_MATCH,
@@ -169,6 +177,20 @@ def resolve_row(
     evidence.append(
         f"Best name pair ({top_method}): site “{top_c.raw_text[:120]}” vs {top_label} “{top_ref[:120]}” → {top_sc:.2f}"
     )
+
+    if instagram_handle:
+        ih = instagram_handle.lower().replace("_", "").replace(".", "")
+        for _lbl, ref in refs:
+            rl = re.sub(r"[^a-z0-9]", "", (ref or "").lower())
+            if len(ih) >= 3 and (ih in rl or rl in ih):
+                evidence.append(
+                    f"Instagram handle @{instagram_handle} loosely overlaps reference name token — corroboration hint only."
+                )
+                break
+        else:
+            evidence.append(f"Outbound Instagram handle on website: @{instagram_handle}")
+    if booking_provider:
+        evidence.append(f"Outbound booking provider on website: {booking_provider}")
 
     phone_b, phone_ev = _phone_match(phone, extracted_phones)
     for e in phone_ev:

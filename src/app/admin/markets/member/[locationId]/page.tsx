@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { buildMarketsListPath, parseMarketsUrlSearchParams } from "../../_lib/marketsUrlState";
 import { getEnrichedMemberByLocationId, getMarketById, getMarkets, getRegions } from "@/lib/markets";
 import LicenseHoldersTable from "./LicenseHoldersTable";
+import { PresenceBadges, PresenceRawLinksDetails } from "@/components/admin/PresenceBadges";
 
 type PageProps = {
   params: Promise<{ locationId: string }>;
@@ -100,6 +101,19 @@ export default async function MarketMemberListingPage({ params, searchParams }: 
           <div className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-3">
             <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Address</div>
             <p className="mt-1 text-sm text-neutral-800">{addressLine || "—"}</p>
+          </div>
+
+          <div className="mt-4 rounded-xl border border-neutral-200 bg-white px-3 py-3">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+              Presence (site identity)
+            </div>
+            <p className="mt-1 text-xs text-neutral-500">
+              Outbound social / booking links when merged from the site_identity pipeline into zone member JSON.
+            </p>
+            <div className="mt-2">
+              <PresenceBadges member={member} />
+            </div>
+            <PresenceRawLinksDetails member={member} />
           </div>
         </header>
 

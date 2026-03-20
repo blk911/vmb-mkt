@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import MarketZoneFilters from "@/components/admin/MarketZoneFilters";
+import { PresenceBadges, formatBookingProviderLabel } from "@/components/admin/PresenceBadges";
 import type {
   ApprovedLiveUnit,
   BeautyRegion,
@@ -164,6 +165,8 @@ export default function MarketsClient({
   const [clustersOpen, setClustersOpen] = useState(false);
   /** Top Targets: same — collapsed on load. */
   const [topTargetsOpen, setTopTargetsOpen] = useState(false);
+  /** Client-only filter for site_identity presence fields on members (optional in JSON). */
+  const [presenceFilter, setPresenceFilter] = useState<string>("all");
 
   const router = useRouter();
   const pathname = usePathname();
@@ -229,10 +232,18 @@ export default function MarketsClient({
       .filter((member) => {
         if (categoryFilter !== "All" && member.category !== categoryFilter.toLowerCase()) return false;
         if (subtypeFilter !== "All" && member.subtype !== subtypeFilter.toLowerCase()) return false;
+        if (presenceFilter === "has_ig")
+          return !!(member.instagram_url?.trim() || member.instagram_handle?.trim());
+        if (presenceFilter === "has_booking")
+          return !!(member.booking_url?.trim() || member.booking_provider?.trim());
+        if (presenceFilter.startsWith("bp:")) {
+          const want = presenceFilter.slice(3).toLowerCase();
+          return (member.booking_provider || "").trim().toLowerCase() === want;
+        }
         return true;
       })
       .sort((a, b) => compareMembers(a, b, sortKey, sortDir));
-  }, [categoryFilter, filters.zoneId, members, sortDir, sortKey, subtypeFilter]);
+  }, [categoryFilter, filters.zoneId, members, presenceFilter, sortDir, sortKey, subtypeFilter]);
 
   const selectedZoneMembers = useMemo(() => {
     if (filters.zoneId === "ALL") return [];
@@ -270,6 +281,30 @@ export default function MarketsClient({
         return a.cluster_rank - b.cluster_rank;
       });
   }, [clusters, filters.zoneId]);
+
+  const clusterPresenceById = useMemo(() => {
+    const map = new Map<string, { instagram_count: number; distinct_booking_providers: string[] }>();
+    for (const cl of selectedZoneClusters) {
+      const mems = selectedZoneMembers.filter((m) => m.cluster_id === cl.cluster_id);
+      const instagram_count = mems.filter((m) => m.instagram_url || m.instagram_handle).length;
+      const distinct_booking_providers = [
+        ...new Set(
+          mems.map((m) => m.booking_provider?.trim()).filter((x): x is string => !!x && x.length > 0)
+        ),
+      ].sort((a, b) => a.localeCompare(b));
+      map.set(cl.cluster_id, { instagram_count, distinct_booking_providers });
+    }
+    return map;
+  }, [selectedZoneClusters, selectedZoneMembers]);
+
+  const bookingProviderFilterOptions = useMemo(() => {
+    const s = new Set<string>();
+    for (const m of selectedZoneMembers) {
+      const p = m.booking_provider?.trim().toLowerCase();
+      if (p) s.add(p);
+    }
+    return [...s].sort((a, b) => a.localeCompare(b));
+  }, [selectedZoneMembers]);
 
   const topTargets = useMemo(() => {
     return [...selectedZoneMembers]
@@ -409,6 +444,27 @@ export default function MarketsClient({
                   ))}
                 </select>
               </label>
+
+              <label className="min-w-[200px] flex-1">
+                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                  Presence (site identity)
+                </span>
+                <select
+                  value={presenceFilter}
+                  onChange={(e) => setPresenceFilter(e.target.value)}
+                  className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-500"
+                  title="Filter by optional Instagram / booking fields merged from site_identity pipeline"
+                >
+                  <option value="all">All</option>
+                  <option value="has_ig">Has Instagram</option>
+                  <option value="has_booking">Has booking link</option>
+                  {bookingProviderFilterOptions.map((p) => (
+                    <option key={p} value={`bp:${p}`}>
+                      Booking: {formatBookingProviderLabel(p)}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
             <p className="mt-3 text-xs text-neutral-500">
               Sort the table by clicking column headers (↑ / ↓). Default: Priority Score, highest first.
@@ -470,6 +526,24 @@ export default function MarketsClient({
                           <span className="font-medium">Top members:</span>{" "}
                           {cluster.top_member_names.join(", ")}
                         </div>
+                        {(() => {
+                          const pres = clusterPresenceById.get(cluster.cluster_id);
+                          return (
+                            <div className="mt-2 border-t border-neutral-200 pt-2 text-xs text-neutral-600">
+                              <span className="font-semibold text-neutral-700">Presence</span> (site identity)
+                              <div className="mt-1">
+                                <span title="Members with Instagram URL or handle">IG count: {pres?.instagram_count ?? 0}</span>
+                                {" · "}
+                                <span title="Distinct booking providers detected on member rows">
+                                  Booking:{" "}
+                                  {pres?.distinct_booking_providers?.length
+                                    ? pres.distinct_booking_providers.map(formatBookingProviderLabel).join(", ")
+                                    : "—"}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </article>
                   ))}
@@ -531,6 +605,9 @@ export default function MarketsClient({
                         >
                           {member.is_anchor ? "Anchor" : "Standard"}
                         </span>
+                      </div>
+                      <div className="mt-2 min-h-[1.5rem]">
+                        <PresenceBadges member={member} />
                       </div>
                     </article>
                   ))}
@@ -595,6 +672,7 @@ export default function MarketsClient({
                       sortDir={sortDir}
                       onSort={toggleColumnSort}
                     />
+                    <th className="px-4 py-3 font-medium uppercase tracking-wide text-neutral-600">Presence</th>
                     <SortTh
                       column="is_anchor"
                       label="Is Anchor"
@@ -645,6 +723,9 @@ export default function MarketsClient({
                         >
                           {member.upgraded_priority_score}
                         </span>
+                      </td>
+                      <td className="max-w-[14rem] px-4 py-3">
+                        <PresenceBadges member={member} />
                       </td>
                       <td className="px-4 py-3">
                         <span

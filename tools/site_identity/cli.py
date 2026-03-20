@@ -16,7 +16,7 @@ import tldextract
 from lib import config as site_config
 from lib.cluster_resolver import apply_cluster_fields, extract_point
 from lib.fetch import DomainFetchBundle, fetch_domain_pages
-from lib.extract_identity import aggregate_from_pages, domain_from_url
+from lib.extract_identity import SocialBookingFlat, aggregate_from_pages, domain_from_url
 from lib.output_writer import (
     build_run_summary,
     flatten_lists_for_csv,
@@ -251,6 +251,7 @@ def print_run_summary_console(summary: dict[str, Any]) -> None:
         f"rows processed: {summary['processed_row_count']}  (input: {summary['input_row_count']})",
         f"coords valid / missing: {summary['rows_with_valid_coords']} / {summary['rows_missing_coords']}",
         f"fetch ok / failed: {summary['rows_fetch_ok']} / {summary['rows_fetch_failed']}",
+        f"rows_with_instagram: {summary.get('rows_with_instagram', 0)}  rows_with_booking: {summary.get('rows_with_booking', 0)}",
         f"clusters: {summary['cluster_count']}  size_buckets: {summary['cluster_size_distribution']}",
         "cluster_review_status (cluster_summary): " + (", ".join(parts) if parts else "(none)"),
         f"unresolved rows (status=no_match or row unresolved): {summary['unresolved_row_count']}",
@@ -382,6 +383,7 @@ def row_to_enriched(
     addrs: list[str],
     booking: list[str],
     social: list[str],
+    sb: SocialBookingFlat,
     resolution: Any,
     fetch_notes: list[str],
 ) -> dict[str, Any]:
@@ -430,6 +432,14 @@ def row_to_enriched(
         "extracted_addresses": addrs,
         "extracted_booking_hints": booking,
         "extracted_social_links": social,
+        "instagram_url": sb.instagram_url,
+        "instagram_handle": sb.instagram_handle,
+        "facebook_url": sb.facebook_url,
+        "tiktok_url": sb.tiktok_url,
+        "yelp_url": sb.yelp_url,
+        "linktree_url": sb.linktree_url,
+        "booking_url": sb.booking_url,
+        "booking_provider": sb.booking_provider,
         "extracted_name_candidates": [asdict(c) for c in candidates],
         "score_breakdown": resolution.score_breakdown if resolution else {},
         "ambiguous_reason": resolution.ambiguous_reason if resolution else None,
@@ -462,7 +472,20 @@ def process_one(
         addr = ", ".join(p for p in parts if p) or None
 
     if not url:
-        res = resolve_row(google, dora, internal, phone, addr, [], [], [], "")
+        sb_empty = SocialBookingFlat()
+        res = resolve_row(
+            google,
+            dora,
+            internal,
+            phone,
+            addr,
+            [],
+            [],
+            [],
+            "",
+            instagram_handle=None,
+            booking_provider=None,
+        )
         return row_to_enriched(
             row,
             DomainFetchBundle(homepage_url="", pages=[], notes=["skipped_no_url"]),
@@ -472,20 +495,35 @@ def process_one(
             [],
             [],
             [],
+            sb_empty,
             res,
             ["no website_url — skipped fetch"],
         )
 
     bundle = fetch_domain_pages(url, timeout=timeout, max_pages=max_pages, verify_ssl=verify_ssl)
     pages_data: list[tuple[str, str | None]] = [(p.final_url, p.html) for p in bundle.pages]
-    candidates, phones, emails, addrs, booking, social = aggregate_from_pages(pages_data)
+    candidates, phones, emails, addrs, booking, social, sb = aggregate_from_pages(pages_data)
 
     final_url = bundle.pages[0].final_url if bundle.pages else url
     ext = tldextract.extract(final_url)
     domain_key = f"{ext.domain}.{ext.suffix}" if ext.suffix else (ext.domain or "")
 
-    res = resolve_row(google, dora, internal, phone, addr, candidates, phones, addrs, domain_key)
-    return row_to_enriched(row, bundle, candidates, phones, emails, addrs, booking, social, res, bundle.notes)
+    res = resolve_row(
+        google,
+        dora,
+        internal,
+        phone,
+        addr,
+        candidates,
+        phones,
+        addrs,
+        domain_key,
+        instagram_handle=sb.instagram_handle,
+        booking_provider=sb.booking_provider,
+    )
+    return row_to_enriched(
+        row, bundle, candidates, phones, emails, addrs, booking, social, sb, res, bundle.notes
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -600,6 +638,14 @@ def main(argv: list[str] | None = None) -> int:
                 "notes": [str(e)],
                 "lat": pt[0] if pt else None,
                 "lon": pt[1] if pt else None,
+                "instagram_url": None,
+                "instagram_handle": None,
+                "facebook_url": None,
+                "tiktok_url": None,
+                "yelp_url": None,
+                "linktree_url": None,
+                "booking_url": None,
+                "booking_provider": None,
             }
             fail_row.update(_dora_meta_from_row(row))
             enriched.append(fail_row)

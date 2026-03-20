@@ -85,6 +85,22 @@ Flags:
 
 On Windows/macOS, if HTTPS fails with `CERTIFICATE_VERIFY_FAILED`, install certs or run once with `--insecure` to confirm the pipeline.
 
+### Social & booking signals (outbound links only)
+
+From **already-fetched** HTML pages (same shallow crawl as identity), the extractor scans `<a href>` links, resolves them to absolute `http(s)` URLs, and classifies **outbound** social and booking URLs. **No** requests are made to Instagram, Facebook, booking APIs, or third-party sites beyond the salon website crawl — this is link extraction + host/path matching only.
+
+**Per-row fields (when present):** `instagram_url`, `instagram_handle` (derived from profile-style Instagram URLs), `facebook_url`, `tiktok_url`, `yelp_url`, `linktree_url`, `booking_url`, `booking_provider`.
+
+**Booking providers detected (host/path):** vagaro, glossgenius, square (squareup.com / square.site / square.app), booksy, fresha, acuityscheduling, schedulicity, styleseat, boulevard (joinblvd.com / boulevard.com), mindbody (mindbodyonline.com / mindbody.com), phorest.
+
+**Merge rules:** Contact-style paths (`/contact`, `/contact-us`, …) and links in `<footer>` / `<header>` / `<nav>` are preferred over generic body; first strong field win per URL type across pages in fetch order.
+
+**Cluster summary (extra):** `distinct_booking_providers`, `instagram_count` (members with `instagram_url`).
+
+**Run summary (extra):** `rows_with_instagram`, `rows_with_booking`, `booking_provider_counts`.
+
+Scoring adds **evidence lines** only (e.g. outbound Instagram handle / booking provider; optional loose overlap hint vs reference names) — composite numeric weights unchanged.
+
 ### Physical clustering & cluster review status
 
 Rows with valid **lat/lon** are grouped by distance (`cluster_rows_by_distance`). Outputs include **`cluster_summary.json`** / **`cluster_summary.csv`** plus per-row cluster columns on **`enriched.json`** / **`review.csv`**.
@@ -148,6 +164,7 @@ Missing fields are OK.
 - `match_label`: `strong_match` \| `probable_match` \| `weak_match` \| `ambiguous` \| `no_match`
 - `total_score`, `score_name_similarity`, `score_address_bonus`, `score_phone_bonus`
 - `evidence_summary`, `extracted_*`, `extracted_name_candidates` (with provenance)
+- Social / booking (from outbound links on fetched pages): `instagram_url`, `instagram_handle`, `facebook_url`, `tiktok_url`, `yelp_url`, `linktree_url`, `booking_url`, `booking_provider`
 - `fetch_status`, `fetch_error`, `notes`
 - Cluster: `cluster_id`, `cluster_member_count`, `cluster_centroid_lat`, `cluster_centroid_lon`, `cluster_resolved_name`, `cluster_resolution_confidence`, `cluster_review_status`, `cluster_signal_count`, `cluster_name_conflict_flag`, `cluster_has_google_signal`, `cluster_has_dora_signal`, `cluster_has_website_signal`, `cluster_has_internal_signal`, plus `lat` / `lon`
 

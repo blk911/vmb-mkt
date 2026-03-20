@@ -93,6 +93,9 @@ def build_run_summary(
     rows_with_dora_signal = 0
     rows_with_internal_signal = 0
     rows_with_conflict_flag = 0
+    rows_with_instagram = 0
+    rows_with_booking = 0
+    booking_provider_counts: Counter[str] = Counter()
     match_labels: Counter[str] = Counter()
     unresolved_row_count = 0
 
@@ -167,6 +170,9 @@ def build_run_summary(
         "rows_with_dora_signal": rows_with_dora_signal,
         "rows_with_internal_signal": rows_with_internal_signal,
         "rows_with_conflict_flag": rows_with_conflict_flag,
+        "rows_with_instagram": rows_with_instagram,
+        "rows_with_booking": rows_with_booking,
+        "booking_provider_counts": {k: booking_provider_counts[k] for k in sorted(booking_provider_counts)},
         "exception_file_counts": {k: exception_file_counts[k] for k in sorted(exception_file_counts)},
         "isolated_cluster_review_count": isolated_cluster_review_count,
         "exception_files": list(exception_filenames),
@@ -219,6 +225,17 @@ def write_run_summary_txt(path: Path, summary: dict[str, Any]) -> None:
     lines.append(f"  dora: {summary['rows_with_dora_signal']}")
     lines.append(f"  internal: {summary['rows_with_internal_signal']}")
     lines.append(f"  cluster_name_conflict_flag: {summary['rows_with_conflict_flag']}")
+    lines.extend(
+        [
+            "",
+            "outbound link signals (from fetched pages):",
+            f"  rows_with_instagram: {summary['rows_with_instagram']}",
+            f"  rows_with_booking: {summary['rows_with_booking']}",
+            "  booking_provider_counts:",
+        ]
+    )
+    for k in sorted(summary.get("booking_provider_counts") or {}):
+        lines.append(f"    {k}: {summary['booking_provider_counts'][k]}")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 

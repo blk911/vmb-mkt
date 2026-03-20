@@ -9,9 +9,10 @@ import logging
 import re
 from dataclasses import dataclass, field
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse, urlunparse
 
 from bs4 import BeautifulSoup
+from bs4.element import Tag
 
 from . import config
 from .normalize_name import build_normalized_name, clean_visible_text
@@ -21,6 +22,33 @@ logger = logging.getLogger(__name__)
 EMAIL_RE = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
 PHONE_RE = re.compile(
     r"(?:\+?1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}"
+)
+
+# Outbound-link classification only (no external fetches). Lower rank = higher priority when merging.
+_PAGE_RANK_CONTACT = 0
+_PAGE_RANK_HOME = 1
+_PAGE_RANK_OTHER = 2
+_ANCHOR_RANK_FOOTER = 0
+_ANCHOR_RANK_NAV = 1
+_ANCHOR_RANK_BODY = 2
+
+# (pattern on netloc+path, provider id)
+_BOOKING_RULES: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(r"vagaro\.com", re.I), "vagaro"),
+    (re.compile(r"glossgenius\.com", re.I), "glossgenius"),
+    (re.compile(r"squareup\.com|square\.site|square\.app", re.I), "square"),
+    (re.compile(r"booksy\.com", re.I), "booksy"),
+    (re.compile(r"fresha\.com", re.I), "fresha"),
+    (re.compile(r"acuityscheduling\.com", re.I), "acuityscheduling"),
+    (re.compile(r"schedulicity\.com", re.I), "schedulicity"),
+    (re.compile(r"styleseat\.com", re.I), "styleseat"),
+    (re.compile(r"joinblvd\.com|boulevard\.com", re.I), "boulevard"),
+    (re.compile(r"mindbodyonline\.com|mindbody\.com", re.I), "mindbody"),
+    (re.compile(r"phorest\.com", re.I), "phorest"),
+)
+
+_INSTAGRAM_SKIP_SEGS = frozenset(
+    {"p", "reel", "reels", "stories", "explore", "accounts", "tv", "direct", "about"}
 )
 
 
@@ -52,6 +80,201 @@ class ExtractedIdentity:
     social_links: list[str]
     canonical_url: str | None
     notes: list[str] = field(default_factory=list)
+    # (field_key, absolute_url, booking_provider or None, sort_key tuple)
+    social_booking_discoveries: list[tuple[str, str, str | None, tuple[int, int, int]]] = field(
+        default_factory=list
+    )
+
+
+@dataclass
+class SocialBookingFlat:
+    """Projected top-level outbound-link signals (merged across fetched pages)."""
+
+    instagram_url: str | None = None
+    instagram_handle: str | None = None
+    facebook_url: str | None = None
+    tiktok_url: str | None = None
+    yelp_url: str | None = None
+    linktree_url: str | None = None
+    booking_url: str | None = None
+    booking_provider: str | None = None
+
+
+def _strip_url_noise(url: str) -> str:
+    try:
+        p = urlparse(url)
+        clean = urlunparse(
+            (p.scheme, p.netloc.lower(), (p.path or "").rstrip("/") or "/", "", "", "")
+        )
+        return clean
+    except Exception:
+        return url
+
+
+def _abs_href(page_url: str, href: str) -> str | None:
+    h = (href or "").strip()
+    if not h or h.startswith("#"):
+        return None
+    low = h.lower()
+    if low.startswith(("mailto:", "tel:", "javascript:", "data:", "blob:")):
+        return None
+    try:
+        abs_u = urljoin(page_url, h)
+        pr = urlparse(abs_u)
+        if pr.scheme not in ("http", "https"):
+            return None
+        return abs_u
+    except Exception:
+        return None
+
+
+def _instagram_handle_from_url(url: str) -> str | None:
+    try:
+        p = urlparse(url.lower())
+    except Exception:
+        return None
+    if "instagram.com" not in (p.netloc or ""):
+        return None
+    parts = [x for x in (p.path or "").split("/") if x]
+    if not parts:
+        return None
+    seg = parts[0]
+    if seg in _INSTAGRAM_SKIP_SEGS:
+        return None
+    if re.match(r"^[a-z0-9._]{1,30}$", seg, re.I):
+        return seg.strip(".")
+    return None
+
+
+def _classify_outbound_url(url: str) -> tuple[str | None, str | None]:
+    """
+    Returns (field_name, booking_provider).
+    field_name is one of: instagram_url, facebook_url, tiktok_url, yelp_url, linktree_url, booking_url
+    """
+    try:
+        p = urlparse(url.lower())
+    except Exception:
+        return None, None
+    host = p.netloc or ""
+    path = p.path or ""
+
+    if "instagram.com" in host:
+        return "instagram_url", None
+    if "facebook.com" in host or "fb.com" in host:
+        return "facebook_url", None
+    if "tiktok.com" in host:
+        return "tiktok_url", None
+    if "yelp.com" in host:
+        return "yelp_url", None
+    if "linktr.ee" in host or "linktree.com" in host:
+        return "linktree_url", None
+
+    joined = f"{host}{path}"
+    for pat, prov in _BOOKING_RULES:
+        if pat.search(joined):
+            return "booking_url", prov
+    return None, None
+
+
+def _anchor_container_rank(tag: Tag) -> int:
+    """0 footer, 1 nav/header, 2 body."""
+    cur: Tag | None = tag
+    depth = 0
+    while cur and depth < 40:
+        name = (cur.name or "").lower()
+        if name == "footer":
+            return _ANCHOR_RANK_FOOTER
+        if name in ("nav", "header"):
+            return _ANCHOR_RANK_NAV
+        cur = cur.parent if isinstance(cur.parent, Tag) else None
+        depth += 1
+    return _ANCHOR_RANK_BODY
+
+
+def _page_rank_from_url(page_url: str, page_index: int) -> int:
+    try:
+        path = (urlparse(page_url).path or "").lower()
+    except Exception:
+        path = ""
+    if re.search(r"/(contact|contact-us|contactus|reach|locations?)(/|$)", path):
+        return _PAGE_RANK_CONTACT
+    if page_index == 0:
+        return _PAGE_RANK_HOME
+    return _PAGE_RANK_OTHER
+
+
+def _merge_sort_key(page_rank: int, anchor_rank: int, page_index: int) -> tuple[int, int, int]:
+    return (page_rank, anchor_rank, page_index)
+
+
+def extract_social_booking_discoveries(
+    soup: BeautifulSoup, page_url: str, page_index: int
+) -> list[tuple[str, str, str | None, tuple[int, int, int]]]:
+    """Collect classified outbound links with deterministic merge keys."""
+    pr = _page_rank_from_url(page_url, page_index)
+    out: list[tuple[str, str, str | None, tuple[int, int, int]]] = []
+    seen_pair: set[tuple[str, str]] = set()
+
+    for a in soup.find_all("a", href=True):
+        raw_h = a.get("href")
+        if not isinstance(raw_h, str):
+            continue
+        abs_u = _abs_href(page_url, raw_h)
+        if not abs_u:
+            continue
+        field, bprov = _classify_outbound_url(abs_u)
+        if not field:
+            continue
+        ar = _anchor_container_rank(a)
+        key = (field, abs_u)
+        if key in seen_pair:
+            continue
+        seen_pair.add(key)
+        sk = _merge_sort_key(pr, ar, page_index)
+        out.append((field, _strip_url_noise(abs_u), bprov, sk))
+
+    return out
+
+
+def merge_social_booking_flat(
+    discoveries: list[tuple[str, str, str | None, tuple[int, int, int]]],
+) -> SocialBookingFlat:
+    """First winning row per field by sort_key (contact/footer wins over generic body)."""
+    by_field: dict[str, list[tuple[str, str | None, tuple[int, int, int]]]] = {}
+    for field, url, bprov, sk in discoveries:
+        by_field.setdefault(field, []).append((url, bprov, sk))
+
+    flat = SocialBookingFlat()
+    order = (
+        "instagram_url",
+        "facebook_url",
+        "tiktok_url",
+        "yelp_url",
+        "linktree_url",
+        "booking_url",
+    )
+    for f in order:
+        items = by_field.get(f)
+        if not items:
+            continue
+        items_sorted = sorted(items, key=lambda x: (x[2], len(x[0])))
+        best_url, best_prov, _ = items_sorted[0]
+        if f == "instagram_url":
+            flat.instagram_url = best_url
+            flat.instagram_handle = _instagram_handle_from_url(best_url)
+        elif f == "facebook_url":
+            flat.facebook_url = best_url
+        elif f == "tiktok_url":
+            flat.tiktok_url = best_url
+        elif f == "yelp_url":
+            flat.yelp_url = best_url
+        elif f == "linktree_url":
+            flat.linktree_url = best_url
+        elif f == "booking_url":
+            flat.booking_url = best_url
+            flat.booking_provider = best_prov
+
+    return flat
 
 
 def _priority_for_source(source_field: str) -> int:
@@ -175,7 +398,7 @@ def _strip_title_spam(title: str) -> str:
     return clean_visible_text(parts[0], 200)
 
 
-def extract_from_html(html: str, page_url: str) -> ExtractedIdentity:
+def extract_from_html(html: str, page_url: str, page_index: int = 0) -> ExtractedIdentity:
     soup = BeautifulSoup(html, "lxml")
     title = None
     if soup.title and soup.title.string:
@@ -226,13 +449,12 @@ def extract_from_html(html: str, page_url: str) -> ExtractedIdentity:
         if kw in text_blob.lower():
             booking_hints.append(kw)
 
+    sb_disc = extract_social_booking_discoveries(soup, page_url, page_index)
     social_links: list[str] = []
-    for a in soup.find_all("a", href=True):
-        href = a["href"].lower()
-        if any(d in href for d in ("facebook.com", "instagram.com", "tiktok.com", "yelp.com")):
-            social_links.append(a["href"])
-
-    social_links = list(dict.fromkeys(social_links))[:15]
+    for field, url, _bprov, _sk in sb_disc:
+        if field in ("instagram_url", "facebook_url", "tiktok_url", "yelp_url", "linktree_url"):
+            social_links.append(url)
+    social_links = list(dict.fromkeys(social_links))[:25]
 
     candidates: list[NameCandidate] = []
 
@@ -296,12 +518,21 @@ def extract_from_html(html: str, page_url: str) -> ExtractedIdentity:
         social_links=social_links,
         canonical_url=canonical,
         notes=notes,
+        social_booking_discoveries=sb_disc,
     )
 
 
 def aggregate_from_pages(
     pages: list[tuple[str, str | None]],
-) -> tuple[list[NameCandidate], list[str], list[str], list[str], list[str], list[str]]:
+) -> tuple[
+    list[NameCandidate],
+    list[str],
+    list[str],
+    list[str],
+    list[str],
+    list[str],
+    SocialBookingFlat,
+]:
     """
     Single pass per page: name candidates plus phones, emails, addresses, booking hints, socials.
     pages: (final_url, html).
@@ -312,17 +543,19 @@ def aggregate_from_pages(
     addrs: list[str] = []
     booking: list[str] = []
     social: list[str] = []
-    for page_url, html in pages:
+    all_sb: list[tuple[str, str, str | None, tuple[int, int, int]]] = []
+    for pi, (page_url, html) in enumerate(pages):
         if not html:
             continue
         try:
-            ex = extract_from_html(html, page_url)
+            ex = extract_from_html(html, page_url, page_index=pi)
             all_c.extend(ex.name_candidates)
             phones.extend(ex.phones)
             emails.extend(ex.emails)
             addrs.extend(ex.address_snippets)
             booking.extend(ex.booking_hints)
             social.extend(ex.social_links)
+            all_sb.extend(ex.social_booking_discoveries)
         except Exception as e:
             logger.debug("extract failed %s: %s", page_url, e)
 
@@ -337,7 +570,8 @@ def aggregate_from_pages(
     def dedup(xs: list[str]) -> list[str]:
         return list(dict.fromkeys(xs))[:50]
 
-    return merged, dedup(phones), dedup(emails), dedup(addrs), dedup(booking), dedup(social)
+    sb_flat = merge_social_booking_flat(all_sb)
+    return merged, dedup(phones), dedup(emails), dedup(addrs), dedup(booking), dedup(social), sb_flat
 
 
 def merge_extractions(pages: list[tuple[str, str | None]]) -> list[NameCandidate]:
