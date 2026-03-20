@@ -1,6 +1,15 @@
-# Keep serverless bundles under Vercel’s 250 MB unzipped limit — these are not needed for the Next.js app build/runtime on Vercel.
+# Keep serverless bundles under Vercel’s 250 MB unzipped limit — exclude heavy local datasets.
 tools/
-data/
 backend/data/
 **/__pycache__/
 **/*.pyc
+
+# Bulk `data/` (DORA tables, derived, etc.) stays off the deployment — but `/admin/markets` reads
+# JSON from `data/markets/` via `src/lib/markets.ts`, so we allow that folder’s catalog files only.
+data/*
+!data/markets/
+data/markets/*
+!data/markets/beauty_regions.json
+!data/markets/beauty_zones.json
+!data/markets/beauty_zone_members.json
+!data/markets/beauty_zone_members_enriched.json

@@ -41,4 +41,8 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ### Bundle size and `data/`
 
-The repo root **`.vercelignore`** excludes `data/`, `tools/`, `backend/data/`, etc., so serverless bundles stay under Vercel limits. Admin routes that read market JSON under `data/markets/` (e.g. `src/lib/markets.ts`) treat **missing files as empty** in production; full datasets are for local/dev or a separate backend.
+The repo root **`.vercelignore`** excludes most of **`data/`** (DORA tables, large derived outputs, etc.) so deployments stay under Vercel limits. **Exception:** the small JSON files under **`data/markets/`** needed for **`/admin/markets`** (regions, zones, zone members) are **included** via ignore negation — that page reads them from disk with `src/lib/markets.ts`.
+
+Other admin routes that expect large files under `data/co/...` or multi‑MB `data/markets/*.json` will still be empty or local-only until you add a Firestore/API path or whitelist more files.
+
+If those JSON files are missing at runtime, `markets.ts` falls back to **empty catalogs** so the app does not crash (empty dropdowns / no quick links).
