@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, type ReactNode } from "react";
-import type { Cluster } from "@/lib/cluster/types";
+import type { BaseEntity, Cluster } from "@/lib/cluster/types";
 import { diagnosticLabel } from "@/lib/cluster/diagnostics";
 import { buildClusterForensicReport, logClusterForensicReport } from "@/lib/cluster/forensics";
 import EvidenceBadges from "./evidence-badges";
+import TechLinkSection from "./tech-link-section";
 
 function Section({
   title,
@@ -234,6 +235,10 @@ export default function ClusterDetailPanel({
           </div>
         </Section>
       ) : null}
+
+      <Section title="Tech ↔ Shop Confidence">
+        <TechLinkSection cluster={cluster} allEntities={allEntities} />
+      </Section>
     </div>
   );
 }
