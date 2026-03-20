@@ -153,6 +153,8 @@ export default function MarketsClient({ regions, zones, members, clusters, appro
   const [subtypeFilter, setSubtypeFilter] = useState<(typeof SUBTYPE_FILTERS)[number]>("All");
   const [sortKey, setSortKey] = useState<SortKey>("upgraded_priority_score");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  /** Clusters: OPEN/CLOSE toggle. Loads open so the control reads CLOSE (collapse to hide). */
+  const [clustersOpen, setClustersOpen] = useState(true);
 
   const visibleZones = useMemo(() => {
     return zones.filter((zone) => {
@@ -399,58 +401,68 @@ export default function MarketsClient({ regions, zones, members, clusters, appro
           </div>
 
           <div className="border-b border-neutral-200 px-4 py-4">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h3 className="text-sm font-semibold text-neutral-900">Clusters</h3>
                 <p className="text-xs text-neutral-500">
                   {selectedZoneClusters.length} clusters · largest {selectedZoneClusters[0]?.member_count ?? 0} members
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={() => setClustersOpen((o) => !o)}
+                aria-expanded={clustersOpen}
+                className="shrink-0 rounded-full border border-neutral-300 bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-800 transition hover:bg-neutral-50"
+              >
+                {clustersOpen ? "CLOSE" : "OPEN"}
+              </button>
             </div>
 
-            {selectedZoneClusters.length ? (
-              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {selectedZoneClusters.map((cluster) => (
-                  <article
-                    key={cluster.cluster_id}
-                    className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-3"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                          Cluster #{cluster.cluster_rank}
+            {clustersOpen ? (
+              selectedZoneClusters.length ? (
+                <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {selectedZoneClusters.map((cluster) => (
+                    <article
+                      key={cluster.cluster_id}
+                      className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-3"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                            Cluster #{cluster.cluster_rank}
+                          </div>
+                          <div className="mt-1 text-lg font-semibold text-neutral-900">
+                            {cluster.member_count} businesses
+                          </div>
                         </div>
-                        <div className="mt-1 text-lg font-semibold text-neutral-900">
-                          {cluster.member_count} businesses
-                        </div>
+                        <span
+                          className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
+                            cluster.has_suite
+                              ? "bg-neutral-900 text-white"
+                              : "bg-neutral-200 text-neutral-600"
+                          }`}
+                        >
+                          {cluster.has_suite ? "Has suite" : "No suite"}
+                        </span>
                       </div>
-                      <span
-                        className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
-                          cluster.has_suite
-                            ? "bg-neutral-900 text-white"
-                            : "bg-neutral-200 text-neutral-600"
-                        }`}
-                      >
-                        {cluster.has_suite ? "Has suite" : "No suite"}
-                      </span>
-                    </div>
 
-                    <div className="mt-3 text-sm text-neutral-700">
-                      <div>
-                        <span className="font-medium">Categories:</span>{" "}
-                        {cluster.categories_present.join(", ") || "unknown"}
+                      <div className="mt-3 text-sm text-neutral-700">
+                        <div>
+                          <span className="font-medium">Categories:</span>{" "}
+                          {cluster.categories_present.join(", ") || "unknown"}
+                        </div>
+                        <div className="mt-2">
+                          <span className="font-medium">Top members:</span>{" "}
+                          {cluster.top_member_names.join(", ")}
+                        </div>
                       </div>
-                      <div className="mt-2">
-                        <span className="font-medium">Top members:</span>{" "}
-                        {cluster.top_member_names.join(", ")}
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <p className="mt-3 text-sm text-neutral-600">No clusters detected for this zone.</p>
-            )}
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-3 text-sm text-neutral-600">No clusters detected for this zone.</p>
+              )
+            ) : null}
           </div>
 
           <div className="border-b border-neutral-200 px-4 py-4">
