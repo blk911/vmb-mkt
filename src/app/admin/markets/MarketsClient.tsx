@@ -21,6 +21,11 @@ import {
   type MarketsSortKey as SortKey,
   type MarketsUrlState,
 } from "./_lib/marketsUrlState";
+import {
+  compareDefaultSalonSort,
+  compareTopTargetRank,
+  memberHasActivePresence,
+} from "./_lib/marketsActiveRank";
 
 const CATEGORY_FILTERS = ["All", "Hair", "Nail", "Esthe", "Barber", "Spa", "Beauty"] as const;
 const SUBTYPE_FILTERS = ["All", "Storefront", "Suite"] as const;
@@ -100,6 +105,19 @@ function compareMembers(a: EnrichedBeautyZoneMember, b: EnrichedBeautyZoneMember
   return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
 }
 
+/** When primary keys tie, anchors sort above non-anchors (does not alter explicit Name sort). */
+function compareMembersWithAnchorTiebreak(
+  a: EnrichedBeautyZoneMember,
+  b: EnrichedBeautyZoneMember,
+  sortKey: SortKey,
+  sortDir: SortDir
+): number {
+  const cmp = compareMembers(a, b, sortKey, sortDir);
+  if (cmp !== 0) return cmp;
+  if (sortKey === "name") return 0;
+  return (b.is_anchor ? 1 : 0) - (a.is_anchor ? 1 : 0);
+}
+
 function SortTh({
   column,
   label,
@@ -167,6 +185,8 @@ export default function MarketsClient({
   const [topTargetsOpen, setTopTargetsOpen] = useState(false);
   /** Client-only filter for site_identity presence fields on members (optional in JSON). */
   const [presenceFilter, setPresenceFilter] = useState<string>("all");
+  /** All rows vs “active” (IG or booking provider per reviewer spec). */
+  const [activityScope, setActivityScope] = useState<"all" | "active">("all");
 
   const router = useRouter();
   const pathname = usePathname();
@@ -230,6 +250,7 @@ export default function MarketsClient({
     return members
       .filter((member) => member.zone_id === filters.zoneId)
       .filter((member) => {
+        if (activityScope === "active" && !memberHasActivePresence(member)) return false;
         if (categoryFilter !== "All" && member.category !== categoryFilter.toLowerCase()) return false;
         if (subtypeFilter !== "All" && member.subtype !== subtypeFilter.toLowerCase()) return false;
         if (presenceFilter === "has_ig")
@@ -242,8 +263,22 @@ export default function MarketsClient({
         }
         return true;
       })
-      .sort((a, b) => compareMembers(a, b, sortKey, sortDir));
-  }, [categoryFilter, filters.zoneId, members, presenceFilter, sortDir, sortKey, subtypeFilter]);
+      .sort((a, b) => {
+        if (sortKey === "upgraded_priority_score" && sortDir === "desc") {
+          return compareDefaultSalonSort(a, b);
+        }
+        return compareMembersWithAnchorTiebreak(a, b, sortKey, sortDir);
+      });
+  }, [
+    activityScope,
+    categoryFilter,
+    filters.zoneId,
+    members,
+    presenceFilter,
+    sortDir,
+    sortKey,
+    subtypeFilter,
+  ]);
 
   const selectedZoneMembers = useMemo(() => {
     if (filters.zoneId === "ALL") return [];
@@ -307,14 +342,7 @@ export default function MarketsClient({
   }, [selectedZoneMembers]);
 
   const topTargets = useMemo(() => {
-    return [...selectedZoneMembers]
-      .sort((a, b) => {
-        if (b.upgraded_priority_score !== a.upgraded_priority_score) {
-          return b.upgraded_priority_score - a.upgraded_priority_score;
-        }
-        return a.name.localeCompare(b.name);
-      })
-      .slice(0, 5);
+    return [...selectedZoneMembers].sort(compareTopTargetRank).slice(0, 5);
   }, [selectedZoneMembers]);
 
   function toggleColumnSort(column: SortKey) {
@@ -411,6 +439,20 @@ export default function MarketsClient({
             </div>
 
             <div className="mt-4 flex flex-wrap gap-3">
+              <label className="min-w-[140px] flex-1">
+                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                  Activity
+                </span>
+                <select
+                  value={activityScope}
+                  onChange={(e) => setActivityScope(e.target.value as "all" | "active")}
+                  className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-500"
+                  title="All members, or only rows with Instagram or booking provider"
+                >
+                  <option value="all">All</option>
+                  <option value="active">Active only</option>
+                </select>
+              </label>
               <label className="min-w-[180px] flex-1">
                 <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">
                   Category
@@ -467,7 +509,8 @@ export default function MarketsClient({
               </label>
             </div>
             <p className="mt-3 text-xs text-neutral-500">
-              Sort the table by clicking column headers (↑ / ↓). Default: Priority Score, highest first.
+              Sort via column headers (↑ / ↓). Default Priority column: active presence &amp; anchors first, then
+              highest upgraded score.
             </p>
           </div>
 
@@ -558,7 +601,9 @@ export default function MarketsClient({
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h3 className="text-sm font-semibold text-neutral-900">Top Targets</h3>
-                <p className="text-xs text-neutral-500">Top 5 businesses after upgraded scoring</p>
+                <p className="text-xs text-neutral-500">
+                  Top 5 by presence, anchors, booking, then upgraded score
+                </p>
               </div>
               <button
                 type="button"
@@ -588,6 +633,11 @@ export default function MarketsClient({
                         >
                           {member.name}
                         </Link>
+                        {memberHasActivePresence(member) ? (
+                          <span className="ml-1.5 inline-flex align-middle rounded bg-teal-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900">
+                            Active
+                          </span>
+                        ) : null}
                       </div>
                       <div className="mt-1 text-xs text-neutral-600">
                         {member.category} · {member.subtype}
@@ -686,12 +736,22 @@ export default function MarketsClient({
                   {visibleMembers.map((member) => (
                     <tr key={member.location_id} className="align-top text-neutral-800">
                       <td className="px-4 py-3 font-medium">
-                        <Link
-                          href={buildMemberDetailPath(member.location_id, marketsUrlState)}
-                          className="text-sky-700 underline-offset-2 hover:underline"
-                        >
-                          {member.name}
-                        </Link>
+                        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                          <Link
+                            href={buildMemberDetailPath(member.location_id, marketsUrlState)}
+                            className="text-sky-700 underline-offset-2 hover:underline"
+                          >
+                            {member.name}
+                          </Link>
+                          {memberHasActivePresence(member) ? (
+                            <span
+                              className="inline-flex shrink-0 rounded bg-teal-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900"
+                              title="Instagram or booking provider present"
+                            >
+                              Active
+                            </span>
+                          ) : null}
+                        </div>
                       </td>
                       <td className="px-4 py-3">{member.category}</td>
                       <td className="px-4 py-3">{member.subtype}</td>

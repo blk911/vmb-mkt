@@ -126,6 +126,14 @@ def build_run_summary(
         if r.get("cluster_name_conflict_flag") is True:
             rows_with_conflict_flag += 1
 
+        if _nonempty_str(r.get("instagram_url")):
+            rows_with_instagram += 1
+        if _nonempty_str(r.get("booking_url")) or _nonempty_str(r.get("booking_provider")):
+            rows_with_booking += 1
+        bp = r.get("booking_provider")
+        if _nonempty_str(bp):
+            booking_provider_counts[str(bp).strip()] += 1
+
         ml = str(r.get("match_label") or "")
         match_labels[ml] += 1
 

@@ -521,9 +521,13 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 38,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://instagram.com/solasalons",
+      "instagram_handle": "solasalons",
+      "facebook_url": "https://www.facebook.com/solasalons",
+      "tiktok_url": "https://www.tiktok.com/@solasalons"
     },
     {
       "zone_id": "CC01",
@@ -996,8 +1000,11 @@
       "nearby_dora_instore_likely_count": 3,
       "nearby_dora_ring_count": 31,
       "site_identity_matched": true,
-      "site_identity_match_type": "fallback",
-      "site_identity_match_distance_m": 0.0
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://instagram.com/salonlofts",
+      "instagram_handle": "salonlofts",
+      "facebook_url": "https://www.facebook.com/SalonLofts"
     },
     {
       "zone_id": "CC01",
@@ -1525,9 +1532,12 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 39,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/salonsbyjc",
+      "instagram_handle": "salonsbyjc",
+      "facebook_url": "https://www.facebook.com/sbjccorporate"
     },
     {
       "zone_id": "CC01",
@@ -1900,9 +1910,11 @@
       ],
       "nearby_dora_instore_likely_count": 1,
       "nearby_dora_ring_count": 24,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/indiesalons",
+      "instagram_handle": "indiesalons"
     },
     {
       "zone_id": "CC01",
@@ -3619,9 +3631,12 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 38,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/balayagehaircolor",
+      "instagram_handle": "balayagehaircolor",
+      "facebook_url": "http://www.facebook.com/Hair-by-Natalia-Balayage-and-Ombre-Hair-Color-Expert-105879456100090"
     },
     {
       "zone_id": "CC01",
@@ -4563,9 +4578,12 @@
       ],
       "nearby_dora_instore_likely_count": 4,
       "nearby_dora_ring_count": 27,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/vidasalon",
+      "instagram_handle": "vidasalon",
+      "facebook_url": "https://www.facebook.com/VIDASalonCherryCreek"
     },
     {
       "zone_id": "CC01",
@@ -4993,9 +5011,13 @@
       ],
       "nearby_dora_instore_likely_count": 4,
       "nearby_dora_ring_count": 27,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://instagram.com/tolgataskinsalon",
+      "instagram_handle": "tolgataskinsalon",
+      "facebook_url": "https://www.facebook.com/tolgataskinsalons",
+      "tiktok_url": "https://tiktok.com/@tolgataskinsalons"
     },
     {
       "zone_id": "CC01",
@@ -6477,9 +6499,9 @@
       ],
       "nearby_dora_instore_likely_count": 1,
       "nearby_dora_ring_count": 36,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "CC01",
@@ -7979,9 +8001,11 @@
       ],
       "nearby_dora_instore_likely_count": 3,
       "nearby_dora_ring_count": 31,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "booking_url": "https://glossgenius.com/",
+      "booking_provider": "glossgenius"
     },
     {
       "zone_id": "CC01",
@@ -8884,7 +8908,14 @@
       "nearby_dora_ring_count": 27,
       "site_identity_matched": true,
       "site_identity_match_type": "strong",
-      "site_identity_match_distance_m": 0.0
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/perlino.beauty",
+      "instagram_handle": "perlino.beauty",
+      "facebook_url": "https://www.facebook.com/people/Perlino/61575236506561",
+      "tiktok_url": "https://www.tiktok.com/@perlino.beauty",
+      "yelp_url": "https://www.yelp.com/biz/perlino-denver-2",
+      "booking_url": "https://www.vagaro.com/perlino",
+      "booking_provider": "vagaro"
     },
     {
       "zone_id": "CC01",
@@ -10435,7 +10466,13 @@
       "nearby_dora_ring_count": 28,
       "site_identity_matched": true,
       "site_identity_match_type": "strong",
-      "site_identity_match_distance_m": 0.0
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/salongoldyn",
+      "instagram_handle": "salongoldyn",
+      "facebook_url": "https://www.facebook.com/salongoldyn",
+      "yelp_url": "https://www.yelp.com/biz/salon-goldyn-denver-3",
+      "booking_url": "https://www.schedulicity.com/scheduling/SGKDFZ/services",
+      "booking_provider": "schedulicity"
     },
     {
       "zone_id": "CC01",
@@ -10965,7 +11002,10 @@
       "nearby_dora_ring_count": 39,
       "site_identity_matched": true,
       "site_identity_match_type": "strong",
-      "site_identity_match_distance_m": 0.0
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/manipedicherrycreek",
+      "instagram_handle": "manipedicherrycreek",
+      "facebook_url": "https://www.facebook.com/manipedicherrycreek"
     },
     {
       "zone_id": "CC01",
@@ -12503,9 +12543,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 39,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "CC01",
@@ -12989,9 +13029,11 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 36,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/topanddot",
+      "instagram_handle": "topanddot"
     },
     {
       "zone_id": "CC01",
@@ -14520,9 +14562,9 @@
       ],
       "nearby_dora_instore_likely_count": 1,
       "nearby_dora_ring_count": 36,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "CC01",
@@ -15016,9 +15058,11 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 36,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/fiftytwoeightysalon",
+      "instagram_handle": "fiftytwoeightysalon"
     },
     {
       "zone_id": "CC01",
@@ -16333,9 +16377,11 @@
       ],
       "nearby_dora_instore_likely_count": 3,
       "nearby_dora_ring_count": 31,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "http://instagram.com/_.angelglow",
+      "instagram_handle": "_.angelglow"
     },
     {
       "zone_id": "CC01",
@@ -18719,7 +18765,11 @@
       "nearby_dora_ring_count": 24,
       "site_identity_matched": true,
       "site_identity_match_type": "strong",
-      "site_identity_match_distance_m": 0.0
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/sister_brows",
+      "instagram_handle": "sister_brows",
+      "booking_url": "https://glossgenius.com/",
+      "booking_provider": "glossgenius"
     },
     {
       "zone_id": "CC01",
@@ -19495,8 +19545,14 @@
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 28,
       "site_identity_matched": true,
-      "site_identity_match_type": "fallback",
-      "site_identity_match_distance_m": 11.677
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/browbabesdenver",
+      "instagram_handle": "browbabesdenver",
+      "facebook_url": "https://www.facebook.com/browbabesdenver",
+      "yelp_url": "https://www.yelp.com/biz/brow-babes-denver-denver",
+      "booking_url": "https://www.schedulicity.com/scheduling/BBDCQY/services",
+      "booking_provider": "schedulicity"
     },
     {
       "zone_id": "CC01",
@@ -20007,7 +20063,10 @@
       "nearby_dora_ring_count": 38,
       "site_identity_matched": true,
       "site_identity_match_type": "strong",
-      "site_identity_match_distance_m": 0.0
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://instagram.com/lexielizabethhairartistry",
+      "instagram_handle": "lexielizabethhairartistry",
+      "facebook_url": "http://www.facebook.com/lexielizabethhairartistry"
     },
     {
       "zone_id": "CC01",
@@ -21457,9 +21516,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 31,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "CC01",
@@ -21953,7 +22012,10 @@
       "nearby_dora_ring_count": 37,
       "site_identity_matched": true,
       "site_identity_match_type": "strong",
-      "site_identity_match_distance_m": 0.0
+      "site_identity_match_distance_m": 0.0,
+      "facebook_url": "https://www.facebook.com/588770598182456",
+      "booking_url": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "booking_provider": "booksy"
     },
     {
       "zone_id": "CC01",
@@ -24057,9 +24119,11 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 39,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "booking_url": "https://www.vagaro.com/pro/booking-website-builder",
+      "booking_provider": "vagaro"
     },
     {
       "zone_id": "CC01",
@@ -24529,9 +24593,9 @@
       ],
       "nearby_dora_instore_likely_count": 3,
       "nearby_dora_ring_count": 31,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "CC01",
@@ -25002,9 +25066,13 @@
       ],
       "nearby_dora_instore_likely_count": 3,
       "nearby_dora_ring_count": 31,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "fallback",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/swebbster",
+      "instagram_handle": "swebbster",
+      "booking_url": "https://glossgenius.com/",
+      "booking_provider": "glossgenius"
     },
     {
       "zone_id": "CC01",
@@ -26651,8 +26719,8 @@
       "nearby_dora_instore_likely_count": 1,
       "nearby_dora_ring_count": 24,
       "site_identity_matched": true,
-      "site_identity_match_type": "fallback",
-      "site_identity_match_distance_m": 15.844
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "CC01",
@@ -27385,9 +27453,14 @@
       ],
       "nearby_dora_instore_likely_count": 1,
       "nearby_dora_ring_count": 24,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/klm.hairdenver",
+      "instagram_handle": "klm.hairdenver",
+      "facebook_url": "https://www.facebook.com/KelseyMorrisonHair",
+      "booking_url": "https://klm-hair.square.site/",
+      "booking_provider": "square"
     },
     {
       "zone_id": "CC01",
@@ -27753,9 +27826,9 @@
       ],
       "nearby_dora_instore_likely_count": 1,
       "nearby_dora_ring_count": 24,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "CC01",
@@ -28121,9 +28194,15 @@
       ],
       "nearby_dora_instore_likely_count": 1,
       "nearby_dora_ring_count": 24,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/hairstylist_diegohuizar",
+      "instagram_handle": "hairstylist_diegohuizar",
+      "facebook_url": "https://www.facebook.com/diego.huizar.127",
+      "tiktok_url": "https://www.tiktok.com/@hairstylist_diegohuizar1",
+      "booking_url": "https://glossgenius.com/",
+      "booking_provider": "glossgenius"
     },
     {
       "zone_id": "CC01",
@@ -29198,9 +29277,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 28,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "CC01",
@@ -30767,9 +30846,11 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 39,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "booking_url": "https://www.vagaro.com/Users/BusinessWidget.aspx",
+      "booking_provider": "vagaro"
     },
     {
       "zone_id": "CC01",
@@ -32165,9 +32246,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 39,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "CC01",
@@ -33005,9 +33086,13 @@
       ],
       "nearby_dora_instore_likely_count": 1,
       "nearby_dora_ring_count": 24,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/eliandcoaesthetics",
+      "instagram_handle": "eliandcoaesthetics",
+      "booking_url": "https://glossgenius.com/",
+      "booking_provider": "glossgenius"
     },
     {
       "zone_id": "CC01",
@@ -34125,9 +34210,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 28,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DT01",
@@ -37540,9 +37625,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 107,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DT01",
@@ -38277,9 +38362,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 61,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DT01",
@@ -39559,9 +39644,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 51,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DT01",
@@ -40256,9 +40341,13 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 56,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/flawless_nailbar",
+      "instagram_handle": "flawless_nailbar",
+      "facebook_url": "https://www.facebook.com/flawlessnailsdenver",
+      "yelp_url": "https://www.yelp.com/biz/flawless-nail-bar-denver-2"
     },
     {
       "zone_id": "DT01",
@@ -43077,9 +43166,12 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 61,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "fallback",
+      "site_identity_match_distance_m": 17.515,
+      "instagram_url": "https://www.instagram.com/elixirmassage",
+      "instagram_handle": "elixirmassage",
+      "facebook_url": "https://www.facebook.com/ElixirMassage"
     },
     {
       "zone_id": "DT01",
@@ -43930,9 +44022,12 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 65,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/studiodenver",
+      "instagram_handle": "studiodenver",
+      "facebook_url": "https://www.facebook.com/studio.stylists"
     },
     {
       "zone_id": "DT01",
@@ -47087,9 +47182,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 79,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DT01",
@@ -48511,9 +48606,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 102,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DT01",
@@ -49525,9 +49620,15 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 102,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "fallback",
+      "site_identity_match_distance_m": 1.653,
+      "instagram_url": "http://instagram.com/hairparty.mary",
+      "instagram_handle": "hairparty.mary",
+      "facebook_url": "http://facebook.com/hairparty.mary",
+      "yelp_url": "https://www.yelp.com/biz/hair-party-salon-denver",
+      "booking_url": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "booking_provider": "square"
     },
     {
       "zone_id": "DT01",
@@ -51720,9 +51821,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 107,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DT01",
@@ -52455,9 +52556,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 61,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "fallback",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DT01",
@@ -54431,9 +54532,14 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 119,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/beauty_syndicate__",
+      "instagram_handle": "beauty_syndicate__",
+      "yelp_url": "https://yelp.com/biz/beauty-syndicate-denver",
+      "booking_url": "https://glossgenius.com/privacy",
+      "booking_provider": "glossgenius"
     },
     {
       "zone_id": "DT01",
@@ -56941,9 +57047,13 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 61,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "fallback",
+      "site_identity_match_distance_m": 11.747,
+      "instagram_url": "http://instagram.com/worldclassmenscuts",
+      "instagram_handle": "worldclassmenscuts",
+      "booking_url": "https://www.vagaro.com/us02/worldclassmenscuts",
+      "booking_provider": "vagaro"
     },
     {
       "zone_id": "DT01",
@@ -57477,9 +57587,13 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 41,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/letemhaveitsalon",
+      "instagram_handle": "letemhaveitsalon",
+      "facebook_url": "https://www.facebook.com/letemhaveitsalon",
+      "tiktok_url": "https://www.tiktok.com/@lehisalon"
     },
     {
       "zone_id": "DT01",
@@ -61603,9 +61717,13 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 73,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/the.skin.sanctum",
+      "instagram_handle": "the.skin.sanctum",
+      "facebook_url": "https://www.facebook.com/people/The-Skin-Sanctum/61555065747150",
+      "tiktok_url": "https://www.tiktok.com/@brikingskin"
     },
     {
       "zone_id": "DT01",
@@ -65613,9 +65731,13 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 82,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/onyxandcosalon",
+      "instagram_handle": "onyxandcosalon",
+      "booking_url": "https://www.vagaro.com/onyxandcosalon",
+      "booking_provider": "vagaro"
     },
     {
       "zone_id": "DT01",
@@ -70893,9 +71015,9 @@
       ],
       "nearby_dora_instore_likely_count": 1,
       "nearby_dora_ring_count": 126,
-      "site_identity_matched": true,
-      "site_identity_match_type": "fallback",
-      "site_identity_match_distance_m": 8.594
+      "site_identity_matched": false,
+      "site_identity_match_type": null,
+      "site_identity_match_distance_m": null
     },
     {
       "zone_id": "DT01",
@@ -71830,9 +71952,14 @@
       ],
       "nearby_dora_instore_likely_count": 1,
       "nearby_dora_ring_count": 71,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/303lash",
+      "instagram_handle": "303lash",
+      "facebook_url": "https://www.facebook.com/profile.php",
+      "booking_url": "https://303lashstudio.glossgenius.com/",
+      "booking_provider": "glossgenius"
     },
     {
       "zone_id": "DT01",
@@ -74704,9 +74831,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 79,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DT01",
@@ -75639,9 +75766,9 @@
       ],
       "nearby_dora_instore_likely_count": 1,
       "nearby_dora_ring_count": 71,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DT01",
@@ -76573,9 +76700,9 @@
       ],
       "nearby_dora_instore_likely_count": 2,
       "nearby_dora_ring_count": 70,
-      "site_identity_matched": true,
-      "site_identity_match_type": "fallback",
-      "site_identity_match_distance_m": 8.679
+      "site_identity_matched": false,
+      "site_identity_match_type": null,
+      "site_identity_match_distance_m": null
     },
     {
       "zone_id": "DT01",
@@ -77533,9 +77660,13 @@
       ],
       "nearby_dora_instore_likely_count": 2,
       "nearby_dora_ring_count": 72,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "fallback",
+      "site_identity_match_distance_m": 22.376,
+      "instagram_url": "https://instagram.com/emcity_brows",
+      "instagram_handle": "emcity_brows",
+      "booking_url": "https://squareup.com/gift/KTV2HFY10TMEV/order",
+      "booking_provider": "square"
     },
     {
       "zone_id": "DT01",
@@ -80107,9 +80238,13 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 68,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://instagram.com/prepbeautybar",
+      "instagram_handle": "prepbeautybar",
+      "booking_url": "https://book.squareup.com/appointments/9d801c75-b9f8-4153-849b-4c1701caa7f3/location/FQXK30YBJK9R7/services",
+      "booking_provider": "square"
     },
     {
       "zone_id": "DT01",
@@ -88546,9 +88681,11 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 66,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/alchemyandaura.co",
+      "instagram_handle": "alchemyandaura.co"
     },
     {
       "zone_id": "DT01",
@@ -89810,9 +89947,13 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 52,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/volumelashstudio",
+      "instagram_handle": "volumelashstudio",
+      "booking_url": "https://square.site/book/A4Q812DFKRTEE/volume-lash-studio-denver-co",
+      "booking_provider": "square"
     },
     {
       "zone_id": "DT01",
@@ -90414,9 +90555,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 47,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DT01",
@@ -91374,9 +91515,13 @@
       ],
       "nearby_dora_instore_likely_count": 1,
       "nearby_dora_ring_count": 73,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/onpointbeautybar",
+      "instagram_handle": "onpointbeautybar",
+      "booking_url": "https://www.schedulicity.com/scheduling/VTJ97E/services",
+      "booking_provider": "schedulicity"
     },
     {
       "zone_id": "DT01",
@@ -92333,9 +92478,9 @@
       ],
       "nearby_dora_instore_likely_count": 1,
       "nearby_dora_ring_count": 73,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DT01",
@@ -93294,9 +93439,9 @@
       ],
       "nearby_dora_instore_likely_count": 1,
       "nearby_dora_ring_count": 73,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "fallback",
+      "site_identity_match_distance_m": 1.526
     },
     {
       "zone_id": "DT01",
@@ -95256,9 +95401,11 @@
       ],
       "nearby_dora_instore_likely_count": 2,
       "nearby_dora_ring_count": 72,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "fallback",
+      "site_identity_match_distance_m": 16.928,
+      "booking_url": "https://www.vagaro.com/edenspa1",
+      "booking_provider": "vagaro"
     },
     {
       "zone_id": "DT01",
@@ -96143,9 +96290,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 90,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "fallback",
+      "site_identity_match_distance_m": 7.052
     },
     {
       "zone_id": "DT01",
@@ -97217,9 +97364,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 106,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DT01",
@@ -97954,9 +98101,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 61,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DT01",
@@ -99070,9 +99217,12 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 110,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/whatsapp",
+      "instagram_handle": "whatsapp",
+      "facebook_url": "https://www.facebook.com/brand/resources/whatsapp/whatsapp-brand"
     },
     {
       "zone_id": "DT01",
@@ -101033,9 +101183,11 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 101,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "booking_url": "https://squareup.com/appointments/buyer/widget/95716uvrtmde8o/0TVR2FFT5CPX1",
+      "booking_provider": "square"
     },
     {
       "zone_id": "DT01",
@@ -103317,9 +103469,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 55,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DT01",
@@ -105085,9 +105237,13 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 110,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/higharchsociety",
+      "instagram_handle": "higharchsociety",
+      "booking_url": "https://glossgenius.com/privacy",
+      "booking_provider": "glossgenius"
     },
     {
       "zone_id": "DT01",
@@ -110727,9 +110883,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 111,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DT01",
@@ -111861,9 +112017,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 111,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DT01",
@@ -113073,9 +113229,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 24,
-      "site_identity_matched": true,
-      "site_identity_match_type": "fallback",
-      "site_identity_match_distance_m": 6.195
+      "site_identity_matched": false,
+      "site_identity_match_type": null,
+      "site_identity_match_distance_m": null
     },
     {
       "zone_id": "DTC01",
@@ -113403,9 +113559,11 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 11,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/glostudiosdtc",
+      "instagram_handle": "glostudiosdtc"
     },
     {
       "zone_id": "DTC01",
@@ -113745,9 +113903,12 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 25,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/parisnails15_",
+      "instagram_handle": "parisnails15_",
+      "facebook_url": "https://www.facebook.com/ParisNails15"
     },
     {
       "zone_id": "DTC01",
@@ -114196,9 +114357,12 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 16,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://instagram.com/firstsight.design",
+      "instagram_handle": "firstsight.design",
+      "facebook_url": "https://www.facebook.com/Firstsightdesign-108914574269860"
     },
     {
       "zone_id": "DTC01",
@@ -114539,9 +114703,11 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 7,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "fallback",
+      "site_identity_match_distance_m": 5.614,
+      "facebook_url": "https://www.facebook.com/Sunny-Day-Spa-167907986681262",
+      "yelp_url": "https://www.yelp.com/biz/sunny-day-spa-highlands-ranch-2"
     },
     {
       "zone_id": "DTC01",
@@ -114735,7 +114901,10 @@
       "nearby_dora_ring_count": 12,
       "site_identity_matched": true,
       "site_identity_match_type": "strong",
-      "site_identity_match_distance_m": 0.0
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/kasebeautybar",
+      "instagram_handle": "kasebeautybar",
+      "facebook_url": "https://www.facebook.com/Kase-Beauty-Bar-107740854879843"
     },
     {
       "zone_id": "DTC01",
@@ -114846,9 +115015,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 4,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DTC01",
@@ -115170,9 +115339,9 @@
       ],
       "nearby_dora_instore_likely_count": 1,
       "nearby_dora_ring_count": 23,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DTC01",
@@ -117157,9 +117326,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 21,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DTC01",
@@ -117402,9 +117571,11 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 17,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "fallback",
+      "site_identity_match_distance_m": 5.973,
+      "booking_url": "https://www.vagaro.com/creatingperfectbeauty/services",
+      "booking_provider": "vagaro"
     },
     {
       "zone_id": "DTC01",
@@ -118650,9 +118821,12 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 22,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/p/DWCBjhljlXt",
+      "facebook_url": "https://www.facebook.com/purluxebeautybar",
+      "tiktok_url": "https://www.tiktok.com/@purluxebeautybar"
     },
     {
       "zone_id": "DTC01",
@@ -119407,9 +119581,13 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 22,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/waxingthecity",
+      "instagram_handle": "waxingthecity",
+      "facebook_url": "https://www.facebook.com/WaxingtheCity",
+      "yelp_url": "http://www.yelp.com/biz/waxing-the-city-denver-2"
     },
     {
       "zone_id": "DTC01",
@@ -119714,9 +119892,13 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 14,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/mozamedspa",
+      "instagram_handle": "mozamedspa",
+      "facebook_url": "https://www.facebook.com/Mozamedispa",
+      "tiktok_url": "https://www.tiktok.com/@moza.med.spa"
     },
     {
       "zone_id": "DTC01",
@@ -120472,9 +120654,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 24,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DTC01",
@@ -120532,9 +120714,9 @@
       "nearby_dora_licenses_ranked": [],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 0,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DTC01",
@@ -120777,9 +120959,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 17,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DTC01",
@@ -122579,9 +122761,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 24,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DTC01",
@@ -122900,9 +123082,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 24,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "fallback",
+      "site_identity_match_distance_m": 4.512
     },
     {
       "zone_id": "DTC01",
@@ -124263,9 +124445,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 11,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DTC01",
@@ -124719,9 +124901,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 24,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "DTC01",
@@ -125141,9 +125323,14 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 3,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "http://instagram.com/jalanspa",
+      "instagram_handle": "jalanspa",
+      "facebook_url": "https://www.facebook.com/jalanspas",
+      "tiktok_url": "https://www.tiktok.com/@jalanjourney",
+      "yelp_url": "https://www.yelp.com/biz/jalan-facial-spa-denver-2"
     },
     {
       "zone_id": "DTC01",
@@ -126009,9 +126196,13 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 7,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://instagram.com/solasalons",
+      "instagram_handle": "solasalons",
+      "facebook_url": "https://www.facebook.com/solasalons",
+      "tiktok_url": "https://www.tiktok.com/@solasalons"
     },
     {
       "zone_id": "TH01",
@@ -126072,8 +126263,11 @@
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 0,
       "site_identity_matched": true,
-      "site_identity_match_type": "fallback",
-      "site_identity_match_distance_m": 0.0
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/imagestudioshq",
+      "instagram_handle": "imagestudioshq",
+      "facebook_url": "https://www.facebook.com/imagestudios360"
     },
     {
       "zone_id": "TH01",
@@ -126254,9 +126448,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 5,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "TH01",
@@ -126340,9 +126534,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 2,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "TH01",
@@ -126623,9 +126817,10 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 7,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "facebook_url": "https://www.facebook.com/Bellanailwestminster"
     },
     {
       "zone_id": "TH01",
@@ -126679,9 +126874,9 @@
       "nearby_dora_licenses_ranked": [],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 0,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "TH01",
@@ -126734,9 +126929,13 @@
       "nearby_dora_licenses_ranked": [],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 0,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/luminailbar",
+      "instagram_handle": "luminailbar",
+      "booking_url": "https://glossgenius.com/",
+      "booking_provider": "glossgenius"
     },
     {
       "zone_id": "TH01",
@@ -126792,9 +126991,13 @@
       "nearby_dora_licenses_ranked": [],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 0,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "medium",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/malloriewarren",
+      "instagram_handle": "malloriewarren",
+      "booking_url": "https://glossgenius.com/",
+      "booking_provider": "glossgenius"
     },
     {
       "zone_id": "TH01",
@@ -126942,9 +127145,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 3,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "TH01",
@@ -127347,9 +127550,12 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 7,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "fallback",
+      "site_identity_match_distance_m": 1.813,
+      "instagram_url": "https://www.instagram.com/benefitcosmetics",
+      "instagram_handle": "benefitcosmetics",
+      "facebook_url": "https://www.facebook.com/benefitcosmetics"
     },
     {
       "zone_id": "TH01",
@@ -127679,9 +127885,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 11,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "TH01",
@@ -127824,9 +128030,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 7,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "fallback",
+      "site_identity_match_distance_m": 19.323
     },
     {
       "zone_id": "TH01",
@@ -127996,9 +128202,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 9,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "TH01",
@@ -128049,9 +128255,9 @@
       "nearby_dora_licenses_ranked": [],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 0,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "TH01",
@@ -128103,9 +128309,9 @@
       "nearby_dora_licenses_ranked": [],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 0,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "TH01",
@@ -128157,9 +128363,9 @@
       "nearby_dora_licenses_ranked": [],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 0,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "TH01",
@@ -128211,9 +128417,9 @@
       "nearby_dora_licenses_ranked": [],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 0,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "TH01",
@@ -129288,9 +129494,13 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 7,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "fallback",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://www.instagram.com/kati.carlson.hair",
+      "instagram_handle": "kati.carlson.hair",
+      "booking_url": "https://glossgenius.com/",
+      "booking_provider": "glossgenius"
     },
     {
       "zone_id": "TH01",
@@ -129538,9 +129748,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 5,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "TH01",
@@ -129651,9 +129861,13 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 5,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "instagram_url": "https://instagram.com/lifetime.life",
+      "instagram_handle": "lifetime.life",
+      "facebook_url": "https://www.facebook.com/LifeTime.Life",
+      "tiktok_url": "https://www.tiktok.com/@lifetime.life"
     },
     {
       "zone_id": "TH01",
@@ -129847,9 +130061,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 11,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "TH01",
@@ -130961,9 +131175,11 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 7,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0,
+      "booking_url": "https://www.vagaro.com/pro/booking-website-builder",
+      "booking_provider": "vagaro"
     },
     {
       "zone_id": "TH01",
@@ -131290,9 +131506,9 @@
       ],
       "nearby_dora_instore_likely_count": 0,
       "nearby_dora_ring_count": 7,
-      "site_identity_matched": false,
-      "site_identity_match_type": null,
-      "site_identity_match_distance_m": null
+      "site_identity_matched": true,
+      "site_identity_match_type": "strong",
+      "site_identity_match_distance_m": 0.0
     },
     {
       "zone_id": "TH01",
