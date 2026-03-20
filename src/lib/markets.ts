@@ -1,5 +1,8 @@
-import { existsSync, readFileSync } from "node:fs";
-import path from "node:path";
+import {
+  marketsJsonPath,
+  readJsonIfExists,
+  resolveZoneMembersJsonPath,
+} from "@/lib/markets/fsCatalog";
 
 export type BeautyRegion = {
   region_id: string;
@@ -149,30 +152,27 @@ type ApprovedLiveUnitsFile = {
 };
 
 function loadRegions(): RegionsFile {
-  const filePath = path.join(process.cwd(), "data", "markets", "beauty_regions.json");
-  // `data/` is omitted on Vercel (.vercelignore) — treat missing files as empty catalog.
-  if (!existsSync(filePath)) return { regions: [] };
-  return JSON.parse(readFileSync(filePath, "utf8")) as RegionsFile;
+  const parsed = readJsonIfExists<RegionsFile>(marketsJsonPath("beauty_regions.json"));
+  return parsed ?? { regions: [] };
 }
 
 function loadZones(): ZonesFile {
-  const filePath = path.join(process.cwd(), "data", "markets", "beauty_zones.json");
-  if (!existsSync(filePath)) return { zones: [] };
-  return JSON.parse(readFileSync(filePath, "utf8")) as ZonesFile;
+  const parsed = readJsonIfExists<ZonesFile>(marketsJsonPath("beauty_zones.json"));
+  return parsed ?? { zones: [] };
 }
 
 function loadZoneMembers(): ZoneMembersFile {
-  const enrichedPath = path.join(process.cwd(), "data", "markets", "beauty_zone_members_enriched.json");
-  const basePath = path.join(process.cwd(), "data", "markets", "beauty_zone_members.json");
-  const filePath = existsSync(enrichedPath) ? enrichedPath : basePath;
-  if (!existsSync(filePath)) return { members: [] };
-  return JSON.parse(readFileSync(filePath, "utf8")) as ZoneMembersFile;
+  const filePath = resolveZoneMembersJsonPath();
+  if (!filePath) return { members: [] };
+  const parsed = readJsonIfExists<ZoneMembersFile>(filePath);
+  return parsed ?? { members: [] };
 }
 
 function loadApprovedLiveUnits(): ApprovedLiveUnitsFile {
-  const filePath = path.join(process.cwd(), "data", "markets", "beauty_live_units_approved.v1.json");
-  if (!existsSync(filePath)) return { rows: [] };
-  return JSON.parse(readFileSync(filePath, "utf8")) as ApprovedLiveUnitsFile;
+  const parsed = readJsonIfExists<ApprovedLiveUnitsFile>(
+    marketsJsonPath("beauty_live_units_approved.v1.json")
+  );
+  return parsed ?? { rows: [] };
 }
 
 export function getRegions(): BeautyRegion[] {
