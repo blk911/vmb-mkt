@@ -21,7 +21,11 @@ type SortKey =
   | "category"
   | "city"
   | "signal_mix"
-  | "review_status";
+  | "review_status"
+  | "name"
+  | "nearby_shop_license"
+  | "nearby_techs";
+type ColumnSortDir = "asc" | "desc";
 type SubtypeFilter = "all" | "storefront" | "suite" | "unknown";
 type TuningFilter = "all" | "changed" | "boosted" | "downgraded" | "unchanged";
 type PresetId =
@@ -156,7 +160,16 @@ const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
   { value: "city", label: "City" },
   { value: "signal_mix", label: "Signal Mix" },
   { value: "review_status", label: "Review Status" },
+  { value: "name", label: "Name" },
+  { value: "nearby_shop_license", label: "Nearby Shop License" },
+  { value: "nearby_techs", label: "Nearby Techs" },
 ];
+
+const COLUMN_SORT_KEYS = new Set<SortKey>(["name", "nearby_shop_license", "nearby_techs"]);
+
+function defaultDirForColumnSort(key: SortKey): ColumnSortDir {
+  return key === "nearby_techs" ? "desc" : "asc";
+}
 const SUBTYPE_OPTIONS: Array<{ value: SubtypeFilter; label: string }> = [
   { value: "all", label: "All subtypes" },
   { value: "storefront", label: "Storefront" },
@@ -436,6 +449,7 @@ export default function LiveUnitsClient({
   const [subtypeFilter, setSubtypeFilter] = useState<SubtypeFilter>("all");
   const [tuningFilter, setTuningFilter] = useState<TuningFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("tuned_score");
+  const [sortDir, setSortDir] = useState<ColumnSortDir>("asc");
   const [reviewState, setReviewState] = useState<Record<string, ReviewDecision>>(initialReviewState);
   const [salonTechReviewState, setSalonTechReviewState] = useState<Record<string, SalonTechLinkReviewDecision>>(
     initialSalonTechReviewState
@@ -536,13 +550,28 @@ export default function LiveUnitsClient({
           if (getReviewStatusRank(reviewStatusB) !== getReviewStatusRank(reviewStatusA)) {
             return getReviewStatusRank(reviewStatusB) - getReviewStatusRank(reviewStatusA);
           }
+        } else if (sortKey === "name") {
+          const dirMult = sortDir === "asc" ? 1 : -1;
+          const cmp = a.name_display.localeCompare(b.name_display, undefined, { sensitivity: "base" });
+          if (cmp !== 0) return cmp * dirMult;
+        } else if (sortKey === "nearby_shop_license") {
+          const dirMult = sortDir === "asc" ? 1 : -1;
+          const sa = (a.shop_license_name || "").trim();
+          const sb = (b.shop_license_name || "").trim();
+          const cmp = sa.localeCompare(sb, undefined, { sensitivity: "base" });
+          if (cmp !== 0) return cmp * dirMult;
+        } else if (sortKey === "nearby_techs") {
+          const dirMult = sortDir === "asc" ? 1 : -1;
+          const na = a.tech_count_nearby ?? 0;
+          const nb = b.tech_count_nearby ?? 0;
+          if (na !== nb) return (na - nb) * dirMult;
         }
 
         return [getZoneName(a), a.operational_category, a.city ?? "", a.zip ?? "", a.name_display].join("|").localeCompare(
           [getZoneName(b), b.operational_category, b.city ?? "", b.zip ?? "", b.name_display].join("|")
         );
       });
-  }, [category, city, confidence, reviewFilter, reviewState, rows, scoreBand, signalMix, sortKey, subtypeFilter, tuningFilter, zipQuery, zone]);
+  }, [category, city, confidence, reviewFilter, reviewState, rows, scoreBand, signalMix, sortDir, sortKey, subtypeFilter, tuningFilter, zipQuery, zone]);
 
   const visibleIds = useMemo(() => filteredRows.map((row) => row.live_unit_id), [filteredRows]);
   const selectedVisibleIds = useMemo(
@@ -865,6 +894,16 @@ export default function LiveUnitsClient({
     });
   }
 
+  function toggleColumnSort(column: "name" | "nearby_shop_license" | "nearby_techs") {
+    setActivePreset(null);
+    if (sortKey === column) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(column);
+      setSortDir(defaultDirForColumnSort(column));
+    }
+  }
+
   function applyPreset(preset: PresetId) {
     setActivePreset(preset);
     setConfidence("all");
@@ -878,6 +917,7 @@ export default function LiveUnitsClient({
     setSubtypeFilter("all");
     setTuningFilter("all");
     setSortKey("tuned_score");
+    setSortDir("desc");
 
     if (preset === "unreviewed_likely") {
       setConfidence("likely");
@@ -1159,7 +1199,11 @@ export default function LiveUnitsClient({
                 value={sortKey}
                 onChange={(event) => {
                   setActivePreset(null);
-                  setSortKey(event.target.value as SortKey);
+                  const next = event.target.value as SortKey;
+                  setSortKey(next);
+                  if (COLUMN_SORT_KEYS.has(next)) {
+                    setSortDir(defaultDirForColumnSort(next));
+                  }
                 }}
                 className="h-9 w-full rounded-md border border-slate-300 bg-white px-2.5 text-[13px]"
               >
@@ -1240,12 +1284,63 @@ export default function LiveUnitsClient({
                     aria-label="Select all visible rows"
                   />
                 </th>
-                <th className="px-3 py-2.5 whitespace-nowrap">Name</th>
+                <th
+                  className="px-3 py-2.5 whitespace-nowrap"
+                  aria-sort={sortKey === "name" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleColumnSort("name")}
+                    className="inline-flex items-center gap-1 text-left font-semibold uppercase tracking-wide text-neutral-500 transition hover:text-neutral-800"
+                    title="Sort by name (click to reverse)"
+                  >
+                    Name
+                    {sortKey === "name" ? (
+                      <span className="font-normal normal-case" aria-hidden>
+                        {sortDir === "asc" ? "↑" : "↓"}
+                      </span>
+                    ) : null}
+                  </button>
+                </th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Category</th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Zone</th>
                 <th className="px-3 py-2.5 whitespace-nowrap">City / Zip</th>
-                <th className="px-3 py-2.5 whitespace-nowrap">Nearby Shop License</th>
-                <th className="px-3 py-2.5 whitespace-nowrap">Nearby Techs</th>
+                <th
+                  className="px-3 py-2.5 whitespace-nowrap"
+                  aria-sort={sortKey === "nearby_shop_license" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleColumnSort("nearby_shop_license")}
+                    className="inline-flex items-center gap-1 text-left font-semibold uppercase tracking-wide text-neutral-500 transition hover:text-neutral-800"
+                    title="Sort by nearby shop license name (click to reverse)"
+                  >
+                    Nearby Shop License
+                    {sortKey === "nearby_shop_license" ? (
+                      <span className="font-normal normal-case" aria-hidden>
+                        {sortDir === "asc" ? "↑" : "↓"}
+                      </span>
+                    ) : null}
+                  </button>
+                </th>
+                <th
+                  className="px-3 py-2.5 whitespace-nowrap"
+                  aria-sort={sortKey === "nearby_techs" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleColumnSort("nearby_techs")}
+                    className="inline-flex items-center gap-1 text-left font-semibold uppercase tracking-wide text-neutral-500 transition hover:text-neutral-800"
+                    title="Sort by nearby tech count (click to reverse)"
+                  >
+                    Nearby Techs
+                    {sortKey === "nearby_techs" ? (
+                      <span className="font-normal normal-case" aria-hidden>
+                        {sortDir === "asc" ? "↑" : "↓"}
+                      </span>
+                    ) : null}
+                  </button>
+                </th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Tuned Score</th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Review Status</th>
                 <th className="px-3 py-2.5 whitespace-nowrap">Actions</th>
