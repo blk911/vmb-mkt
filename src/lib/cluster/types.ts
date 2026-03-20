@@ -88,3 +88,53 @@ export interface Cluster {
   zone?: string;
   corridor?: string;
 }
+
+export type LocationLockType = "exact_address" | "suite_match" | "same_building_parcel" | "none";
+
+export interface LocationLockResult {
+  hasLock: boolean;
+  lockType: LocationLockType;
+  normalizedAddressMatchExact: boolean;
+  suiteMatch: boolean;
+  sameBuildingParcel: boolean;
+}
+
+export interface ForensicCandidateResult {
+  anchorId: string;
+  anchorName: string;
+  entityId: string;
+  entityName: string;
+  entityType: EntityType;
+
+  distanceMiles: number;
+  score: number;
+
+  hasLock: boolean;
+  lockType: LocationLockType;
+
+  normalizedAddressMatchExact: boolean;
+  suiteMatch: boolean;
+  sameBuildingParcel: boolean;
+
+  decision: "attached" | "candidate_only" | "excluded_nearby_noise" | "blocked_merge";
+  diagnostics: DiagnosticCode[];
+  note: string;
+}
+
+export interface ClusterForensicReport {
+  clusterId: string;
+  displayName: string;
+  anchorName: string;
+  anchorType: EntityType;
+  displayAddress?: string;
+
+  totals: {
+    candidatesConsidered: number;
+    attached: number;
+    candidateOnly: number;
+    excludedNearbyNoise: number;
+    blockedMerge: number;
+  };
+
+  candidates: ForensicCandidateResult[];
+}

@@ -1,6 +1,9 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useEffect, useMemo, type ReactNode } from "react";
 import type { Cluster } from "@/lib/cluster/types";
 import { diagnosticLabel } from "@/lib/cluster/diagnostics";
+import { buildClusterForensicReport, logClusterForensicReport } from "@/lib/cluster/forensics";
 import EvidenceBadges from "./evidence-badges";
 
 function Section({
@@ -44,7 +47,24 @@ function SourceList({
   );
 }
 
-export default function ClusterDetailPanel({ cluster }: { cluster: Cluster | null }) {
+export default function ClusterDetailPanel({
+  cluster,
+  allEntities = [],
+}: {
+  cluster: Cluster | null;
+  allEntities?: BaseEntity[];
+}) {
+  const forensicReport = useMemo(
+    () => (cluster ? buildClusterForensicReport(cluster, allEntities) : null),
+    [cluster, allEntities]
+  );
+
+  useEffect(() => {
+    if (forensicReport && cluster) {
+      logClusterForensicReport(forensicReport, cluster.displayName);
+    }
+  }, [forensicReport, cluster]);
+
   if (!cluster) {
     return (
       <div className="rounded-xl border border-neutral-200 bg-white p-5 text-sm text-neutral-500">
@@ -61,7 +81,9 @@ export default function ClusterDetailPanel({ cluster }: { cluster: Cluster | nul
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-neutral-200 bg-white p-5">
-        <div className="text-xl font-semibold text-neutral-900">{cluster.displayName}</div>
+        <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Input anchor</div>
+        <div className="mt-1 text-xl font-semibold text-neutral-900">{cluster.headEntity.name}</div>
+        <div className="mt-1 text-sm text-neutral-600">{cluster.displayName}</div>
         <div className="mt-1 text-sm text-neutral-600">
           {cluster.displayAddress || cluster.headEntity.address || "Address unavailable"}
         </div>
@@ -148,6 +170,70 @@ export default function ClusterDetailPanel({ cluster }: { cluster: Cluster | nul
           }))}
         />
       </Section>
+
+      {forensicReport ? (
+        <Section title="Forensic validation" count={forensicReport.totals.candidatesConsidered}>
+          <p className="mb-3 text-xs text-neutral-600">
+            All entities in the payload vs this anchor: lock type, score, and attach vs corridor-noise exclusion (e.g.
+            Tribute Barbers QA).
+          </p>
+          <div className="mb-4 grid grid-cols-2 gap-3 text-sm md:grid-cols-5">
+            <div className="rounded-lg bg-neutral-50 p-3">
+              <div className="text-xs text-neutral-500">Candidates</div>
+              <div className="mt-1 font-semibold text-neutral-900">{forensicReport.totals.candidatesConsidered}</div>
+            </div>
+            <div className="rounded-lg bg-neutral-50 p-3">
+              <div className="text-xs text-neutral-500">Attached</div>
+              <div className="mt-1 font-semibold text-neutral-900">{forensicReport.totals.attached}</div>
+            </div>
+            <div className="rounded-lg bg-neutral-50 p-3">
+              <div className="text-xs text-neutral-500">Candidate only</div>
+              <div className="mt-1 font-semibold text-neutral-900">{forensicReport.totals.candidateOnly}</div>
+            </div>
+            <div className="rounded-lg bg-neutral-50 p-3">
+              <div className="text-xs text-neutral-500">Excluded noise</div>
+              <div className="mt-1 font-semibold text-neutral-900">{forensicReport.totals.excludedNearbyNoise}</div>
+            </div>
+            <div className="rounded-lg bg-neutral-50 p-3">
+              <div className="text-xs text-neutral-500">Blocked merge*</div>
+              <div className="mt-1 font-semibold text-neutral-900">{forensicReport.totals.blockedMerge}</div>
+            </div>
+          </div>
+          <p className="mb-3 text-[10px] text-neutral-400">*Anchor↔anchor merge forensics use cluster reasons; per-candidate rows use attach/exclude.</p>
+
+          <div className="max-h-[min(420px,50vh)] space-y-2 overflow-y-auto">
+            {forensicReport.candidates.map((c) => (
+              <div key={c.entityId} className="rounded-lg border border-neutral-100 p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-neutral-900">{c.entityName}</div>
+                    <div className="mt-1 text-xs text-neutral-500">
+                      {c.entityType} · score {c.score} · {c.distanceMiles.toFixed(3)} mi
+                    </div>
+                    <div className="mt-1 text-xs text-neutral-600">
+                      lock: <span className="font-mono">{c.lockType}</span> · exact{" "}
+                      {String(c.normalizedAddressMatchExact)} · suite {String(c.suiteMatch)} · building{" "}
+                      {String(c.sameBuildingParcel)}
+                    </div>
+                    <div className="mt-1 text-xs text-neutral-500">{c.note}</div>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {c.diagnostics.slice(0, 8).map((d) => (
+                        <span key={d} className="rounded border border-neutral-100 px-1 py-0.5 text-[10px] text-neutral-600">
+                          {diagnosticLabel(d)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 rounded-full border border-neutral-200 px-2 py-1 text-[11px] font-medium text-neutral-800">
+                    {c.decision}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+      ) : null}
     </div>
   );
 }

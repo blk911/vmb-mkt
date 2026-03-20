@@ -30,3 +30,23 @@ Integrated on **`/admin/vmb`** via `VmbClusterExplorer` (not `app/(vmb)/admin/pa
 - Competing brands at same distance → merge blocked when `COMPETING_BRAND` logic fires.
 
 Map `lat`, `lng`, `address`, `category`, `licenseId`, etc. before passing entities to `useClusters`.
+
+## Step 8 — forensic validation
+
+The cluster engine supports a **forensic validation** pass for the selected shop cluster (e.g. **Tribute Barbers**).
+
+**Purpose**
+
+- Show which nearby entities were **attached** vs **excluded as corridor noise**
+- Explain whether **`getLocationLockResult`** fired via **exact normalized address**, **suite match**, or **same building / pad**
+- Surface **`buildMatchBreakdown`** score + distance per candidate
+- In development, **`logClusterForensicReport`** prints the full report to the browser console when you select a cluster
+
+**Where**
+
+- **`forensics.ts`** — `buildClusterForensicReport(cluster, allEntities)`
+- **`ClusterDetailPanel`** — “Forensic validation” section at `/admin/vmb` (pass `allEntities={data}`)
+
+**What not to do here**
+
+- Do not widen score thresholds or loosen the hard lock to “make Tribute look better” — empty or thin DORA rows after lock means the truth surfaced; next step is data/legal-name/suite coverage, not fuzzy hacks.

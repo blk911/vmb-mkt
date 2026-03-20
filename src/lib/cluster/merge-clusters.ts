@@ -1,6 +1,6 @@
 import type { Cluster, ClusterAttachment, DiagnosticCode } from "./types";
 import { buildMatchBreakdown } from "./scoring";
-import { hasHardLocationLock } from "./location-lock";
+import { getLocationLockResult } from "./location-lock";
 
 function dedupeAttachments(items: ClusterAttachment[]): ClusterAttachment[] {
   const seen = new Set<string>();
@@ -49,13 +49,21 @@ function shouldMergeClusters(a: Cluster, b: Cluster): { merge: boolean; reason: 
     return { merge: false, reason: ["PERSON_NOT_SHOP"] };
   }
 
-  /** HARD LOCATION LOCK — anchor merges require exact / parcel / suite agreement, not score-only proximity. */
-  if (!hasHardLocationLock(a.headEntity, b.headEntity)) {
+  /** Cluster merge is blocked unless physical-location evidence exists (not score-only). */
+  const lock = getLocationLockResult(a.headEntity, b.headEntity);
+
+  if (!lock.hasLock) {
     return {
       merge: false,
       reason: [...reason, "NEARBY_NOISE_NO_LOCK", "MULTI_ANCHOR_CONFLICT"],
     };
   }
+
+  const lockExplain: DiagnosticCode[] = [];
+  if (lock.normalizedAddressMatchExact) lockExplain.push("ADDR_MATCH");
+  if (lock.suiteMatch) lockExplain.push("HARD_LOCATION_LOCK");
+  if (lock.sameBuildingParcel) lockExplain.push("HARD_LOCATION_LOCK");
+  const mergedReason = [...reason, ...Array.from(new Set(lockExplain))];
 
   const strongEnough =
     breakdown.score >= 65 ||
@@ -70,10 +78,10 @@ function shouldMergeClusters(a: Cluster, b: Cluster): { merge: boolean; reason: 
     a.headEntity.brandCoreName !== b.headEntity.brandCoreName;
 
   if (blockedByCompetingBrands) {
-    return { merge: false, reason: ["COMPETING_BRAND", "MULTI_ANCHOR_CONFLICT"] };
+    return { merge: false, reason: [...mergedReason, "COMPETING_BRAND", "MULTI_ANCHOR_CONFLICT"] };
   }
 
-  return { merge: strongEnough, reason };
+  return { merge: strongEnough, reason: mergedReason };
 }
 
 function mergeTwoClusters(primary: Cluster, secondary: Cluster): Cluster {

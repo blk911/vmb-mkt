@@ -47,7 +47,7 @@ export default function VmbClusterExplorer({ data }: Props) {
             </div>
 
             <div className="min-w-0 xl:sticky xl:top-4 xl:self-start">
-              <ClusterDetailPanel cluster={selectedCluster} />
+              <ClusterDetailPanel cluster={selectedCluster} allEntities={data || []} />
             </div>
           </div>
         ) : null}

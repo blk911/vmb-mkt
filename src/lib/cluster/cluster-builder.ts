@@ -8,7 +8,7 @@ import type {
 import { buildMatchBreakdown } from "./scoring";
 import { enrichEntityNames } from "./normalize";
 import { mergeOverlappingClusters } from "./merge-clusters";
-import { hasHardLocationLock } from "./location-lock";
+import { getLocationLockResult } from "./location-lock";
 
 function toStatus(confidence: number): ClusterStatus {
   if (confidence >= 80) return "confirmed";
@@ -73,14 +73,29 @@ export function buildClusters(entities: BaseEntity[]): Cluster[] {
         continue;
       }
 
-      /** HARD LOCATION LOCK — without this, row is nearby noise only (not a primary candidate). */
-      if (!hasHardLocationLock(anchor, entity)) {
+      /**
+       * Hard location lock is the gate: high score alone must not attach.
+       * Without lock, entity is nearby corridor noise only.
+       */
+      const lock = getLocationLockResult(anchor, entity);
+
+      if (!lock.hasLock) {
         reasons.push(`nearby-noise:${entity.name}:${breakdown.score}`);
         diagnostics.add("NEARBY_NOISE_NO_LOCK");
         continue;
       }
 
       diagnostics.add("HARD_LOCATION_LOCK");
+      if (lock.normalizedAddressMatchExact) {
+        reasons.push(`lock:exact-address:${entity.name}`);
+      }
+      if (lock.suiteMatch) {
+        reasons.push(`lock:suite-match:${entity.name}`);
+      }
+      if (lock.sameBuildingParcel) {
+        reasons.push(`lock:same-building:${entity.name}`);
+      }
+
       confidence = Math.max(confidence, breakdown.score);
       breakdown.diagnostics.forEach((d) => diagnostics.add(d));
 
