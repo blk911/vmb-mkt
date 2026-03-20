@@ -1,12 +1,22 @@
-# VMB cluster engine (phase 1–2)
+# VMB cluster engine
 
-- **`types.ts`** — `BaseEntity`, `Cluster`
-- **`normalize.ts`** — name/address normalization + tokens
-- **`scoring.ts`** — `scoreMatch` (distance + name + category)
-- **`cluster-builder.ts`** — `buildClusters` (anchors = Google + DORA shop rows)
+## Phase 3
 
-## UI route
+- **`types.ts`** — `BaseEntity`, `Cluster`, `ClusterAttachment`, `MatchBreakdown`, `DiagnosticCode`
+- **`normalize.ts`** — legal/geo/service stop words, `buildBrandCoreName`, address normalization
+- **`scoring.ts`** — `buildMatchBreakdown` (distance, name, category, address, phone/website)
+- **`cluster-builder.ts`** — provisional clusters per shop anchor → **`mergeOverlappingClusters`**
+- **`merge-clusters.ts`** — dominant anchor merge (overlapping Google + DORA heads collapse to one row)
+- **`diagnostics.ts`** — human-readable diagnostic labels
 
-The App Router cannot add `app/(vmb)/admin/page.tsx` without colliding with the existing `/admin` entry (`app/admin/page.tsx`). The cluster explorer is integrated on **`/admin/vmb`** (`src/app/admin/vmb/page.tsx`).
+## UI
 
-Replace `DEMO_CLUSTER_ENTITIES` with real `BaseEntity[]` when wiring APIs.
+Integrated on **`/admin/vmb`** via `VmbClusterExplorer` (not `app/(vmb)/admin/page.tsx`, which would collide with `/admin`).
+
+## QA
+
+- Same-brand Google + nearby DORA shop → one row after merge.
+- `dora_person` never becomes a shop anchor row.
+- Competing brands at same distance → merge blocked when `COMPETING_BRAND` logic fires.
+
+Map `lat`, `lng`, `address`, `category`, `licenseId`, etc. before passing entities to `useClusters`.
