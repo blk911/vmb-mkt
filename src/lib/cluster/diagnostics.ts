@@ -16,6 +16,8 @@ const LABELS: Record<DiagnosticCode, string> = {
   COMPETING_BRAND: "Different nearby brands",
   LOW_CONFIDENCE_ONLY: "Low confidence only",
   MERGED_BY_DOMINANT_ANCHOR: "Merged into dominant location anchor",
+  HARD_LOCATION_LOCK: "Hard location lock (address / parcel / suite)",
+  NEARBY_NOISE_NO_LOCK: "Nearby noise — no hard location lock",
 };
 
 export function diagnosticLabel(code: DiagnosticCode): string {

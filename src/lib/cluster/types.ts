@@ -21,7 +21,11 @@ export type DiagnosticCode =
   | "SUITE_CONFLICT"
   | "COMPETING_BRAND"
   | "LOW_CONFIDENCE_ONLY"
-  | "MERGED_BY_DOMINANT_ANCHOR";
+  | "MERGED_BY_DOMINANT_ANCHOR"
+  /** Passed HARD LOCATION LOCK (exact addr / same parcel / suite match). */
+  | "HARD_LOCATION_LOCK"
+  /** Rejected: co-located by score only, no hard location lock — nearby noise. */
+  | "NEARBY_NOISE_NO_LOCK";
 
 export interface BaseEntity {
   id: string;

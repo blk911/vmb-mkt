@@ -8,6 +8,7 @@ import type {
 import { buildMatchBreakdown } from "./scoring";
 import { enrichEntityNames } from "./normalize";
 import { mergeOverlappingClusters } from "./merge-clusters";
+import { hasHardLocationLock } from "./location-lock";
 
 function toStatus(confidence: number): ClusterStatus {
   if (confidence >= 80) return "confirmed";
@@ -58,10 +59,10 @@ export function buildClusters(entities: BaseEntity[]): Cluster[] {
 
     for (const entity of enriched) {
       const breakdown = buildMatchBreakdown(anchor, entity);
-      confidence = Math.max(confidence, breakdown.score);
-      breakdown.diagnostics.forEach((d) => diagnostics.add(d));
 
       if (entity.id === anchor.id) {
+        confidence = Math.max(confidence, breakdown.score);
+        breakdown.diagnostics.forEach((d) => diagnostics.add(d));
         const selfAttach: ClusterAttachment = {
           entity,
           decision: "merged",
@@ -71,6 +72,17 @@ export function buildClusters(entities: BaseEntity[]): Cluster[] {
         if (entity.type === "dora_shop") doraShops.push(selfAttach);
         continue;
       }
+
+      /** HARD LOCATION LOCK — without this, row is nearby noise only (not a primary candidate). */
+      if (!hasHardLocationLock(anchor, entity)) {
+        reasons.push(`nearby-noise:${entity.name}:${breakdown.score}`);
+        diagnostics.add("NEARBY_NOISE_NO_LOCK");
+        continue;
+      }
+
+      diagnostics.add("HARD_LOCATION_LOCK");
+      confidence = Math.max(confidence, breakdown.score);
+      breakdown.diagnostics.forEach((d) => diagnostics.add(d));
 
       if (entity.type === "dora_person") {
         if (breakdown.score >= 50) {

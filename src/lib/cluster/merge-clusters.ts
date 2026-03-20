@@ -1,5 +1,6 @@
 import type { Cluster, ClusterAttachment, DiagnosticCode } from "./types";
 import { buildMatchBreakdown } from "./scoring";
+import { hasHardLocationLock } from "./location-lock";
 
 function dedupeAttachments(items: ClusterAttachment[]): ClusterAttachment[] {
   const seen = new Set<string>();
@@ -46,6 +47,14 @@ function shouldMergeClusters(a: Cluster, b: Cluster): { merge: boolean; reason: 
 
   if (!bothShopLike) {
     return { merge: false, reason: ["PERSON_NOT_SHOP"] };
+  }
+
+  /** HARD LOCATION LOCK — anchor merges require exact / parcel / suite agreement, not score-only proximity. */
+  if (!hasHardLocationLock(a.headEntity, b.headEntity)) {
+    return {
+      merge: false,
+      reason: [...reason, "NEARBY_NOISE_NO_LOCK", "MULTI_ANCHOR_CONFLICT"],
+    };
   }
 
   const strongEnough =

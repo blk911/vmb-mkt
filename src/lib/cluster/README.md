@@ -1,5 +1,15 @@
 # VMB cluster engine
 
+## Hard location lock
+
+Entities only become **primary cluster candidates** when **`hasHardLocationLock(anchor, entity)`** is true:
+
+- **`normalizedAddressMatchExact`** — full `normalizeAddress` equality (min length)
+- **`sameBuildingParcel`** — same street # + close GPS, or long address prefix, or very tight pin (≤ ~0.025 mi)
+- **`suiteMatch`** — suite/unit tokens present on both sides and overlap
+
+Otherwise they are recorded as **`nearby-noise:…`** and **do not** attach to Google/DORA/tech buckets. Anchor↔anchor merges use the same gate in **`merge-clusters.ts`**.
+
 ## Phase 3
 
 - **`types.ts`** — `BaseEntity`, `Cluster`, `ClusterAttachment`, `MatchBreakdown`, `DiagnosticCode`
