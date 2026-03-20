@@ -33,11 +33,14 @@ export function readJsonIfExists<T>(absPath: string): T | null {
 }
 
 /**
- * Prefer enriched members file when present; otherwise base `beauty_zone_members.json`.
+ * Prefer presence-merged enriched file, then plain enriched, then base `beauty_zone_members.json`.
+ * (Used by `loadZoneMembers` in `markets.ts`.)
  */
 export function resolveZoneMembersJsonPath(): string | null {
+  const withPresence = marketsJsonPath("beauty_zone_members_enriched_with_presence.json");
   const enriched = marketsJsonPath("beauty_zone_members_enriched.json");
   const base = marketsJsonPath("beauty_zone_members.json");
+  if (existsSync(withPresence)) return withPresence;
   if (existsSync(enriched)) return enriched;
   if (existsSync(base)) return base;
   return null;

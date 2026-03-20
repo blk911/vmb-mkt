@@ -170,6 +170,7 @@ function loadZones(): ZonesFile {
   return parsed ?? { zones: [] };
 }
 
+/** Reads `data/markets/beauty_zone_members_enriched_with_presence.json` when present (see `resolveZoneMembersJsonPath`). */
 function loadZoneMembers(): ZoneMembersFile {
   const filePath = resolveZoneMembersJsonPath();
   if (!filePath) return { members: [] };

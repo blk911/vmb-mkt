@@ -234,7 +234,8 @@ export default async function MarketMemberListingPage({ params, searchParams }: 
                   (and address ranks). If you ran{" "}
                   <code className="rounded bg-white px-1 text-xs">npm run markets:enrich:dora</code> locally but still see
                   this, <strong>commit and push</strong>{" "}
-                  <code className="rounded bg-white px-1 text-xs">data/markets/beauty_zone_members_enriched.json</code> so
+                  <code className="rounded bg-white px-1 text-xs">data/markets/beauty_zone_members_enriched_with_presence.json</code>{" "}
+                  (or <code className="rounded bg-white px-1 text-xs">beauty_zone_members_enriched.json</code>) so
                   production matches—or run enrich in CI and deploy.
                 </p>
               ) : null}
