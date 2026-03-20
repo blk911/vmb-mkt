@@ -23,6 +23,8 @@
 # misc
 .DS_Store
 *.pem
+__pycache__/
+*.py[cod]
 
 # debug
 npm-debug.log*
@@ -59,4 +61,7 @@ backups/
 
 # big derived tables (do not commit)
 data/co/dora/denver_metro/tables/
+
+# site identity tool output (regenerate locally)
+data/output/
 

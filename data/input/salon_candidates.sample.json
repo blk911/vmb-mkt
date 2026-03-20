@@ -1,0 +1,17 @@
+[
+  {
+    "id": "sample-example",
+    "website_url": "https://example.com",
+    "source_name_google": "Example Domain",
+    "source_name_dora": "Example Company LLC",
+    "source_name_internal": "Example",
+    "phone": null,
+    "address": null
+  },
+  {
+    "id": "sample-no-site",
+    "source_name_google": "Local Salon",
+    "source_name_dora": "Local Salon LLC",
+    "phone": "3035551212"
+  }
+]
