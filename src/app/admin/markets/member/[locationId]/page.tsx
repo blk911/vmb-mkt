@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildMarketsListPath, parseMarketsUrlSearchParams } from "../../_lib/marketsUrlState";
 import { getEnrichedMemberByLocationId, getMarketById, getMarkets, getRegions } from "@/lib/markets";
+import LicenseHoldersTable from "./LicenseHoldersTable";
 
 type PageProps = {
   params: Promise<{ locationId: string }>;
@@ -57,11 +58,6 @@ export default async function MarketMemberListingPage({ params, searchParams }: 
   /** Enriched file includes v2 ranked arrays (may be empty arrays in edge cases). */
   const rankedFieldsPresent =
     member.nearby_dora_licenses_ranked !== undefined || member.nearby_dora_addresses_ranked !== undefined;
-
-  function bandLabel(distanceMiles: number) {
-    if (distanceMiles <= instoreThreshold) return "Likely same pad";
-    return "Farther (ring)";
-  }
 
   return (
     <div className="min-h-screen bg-neutral-50 p-6">
@@ -243,42 +239,12 @@ export default async function MarketMemberListingPage({ params, searchParams }: 
                 <div className="mt-6">
                   <h3 className="text-sm font-semibold text-neutral-900">License holders (by distance)</h3>
                   <p className="mt-1 text-xs text-neutral-500">
-                    Sorted closest first. Same distance = same registered address (suite/building).
+                    Default: <strong className="font-medium text-neutral-700">active</strong> licenses first, then closest by
+                    miles. Same distance = same registered address (suite/building). Use column headers to sort by type,
+                    status, or miles; click <strong className="font-medium text-neutral-700">Name</strong> to restore the
+                    default order.
                   </p>
-                  <div className="mt-2 max-h-[min(420px,50vh)] overflow-auto rounded-xl border border-neutral-200">
-                    <table className="min-w-full divide-y divide-neutral-200 text-sm">
-                      <thead className="sticky top-0 bg-neutral-50">
-                        <tr className="text-left text-neutral-600">
-                          <th className="px-3 py-2 font-medium">Name</th>
-                          <th className="px-3 py-2 font-medium">Type</th>
-                          <th className="px-3 py-2 font-medium">Status</th>
-                          <th className="px-3 py-2 font-medium">Mi</th>
-                          <th className="px-3 py-2 font-medium">Band</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-neutral-200">
-                        {rankedLicenses.map((row, i) => (
-                          <tr key={`${row.rowId || row.addressKey}-${i}`} className="text-neutral-800">
-                            <td className="px-3 py-2">{row.fullName || "—"}</td>
-                            <td className="px-3 py-2 text-xs">{row.licenseType || "—"}</td>
-                            <td className="px-3 py-2 text-xs">{row.licenseStatus || "—"}</td>
-                            <td className="px-3 py-2 font-mono tabular-nums">{row.distance_miles.toFixed(4)}</td>
-                            <td className="px-3 py-2">
-                              <span
-                                className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-                                  row.distance_miles <= instoreThreshold
-                                    ? "bg-emerald-100 text-emerald-900"
-                                    : "bg-neutral-100 text-neutral-700"
-                                }`}
-                              >
-                                {bandLabel(row.distance_miles)}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <LicenseHoldersTable rows={rankedLicenses} />
                 </div>
               ) : null}
 
