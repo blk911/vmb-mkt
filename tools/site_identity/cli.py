@@ -29,8 +29,25 @@ from lib.output_writer import (
 )
 from lib.row_adapter import adapt_input_rows
 from lib.score_match import resolve_row
+from lib.storefront_dora_enricher import (
+    enrich_places_with_dora,
+    load_shop_anchor_by_location_id,
+    load_zone_members,
+)
 
 LOG = logging.getLogger("site_identity")
+
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parent.parent.parent
+
+
+def _dora_meta_from_row(row: dict[str, Any]) -> dict[str, Any]:
+    out: dict[str, Any] = {}
+    for k in ("dora_match_type", "dora_match_confidence", "dora_match_evidence"):
+        if k in row and row[k] is not None:
+            out[k] = row[k]
+    return out
 
 # Reviewer-facing exception CSV columns (fixed order).
 EXCEPTION_REVIEW_COLUMNS: tuple[str, ...] = (
@@ -281,11 +298,56 @@ def _flatten_live_unit_row(row: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+def _flatten_places_candidate_row(row: dict[str, Any]) -> dict[str, Any]:
+    """
+    Flatten `places_candidates.v1.json`-style rows (nested `candidate` from Places details).
+    Storefront-oriented: business name, website, phone, address, lat/lon at top level.
+    """
+    c = row.get("candidate")
+    if not isinstance(c, dict) or "placeName" not in c:
+        return row
+    out = dict(row)
+    pid = row.get("topPlaceId") or row.get("chosenPlaceId") or row.get("addressKey")
+    if pid is not None:
+        out["id"] = str(pid)
+    pn = c.get("placeName")
+    if pn:
+        out["source_name_google"] = str(pn).strip()
+    web = c.get("website")
+    if isinstance(web, str):
+        w = web.strip()
+        if w:
+            if not w.lower().startswith(("http://", "https://")):
+                w = "https://" + w
+            out["website_url"] = w
+    ph = c.get("phone")
+    if ph:
+        out["phone"] = str(ph).strip()
+    fa = c.get("formattedAddress") or c.get("address")
+    if fa:
+        out["address"] = str(fa).strip()
+    elif row.get("address"):
+        out["address"] = str(row["address"]).strip()
+    for k in ("city", "state", "zip"):
+        if row.get(k) is not None:
+            out[k] = row[k]
+    lat = row.get("lat") if row.get("lat") is not None else c.get("lat")
+    lon = row.get("lon") if row.get("lon") is not None else c.get("lon")
+    if lat is not None:
+        out["lat"] = lat
+    if lon is not None:
+        out["lon"] = lon
+    return out
+
+
 def _maybe_flatten_vmb_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     if not rows:
         return rows
     if "live_unit_id" in rows[0] and isinstance(rows[0].get("raw_snippets"), dict):
         return [_flatten_live_unit_row(r) for r in rows]
+    c0 = rows[0].get("candidate")
+    if isinstance(c0, dict) and "placeName" in c0:
+        return [_flatten_places_candidate_row(r) for r in rows]
     return rows
 
 
@@ -347,7 +409,7 @@ def row_to_enriched(
     lat_out = pt[0] if pt else None
     lon_out = pt[1] if pt else None
 
-    return {
+    result: dict[str, Any] = {
         "id": rid,
         "website_url_input": pick(row, "website_url", "url"),
         "website_url_final": final_url,
@@ -379,6 +441,8 @@ def row_to_enriched(
         "lat": lat_out,
         "lon": lon_out,
     }
+    result.update(_dora_meta_from_row(row))
+    return result
 
 
 def process_one(
@@ -443,6 +507,29 @@ def main(argv: list[str] | None = None) -> int:
         default=site_config.DEFAULT_CLUSTER_THRESHOLD_METERS,
         help="Max Haversine distance (m) to group rows into one location cluster",
     )
+    ap.add_argument(
+        "--dora-enrich",
+        action="store_true",
+        help="Join Places rows to DORA shop names via zone_members + shop_anchor_map (before row_adapter)",
+    )
+    ap.add_argument(
+        "--dora-anchor-map",
+        type=Path,
+        default=None,
+        help="shop_anchor_map.v1.json path (default: <repo>/data/markets/shop_anchor_map.v1.json)",
+    )
+    ap.add_argument(
+        "--dora-zone-members",
+        type=Path,
+        default=None,
+        help="beauty_zone_members.json path (default: <repo>/data/markets/beauty_zone_members.json)",
+    )
+    ap.add_argument(
+        "--dora-max-meters",
+        type=float,
+        default=75.0,
+        help="Max distance (m) to nearest zone member for geo join",
+    )
     args = ap.parse_args(argv)
 
     logging.basicConfig(
@@ -453,6 +540,28 @@ def main(argv: list[str] | None = None) -> int:
     rows = load_rows(args.input)
     if args.limit and args.limit > 0:
         rows = rows[: args.limit]
+    if args.dora_enrich:
+        root = _repo_root()
+        anchor_p = args.dora_anchor_map or (root / "data" / "markets" / "shop_anchor_map.v1.json")
+        members_p = args.dora_zone_members or (root / "data" / "markets" / "beauty_zone_members.json")
+        if anchor_p.is_file() and members_p.is_file():
+            idx = load_shop_anchor_by_location_id(anchor_p)
+            zm = load_zone_members(members_p)
+            rows = enrich_places_with_dora(
+                rows,
+                idx,
+                zm,
+                max_meters=float(args.dora_max_meters),
+            )
+            LOG.info(
+                "DORA enrich: anchor_map=%s zone_members=%s anchor_rows=%s members=%s",
+                anchor_p,
+                members_p,
+                len(idx),
+                len(zm),
+            )
+        else:
+            LOG.warning("DORA enrich skipped (missing files): %s %s", anchor_p, members_p)
     rows = _maybe_flatten_vmb_rows(rows)
     rows = adapt_input_rows(rows)
     input_row_count = len(rows)
@@ -475,25 +584,25 @@ def main(argv: list[str] | None = None) -> int:
         except Exception as e:
             LOG.exception("Row failed id=%s: %s", rid, e)
             pt = extract_point(row)
-            enriched.append(
-                {
-                    "id": rid,
-                    "website_url_input": pick(row, "website_url", "url"),
-                    "website_url_final": None,
-                    "domain": "",
-                    "google_name": pick(row, "source_name_google", "google_name", "google"),
-                    "dora_name": pick(row, "source_name_dora", "dora_name", "dora"),
-                    "internal_name": pick(row, "source_name_internal", "internal_name", "internal"),
-                    "best_site_name": None,
-                    "evidence_summary": "",
-                    "fetch_status": "fatal",
-                    "fetch_error": str(e)[:500],
-                    "match_label": "no_match",
-                    "notes": [str(e)],
-                    "lat": pt[0] if pt else None,
-                    "lon": pt[1] if pt else None,
-                }
-            )
+            fail_row: dict[str, Any] = {
+                "id": rid,
+                "website_url_input": pick(row, "website_url", "url"),
+                "website_url_final": None,
+                "domain": "",
+                "google_name": pick(row, "source_name_google", "google_name", "google"),
+                "dora_name": pick(row, "source_name_dora", "dora_name", "dora"),
+                "internal_name": pick(row, "source_name_internal", "internal_name", "internal"),
+                "best_site_name": None,
+                "evidence_summary": "",
+                "fetch_status": "fatal",
+                "fetch_error": str(e)[:500],
+                "match_label": "no_match",
+                "notes": [str(e)],
+                "lat": pt[0] if pt else None,
+                "lon": pt[1] if pt else None,
+            }
+            fail_row.update(_dora_meta_from_row(row))
+            enriched.append(fail_row)
 
     cluster_summaries = apply_cluster_fields(enriched, args.cluster_threshold_meters)
 

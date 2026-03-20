@@ -18,6 +18,24 @@ pip install -r requirements.txt
 
 Or use a global env with the same `pip install -r tools/site_identity/requirements.txt`.
 
+### Install report (checklist)
+
+| Step | Command / action |
+|------|-------------------|
+| **Python** | 3.10+ recommended (uses `httpx`, `pandas`, `rapidfuzz`). |
+| **Create venv** | `cd tools/site_identity` → `python -m venv .venv` → activate (see above). |
+| **Dependencies** | `pip install -r requirements.txt` (from `tools/site_identity` or path `tools/site_identity/requirements.txt` from repo root). |
+| **Entry point** | From repo root: `python tools/site_identity_scraper.py --help` |
+| **Verify** | Smoke: `python tools/site_identity_scraper.py --input data/input/salon_candidates.sample.json --output-dir data/output/site_identity_smoke --limit 5 --timeout 12` → expect `enriched.json`, `run_summary.json`. |
+| **TLS issues** | If `CERTIFICATE_VERIFY_FAILED`, fix CA bundle or use `--insecure` once for local smoke only. |
+
+**Storefront + DORA fusion** (optional): requires default data files under repo root — `data/markets/shop_anchor_map.v1.json`, `data/markets/beauty_zone_members.json` — and flag `--dora-enrich` (see Run table). Override paths with `--dora-anchor-map` / `--dora-zone-members`; radius with `--dora-max-meters` (default 75).
+
+### Updates (March 2026)
+
+- **Storefront → DORA pre-step:** `--dora-enrich` joins `places_candidates`-style rows to DORA shop names via nearest `beauty_zone_members` (within `--dora-max-meters`) → `shop_anchor_map` by `google_location_id`. Adds `source_name_dora` / match metadata used by clustering and scoring (no redesign of score weights).
+- **Reference runs** (Denver metro `places_candidates.v1.json`, same CLI flags except `--limit`): `data/output/site_identity_storefront_dora/run_50/` and `run_250/`. Example `run_250` summary: `rows_with_dora_signal` 71 / 250; `cluster_review_status_counts` confirmed 52, likely 39, review 77; `rows_fetch_ok` 183, `rows_fetch_failed` 67.
+
 ### Input row adapter (`lib/row_adapter.py`)
 
 Real VMB / DORA / Google exports use inconsistent column names. **`adapt_input_rows`** runs immediately after load (and after `--limit`): it **merges** each raw dict with **canonical** fields so the rest of the pipeline only reads one shape. **Original keys are kept** on the row; canonical values are **overlaid** using **first non-empty wins** in a fixed alias order. Rows are tagged with **`_adapter_applied: true`**. No large duplicate blobs.
@@ -55,7 +73,7 @@ Flags:
 
 | Flag | Meaning |
 |------|---------|
-| `--input` | JSON array, JSONL, `{ "rows": [...] }`, or `{ "members": [...] }` (e.g. zone members export). `beauty_live_units.v1.json`-style rows with `raw_snippets` are auto-flattened in `cli.py` before `row_adapter`. |
+| `--input` | JSON array, JSONL, `{ "rows": [...] }`, or `{ "members": [...] }` (e.g. zone members export). `beauty_live_units.v1.json`-style rows with `raw_snippets`, and `places_candidates.v1.json`-style rows with nested `candidate` (Places storefront), are auto-flattened in `cli.py` before `row_adapter`. |
 | `--output-dir` | Main outputs, reviewer exception CSVs, `run_summary.json` / `run_summary.txt` (see below) |
 | `--limit` | Process only first N rows (`0` = all) |
 | `--timeout` | Per-request HTTP timeout (seconds) |
@@ -63,6 +81,7 @@ Flags:
 | `-v` | Verbose logging |
 | `--insecure` | Skip TLS verification (use only if Python has no CA bundle / dev machines) |
 | `--cluster-threshold-meters` | Max Haversine distance (m) to group rows with valid lat/lon into one cluster (`config.DEFAULT_CLUSTER_THRESHOLD_METERS`) |
+| `--dora-enrich` | After load/limit, join Places rows to DORA **shop** names: nearest `beauty_zone_members` (≤ `--dora-max-meters`) → `shop_anchor_map` by `google_location_id` (`lib/storefront_dora_enricher.py`). Optional paths: `--dora-anchor-map`, `--dora-zone-members`. |
 
 On Windows/macOS, if HTTPS fails with `CERTIFICATE_VERIFY_FAILED`, install certs or run once with `--insecure` to confirm the pipeline.
 
@@ -167,3 +186,4 @@ Thresholds (tunable in one place):
 | `tools/site_identity/lib/output_writer.py` | JSON/CSV + `write_csv_with_columns` + `build_run_summary` |
 | `tools/site_identity/lib/cluster_resolver.py` | Haversine clustering, canonical name, `derive_cluster_review_status` |
 | `tools/site_identity/lib/row_adapter.py` | Normalize mixed input keys → canonical fields before `process_one` |
+| `tools/site_identity/lib/storefront_dora_enricher.py` | Optional `--dora-enrich`: geo join Places → zone members → shop anchor (DORA shop name) |

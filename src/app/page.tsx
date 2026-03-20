@@ -62,18 +62,28 @@ export default function Home() {
           <aside className="rounded-3xl border border-neutral-200 bg-neutral-950 p-8 text-white shadow-sm md:p-10">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-300">Platform Layout</p>
             <div className="mt-6 space-y-4">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+              <a
+                href="https://venmebaby.com"
+                target="_blank"
+                rel="noreferrer"
+                className="block rounded-2xl border border-white/10 bg-white/5 p-5 transition hover:border-sky-300/40 hover:bg-white/10"
+              >
                 <h2 className="text-lg font-semibold">venmebaby.com</h2>
                 <p className="mt-2 text-sm leading-6 text-neutral-300">
                   Product entry, secure sign-in, and authenticated access to internal operator tooling.
                 </p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+              </a>
+              <a
+                href="https://vmbsalons.com"
+                target="_blank"
+                rel="noreferrer"
+                className="block rounded-2xl border border-white/10 bg-white/5 p-5 transition hover:border-sky-300/40 hover:bg-white/10"
+              >
                 <h2 className="text-lg font-semibold">vmbsalons.com</h2>
                 <p className="mt-2 text-sm leading-6 text-neutral-300">
                   Corporate presence, broader messaging, and external-facing marketing handled outside the app.
                 </p>
-              </div>
+              </a>
             </div>
           </aside>
         </div>

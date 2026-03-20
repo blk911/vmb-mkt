@@ -9,9 +9,15 @@ type AppLink = {
   id: string;
   label: string;
   href: string;
+  external?: boolean;
 };
 
-const MARKETING_LINK: AppLink = { id: "marketing", label: "MARKETING", href: "/marketing-decks" };
+const MARKETING_LINK: AppLink = {
+  id: "marketing",
+  label: "VMB SALONS",
+  href: "https://vmbsalons.com",
+  external: true,
+};
 const REQUEST_ACCESS_LINK: AppLink = { id: "request_access", label: "REQUEST ACCESS", href: "/access/request" };
 const LOGIN_LINK: AppLink = { id: "login", label: "LOGIN", href: "/auth/login" };
 const MARKETS_LINK: AppLink = { id: "markets", label: "MARKETS", href: "/admin/markets" };
@@ -84,28 +90,34 @@ export default function AppSwitchNav({ sessionUser }: Props) {
             </span>
           ) : null}
           {links.map((link) => {
-            const active = isActive(link.href, pathname);
+            const active = link.external ? false : isActive(link.href, pathname);
+            const style = {
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: 30,
+              padding: "0 10px",
+              borderRadius: 999,
+              border: "1px solid rgba(15,23,42,0.12)",
+              background: active ? "rgba(37,99,235,0.16)" : "rgba(15,23,42,0.04)",
+              color: active ? "#1d4ed8" : "#0f172a",
+              textDecoration: "none",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.05em",
+              whiteSpace: "nowrap",
+            } as const;
+
+            if (link.external) {
+              return (
+                <a key={link.id} href={link.href} target="_blank" rel="noreferrer" style={style}>
+                  {link.label}
+                </a>
+              );
+            }
+
             return (
-              <Link
-                key={link.id}
-                href={link.href}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: 30,
-                  padding: "0 10px",
-                  borderRadius: 999,
-                  border: "1px solid rgba(15,23,42,0.12)",
-                  background: active ? "rgba(37,99,235,0.16)" : "rgba(15,23,42,0.04)",
-                  color: active ? "#1d4ed8" : "#0f172a",
-                  textDecoration: "none",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: "0.05em",
-                  whiteSpace: "nowrap",
-                }}
-              >
+              <Link key={link.id} href={link.href} style={style}>
                 {link.label}
               </Link>
             );
