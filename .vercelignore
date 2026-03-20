@@ -1,0 +1,6 @@
+# Keep serverless bundles under Vercel’s 250 MB unzipped limit — these are not needed for the Next.js app build/runtime on Vercel.
+tools/
+data/
+backend/data/
+**/__pycache__/
+**/*.pyc

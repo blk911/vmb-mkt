@@ -68,3 +68,6 @@ data/co/dora/denver_metro/tables/
 # site identity tool output (regenerate locally)
 data/output/
 
+# Python venv for tools/site_identity (local only)
+tools/site_identity/.venv/
+
