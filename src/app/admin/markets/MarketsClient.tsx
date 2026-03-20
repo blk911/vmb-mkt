@@ -11,6 +11,7 @@ import type {
   EnrichedBeautyZoneMember,
 } from "@/lib/markets";
 import {
+  buildMarketsListPath,
   buildMemberDetailPath,
   type MarketsSortDir as SortDir,
   type MarketsSortKey as SortKey,
@@ -186,22 +187,6 @@ export default function MarketsClient({
     }, {});
   }, [members]);
 
-  const zoneCategoryRollups = useMemo(() => {
-    return members.reduce<Record<string, Record<string, number>>>((acc, member) => {
-      const zoneRollup = (acc[member.zone_id] ??= {});
-      zoneRollup[member.category] = (zoneRollup[member.category] ?? 0) + 1;
-      return acc;
-    }, {});
-  }, [members]);
-
-  const zoneSubtypeRollups = useMemo(() => {
-    return members.reduce<Record<string, Record<string, number>>>((acc, member) => {
-      const zoneRollup = (acc[member.zone_id] ??= {});
-      zoneRollup[member.subtype] = (zoneRollup[member.subtype] ?? 0) + 1;
-      return acc;
-    }, {});
-  }, [members]);
-
   const visibleMembers = useMemo(() => {
     if (filters.zoneId === "ALL") return [];
 
@@ -285,69 +270,30 @@ export default function MarketsClient({
         onChange={setFilters}
       />
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {visibleZones.map((zone) => (
-          <article key={zone.zone_id} className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h2 className="text-base font-semibold text-neutral-900">{zone.zone_name}</h2>
-                <p className="text-sm text-neutral-600">{zone.market}</p>
-              </div>
-              <span className="rounded-full border border-neutral-300 px-2 py-1 text-xs text-neutral-600">
-                {zone.status}
-              </span>
-            </div>
-
-            <div className="mt-4 space-y-1 text-sm text-neutral-700">
-              <div>
-                <span className="font-medium">Radius:</span> {zone.radius_miles} mi
-              </div>
-              {filters.zoneId === "ALL" ? (
-                <>
-                  <div className="mt-3 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2">
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
-                      Total Members
-                    </div>
-                    <div className="mt-1 text-2xl font-semibold text-neutral-900">
-                      {zoneCounts[zone.zone_id] ?? 0}
-                    </div>
-                  </div>
-                  <div className="mt-3">
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
-                      Categories
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {[
-                        { label: "nail", count: zoneCategoryRollups[zone.zone_id]?.nail ?? 0 },
-                        { label: "hair", count: zoneCategoryRollups[zone.zone_id]?.hair ?? 0 },
-                        { label: "spa", count: zoneCategoryRollups[zone.zone_id]?.spa ?? 0 },
-                        { label: "suite", count: zoneSubtypeRollups[zone.zone_id]?.suite ?? 0 },
-                      ].map((item) => {
-                        const muted = item.count === 0;
-                        return (
-                          <span
-                            key={item.label}
-                            className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${
-                              muted
-                                ? "border-neutral-200 bg-neutral-50 text-neutral-400"
-                                : "border-neutral-300 bg-white text-neutral-700"
-                            }`}
-                          >
-                            <span className="font-semibold">{item.count}</span>
-                            <span>{item.label}</span>
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </>
-              ) : null}
-            </div>
-
-            {zone.notes ? <p className="mt-4 text-sm text-neutral-600">{zone.notes}</p> : null}
-          </article>
-        ))}
-      </section>
+      {filters.zoneId === "ALL" ? (
+        <section aria-label="Zone quick links">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">Quick links — select a zone</p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+            {visibleZones.map((zone) => (
+              <Link
+                key={zone.zone_id}
+                href={buildMarketsListPath({ ...marketsUrlState, zoneId: zone.zone_id })}
+                className="block rounded-lg border border-neutral-200 bg-white px-2.5 py-2 shadow-sm transition hover:border-sky-400 hover:bg-sky-50/60"
+              >
+                <div className="line-clamp-2 min-h-[2.25rem] text-[13px] font-semibold leading-snug text-neutral-900">
+                  {zone.zone_name}
+                </div>
+                <div className="mt-1 flex items-baseline gap-1">
+                  <span className="text-lg font-bold tabular-nums leading-none text-neutral-900">
+                    {zoneCounts[zone.zone_id] ?? 0}
+                  </span>
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-500">members</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {filters.zoneId !== "ALL" ? (
         <section className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
