@@ -21,9 +21,16 @@ export const metadata: Metadata = {
   description: "Secure product access for VMB operator workflows.",
 };
 
+/** Public pages still run the root layout; keep session resolution best-effort so a cookies/runtime edge case cannot brick the whole site. */
+export const dynamic = "force-dynamic";
+
 async function getCurrentSessionUser(): Promise<SessionUser> {
-  const cookieStore = await cookies();
-  return getSessionUserFromCookies(cookieStore);
+  try {
+    const cookieStore = await cookies();
+    return await getSessionUserFromCookies(cookieStore);
+  } catch {
+    return null;
+  }
 }
 
 export default async function RootLayout({

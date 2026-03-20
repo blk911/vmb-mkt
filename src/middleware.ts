@@ -19,7 +19,9 @@ function isIgnoredPath(pathname: string) {
     pathname.startsWith("/_next") ||
     pathname.startsWith("/static") ||
     pathname.startsWith("/favicon") ||
-    pathname.startsWith("/images")
+    pathname.startsWith("/images") ||
+    // Public folder assets (do not run auth / session-secret checks on these)
+    /\.(?:png|jpe?g|webp|gif|svg|ico|avif|woff2?|ttf|eot|pdf|txt|map|mp4|webm)$/i.test(pathname)
   );
 }
 
