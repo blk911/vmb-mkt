@@ -31,6 +31,22 @@ Or use a global env with the same `pip install -r tools/site_identity/requiremen
 
 **Storefront + DORA fusion** (optional): requires default data files under repo root — `data/markets/shop_anchor_map.v1.json`, `data/markets/beauty_zone_members.json` — and flag `--dora-enrich` (see Run table). Override paths with `--dora-anchor-map` / `--dora-zone-members`; radius with `--dora-max-meters` (default 75).
 
+### Site Identity Merge (`merge_into_markets.py`)
+
+**Purpose:** Copy **social / booking** fields from a site_identity **`enriched.json`** into **`beauty_zone_members_enriched.json`** without changing the original file, so the Next.js Markets UI can read optional presence fields from a merged dataset.
+
+**Match logic (deterministic, one site_identity row per market row at most):** iterate market members in file order; for each, try in order — **strong:** same `build_normalized_name` full_compare as site row display name (`google_name` → `best_site_name` → `dora_name`) and Haversine distance ≤ 75 m (both sides need lat/lon); **medium:** RapidFuzz token-set ratio ≥ 0.8 on those normalized strings and distance ≤ 75 m; **fallback:** exactly one remaining site_identity row within 30 m. First successful match wins; matched site rows are removed from the pool.
+
+**Output:** `data/markets/beauty_zone_members_enriched_with_presence.json` by default (same top-level shape as input: `{ "members": [...], ... }` or a bare array if the source was an array). Adds `site_identity_matched`, `site_identity_match_type`, `site_identity_match_distance_m` on each member row.
+
+**UI:** Point `loadZoneMembers` / deployment at the **with_presence** file (e.g. rename or symlink to replace `beauty_zone_members_enriched.json`, or adjust the path in your ingest). The schema is unchanged aside from optional new keys.
+
+```bash
+python tools/site_identity/merge_into_markets.py ^
+  --site-identity-input data/output/site_identity_storefront_dora/run_250/enriched.json ^
+  --output data/markets/beauty_zone_members_enriched_with_presence.json
+```
+
 ### Updates (March 2026)
 
 - **Storefront → DORA pre-step:** `--dora-enrich` joins `places_candidates`-style rows to DORA shop names via nearest `beauty_zone_members` (within `--dora-max-meters`) → `shop_anchor_map` by `google_location_id`. Adds `source_name_dora` / match metadata used by clustering and scoring (no redesign of score weights).
@@ -204,3 +220,4 @@ Thresholds (tunable in one place):
 | `tools/site_identity/lib/cluster_resolver.py` | Haversine clustering, canonical name, `derive_cluster_review_status` |
 | `tools/site_identity/lib/row_adapter.py` | Normalize mixed input keys → canonical fields before `process_one` |
 | `tools/site_identity/lib/storefront_dora_enricher.py` | Optional `--dora-enrich`: geo join Places → zone members → shop anchor (DORA shop name) |
+| `tools/site_identity/merge_into_markets.py` | Merge `enriched.json` presence fields into `beauty_zone_members_enriched.json` → `beauty_zone_members_enriched_with_presence.json` |
