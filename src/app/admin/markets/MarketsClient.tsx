@@ -22,6 +22,11 @@ import {
   type MarketsUrlState,
 } from "./_lib/marketsUrlState";
 import {
+  clusterDisplayTitle,
+  computeClusterActiveMetrics,
+  type ClusterActiveMetrics,
+} from "./_lib/marketsClusterActive";
+import {
   compareDefaultSalonSort,
   compareTopTargetRank,
   memberHasActivePresence,
@@ -317,20 +322,34 @@ export default function MarketsClient({
       });
   }, [clusters, filters.zoneId]);
 
-  const clusterPresenceById = useMemo(() => {
-    const map = new Map<string, { instagram_count: number; distinct_booking_providers: string[] }>();
+  const clusterMetricsById = useMemo(() => {
+    const map = new Map<string, ClusterActiveMetrics>();
     for (const cl of selectedZoneClusters) {
       const mems = selectedZoneMembers.filter((m) => m.cluster_id === cl.cluster_id);
-      const instagram_count = mems.filter((m) => m.instagram_url || m.instagram_handle).length;
-      const distinct_booking_providers = [
-        ...new Set(
-          mems.map((m) => m.booking_provider?.trim()).filter((x): x is string => !!x && x.length > 0)
-        ),
-      ].sort((a, b) => a.localeCompare(b));
-      map.set(cl.cluster_id, { instagram_count, distinct_booking_providers });
+      map.set(cl.cluster_id, computeClusterActiveMetrics(cl, mems));
     }
     return map;
   }, [selectedZoneClusters, selectedZoneMembers]);
+
+  const hotClusters = useMemo(() => {
+    return [...selectedZoneClusters]
+      .map((cluster) => ({
+        cluster,
+        metrics: clusterMetricsById.get(cluster.cluster_id)!,
+        mems: selectedZoneMembers.filter((m) => m.cluster_id === cluster.cluster_id),
+      }))
+      .sort((a, b) => {
+        const sc = b.metrics.cluster_active_score - a.metrics.cluster_active_score;
+        if (sc !== 0) return sc;
+        if (b.cluster.member_count !== a.cluster.member_count) return b.cluster.member_count - a.cluster.member_count;
+        const anch = (b.metrics.has_anchor ? 1 : 0) - (a.metrics.has_anchor ? 1 : 0);
+        if (anch !== 0) return anch;
+        const suite = (b.cluster.has_suite ? 1 : 0) - (a.cluster.has_suite ? 1 : 0);
+        if (suite !== 0) return suite;
+        return a.cluster.cluster_rank - b.cluster.cluster_rank;
+      })
+      .slice(0, 5);
+  }, [clusterMetricsById, selectedZoneClusters, selectedZoneMembers]);
 
   const bookingProviderFilterOptions = useMemo(() => {
     const s = new Set<string>();
@@ -520,6 +539,10 @@ export default function MarketsClient({
                 <h3 className="text-sm font-semibold text-neutral-900">Clusters</h3>
                 <p className="text-xs text-neutral-500">
                   {selectedZoneClusters.length} clusters · largest {selectedZoneClusters[0]?.member_count ?? 0} members
+                  {" · "}
+                  <span className="text-neutral-400">
+                    Sorted by size here; use Hot Clusters below for presence-ranked picks.
+                  </span>
                 </p>
               </div>
               <button
@@ -535,64 +558,149 @@ export default function MarketsClient({
             {clustersOpen ? (
               selectedZoneClusters.length ? (
                 <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                  {selectedZoneClusters.map((cluster) => (
-                    <article
-                      key={cluster.cluster_id}
-                      className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-3"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                            Cluster #{cluster.cluster_rank}
+                  {selectedZoneClusters.map((cluster) => {
+                    const met = clusterMetricsById.get(cluster.cluster_id);
+                    return (
+                      <article
+                        key={cluster.cluster_id}
+                        className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-3"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                              Cluster #{cluster.cluster_rank}
+                            </div>
+                            <div className="mt-1 text-lg font-semibold text-neutral-900">
+                              {cluster.member_count} businesses
+                            </div>
+                            {met ? (
+                              <div className="mt-1.5 inline-flex rounded bg-violet-100 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-violet-900">
+                                Active score {met.cluster_active_score}
+                              </div>
+                            ) : null}
                           </div>
-                          <div className="mt-1 text-lg font-semibold text-neutral-900">
-                            {cluster.member_count} businesses
+                          <div className="flex shrink-0 flex-col items-end gap-1">
+                            {met?.has_anchor ? (
+                              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-900">
+                                Anchor
+                              </span>
+                            ) : null}
+                            <span
+                              className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
+                                cluster.has_suite
+                                  ? "bg-neutral-900 text-white"
+                                  : "bg-neutral-200 text-neutral-600"
+                              }`}
+                            >
+                              {cluster.has_suite ? "Has suite" : "No suite"}
+                            </span>
                           </div>
                         </div>
-                        <span
-                          className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
-                            cluster.has_suite
-                              ? "bg-neutral-900 text-white"
-                              : "bg-neutral-200 text-neutral-600"
-                          }`}
-                        >
-                          {cluster.has_suite ? "Has suite" : "No suite"}
-                        </span>
-                      </div>
 
-                      <div className="mt-3 text-sm text-neutral-700">
-                        <div>
-                          <span className="font-medium">Categories:</span>{" "}
-                          {cluster.categories_present.join(", ") || "unknown"}
-                        </div>
-                        <div className="mt-2">
-                          <span className="font-medium">Top members:</span>{" "}
-                          {cluster.top_member_names.join(", ")}
-                        </div>
-                        {(() => {
-                          const pres = clusterPresenceById.get(cluster.cluster_id);
-                          return (
+                        <div className="mt-3 text-sm text-neutral-700">
+                          <div>
+                            <span className="font-medium">Categories:</span>{" "}
+                            {cluster.categories_present.join(", ") || "unknown"}
+                          </div>
+                          <div className="mt-2">
+                            <span className="font-medium">Top members:</span>{" "}
+                            {cluster.top_member_names.join(", ")}
+                          </div>
+                          {met ? (
                             <div className="mt-2 border-t border-neutral-200 pt-2 text-xs text-neutral-600">
                               <span className="font-semibold text-neutral-700">Presence</span> (site identity)
-                              <div className="mt-1">
-                                <span title="Members with Instagram URL or handle">IG count: {pres?.instagram_count ?? 0}</span>
-                                {" · "}
-                                <span title="Distinct booking providers detected on member rows">
-                                  Booking:{" "}
-                                  {pres?.distinct_booking_providers?.length
-                                    ? pres.distinct_booking_providers.map(formatBookingProviderLabel).join(", ")
+                              <div className="mt-1 space-y-0.5">
+                                <div>
+                                  Active members: {met.active_member_count} / {cluster.member_count}
+                                </div>
+                                <div>
+                                  IG count: {met.instagram_member_count} · Booking count: {met.booking_member_count}
+                                </div>
+                                <div>
+                                  Providers:{" "}
+                                  {met.cluster_distinct_booking_providers.length
+                                    ? met.cluster_distinct_booking_providers.map(formatBookingProviderLabel).join(", ")
                                     : "—"}
-                                </span>
+                                </div>
                               </div>
                             </div>
-                          );
-                        })()}
+                          ) : null}
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="mt-3 text-sm text-neutral-600">No clusters detected for this zone.</p>
+              )
+            ) : null}
+          </div>
+
+          <div className="border-b border-neutral-200 px-4 py-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold text-neutral-900">Hot Clusters</h3>
+                <p className="text-xs text-neutral-500">
+                  Top clusters by active presence and density — full cluster list above stays size-sorted
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setHotClustersOpen((o) => !o)}
+                aria-expanded={hotClustersOpen}
+                className="shrink-0 rounded-full border border-neutral-300 bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-800 transition hover:bg-neutral-50"
+              >
+                {hotClustersOpen ? "CLOSE" : "OPEN"}
+              </button>
+            </div>
+
+            {hotClustersOpen ? (
+              hotClusters.length ? (
+                <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                  {hotClusters.map(({ cluster, metrics: met, mems }, index) => (
+                    <article
+                      key={cluster.cluster_id}
+                      className="rounded-xl border border-violet-200 bg-violet-50/40 px-3 py-3"
+                    >
+                      <div className="text-xs font-semibold uppercase tracking-wide text-violet-700">
+                        Hot #{index + 1}
+                      </div>
+                      <div className="mt-1 line-clamp-2 text-sm font-semibold text-neutral-900" title={clusterDisplayTitle(cluster, mems)}>
+                        {clusterDisplayTitle(cluster, mems)}
+                      </div>
+                      <div className="mt-1 text-[11px] text-neutral-600">
+                        {cluster.member_count} businesses · Active {met.active_member_count}/{cluster.member_count}
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        <span className="inline-flex rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-violet-900">
+                          Score {met.cluster_active_score}
+                        </span>
+                        {met.has_anchor ? (
+                          <span className="inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-900">
+                            Anchor
+                          </span>
+                        ) : null}
+                        {cluster.has_suite ? (
+                          <span className="inline-flex rounded-full bg-neutral-800 px-2 py-0.5 text-[10px] font-semibold text-white">
+                            Suite
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="mt-2 text-[11px] text-neutral-600">
+                        IG {met.instagram_member_count} · Booking {met.booking_member_count}
+                        {met.cluster_distinct_booking_providers.length ? (
+                          <span className="mt-1 block text-neutral-700">
+                            {met.cluster_distinct_booking_providers.map(formatBookingProviderLabel).join(", ")}
+                          </span>
+                        ) : (
+                          <span className="mt-1 block text-neutral-500">No providers</span>
+                        )}
                       </div>
                     </article>
                   ))}
                 </div>
               ) : (
-                <p className="mt-3 text-sm text-neutral-600">No clusters detected for this zone.</p>
+                <p className="mt-3 text-sm text-neutral-600">No clusters in this zone.</p>
               )
             ) : null}
           </div>
