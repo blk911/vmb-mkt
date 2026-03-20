@@ -183,6 +183,12 @@ function haversineMiles(lat1: number, lon1: number, lat2: number, lon2: number):
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
+/** Resolve a single enriched zone member by stable `location_id` (for detail routes). */
+export function getEnrichedMemberByLocationId(locationId: string): EnrichedBeautyZoneMember | null {
+  const { members } = getZoneMembersWithClusters();
+  return members.find((m) => m.location_id === locationId) ?? null;
+}
+
 export function getZoneMembersWithClusters(): {
   members: EnrichedBeautyZoneMember[];
   clusters: BeautyZoneCluster[];

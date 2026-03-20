@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import MarketZoneFilters from "@/components/admin/MarketZoneFilters";
 import type {
@@ -10,7 +11,16 @@ import type {
   EnrichedBeautyZoneMember,
 } from "@/lib/markets";
 
-type SortKey = "upgraded_priority_score" | "name" | "category";
+type SortKey =
+  | "upgraded_priority_score"
+  | "name"
+  | "category"
+  | "subtype"
+  | "address"
+  | "dora_density"
+  | "profession_mix"
+  | "is_anchor";
+type SortDir = "asc" | "desc";
 
 const CATEGORY_FILTERS = ["All", "Hair", "Nail", "Esthe", "Barber", "Spa", "Beauty"] as const;
 const SUBTYPE_FILTERS = ["All", "Storefront", "Suite"] as const;
@@ -38,6 +48,94 @@ function densityBadgeClass(total: number) {
   return "bg-neutral-100 text-neutral-600";
 }
 
+function memberAddressLine(member: EnrichedBeautyZoneMember) {
+  return [member.address, member.city, member.state, member.zip].filter(Boolean).join(", ");
+}
+
+function professionMixTotal(member: EnrichedBeautyZoneMember) {
+  return (
+    (member.nearby_dora_hair_count ?? 0) +
+    (member.nearby_dora_nail_count ?? 0) +
+    (member.nearby_dora_esthe_count ?? 0) +
+    (member.nearby_dora_barber_count ?? 0) +
+    (member.nearby_dora_spa_count ?? 0)
+  );
+}
+
+function defaultSortDir(key: SortKey): SortDir {
+  switch (key) {
+    case "upgraded_priority_score":
+    case "dora_density":
+    case "profession_mix":
+    case "is_anchor":
+      return "desc";
+    default:
+      return "asc";
+  }
+}
+
+function compareMembers(a: EnrichedBeautyZoneMember, b: EnrichedBeautyZoneMember, sortKey: SortKey, sortDir: SortDir): number {
+  const s = sortDir === "asc" ? 1 : -1;
+  let cmp = 0;
+
+  if (sortKey === "upgraded_priority_score") {
+    cmp = a.upgraded_priority_score - b.upgraded_priority_score;
+  } else if (sortKey === "name") {
+    cmp = a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+  } else if (sortKey === "category") {
+    cmp = a.category.localeCompare(b.category);
+  } else if (sortKey === "subtype") {
+    cmp = a.subtype.localeCompare(b.subtype);
+  } else if (sortKey === "address") {
+    cmp = memberAddressLine(a).localeCompare(memberAddressLine(b));
+  } else if (sortKey === "dora_density") {
+    cmp = (a.nearby_dora_licenses_total ?? 0) - (b.nearby_dora_licenses_total ?? 0);
+  } else if (sortKey === "profession_mix") {
+    cmp = professionMixTotal(a) - professionMixTotal(b);
+  } else if (sortKey === "is_anchor") {
+    cmp = (a.is_anchor ? 1 : 0) - (b.is_anchor ? 1 : 0);
+  }
+
+  if (cmp !== 0) return cmp * s;
+  return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+}
+
+function SortTh({
+  column,
+  label,
+  sortKey,
+  sortDir,
+  onSort,
+}: {
+  column: SortKey;
+  label: string;
+  sortKey: SortKey;
+  sortDir: SortDir;
+  onSort: (c: SortKey) => void;
+}) {
+  const active = sortKey === column;
+  return (
+    <th
+      className="px-4 py-3 font-medium"
+      aria-sort={active ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
+    >
+      <button
+        type="button"
+        onClick={() => onSort(column)}
+        className="inline-flex max-w-full items-center gap-1 text-left uppercase tracking-wide text-neutral-600 transition hover:text-neutral-900"
+        title={`Sort by ${label} (click to reverse)`}
+      >
+        <span className="min-w-0 break-words">{label}</span>
+        {active ? (
+          <span aria-hidden className="shrink-0 tabular-nums text-neutral-900">
+            {sortDir === "asc" ? "↑" : "↓"}
+          </span>
+        ) : null}
+      </button>
+    </th>
+  );
+}
+
 type Props = {
   regions: BeautyRegion[];
   zones: BeautyZone[];
@@ -54,6 +152,7 @@ export default function MarketsClient({ regions, zones, members, clusters, appro
   const [categoryFilter, setCategoryFilter] = useState<(typeof CATEGORY_FILTERS)[number]>("All");
   const [subtypeFilter, setSubtypeFilter] = useState<(typeof SUBTYPE_FILTERS)[number]>("All");
   const [sortKey, setSortKey] = useState<SortKey>("upgraded_priority_score");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   const visibleZones = useMemo(() => {
     return zones.filter((zone) => {
@@ -96,22 +195,8 @@ export default function MarketsClient({ regions, zones, members, clusters, appro
         if (subtypeFilter !== "All" && member.subtype !== subtypeFilter.toLowerCase()) return false;
         return true;
       })
-      .sort((a, b) => {
-        if (sortKey === "upgraded_priority_score") {
-          if (b.upgraded_priority_score !== a.upgraded_priority_score) {
-            return b.upgraded_priority_score - a.upgraded_priority_score;
-          }
-          return a.name.localeCompare(b.name);
-        }
-        if (sortKey === "name") return a.name.localeCompare(b.name);
-        if (sortKey === "category") {
-          const categoryCompare = a.category.localeCompare(b.category);
-          if (categoryCompare !== 0) return categoryCompare;
-          return a.name.localeCompare(b.name);
-        }
-        return 0;
-      });
-  }, [categoryFilter, filters.zoneId, members, sortKey, subtypeFilter]);
+      .sort((a, b) => compareMembers(a, b, sortKey, sortDir));
+  }, [categoryFilter, filters.zoneId, members, sortDir, sortKey, subtypeFilter]);
 
   const selectedZoneMembers = useMemo(() => {
     if (filters.zoneId === "ALL") return [];
@@ -160,6 +245,15 @@ export default function MarketsClient({ regions, zones, members, clusters, appro
       })
       .slice(0, 5);
   }, [selectedZoneMembers]);
+
+  function toggleColumnSort(column: SortKey) {
+    if (sortKey === column) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(column);
+      setSortDir(defaultSortDir(column));
+    }
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -298,22 +392,10 @@ export default function MarketsClient({ regions, zones, members, clusters, appro
                   ))}
                 </select>
               </label>
-
-              <label className="min-w-[180px] flex-1">
-                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                  Sort
-                </span>
-                <select
-                  value={sortKey}
-                  onChange={(e) => setSortKey(e.target.value as SortKey)}
-                  className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-500"
-                >
-                  <option value="upgraded_priority_score">Priority Score</option>
-                  <option value="name">Name</option>
-                  <option value="category">Category</option>
-                </select>
-              </label>
             </div>
+            <p className="mt-3 text-xs text-neutral-500">
+              Sort the table by clicking column headers (↑ / ↓). Default: Priority Score, highest first.
+            </p>
           </div>
 
           <div className="border-b border-neutral-200 px-4 py-4">
@@ -389,7 +471,14 @@ export default function MarketsClient({ regions, zones, members, clusters, appro
                     <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
                       Rank #{index + 1}
                     </div>
-                    <div className="mt-1 text-sm font-semibold text-neutral-900">{member.name}</div>
+                    <div className="mt-1 text-sm font-semibold text-neutral-900">
+                      <Link
+                        href={`/admin/markets/member/${encodeURIComponent(member.location_id)}`}
+                        className="text-sky-700 underline-offset-2 hover:underline"
+                      >
+                        {member.name}
+                      </Link>
+                    </div>
                     <div className="mt-1 text-xs text-neutral-600">
                       {member.category} · {member.subtype}
                     </div>
@@ -420,20 +509,75 @@ export default function MarketsClient({ regions, zones, members, clusters, appro
               <table className="min-w-full divide-y divide-neutral-200 text-sm">
                 <thead className="bg-neutral-50">
                   <tr className="text-left text-neutral-600">
-                    <th className="px-4 py-3 font-medium">Name</th>
-                    <th className="px-4 py-3 font-medium">Category</th>
-                    <th className="px-4 py-3 font-medium">Subtype</th>
-                    <th className="px-4 py-3 font-medium">Address</th>
-                    <th className="px-4 py-3 font-medium">DORA Density</th>
-                    <th className="px-4 py-3 font-medium">Profession Mix</th>
-                    <th className="px-4 py-3 font-medium">Priority Score</th>
-                    <th className="px-4 py-3 font-medium">Is Anchor</th>
+                    <SortTh
+                      column="name"
+                      label="Name"
+                      sortKey={sortKey}
+                      sortDir={sortDir}
+                      onSort={toggleColumnSort}
+                    />
+                    <SortTh
+                      column="category"
+                      label="Category"
+                      sortKey={sortKey}
+                      sortDir={sortDir}
+                      onSort={toggleColumnSort}
+                    />
+                    <SortTh
+                      column="subtype"
+                      label="Subtype"
+                      sortKey={sortKey}
+                      sortDir={sortDir}
+                      onSort={toggleColumnSort}
+                    />
+                    <SortTh
+                      column="address"
+                      label="Address"
+                      sortKey={sortKey}
+                      sortDir={sortDir}
+                      onSort={toggleColumnSort}
+                    />
+                    <SortTh
+                      column="dora_density"
+                      label="DORA Density"
+                      sortKey={sortKey}
+                      sortDir={sortDir}
+                      onSort={toggleColumnSort}
+                    />
+                    <SortTh
+                      column="profession_mix"
+                      label="Profession Mix"
+                      sortKey={sortKey}
+                      sortDir={sortDir}
+                      onSort={toggleColumnSort}
+                    />
+                    <SortTh
+                      column="upgraded_priority_score"
+                      label="Priority Score"
+                      sortKey={sortKey}
+                      sortDir={sortDir}
+                      onSort={toggleColumnSort}
+                    />
+                    <SortTh
+                      column="is_anchor"
+                      label="Is Anchor"
+                      sortKey={sortKey}
+                      sortDir={sortDir}
+                      onSort={toggleColumnSort}
+                    />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-200">
                   {visibleMembers.map((member) => (
                     <tr key={member.location_id} className="align-top text-neutral-800">
-                      <td className="px-4 py-3 font-medium">{member.name}</td>
+                      <td className="px-4 py-3 font-medium">
+                        <Link
+                          href={`/admin/markets/member/${encodeURIComponent(member.location_id)}`}
+                          className="text-sky-700 underline-offset-2 hover:underline"
+                        >
+                          {member.name}
+                        </Link>
+                      </td>
                       <td className="px-4 py-3">{member.category}</td>
                       <td className="px-4 py-3">{member.subtype}</td>
                       <td className="px-4 py-3">
