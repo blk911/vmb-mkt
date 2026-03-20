@@ -162,6 +162,8 @@ export default function MarketsClient({
   const [sortDir, setSortDir] = useState<SortDir>(initialUrlState.sortDir);
   /** Clusters: OPEN/CLOSE toggle. Loads collapsed; control reads OPEN until expanded. */
   const [clustersOpen, setClustersOpen] = useState(false);
+  /** Top Targets: same — collapsed on load. */
+  const [topTargetsOpen, setTopTargetsOpen] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -479,54 +481,64 @@ export default function MarketsClient({
           </div>
 
           <div className="border-b border-neutral-200 px-4 py-4">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h3 className="text-sm font-semibold text-neutral-900">Top Targets</h3>
                 <p className="text-xs text-neutral-500">Top 5 businesses after upgraded scoring</p>
               </div>
+              <button
+                type="button"
+                onClick={() => setTopTargetsOpen((o) => !o)}
+                aria-expanded={topTargetsOpen}
+                className="shrink-0 rounded-full border border-neutral-300 bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-800 transition hover:bg-neutral-50"
+              >
+                {topTargetsOpen ? "CLOSE" : "OPEN"}
+              </button>
             </div>
 
-            {topTargets.length ? (
-              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-                {topTargets.map((member, index) => (
-                  <article
-                    key={member.location_id}
-                    className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-3"
-                  >
-                    <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                      Rank #{index + 1}
-                    </div>
-                    <div className="mt-1 text-sm font-semibold text-neutral-900">
-                      <Link
-                        href={buildMemberDetailPath(member.location_id, marketsUrlState)}
-                        className="text-sky-700 underline-offset-2 hover:underline"
-                      >
-                        {member.name}
-                      </Link>
-                    </div>
-                    <div className="mt-1 text-xs text-neutral-600">
-                      {member.category} · {member.subtype}
-                    </div>
-                    <div className="mt-3 flex items-center gap-2">
-                      <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">
-                        {member.upgraded_priority_score} pts
-                      </span>
-                      <span
-                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
-                          member.is_anchor
-                            ? "bg-neutral-900 text-white"
-                            : "bg-neutral-100 text-neutral-500"
-                        }`}
-                      >
-                        {member.is_anchor ? "Anchor" : "Standard"}
-                      </span>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <p className="mt-3 text-sm text-neutral-600">No top targets available for this zone.</p>
-            )}
+            {topTargetsOpen ? (
+              topTargets.length ? (
+                <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                  {topTargets.map((member, index) => (
+                    <article
+                      key={member.location_id}
+                      className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-3"
+                    >
+                      <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                        Rank #{index + 1}
+                      </div>
+                      <div className="mt-1 text-sm font-semibold text-neutral-900">
+                        <Link
+                          href={buildMemberDetailPath(member.location_id, marketsUrlState)}
+                          className="text-sky-700 underline-offset-2 hover:underline"
+                        >
+                          {member.name}
+                        </Link>
+                      </div>
+                      <div className="mt-1 text-xs text-neutral-600">
+                        {member.category} · {member.subtype}
+                      </div>
+                      <div className="mt-3 flex items-center gap-2">
+                        <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">
+                          {member.upgraded_priority_score} pts
+                        </span>
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                            member.is_anchor
+                              ? "bg-neutral-900 text-white"
+                              : "bg-neutral-100 text-neutral-500"
+                          }`}
+                        >
+                          {member.is_anchor ? "Anchor" : "Standard"}
+                        </span>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-3 text-sm text-neutral-600">No top targets available for this zone.</p>
+              )
+            ) : null}
           </div>
 
           {visibleMembers.length ? (
