@@ -3,8 +3,9 @@
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const WARNING_AFTER_MS = 2 * 60 * 1000;
-const LOGOUT_AFTER_MS = 3 * 60 * 1000;
+/** Idle inactivity: warn in the last minute, then log out (total idle = 10 min). */
+const WARNING_AFTER_MS = 9 * 60 * 1000;
+const LOGOUT_AFTER_MS = 10 * 60 * 1000;
 const HEARTBEAT_MIN_GAP_MS = 30 * 1000;
 
 function isProtectedPath(pathname: string) {

@@ -1,7 +1,8 @@
 import type { Role } from "@/lib/auth/access";
 
 export const SESSION_COOKIE = "vmb_admin_session";
-export const SESSION_TTL_SECONDS = 60 * 60 * 8;
+/** Session cookie + JWT lifetime (refreshed by heartbeat on activity). */
+export const SESSION_TTL_SECONDS = 60 * 10;
 
 type SessionPayload = {
   u: string;
