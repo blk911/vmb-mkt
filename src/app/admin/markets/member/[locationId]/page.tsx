@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getEnrichedMemberByLocationId, getMarketById } from "@/lib/markets";
+import { buildMarketsListPath, parseMarketsUrlSearchParams } from "../../_lib/marketsUrlState";
+import { getEnrichedMemberByLocationId, getMarketById, getMarkets, getRegions } from "@/lib/markets";
 
 type PageProps = {
   params: Promise<{ locationId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -31,11 +33,16 @@ function formatProfessionMixRow(member: {
   ];
 }
 
-export default async function MarketMemberListingPage({ params }: PageProps) {
+export default async function MarketMemberListingPage({ params, searchParams }: PageProps) {
   const { locationId: raw } = await params;
   const locationId = decodeURIComponent(raw || "");
   const member = getEnrichedMemberByLocationId(locationId);
   if (!member) notFound();
+
+  const rawSp = await searchParams;
+  const zones = getMarkets();
+  const regions = getRegions();
+  const backHref = buildMarketsListPath(parseMarketsUrlSearchParams(rawSp, zones, regions));
 
   const zone = getMarketById(member.zone_id);
   const addressLine = [member.address, member.city, member.state, member.zip].filter(Boolean).join(", ");
@@ -61,7 +68,7 @@ export default async function MarketMemberListingPage({ params }: PageProps) {
       <div className="mx-auto max-w-3xl space-y-6">
         <div>
           <Link
-            href="/admin/markets"
+            href={backHref}
             className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-100"
           >
             ← Back to Markets
@@ -309,7 +316,7 @@ export default async function MarketMemberListingPage({ params }: PageProps) {
 
         <div className="pb-8">
           <Link
-            href="/admin/markets"
+            href={backHref}
             className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-800 transition hover:bg-neutral-100"
           >
             ← Back to Markets

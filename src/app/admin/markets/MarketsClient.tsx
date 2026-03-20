@@ -10,17 +10,12 @@ import type {
   BeautyZoneCluster,
   EnrichedBeautyZoneMember,
 } from "@/lib/markets";
-
-type SortKey =
-  | "upgraded_priority_score"
-  | "name"
-  | "category"
-  | "subtype"
-  | "address"
-  | "dora_density"
-  | "profession_mix"
-  | "is_anchor";
-type SortDir = "asc" | "desc";
+import {
+  buildMemberDetailPath,
+  type MarketsSortDir as SortDir,
+  type MarketsSortKey as SortKey,
+  type MarketsUrlState,
+} from "./_lib/marketsUrlState";
 
 const CATEGORY_FILTERS = ["All", "Hair", "Nail", "Esthe", "Barber", "Spa", "Beauty"] as const;
 const SUBTYPE_FILTERS = ["All", "Storefront", "Suite"] as const;
@@ -142,19 +137,39 @@ type Props = {
   members: EnrichedBeautyZoneMember[];
   clusters: BeautyZoneCluster[];
   approvedLiveUnits: ApprovedLiveUnit[];
+  initialUrlState: MarketsUrlState;
 };
 
-export default function MarketsClient({ regions, zones, members, clusters, approvedLiveUnits }: Props) {
+export default function MarketsClient({
+  regions,
+  zones,
+  members,
+  clusters,
+  approvedLiveUnits,
+  initialUrlState,
+}: Props) {
   const [filters, setFilters] = useState({
-    regionId: "DEN",
-    zoneId: "ALL",
+    regionId: initialUrlState.regionId,
+    zoneId: initialUrlState.zoneId,
   });
-  const [categoryFilter, setCategoryFilter] = useState<(typeof CATEGORY_FILTERS)[number]>("All");
-  const [subtypeFilter, setSubtypeFilter] = useState<(typeof SUBTYPE_FILTERS)[number]>("All");
-  const [sortKey, setSortKey] = useState<SortKey>("upgraded_priority_score");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
-  /** Clusters: OPEN/CLOSE toggle. Loads open so the control reads CLOSE (collapse to hide). */
-  const [clustersOpen, setClustersOpen] = useState(true);
+  const [categoryFilter, setCategoryFilter] = useState<(typeof CATEGORY_FILTERS)[number]>(initialUrlState.category);
+  const [subtypeFilter, setSubtypeFilter] = useState<(typeof SUBTYPE_FILTERS)[number]>(initialUrlState.subtype);
+  const [sortKey, setSortKey] = useState<SortKey>(initialUrlState.sort);
+  const [sortDir, setSortDir] = useState<SortDir>(initialUrlState.sortDir);
+  /** Clusters: OPEN/CLOSE toggle. Loads collapsed; control reads OPEN until expanded. */
+  const [clustersOpen, setClustersOpen] = useState(false);
+
+  const marketsUrlState = useMemo(
+    (): MarketsUrlState => ({
+      regionId: filters.regionId,
+      zoneId: filters.zoneId,
+      category: categoryFilter,
+      subtype: subtypeFilter,
+      sort: sortKey,
+      sortDir,
+    }),
+    [filters.regionId, filters.zoneId, categoryFilter, subtypeFilter, sortKey, sortDir]
+  );
 
   const visibleZones = useMemo(() => {
     return zones.filter((zone) => {
@@ -262,10 +277,11 @@ export default function MarketsClient({ regions, zones, members, clusters, appro
       <h1 className="text-xl font-semibold">Markets</h1>
 
       <MarketZoneFilters
+        key={`${filters.regionId}-${filters.zoneId}`}
         regions={regions}
         zones={zones}
-        initialRegionId="DEN"
-        initialZoneId="ALL"
+        initialRegionId={filters.regionId}
+        initialZoneId={filters.zoneId}
         onChange={setFilters}
       />
 
@@ -485,7 +501,7 @@ export default function MarketsClient({ regions, zones, members, clusters, appro
                     </div>
                     <div className="mt-1 text-sm font-semibold text-neutral-900">
                       <Link
-                        href={`/admin/markets/member/${encodeURIComponent(member.location_id)}`}
+                        href={buildMemberDetailPath(member.location_id, marketsUrlState)}
                         className="text-sky-700 underline-offset-2 hover:underline"
                       >
                         {member.name}
@@ -584,7 +600,7 @@ export default function MarketsClient({ regions, zones, members, clusters, appro
                     <tr key={member.location_id} className="align-top text-neutral-800">
                       <td className="px-4 py-3 font-medium">
                         <Link
-                          href={`/admin/markets/member/${encodeURIComponent(member.location_id)}`}
+                          href={buildMemberDetailPath(member.location_id, marketsUrlState)}
                           className="text-sky-700 underline-offset-2 hover:underline"
                         >
                           {member.name}
