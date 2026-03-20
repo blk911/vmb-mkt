@@ -90,3 +90,11 @@ NAME_NOISE_WORDS: frozenset[str] = frozenset(
         "dba",
     }
 )
+
+# --- Cluster resolution & review UI mapping ---
+DEFAULT_CLUSTER_THRESHOLD_METERS = 75.0
+CLUSTER_CONFIDENCE_HIGH_MIN = 0.85
+CLUSTER_CONFIDENCE_MEDIUM_MIN = 0.65
+CLUSTER_REQUIRES_MULTI_SIGNAL_FOR_HIGH = True
+# token_set_ratio (0-100) — names at or above this are treated as the same identity (harmless variants)
+CLUSTER_NAME_TOKEN_AGREE_MIN = 88

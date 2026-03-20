@@ -18,6 +18,29 @@ pip install -r requirements.txt
 
 Or use a global env with the same `pip install -r tools/site_identity/requirements.txt`.
 
+### Input row adapter (`lib/row_adapter.py`)
+
+Real VMB / DORA / Google exports use inconsistent column names. **`adapt_input_rows`** runs immediately after load (and after `--limit`): it **merges** each raw dict with **canonical** fields so the rest of the pipeline only reads one shape. **Original keys are kept** on the row; canonical values are **overlaid** using **first non-empty wins** in a fixed alias order. Rows are tagged with **`_adapter_applied: true`**. No large duplicate blobs.
+
+**Canonical schema (targets):** `id`, `source_name_google`, `source_name_dora`, `source_name_internal`, `website_url`, `phone`, `address`, `city`, `state`, `zip`, `lat`, `lon`.
+
+**Aliases (same order as in code):**
+
+| Target | Aliases |
+|--------|---------|
+| `id` | `id`, `place_id`, `facility_id`, `license_id`, `row_id` |
+| `source_name_google` | `source_name_google`, `google_name`, `google_business_name`, `business_name_google` |
+| `source_name_dora` | `source_name_dora`, `dora_name`, `facility_name`, `legal_name`, `business_name_dora` |
+| `source_name_internal` | `source_name_internal`, `internal_name`, `business_name`, `name` |
+| `website_url` | `website_url`, `website`, `url`, `domain_url` |
+| `phone` | `phone`, `phone_number`, `formatted_phone`, `business_phone` |
+| `address` | `address`, `street_address`, `address_line_1`, `full_address` |
+| `city` | `city` |
+| `state` | `state` |
+| `zip` | `zip`, `zipcode`, `postal_code` |
+| `lat` | `lat`, `latitude` |
+| `lon` | `lon`, `lng`, `longitude` |
+
 ## Run
 
 ```bash
@@ -32,15 +55,54 @@ Flags:
 
 | Flag | Meaning |
 |------|---------|
-| `--input` | JSON array or JSONL; or `{ "rows": [...] }` |
-| `--output-dir` | Writes `enriched.json`, `review.csv`, `exceptions.json`, `exceptions.csv` |
+| `--input` | JSON array, JSONL, `{ "rows": [...] }`, or `{ "members": [...] }` (e.g. zone members export). `beauty_live_units.v1.json`-style rows with `raw_snippets` are auto-flattened in `cli.py` before `row_adapter`. |
+| `--output-dir` | Main outputs, reviewer exception CSVs, `run_summary.json` / `run_summary.txt` (see below) |
 | `--limit` | Process only first N rows (`0` = all) |
 | `--timeout` | Per-request HTTP timeout (seconds) |
 | `--max-pages` | Pages per domain (default 8) |
 | `-v` | Verbose logging |
 | `--insecure` | Skip TLS verification (use only if Python has no CA bundle / dev machines) |
+| `--cluster-threshold-meters` | Max Haversine distance (m) to group rows with valid lat/lon into one cluster (`config.DEFAULT_CLUSTER_THRESHOLD_METERS`) |
 
 On Windows/macOS, if HTTPS fails with `CERTIFICATE_VERIFY_FAILED`, install certs or run once with `--insecure` to confirm the pipeline.
+
+### Physical clustering & cluster review status
+
+Rows with valid **lat/lon** are grouped by distance (`cluster_rows_by_distance`). Outputs include **`cluster_summary.json`** / **`cluster_summary.csv`** plus per-row cluster columns on **`enriched.json`** / **`review.csv`**.
+
+**Signal families (count = `cluster_signal_count`, max 4):** a cluster has **google** if any member has `google_name`; **dora** if any has `dora_name`; **website** if any has `best_site_name`; **internal** if any has `internal_name`. Booleans: `cluster_has_google_signal`, `cluster_has_dora_signal`, `cluster_has_website_signal`, `cluster_has_internal_signal`.
+
+**`cluster_review_status`** (UI mapping, one of):
+
+| Value | Meaning |
+|-------|---------|
+| `confirmed` | `cluster_resolution_score` ≥ `CLUSTER_CONFIDENCE_HIGH_MIN` (0.85), and if `CLUSTER_REQUIRES_MULTI_SIGNAL_FOR_HIGH` then at least **two** distinct signal families; `cluster_name_conflict_flag` is false |
+| `likely` | Score ≥ `CLUSTER_CONFIDENCE_MEDIUM_MIN` (0.65) but not enough for `confirmed` (e.g. only one signal when multi-signal required for high tier) |
+| `review` | Conflicting source names, weak score, or `cluster_name_conflict_flag` |
+| `unresolved` | No usable resolved cluster name or no identity signals |
+
+**`cluster_name_conflict_flag`:** set when two non-empty names (same or different family) look like **different identities** after normalization — pairwise `token_set_ratio` on reduced compare forms must be ≥ `CLUSTER_NAME_TOKEN_AGREE_MIN` (default 88) to count as agreement. Harmless variants (e.g. “Paris Nails” vs “Paris Nails & Spa”) usually share a high ratio after noise-word reduction.
+
+Rows **without** coordinates are not clustered; cluster id and review fields stay empty / false / zero as applicable.
+
+### Reviewer exception CSVs
+
+Deterministic splits for triage (fixed columns in `cli.py` — `EXCEPTION_REVIEW_COLUMNS`). Rows are sorted by `id`, then `cluster_id`.
+
+| File | Purpose |
+|------|---------|
+| `exceptions_missing_coords.csv` | Rows where **`extract_point`** returns no valid lat/lon (missing, non-numeric, or out of range). Same rule as clustering eligibility. |
+| `exceptions_unresolved.csv` | Rows matching **any** of: `cluster_review_status == unresolved`; `match_label == no_match`; **no** `best_site_name` and **no** non-empty `google_name` / `dora_name` / `internal_name`; **or** empty `cluster_id` and **weak identity evidence** (`match_label` weak/ambiguous/no_match, or `total_score` &lt; `THRESHOLD_PROBABLE`, or no site name and no strong source names). |
+| `exceptions_fetch_issues.csv` | Rows with `fetch_status` other than `ok`, **or** non-empty `fetch_error`, **or** `domain` on a small reserved/placeholder list (`example.com` / `example.org` / `example.net` and `*.example.com` / `*.example.org`), **or** notes indicating no URL / skipped fetch. No aggressive parked-domain detection. |
+| `isolated_clusters_review.csv` | **Cluster-level** (one row per cluster): `member_count == 1` and `cluster_review_status` in `review` \| `unresolved`. `notes` holds `cluster_top_evidence` text. |
+
+**Exceptions** (legacy) = rows where `match_label` is `ambiguous` or `no_match` → still written to `exceptions.json` / `exceptions.csv`.
+
+### Run summary (`run_summary.json` / `run_summary.txt`)
+
+After each run, **`run_summary.json`** records batch QA metrics (sorted keys) so you can assess a job without opening every CSV. **`run_summary.txt`** repeats the same figures in a fixed line order.
+
+Includes at least: `input_row_count`, `processed_row_count`, `rows_with_valid_coords` / `rows_missing_coords` (via `extract_point`), `rows_fetch_ok` / `rows_fetch_failed` (non-`ok` status or any `fetch_error`), `rows_with_best_site_name`, `match_label_counts`, `cluster_count`, `cluster_size_distribution` (member count → number of clusters), `cluster_review_status_counts` (**from `cluster_summary` rows**), `unresolved_row_count` (row `cluster_review_status == unresolved` **or** `match_label == no_match`), `unresolved_cluster_count`, plus optional signal counts, `exception_file_counts`, `isolated_cluster_review_count`, and `exception_files` (names). The CLI prints a short block to stdout with the same high-level numbers.
 
 ## Input schema (flexible keys)
 
@@ -55,7 +117,7 @@ Each row may include:
 | Website | `website_url`, `url` |
 | `phone` | |
 | Address | `address` or built from `city`, `state`, `zip` |
-| `lat`, `lon` | Reserved for future scoring |
+| `lat`, `lon` (or `latitude` / `longitude` / `lng`) | Used for clustering; echoed on enriched output |
 
 Missing fields are OK.
 
@@ -68,6 +130,7 @@ Missing fields are OK.
 - `total_score`, `score_name_similarity`, `score_address_bonus`, `score_phone_bonus`
 - `evidence_summary`, `extracted_*`, `extracted_name_candidates` (with provenance)
 - `fetch_status`, `fetch_error`, `notes`
+- Cluster: `cluster_id`, `cluster_member_count`, `cluster_centroid_lat`, `cluster_centroid_lon`, `cluster_resolved_name`, `cluster_resolution_confidence`, `cluster_review_status`, `cluster_signal_count`, `cluster_name_conflict_flag`, `cluster_has_google_signal`, `cluster_has_dora_signal`, `cluster_has_website_signal`, `cluster_has_internal_signal`, plus `lat` / `lon`
 
 **Exceptions** = rows where `match_label` is `ambiguous` or `no_match`.
 
@@ -101,4 +164,6 @@ Thresholds (tunable in one place):
 | `tools/site_identity/lib/extract_identity.py` | HTML → signals + name candidates |
 | `tools/site_identity/lib/normalize_name.py` | Normalization |
 | `tools/site_identity/lib/score_match.py` | Resolution + evidence |
-| `tools/site_identity/lib/output_writer.py` | JSON/CSV |
+| `tools/site_identity/lib/output_writer.py` | JSON/CSV + `write_csv_with_columns` + `build_run_summary` |
+| `tools/site_identity/lib/cluster_resolver.py` | Haversine clustering, canonical name, `derive_cluster_review_status` |
+| `tools/site_identity/lib/row_adapter.py` | Normalize mixed input keys → canonical fields before `process_one` |
