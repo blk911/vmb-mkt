@@ -57,6 +57,32 @@ export type BeautyZoneMember = {
   nearby_dora_profession_mix_raw?: Record<string, number>;
   dora_density_radius_miles?: number;
   dora_density_profile?: string;
+  /** Miles: DORA addresses at this distance from listing GPS (same order as density ring). */
+  nearby_dora_instore_threshold_miles?: number;
+  /** DORA registered addresses within density radius, closest first. */
+  nearby_dora_addresses_ranked?: Array<{
+    addressKey: string;
+    distance_miles: number;
+    license_count: number;
+    hair: number;
+    nail: number;
+    esthe: number;
+    barber: number;
+    spa: number;
+  }>;
+  /** Individual roster rows within radius, sorted by distance (capped in enrich script). */
+  nearby_dora_licenses_ranked?: Array<{
+    fullName: string;
+    licenseType: string;
+    licenseStatus: string;
+    rowId: string;
+    addressKey: string;
+    distance_miles: number;
+  }>;
+  /** Count of license rows at DORA addresses within `nearby_dora_instore_threshold_miles` of listing GPS. */
+  nearby_dora_instore_likely_count?: number;
+  /** Remaining license rows in the density ring (further than instore threshold). */
+  nearby_dora_ring_count?: number;
 };
 
 export type BeautyZoneCluster = {

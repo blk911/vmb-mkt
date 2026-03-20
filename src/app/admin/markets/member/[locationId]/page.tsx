@@ -42,6 +42,15 @@ export default async function MarketMemberListingPage({ params }: PageProps) {
   const professionRows = formatProfessionMixRow(member);
   const rawMixEntries = Object.entries(member.nearby_dora_profession_mix_raw ?? {}).sort((a, b) => b[1] - a[1]);
   const operational = member.nearby_dora_operational_mix;
+  const instoreThreshold = member.nearby_dora_instore_threshold_miles ?? 0.02;
+  const rankedLicenses = member.nearby_dora_licenses_ranked ?? [];
+  const rankedAddresses = member.nearby_dora_addresses_ranked ?? [];
+  const hasDistanceDetail = rankedLicenses.length > 0 || rankedAddresses.length > 0;
+
+  function bandLabel(distanceMiles: number) {
+    if (distanceMiles <= instoreThreshold) return "Likely same pad";
+    return "Farther (ring)";
+  }
 
   return (
     <div className="min-h-screen bg-neutral-50 p-6">
@@ -142,25 +151,126 @@ export default async function MarketMemberListingPage({ params }: PageProps) {
         <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
           <h2 className="text-base font-semibold text-neutral-900">Nearby (DORA density)</h2>
           <p className="mt-1 text-sm text-neutral-600">
-            Licenses within the density radius around this point (table &quot;DORA Density&quot;).
+            Each count is a <strong>DORA license row</strong> tied to a registered address. Distance is from this listing&apos;s
+            GPS to that address&apos;s coordinates (haversine miles). Closest addresses are the best candidates for
+            &quot;in-store&quot; techs; edge-of-ring addresses are often neighbors or separate suites.
+          </p>
+          <p className="mt-2 text-sm text-neutral-600">
+            <strong>Likely same pad</strong> uses a fixed heuristic: license at a DORA address within{" "}
+            <strong>{instoreThreshold} mi</strong> of the listing GPS. This is not legal verification of employment—only a
+            proximity signal for triage.
           </p>
 
-          <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+          <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-3">
               <dt className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Total nearby licenses</dt>
               <dd className="mt-1 text-2xl font-semibold text-neutral-900">{member.nearby_dora_licenses_total ?? 0}</dd>
             </div>
             <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-3">
-              <dt className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Radius</dt>
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Density radius</dt>
               <dd className="mt-1 text-lg font-semibold text-neutral-900">
                 {member.dora_density_radius_miles != null ? `${member.dora_density_radius_miles} mi` : "—"}
               </dd>
             </div>
-            <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-3 sm:col-span-2">
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3">
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-emerald-800">
+                Likely same pad (≤ {instoreThreshold} mi)
+              </dt>
+              <dd className="mt-1 text-2xl font-semibold text-emerald-900">
+                {member.nearby_dora_instore_likely_count ?? "—"}
+              </dd>
+            </div>
+            <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-3">
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Farther in ring</dt>
+              <dd className="mt-1 text-2xl font-semibold text-neutral-900">{member.nearby_dora_ring_count ?? "—"}</dd>
+            </div>
+            <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-3 sm:col-span-2 lg:col-span-4">
               <dt className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Profile</dt>
               <dd className="mt-1 text-sm text-neutral-800">{member.dora_density_profile ?? "—"}</dd>
             </div>
           </dl>
+
+          {!hasDistanceDetail ? (
+            <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+              Per-license distances are not in this data file yet. Regenerate enriched members with{" "}
+              <code className="rounded bg-white px-1 py-0.5 text-xs">npm run markets:enrich:dora</code> to populate ranked
+              lists.
+            </p>
+          ) : (
+            <>
+              {rankedLicenses.length ? (
+                <div className="mt-6">
+                  <h3 className="text-sm font-semibold text-neutral-900">License holders (by distance)</h3>
+                  <p className="mt-1 text-xs text-neutral-500">
+                    Sorted closest first. Same distance = same registered address (suite/building).
+                  </p>
+                  <div className="mt-2 max-h-[min(420px,50vh)] overflow-auto rounded-xl border border-neutral-200">
+                    <table className="min-w-full divide-y divide-neutral-200 text-sm">
+                      <thead className="sticky top-0 bg-neutral-50">
+                        <tr className="text-left text-neutral-600">
+                          <th className="px-3 py-2 font-medium">Name</th>
+                          <th className="px-3 py-2 font-medium">Type</th>
+                          <th className="px-3 py-2 font-medium">Status</th>
+                          <th className="px-3 py-2 font-medium">Mi</th>
+                          <th className="px-3 py-2 font-medium">Band</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-neutral-200">
+                        {rankedLicenses.map((row, i) => (
+                          <tr key={`${row.rowId || row.addressKey}-${i}`} className="text-neutral-800">
+                            <td className="px-3 py-2">{row.fullName || "—"}</td>
+                            <td className="px-3 py-2 text-xs">{row.licenseType || "—"}</td>
+                            <td className="px-3 py-2 text-xs">{row.licenseStatus || "—"}</td>
+                            <td className="px-3 py-2 font-mono tabular-nums">{row.distance_miles.toFixed(4)}</td>
+                            <td className="px-3 py-2">
+                              <span
+                                className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                                  row.distance_miles <= instoreThreshold
+                                    ? "bg-emerald-100 text-emerald-900"
+                                    : "bg-neutral-100 text-neutral-700"
+                                }`}
+                              >
+                                {bandLabel(row.distance_miles)}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : null}
+
+              {rankedAddresses.length ? (
+                <div className="mt-6">
+                  <h3 className="text-sm font-semibold text-neutral-900">DORA addresses (by distance)</h3>
+                  <p className="mt-1 text-xs text-neutral-500">Aggregated license counts per registered address.</p>
+                  <div className="mt-2 max-h-[min(280px,40vh)] overflow-auto rounded-xl border border-neutral-200">
+                    <table className="min-w-full divide-y divide-neutral-200 text-sm">
+                      <thead className="sticky top-0 bg-neutral-50">
+                        <tr className="text-left text-neutral-600">
+                          <th className="px-3 py-2 font-medium">Mi</th>
+                          <th className="px-3 py-2 font-medium">Licenses</th>
+                          <th className="px-3 py-2 font-medium">Address key</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-neutral-200">
+                        {rankedAddresses.map((row) => (
+                          <tr key={row.addressKey} className="text-neutral-800">
+                            <td className="px-3 py-2 font-mono tabular-nums">{row.distance_miles.toFixed(4)}</td>
+                            <td className="px-3 py-2 font-medium">{row.license_count}</td>
+                            <td className="px-3 py-2 text-xs break-all text-neutral-600">
+                              {row.addressKey.replace(/\|/g, " · ")}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : null}
+            </>
+          )}
         </section>
 
         <div className="pb-8">

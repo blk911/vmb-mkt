@@ -46,7 +46,18 @@ type CandidateRow = {
 type DoraRosterRow = {
   addressKey?: string;
   licenseType?: string;
+  fullName?: string;
+  licenseStatus?: string;
+  rowId?: string;
 };
+
+/** Heuristic: DORA registered address this close to the listing GPS ≈ same building / pad (not legal proof). */
+const NEARBY_INSTORE_LIKELY_MILES = 0.02;
+const MAX_LICENSE_ROWS_PER_MEMBER = 250;
+
+function roundMiles(m: number) {
+  return Math.round(m * 10000) / 10000;
+}
 
 type DoraAddressAggregate = {
   addressKey: string;
@@ -437,9 +448,32 @@ async function main() {
     let nearbySpa = 0;
     const nearbyProfessionMixRaw: Record<string, number> = {};
 
+    const rankedAddresses: Array<{
+      addressKey: string;
+      distance_miles: number;
+      license_count: number;
+      hair: number;
+      nail: number;
+      esthe: number;
+      barber: number;
+      spa: number;
+    }> = [];
+
     for (const address of geocodedAddresses) {
       const distance = haversineMiles(member.lat, member.lon, address.lat, address.lon);
       if (distance > density.radiusMiles) continue;
+
+      const dm = roundMiles(distance);
+      rankedAddresses.push({
+        addressKey: address.addressKey,
+        distance_miles: dm,
+        license_count: address.total,
+        hair: address.hair,
+        nail: address.nail,
+        esthe: address.esthe,
+        barber: address.barber,
+        spa: address.spa,
+      });
 
       nearbyTotal += address.total;
       nearbyHair += address.hair;
@@ -452,6 +486,43 @@ async function main() {
         nearbyProfessionMixRaw[rawLabel] = (nearbyProfessionMixRaw[rawLabel] ?? 0) + count;
       }
     }
+
+    rankedAddresses.sort((a, b) => a.distance_miles - b.distance_miles);
+
+    const rosterByKey = rosterJson.byAddressKey ?? {};
+    const licenseRowsDetailed: Array<{
+      fullName: string;
+      licenseType: string;
+      licenseStatus: string;
+      rowId: string;
+      addressKey: string;
+      distance_miles: number;
+    }> = [];
+
+    for (const a of rankedAddresses) {
+      const rows = rosterByKey[a.addressKey] ?? [];
+      for (const row of rows) {
+        licenseRowsDetailed.push({
+          fullName: s(row.fullName),
+          licenseType: s(row.licenseType),
+          licenseStatus: s(row.licenseStatus),
+          rowId: s(row.rowId),
+          addressKey: a.addressKey,
+          distance_miles: a.distance_miles,
+        });
+      }
+    }
+
+    licenseRowsDetailed.sort((a, b) => {
+      if (a.distance_miles !== b.distance_miles) return a.distance_miles - b.distance_miles;
+      return a.fullName.localeCompare(b.fullName);
+    });
+
+    const nearby_dora_licenses_ranked = licenseRowsDetailed.slice(0, MAX_LICENSE_ROWS_PER_MEMBER);
+    const nearby_dora_instore_likely_count = licenseRowsDetailed.filter(
+      (r) => r.distance_miles <= NEARBY_INSTORE_LIKELY_MILES
+    ).length;
+    const nearby_dora_ring_count = Math.max(0, licenseRowsDetailed.length - nearby_dora_instore_likely_count);
 
     return {
       ...member,
@@ -471,6 +542,11 @@ async function main() {
       nearby_dora_profession_mix_raw: nearbyProfessionMixRaw,
       dora_density_radius_miles: density.radiusMiles,
       dora_density_profile: density.profile,
+      nearby_dora_instore_threshold_miles: NEARBY_INSTORE_LIKELY_MILES,
+      nearby_dora_addresses_ranked: rankedAddresses,
+      nearby_dora_licenses_ranked,
+      nearby_dora_instore_likely_count,
+      nearby_dora_ring_count,
     };
   });
 
