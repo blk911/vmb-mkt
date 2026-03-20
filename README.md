@@ -38,3 +38,7 @@ The admin VMB cluster UI (`/admin/vmb`) includes a **Forensic validation** panel
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+### Bundle size and `data/`
+
+The repo root **`.vercelignore`** excludes `data/`, `tools/`, `backend/data/`, etc., so serverless bundles stay under Vercel limits. Admin routes that read market JSON under `data/markets/` (e.g. `src/lib/markets.ts`) treat **missing files as empty** in production; full datasets are for local/dev or a separate backend.

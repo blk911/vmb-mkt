@@ -150,11 +150,14 @@ type ApprovedLiveUnitsFile = {
 
 function loadRegions(): RegionsFile {
   const filePath = path.join(process.cwd(), "data", "markets", "beauty_regions.json");
+  // `data/` is omitted on Vercel (.vercelignore) — treat missing files as empty catalog.
+  if (!existsSync(filePath)) return { regions: [] };
   return JSON.parse(readFileSync(filePath, "utf8")) as RegionsFile;
 }
 
 function loadZones(): ZonesFile {
   const filePath = path.join(process.cwd(), "data", "markets", "beauty_zones.json");
+  if (!existsSync(filePath)) return { zones: [] };
   return JSON.parse(readFileSync(filePath, "utf8")) as ZonesFile;
 }
 
@@ -162,6 +165,7 @@ function loadZoneMembers(): ZoneMembersFile {
   const enrichedPath = path.join(process.cwd(), "data", "markets", "beauty_zone_members_enriched.json");
   const basePath = path.join(process.cwd(), "data", "markets", "beauty_zone_members.json");
   const filePath = existsSync(enrichedPath) ? enrichedPath : basePath;
+  if (!existsSync(filePath)) return { members: [] };
   return JSON.parse(readFileSync(filePath, "utf8")) as ZoneMembersFile;
 }
 
