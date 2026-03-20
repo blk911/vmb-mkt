@@ -272,25 +272,44 @@ export default function MarketsClient({
 
       {filters.zoneId === "ALL" ? (
         <section aria-label="Zone quick links">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">Quick links — select a zone</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+            Quick links — open a corridor (live links to that market view)
+          </p>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-            {visibleZones.map((zone) => (
-              <Link
-                key={zone.zone_id}
-                href={buildMarketsListPath({ ...marketsUrlState, zoneId: zone.zone_id })}
-                className="block rounded-lg border border-neutral-200 bg-white px-2.5 py-2 shadow-sm transition hover:border-sky-400 hover:bg-sky-50/60"
-              >
-                <div className="line-clamp-2 min-h-[2.25rem] text-[13px] font-semibold leading-snug text-neutral-900">
-                  {zone.zone_name}
-                </div>
-                <div className="mt-1 flex items-baseline gap-1">
-                  <span className="text-lg font-bold tabular-nums leading-none text-neutral-900">
-                    {zoneCounts[zone.zone_id] ?? 0}
-                  </span>
-                  <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-500">members</span>
-                </div>
-              </Link>
-            ))}
+            {visibleZones.map((zone) => {
+              const count = zoneCounts[zone.zone_id] ?? 0;
+              const href = buildMarketsListPath({ ...marketsUrlState, zoneId: zone.zone_id });
+              return (
+                <Link
+                  key={zone.zone_id}
+                  href={href}
+                  prefetch
+                  aria-label={`Open ${zone.zone_name} corridor, ${count} members`}
+                  title={`Open corridor: ${zone.zone_name}`}
+                  className="group block rounded-lg border border-neutral-200 bg-white px-2.5 py-2 shadow-sm transition hover:border-sky-500 hover:bg-sky-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
+                >
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-sky-700">Corridor</span>
+                  <div className="mt-0.5 line-clamp-2 min-h-[2.25rem] text-[13px] font-semibold leading-snug text-neutral-900 group-hover:underline group-hover:decoration-sky-500/80 group-hover:underline-offset-2">
+                    {zone.zone_name}
+                  </div>
+                  <div className="mt-0.5 truncate text-[11px] text-neutral-500" title={zone.market}>
+                    {zone.market}
+                  </div>
+                  <div className="mt-1 flex items-baseline justify-between gap-1">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-lg font-bold tabular-nums leading-none text-neutral-900">{count}</span>
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-500">members</span>
+                    </div>
+                    <span
+                      className="text-neutral-400 transition group-hover:text-sky-600"
+                      aria-hidden
+                    >
+                      →
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </section>
       ) : null}
