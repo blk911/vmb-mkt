@@ -47,6 +47,93 @@ python tools/site_identity/merge_into_markets.py ^
   --output data/markets/beauty_zone_members_enriched_with_presence.json
 ```
 
+### Anchor directory ingestion (`ingest_anchor_directories.py`)
+
+**What:** Some anchor brands publish **suite / tenant directories** (curated rosters with profiles, Instagram, booking links). This is a **separate shallow ingest** from the storefront site_identity scraper: it fetches **seed URLs only** (plus a small same-domain expansion for Sola), parses **static HTML**, normalizes fields, and writes JSON/CSV under `data/output/anchor_directories/`. It does **not** call external APIs, log in, or run a headless browser.
+
+**Phase 1 anchors:** **Modern SalonStudios** (WordPress-style `/project/…` listings from a directory index such as `/beautypros/`) and **Sola Salons** (heuristics for Instagram / booking blocks + optional path-based extra pages). Many Sola marketing pages are **JS-heavy**; if the seed returns no tenant-level links in HTML, you will get **zero Sola rows** until you supply a seed URL whose HTML actually contains per-professional links.
+
+**Outputs:** `modern_directory_rows.json`, `sola_directory_rows.json`, `anchor_directory_rows_combined.json`, CSV mirrors, and `anchor_directory_summary.json` (counts). Each row includes `source_type: "anchor_directory"`, `source_confidence: "high"`, and provenance fields (`anchor_directory_url`, `tenant_profile_url`, `extraction_notes`). Missing fields stay empty.
+
+**Caveats:** Directory snapshots reflect **what the HTML exposes at fetch time** (not guaranteed “current tenants”). Do not treat as legal tenancy proof. **Merge into markets** is a future step; this patch only produces standalone artifacts ready for matching.
+
+```bash
+python tools/site_identity/ingest_anchor_directories.py ^
+  --modern-url https://modernsalonstudios.com/beautypros/ ^
+  --sola-url https://www.solasalonstudios.com/locations ^
+  --output-dir data/output/anchor_directories
+```
+
+Use `--max-profile-pages` to cap Modern project fetches and Sola output rows; `--max-extra-pages` limits Sola same-domain listing fetches. `--insecure` only if TLS verification fails locally.
+
+### Anchor directory → markets merge (`merge_anchor_directory_into_markets.py`)
+
+**Purpose:** Add a **conservative supplemental layer** from `data/output/anchor_directories/anchor_directory_rows_combined.json` onto **`beauty_zone_members_enriched_with_presence.json`**, without overwriting existing **site_identity** fields (`instagram_url`, `booking_provider`, etc.). New fields are prefixed with `anchor_directory_*` (e.g. `anchor_directory_instagram_url`).
+
+**Matching (deterministic, tight):**
+- **Strong:** tenant name equals or near-exact (token-set ratio ≥ 0.95) **and** (**location/context overlap** between zone/market/city/address and `anchor_cluster_hint`, **or** Haversine ≤ 75 m when **both** market and anchor row have lat/lon).
+- **Supported:** token-set ratio ≥ 0.88 **and** same context rule **and** anchor row has at least one Instagram/ booking signal **and** corroborating presence on the anchor row.
+
+No loose global fuzzy pool; each anchor row is consumed at most once. Processing order: market members in file order; anchor candidates sorted by `tenant_profile_url`.
+
+**Output:** `data/markets/beauty_zone_members_enriched_with_presence_and_anchor.json`. The Next.js loader prefers this file when present (`resolveZoneMembersJsonPath`).
+
+```bash
+python tools/site_identity/merge_anchor_directory_into_markets.py ^
+  --markets-input data/markets/beauty_zone_members_enriched_with_presence.json ^
+  --anchor-input data/output/anchor_directories/anchor_directory_rows_combined.json ^
+  --output data/markets/beauty_zone_members_enriched_with_presence_and_anchor.json
+```
+
+### Path-based enrichment for cluster members (`path_enrich_cluster_members.py`)
+
+**What:** A **cluster-assisted, path-based** layer that uses **known** contexts (official site domain, booking URL, anchor profile URL, Instagram) to **shallowly** fetch a small set of pages and emit **structured candidate rows** for review — **not** a redesign of site_identity, **no** external APIs, **no** search engines, **no** open-web crawling.
+
+**Supported path types (`path_source_type`):**
+
+| Type | Meaning |
+|------|---------|
+| `official_team_page` | Same-brand domain links that look like team/staff/member pages (`/team`, `/beautypros`, profile-like slugs), capped per member. |
+| `booking_profile` | Follows **only** links under the **same booking host** as the member’s known booking URL, limited to paths that look like staff/team/services (e.g. merchant-scoped Vagaro/GlossGenius/Square paths). |
+| `anchor_profile` | `anchor_directory_profile_url` fetched for supplemental signals. |
+| `linked_social` / `linked_contact` | Outbound links on fetched pages classified as social/booking/contact (reuses outbound classification; no social “crawling”). |
+
+**Why conservative:** Deterministic URL ordering, **hard caps** on fetches per run/member, **same-domain** (or same booking merchant) rules, **no** login/headless automation by default, **no** overwriting `beauty_zone_members_*` — outputs are standalone JSON/CSV for later merge.
+
+**Outputs** (default `data/output/path_enrichment/`): `cluster_member_path_candidates.json`, `cluster_member_path_candidates.csv`, `cluster_member_path_summary.json`, and `cluster_member_path_matches.json` (high-confidence subset).
+
+```bash
+python tools/site_identity/path_enrich_cluster_members.py ^
+  --markets-input data/markets/beauty_zone_members_enriched_with_presence_and_anchor.json ^
+  --output-dir data/output/path_enrichment ^
+  --max-fetches 200 ^
+  --insecure
+```
+
+Optional: `--anchor-directory-json data/output/anchor_directories/anchor_directory_rows_combined.json` (for summary input counts), `--limit-members N`, `--max-booking-links K`.
+
+### Path enrichment → markets merge (`merge_path_enrichment_into_markets.py`)
+
+**Purpose:** Copy **only safe** path-enrichment signals into the zone-members JSON as **`path_enrichment_*` supplemental fields** — never overwriting core `instagram_url`, `booking_provider`, `website_url`, `phone`, or other site_identity fields. Produces **`data/markets/beauty_zone_members_enriched_full.json`**. The Next.js loader prefers this file when present (`resolveZoneMembersJsonPath`).
+
+**Conservative merge rules:**
+
+| Rule | Behavior |
+|------|----------|
+| Auto-merge | `path_confidence == high`, **or** `medium` with corroboration (IG/booking/domain vs member, or strong name alignment on official/booking paths, or parent-brand/zone hint). |
+| Skip | `low`; `medium` without corroboration; multiple safe candidates that **conflict** on non-empty IG handle, booking provider, or phone. |
+| Best row | Deterministic sort: confidence → `path_source_type` priority → `discovered_url`; `path_enrichment_match_count` counts all non-conflicting safe candidates. |
+
+**Outputs:** `beauty_zone_members_enriched_full.json`; optional review file `data/output/path_enrichment/path_candidates_holdout.json` (non-merged medium/low, conflicts, and `not_winner` alternates).
+
+```bash
+python tools/site_identity/merge_path_enrichment_into_markets.py ^
+  --markets-input data/markets/beauty_zone_members_enriched_with_presence_and_anchor.json ^
+  --candidates-input data/output/path_enrichment/cluster_member_path_candidates.json ^
+  --output data/markets/beauty_zone_members_enriched_full.json ^
+  --holdout-output data/output/path_enrichment/path_candidates_holdout.json
+```
+
 ### Updates (March 2026)
 
 - **Storefront → DORA pre-step:** `--dora-enrich` joins `places_candidates`-style rows to DORA shop names via nearest `beauty_zone_members` (within `--dora-max-meters`) → `shop_anchor_map` by `google_location_id`. Adds `source_name_dora` / match metadata used by clustering and scoring (no redesign of score weights).
@@ -221,3 +308,11 @@ Thresholds (tunable in one place):
 | `tools/site_identity/lib/row_adapter.py` | Normalize mixed input keys → canonical fields before `process_one` |
 | `tools/site_identity/lib/storefront_dora_enricher.py` | Optional `--dora-enrich`: geo join Places → zone members → shop anchor (DORA shop name) |
 | `tools/site_identity/merge_into_markets.py` | Merge `enriched.json` presence fields into `beauty_zone_members_enriched.json` → `beauty_zone_members_enriched_with_presence.json` |
+| `tools/site_identity/ingest_anchor_directories.py` | CLI: anchor brand directory ingest → `data/output/anchor_directories/*.json` |
+| `tools/site_identity/lib/anchor_directory_extract.py` | Fetch + HTML extract (Modern / Sola) |
+| `tools/site_identity/lib/anchor_directory_normalize.py` | Normalize names, handles, booking provider (mirrors `extract_identity` rules) |
+| `tools/site_identity/merge_anchor_directory_into_markets.py` | Merge `anchor_directory_rows_combined.json` → supplemental `anchor_directory_*` fields on zone members |
+| `tools/site_identity/path_enrich_cluster_members.py` | Cluster path-based enrichment → `data/output/path_enrichment/*` (candidates for review, no markets overwrite) |
+| `tools/site_identity/lib/path_enrichment_extract.py` | Team/booking/social link helpers for path enricher |
+| `tools/site_identity/lib/path_enrichment_normalize.py` | Normalize discovered names/domains for path candidates |
+| `tools/site_identity/merge_path_enrichment_into_markets.py` | Merge safe path candidates → `path_enrichment_*` on `beauty_zone_members_enriched_full.json` |

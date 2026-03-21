@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import MarketZoneFilters from "@/components/admin/MarketZoneFilters";
+import { ClusterEvidencePanel } from "@/components/admin/ClusterEvidencePanel";
+import { PathEnrichmentBadge } from "@/components/admin/PathEnrichment";
 import { PresenceBadges, formatBookingProviderLabel } from "@/components/admin/PresenceBadges";
 import type {
   ApprovedLiveUnit,
@@ -190,8 +192,12 @@ export default function MarketsClient({
   const [topTargetsOpen, setTopTargetsOpen] = useState(false);
   /** Hot Clusters panel — collapsed on load. */
   const [hotClustersOpen, setHotClustersOpen] = useState(false);
+  /** Hidden Opportunity Clusters — collapsed on load. */
+  const [hiddenOpportunityOpen, setHiddenOpportunityOpen] = useState(false);
   /** Client-only filter for site_identity presence fields on members (optional in JSON). */
   const [presenceFilter, setPresenceFilter] = useState<string>("all");
+  /** Optional: members with path_enrichment_matched (supplemental layer). */
+  const [pathEnrichmentFilter, setPathEnrichmentFilter] = useState<"all" | "has_path">("all");
   /** All rows vs “active” (IG or booking provider per reviewer spec). */
   const [activityScope, setActivityScope] = useState<"all" | "active">("all");
 
@@ -260,14 +266,15 @@ export default function MarketsClient({
         if (activityScope === "active" && !memberHasActivePresence(member)) return false;
         if (categoryFilter !== "All" && member.category !== categoryFilter.toLowerCase()) return false;
         if (subtypeFilter !== "All" && member.subtype !== subtypeFilter.toLowerCase()) return false;
-        if (presenceFilter === "has_ig")
-          return !!(member.instagram_url?.trim() || member.instagram_handle?.trim());
-        if (presenceFilter === "has_booking")
-          return !!(member.booking_url?.trim() || member.booking_provider?.trim());
-        if (presenceFilter.startsWith("bp:")) {
+        if (presenceFilter === "has_ig") {
+          if (!member.instagram_url?.trim() && !member.instagram_handle?.trim()) return false;
+        } else if (presenceFilter === "has_booking") {
+          if (!member.booking_url?.trim() && !member.booking_provider?.trim()) return false;
+        } else if (presenceFilter.startsWith("bp:")) {
           const want = presenceFilter.slice(3).toLowerCase();
-          return (member.booking_provider || "").trim().toLowerCase() === want;
+          if ((member.booking_provider || "").trim().toLowerCase() !== want) return false;
         }
+        if (pathEnrichmentFilter === "has_path" && member.path_enrichment_matched !== true) return false;
         return true;
       })
       .sort((a, b) => {
@@ -282,6 +289,7 @@ export default function MarketsClient({
     filters.zoneId,
     members,
     presenceFilter,
+    pathEnrichmentFilter,
     sortDir,
     sortKey,
     subtypeFilter,
@@ -349,6 +357,25 @@ export default function MarketsClient({
         const suite = (b.cluster.has_suite ? 1 : 0) - (a.cluster.has_suite ? 1 : 0);
         if (suite !== 0) return suite;
         return a.cluster.cluster_rank - b.cluster.cluster_rank;
+      })
+      .slice(0, 5);
+  }, [clusterMetricsById, selectedZoneClusters, selectedZoneMembers]);
+
+  /** Path-assisted underrepresentation: active &lt; half of members but ≥2 path-enriched; top 5 by opportunity score. */
+  const hiddenOpportunityClusters = useMemo(() => {
+    return [...selectedZoneClusters]
+      .map((cluster) => ({
+        cluster,
+        metrics: clusterMetricsById.get(cluster.cluster_id)!,
+        mems: selectedZoneMembers.filter((m) => m.cluster_id === cluster.cluster_id),
+      }))
+      .filter((x) => x.metrics.is_hidden_opportunity)
+      .sort((a, b) => {
+        const o = b.metrics.cluster_opportunity_score - a.metrics.cluster_opportunity_score;
+        if (o !== 0) return o;
+        const p = b.metrics.path_enriched_member_count - a.metrics.path_enriched_member_count;
+        if (p !== 0) return p;
+        return b.cluster.member_count - a.cluster.member_count;
       })
       .slice(0, 5);
   }, [clusterMetricsById, selectedZoneClusters, selectedZoneMembers]);
@@ -528,6 +555,21 @@ export default function MarketsClient({
                   ))}
                 </select>
               </label>
+
+              <label className="min-w-[150px] flex-1">
+                <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                  Path data
+                </span>
+                <select
+                  value={pathEnrichmentFilter}
+                  onChange={(e) => setPathEnrichmentFilter(e.target.value as "all" | "has_path")}
+                  className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-neutral-500"
+                  title="Filter by supplemental path-based enrichment (merge_path_enrichment_into_markets). Not primary site_identity truth."
+                >
+                  <option value="all">All</option>
+                  <option value="has_path">Has path enrichment</option>
+                </select>
+              </label>
             </div>
             <p className="mt-3 text-xs text-neutral-500">
               Sort via column headers (↑ / ↓). Default Priority column: active presence &amp; anchors first, then
@@ -562,6 +604,7 @@ export default function MarketsClient({
                 <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                   {selectedZoneClusters.map((cluster) => {
                     const met = clusterMetricsById.get(cluster.cluster_id);
+                    const mems = selectedZoneMembers.filter((m) => m.cluster_id === cluster.cluster_id);
                     return (
                       <article
                         key={cluster.cluster_id}
@@ -585,6 +628,11 @@ export default function MarketsClient({
                             {met?.has_anchor ? (
                               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-900">
                                 Anchor
+                              </span>
+                            ) : null}
+                            {met?.is_hidden_opportunity ? (
+                              <span className="rounded-full bg-amber-100/90 px-2 py-0.5 text-[10px] font-semibold text-amber-900">
+                                Hidden
                               </span>
                             ) : null}
                             <span
@@ -611,9 +659,12 @@ export default function MarketsClient({
                           {met ? (
                             <div className="mt-2 border-t border-neutral-200 pt-2 text-xs text-neutral-600">
                               <span className="font-semibold text-neutral-700">Presence</span> (site identity)
-                              <div className="mt-1 space-y-0.5">
+                              <div className="mt-1 space-y-0.5 font-mono tabular-nums">
                                 <div>
-                                  Active members: {met.active_member_count} / {cluster.member_count}
+                                  Active: {met.active_member_count} / {met.total_member_count || cluster.member_count}
+                                </div>
+                                <div>
+                                  Path: {met.path_enriched_member_count} · Score: {met.cluster_opportunity_score}
                                 </div>
                                 <div>
                                   IG count: {met.instagram_member_count} · Booking count: {met.booking_member_count}
@@ -628,12 +679,76 @@ export default function MarketsClient({
                             </div>
                           ) : null}
                         </div>
+                        {met ? (
+                          <ClusterEvidencePanel members={mems} metrics={met} marketsUrlState={marketsUrlState} />
+                        ) : null}
                       </article>
                     );
                   })}
                 </div>
               ) : (
                 <p className="mt-3 text-sm text-neutral-600">No clusters detected for this zone.</p>
+              )
+            ) : null}
+          </div>
+
+          <div className="border-b border-neutral-200 px-4 py-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold text-neutral-900">Hidden Opportunity Clusters</h3>
+                <p className="text-xs text-neutral-500">
+                  Clusters with underrepresented activity recovered via path enrichment
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setHiddenOpportunityOpen((o) => !o)}
+                aria-expanded={hiddenOpportunityOpen}
+                className="shrink-0 rounded-full border border-neutral-300 bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-800 transition hover:bg-neutral-50"
+              >
+                {hiddenOpportunityOpen ? "CLOSE" : "OPEN"}
+              </button>
+            </div>
+
+            {hiddenOpportunityOpen ? (
+              hiddenOpportunityClusters.length ? (
+                <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                  {hiddenOpportunityClusters.map(({ cluster, metrics: met, mems }, index) => (
+                    <article
+                      key={cluster.cluster_id}
+                      className="rounded-xl border border-amber-200 bg-amber-50/50 px-3 py-3"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-1">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-amber-800">
+                          Hidden #{index + 1}
+                        </div>
+                        <span className="rounded-full bg-amber-100/90 px-2 py-0.5 text-[10px] font-semibold text-amber-900">
+                          Hidden
+                        </span>
+                      </div>
+                      <div
+                        className="mt-1 line-clamp-2 text-sm font-semibold text-neutral-900"
+                        title={clusterDisplayTitle(cluster, mems)}
+                      >
+                        {clusterDisplayTitle(cluster, mems)}
+                      </div>
+                      <div className="mt-1 font-mono text-[11px] tabular-nums text-neutral-700">
+                        Active: {met.active_member_count} / {cluster.member_count}
+                      </div>
+                      <div className="mt-0.5 font-mono text-[11px] tabular-nums text-neutral-700">
+                        Path: {met.path_enriched_member_count} · Score: {met.cluster_opportunity_score}
+                      </div>
+                      <div className="mt-1 text-[11px] text-neutral-600">
+                        IG {met.instagram_member_count} · Booking {met.booking_member_count}
+                      </div>
+                      <ClusterEvidencePanel members={mems} metrics={met} marketsUrlState={marketsUrlState} />
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-3 text-sm text-neutral-600">
+                  No clusters match hidden-opportunity rules (active &lt; 50% with ≥2 path-enriched members).
+                </p>
               )
             ) : null}
           </div>
@@ -673,6 +788,9 @@ export default function MarketsClient({
                       <div className="mt-1 text-[11px] text-neutral-600">
                         {cluster.member_count} businesses · Active {met.active_member_count}/{cluster.member_count}
                       </div>
+                      <div className="mt-1 font-mono text-[11px] tabular-nums text-neutral-700">
+                        Path: {met.path_enriched_member_count} · Opp score: {met.cluster_opportunity_score}
+                      </div>
                       <div className="mt-2 flex flex-wrap gap-1">
                         <span className="inline-flex rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-violet-900">
                           Score {met.cluster_active_score}
@@ -687,6 +805,11 @@ export default function MarketsClient({
                             Suite
                           </span>
                         ) : null}
+                        {met.is_hidden_opportunity ? (
+                          <span className="inline-flex rounded-full bg-amber-100/90 px-2 py-0.5 text-[10px] font-semibold text-amber-900">
+                            Hidden
+                          </span>
+                        ) : null}
                       </div>
                       <div className="mt-2 text-[11px] text-neutral-600">
                         IG {met.instagram_member_count} · Booking {met.booking_member_count}
@@ -698,6 +821,7 @@ export default function MarketsClient({
                           <span className="mt-1 block text-neutral-500">No providers</span>
                         )}
                       </div>
+                      <ClusterEvidencePanel members={mems} metrics={met} marketsUrlState={marketsUrlState} />
                     </article>
                   ))}
                 </div>
@@ -748,6 +872,9 @@ export default function MarketsClient({
                             Active
                           </span>
                         ) : null}
+                        <span className="ml-1 inline-flex align-middle">
+                          <PathEnrichmentBadge member={member} />
+                        </span>
                       </div>
                       <div className="mt-1 text-xs text-neutral-600">
                         {member.category} · {member.subtype}
@@ -766,8 +893,9 @@ export default function MarketsClient({
                           {member.is_anchor ? "Anchor" : "Standard"}
                         </span>
                       </div>
-                      <div className="mt-2 min-h-[1.5rem]">
+                      <div className="mt-2 min-h-[1.5rem] space-y-1">
                         <PresenceBadges member={member} />
+                        <PathEnrichmentBadge member={member} />
                       </div>
                     </article>
                   ))}
@@ -832,7 +960,12 @@ export default function MarketsClient({
                       sortDir={sortDir}
                       onSort={toggleColumnSort}
                     />
-                    <th className="px-4 py-3 font-medium uppercase tracking-wide text-neutral-600">Presence</th>
+                    <th
+                      className="px-4 py-3 font-medium uppercase tracking-wide text-neutral-600"
+                      title="Primary: site_identity outbound links on crawled sites. Path badge (when shown) = supplemental corroboration only — not replacement truth."
+                    >
+                      Presence
+                    </th>
                     <SortTh
                       column="is_anchor"
                       label="Is Anchor"
@@ -856,11 +989,12 @@ export default function MarketsClient({
                           {memberHasActivePresence(member) ? (
                             <span
                               className="inline-flex shrink-0 rounded bg-teal-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900"
-                              title="Instagram or booking provider present"
+                              title="Instagram or booking provider present (site_identity)"
                             >
                               Active
                             </span>
                           ) : null}
+                          <PathEnrichmentBadge member={member} />
                         </div>
                       </td>
                       <td className="px-4 py-3">{member.category}</td>
@@ -894,8 +1028,25 @@ export default function MarketsClient({
                           {member.upgraded_priority_score}
                         </span>
                       </td>
-                      <td className="max-w-[14rem] px-4 py-3">
-                        <PresenceBadges member={member} />
+                      <td
+                        className="max-w-[14rem] px-4 py-3"
+                        title={
+                          member.path_enrichment_matched
+                            ? "Presence = site_identity. Path badge = supplemental corroboration from path enrichment (not primary truth)."
+                            : "Presence = site_identity outbound links"
+                        }
+                      >
+                        <div className="flex flex-col gap-1">
+                          <PresenceBadges member={member} />
+                          <div className="flex flex-wrap items-center gap-1">
+                            <PathEnrichmentBadge member={member} />
+                          </div>
+                          {member.path_enrichment_matched ? (
+                            <span className="text-[10px] leading-snug text-neutral-400">
+                              Path = supplemental corroboration
+                            </span>
+                          ) : null}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <span

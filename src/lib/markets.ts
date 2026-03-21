@@ -95,6 +95,33 @@ export type BeautyZoneMember = {
   linktree_url?: string | null;
   booking_url?: string | null;
   booking_provider?: string | null;
+  /** Supplemental: anchor directory ingest (`merge_anchor_directory_into_markets.py`); does not replace site_identity fields. */
+  anchor_directory_matched?: boolean;
+  anchor_directory_brand?: string | null;
+  anchor_directory_location_name?: string | null;
+  anchor_directory_profile_url?: string | null;
+  anchor_directory_instagram_url?: string | null;
+  anchor_directory_instagram_handle?: string | null;
+  anchor_directory_booking_url?: string | null;
+  anchor_directory_booking_provider?: string | null;
+  anchor_directory_phone?: string | null;
+  anchor_directory_website_url?: string | null;
+  anchor_directory_match_type?: string | null;
+  anchor_directory_match_confidence?: string | null;
+  anchor_directory_match_notes?: string[] | null;
+  /** Supplemental: path-based cluster enrichment (`merge_path_enrichment_into_markets.py`); does not replace site_identity. */
+  path_enrichment_matched?: boolean | null;
+  path_enrichment_match_count?: number | null;
+  path_enrichment_best_source_type?: string | null;
+  path_enrichment_best_confidence?: string | null;
+  path_enrichment_instagram_url?: string | null;
+  path_enrichment_instagram_handle?: string | null;
+  path_enrichment_booking_url?: string | null;
+  path_enrichment_booking_provider?: string | null;
+  path_enrichment_phone?: string | null;
+  path_enrichment_website_url?: string | null;
+  path_enrichment_source_url?: string | null;
+  path_enrichment_match_notes?: string | null;
 };
 
 export type BeautyZoneCluster = {
@@ -170,7 +197,7 @@ function loadZones(): ZonesFile {
   return parsed ?? { zones: [] };
 }
 
-/** Reads `data/markets/beauty_zone_members_enriched_with_presence.json` when present (see `resolveZoneMembersJsonPath`). */
+/** Reads `beauty_zone_members_enriched_full.json` if present, else with_presence_and_anchor, etc. (see `resolveZoneMembersJsonPath`). */
 function loadZoneMembers(): ZoneMembersFile {
   const filePath = resolveZoneMembersJsonPath();
   if (!filePath) return { members: [] };

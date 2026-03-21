@@ -14,3 +14,5 @@ data/markets/*
 !data/markets/beauty_zone_members.json
 !data/markets/beauty_zone_members_enriched.json
 !data/markets/beauty_zone_members_enriched_with_presence.json
+!data/markets/beauty_zone_members_enriched_with_presence_and_anchor.json
+!data/markets/beauty_zone_members_enriched_full.json

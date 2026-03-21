@@ -33,13 +33,17 @@ export function readJsonIfExists<T>(absPath: string): T | null {
 }
 
 /**
- * Prefer presence-merged enriched file, then plain enriched, then base `beauty_zone_members.json`.
+ * Prefer anchor-directory supplement, then presence-merged, then plain enriched, then base.
  * (Used by `loadZoneMembers` in `markets.ts`.)
  */
 export function resolveZoneMembersJsonPath(): string | null {
+  const withPath = marketsJsonPath("beauty_zone_members_enriched_full.json");
+  const withAnchor = marketsJsonPath("beauty_zone_members_enriched_with_presence_and_anchor.json");
   const withPresence = marketsJsonPath("beauty_zone_members_enriched_with_presence.json");
   const enriched = marketsJsonPath("beauty_zone_members_enriched.json");
   const base = marketsJsonPath("beauty_zone_members.json");
+  if (existsSync(withPath)) return withPath;
+  if (existsSync(withAnchor)) return withAnchor;
   if (existsSync(withPresence)) return withPresence;
   if (existsSync(enriched)) return enriched;
   if (existsSync(base)) return base;

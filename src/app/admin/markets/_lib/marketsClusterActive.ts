@@ -7,10 +7,26 @@ export type ClusterActiveMetrics = {
   cluster_active_score: number;
   /** Members with IG URL/handle or booking_provider (reviewer “active”). */
   active_member_count: number;
+  /** Members in this cluster (same as zone JSON rows for cluster_id). */
+  total_member_count: number;
   /** Members with non-empty booking_provider. */
   booking_member_count: number;
   /** Members with instagram_url or instagram_handle. */
   instagram_member_count: number;
+  /** Members with path_enrichment_matched (supplemental merge). */
+  path_enriched_member_count: number;
+  /** Members with no core IG/booking presence (weak / missing primary signals). */
+  unresolved_member_count: number;
+  /**
+   * Opportunity signal: booking×3 + IG×1 + path×2 + unresolved×1.
+   * UI-only; not stored on cluster JSON.
+   */
+  cluster_opportunity_score: number;
+  /**
+   * Underrepresented primary signals but path recovery suggests activity:
+   * active &lt; 50% of members and at least 2 path-enriched members.
+   */
+  is_hidden_opportunity: boolean;
   cluster_distinct_booking_providers: string[];
   has_anchor: boolean;
 };
@@ -52,12 +68,35 @@ export function computeClusterActiveMetrics(
   if (cluster_distinct_booking_providers.length > 1) score += 1;
 
   const active_member_count = mems.filter(memberHasActivePresence).length;
+  const total_member_count = mems.length;
+  let path_enriched_member_count = 0;
+  let unresolved_member_count = 0;
+  for (const m of mems) {
+    if (m.path_enrichment_matched === true) path_enriched_member_count += 1;
+    if (!memberHasActivePresence(m)) unresolved_member_count += 1;
+  }
+
+  const cluster_opportunity_score =
+    booking_member_count * 3 +
+    instagram_member_count * 1 +
+    path_enriched_member_count * 2 +
+    unresolved_member_count * 1;
+
+  const is_hidden_opportunity =
+    total_member_count > 0 &&
+    active_member_count < total_member_count * 0.5 &&
+    path_enriched_member_count >= 2;
 
   return {
     cluster_active_score: score,
     active_member_count,
+    total_member_count,
     booking_member_count,
     instagram_member_count,
+    path_enriched_member_count,
+    unresolved_member_count,
+    cluster_opportunity_score,
+    is_hidden_opportunity,
     cluster_distinct_booking_providers,
     has_anchor,
   };
