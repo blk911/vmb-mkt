@@ -79,11 +79,19 @@ function defaultSortDir(key: SortKey): SortDir {
     case "upgraded_priority_score":
     case "dora_density":
     case "profession_mix":
+    case "presence":
     case "is_anchor":
       return "desc";
     default:
       return "asc";
   }
+}
+
+/** 0–3: core active (IG/booking) + path enrichment; higher = stronger signals. */
+function presenceSortValue(m: EnrichedBeautyZoneMember): number {
+  const active = memberHasActivePresence(m) ? 2 : 0;
+  const path = m.path_enrichment_matched === true ? 1 : 0;
+  return active + path;
 }
 
 function compareMembers(a: EnrichedBeautyZoneMember, b: EnrichedBeautyZoneMember, sortKey: SortKey, sortDir: SortDir): number {
@@ -121,7 +129,7 @@ function compareMembersWithAnchorTiebreak(
 ): number {
   const cmp = compareMembers(a, b, sortKey, sortDir);
   if (cmp !== 0) return cmp;
-  if (sortKey === "name") return 0;
+  if (sortKey === "name" || sortKey === "presence") return 0;
   return (b.is_anchor ? 1 : 0) - (a.is_anchor ? 1 : 0);
 }
 
@@ -131,24 +139,28 @@ function SortTh({
   sortKey,
   sortDir,
   onSort,
+  headerTitle,
 }: {
   column: SortKey;
   label: string;
   sortKey: SortKey;
   sortDir: SortDir;
   onSort: (c: SortKey) => void;
+  /** Extra context for the column (e.g. Presence vs path); shown on hover of header cell. */
+  headerTitle?: string;
 }) {
   const active = sortKey === column;
   return (
     <th
       className="px-4 py-3 font-medium"
       aria-sort={active ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
+      title={headerTitle}
     >
       <button
         type="button"
         onClick={() => onSort(column)}
         className="inline-flex max-w-full items-center gap-1 text-left uppercase tracking-wide text-neutral-600 transition hover:text-neutral-900"
-        title={`Sort by ${label} (click to reverse)`}
+        title={headerTitle ? `${headerTitle} — Sort (click to reverse)` : `Sort by ${label} (click to reverse)`}
       >
         <span className="min-w-0 break-words">{label}</span>
         {active ? (
@@ -960,12 +972,14 @@ export default function MarketsClient({
                       sortDir={sortDir}
                       onSort={toggleColumnSort}
                     />
-                    <th
-                      className="px-4 py-3 font-medium uppercase tracking-wide text-neutral-600"
-                      title="Primary: site_identity outbound links on crawled sites. Path badge (when shown) = supplemental corroboration only — not replacement truth."
-                    >
-                      Presence
-                    </th>
+                    <SortTh
+                      column="presence"
+                      label="Presence"
+                      sortKey={sortKey}
+                      sortDir={sortDir}
+                      onSort={toggleColumnSort}
+                      headerTitle="Primary: site_identity outbound links on crawled sites. Path badge (when shown) = supplemental corroboration only — not replacement truth."
+                    />
                     <SortTh
                       column="is_anchor"
                       label="Is Anchor"

@@ -8,6 +8,7 @@ export type MarketsSortKey =
   | "address"
   | "dora_density"
   | "profession_mix"
+  | "presence"
   | "is_anchor";
 
 export type MarketsSortDir = "asc" | "desc";
@@ -20,6 +21,7 @@ const SORT_KEYS = new Set<MarketsSortKey>([
   "address",
   "dora_density",
   "profession_mix",
+  "presence",
   "is_anchor",
 ]);
 
