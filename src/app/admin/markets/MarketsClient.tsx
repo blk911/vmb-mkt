@@ -188,6 +188,8 @@ export default function MarketsClient({
   const [clustersOpen, setClustersOpen] = useState(false);
   /** Top Targets: same — collapsed on load. */
   const [topTargetsOpen, setTopTargetsOpen] = useState(false);
+  /** Hot Clusters panel — collapsed on load. */
+  const [hotClustersOpen, setHotClustersOpen] = useState(false);
   /** Client-only filter for site_identity presence fields on members (optional in JSON). */
   const [presenceFilter, setPresenceFilter] = useState<string>("all");
   /** All rows vs “active” (IG or booking provider per reviewer spec). */
