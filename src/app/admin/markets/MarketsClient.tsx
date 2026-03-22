@@ -242,6 +242,8 @@ export default function MarketsClient({
   const [hotClustersOpen, setHotClustersOpen] = useState(false);
   /** Hidden Opportunity Clusters — collapsed on load. */
   const [hiddenOpportunityOpen, setHiddenOpportunityOpen] = useState(false);
+  /** Filtered-zone stat summary — collapsed on load (compact strip when closed). */
+  const [zoneSummaryOpen, setZoneSummaryOpen] = useState(false);
   /** Client-only filter for site_identity presence fields on members (optional in JSON). */
   const [presenceFilter, setPresenceFilter] = useState<string>("all");
   /** Optional: members with path_enrichment_matched (supplemental layer). */
@@ -449,6 +451,12 @@ export default function MarketsClient({
     return [...selectedZoneMembers].sort(compareTopTargetRank).slice(0, 5);
   }, [selectedZoneMembers]);
 
+  const zoneSummaryOneLine = useMemo(() => {
+    const s = selectedZoneSummary;
+    const units = selectedZoneApprovedLiveUnits.length;
+    return `${s.total} total · Hair ${s.hair} · Nail ${s.nail} · Esthe ${s.esthe} · Barber ${s.barber} · Spa ${s.spa} · Suite ${s.suite} · Approved ${units}`;
+  }, [selectedZoneSummary, selectedZoneApprovedLiveUnits.length]);
+
   function toggleColumnSort(column: SortKey) {
     if (sortKey === column) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -470,6 +478,53 @@ export default function MarketsClient({
         initialZoneId={filters.zoneId}
         onChange={setFilters}
       />
+
+      {filters.zoneId !== "ALL" ? (
+        <div className="rounded-lg border border-neutral-200 bg-white px-3 py-2 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              {!zoneSummaryOpen ? (
+                <p className="text-[11px] leading-snug text-neutral-700">
+                  <span className="sr-only">Zone summary (collapsed): </span>
+                  {zoneSummaryOneLine}
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-1.5" role="list" aria-label="Zone member counts">
+                  {(
+                    [
+                      { k: "Total", v: selectedZoneSummary.total },
+                      { k: "Hair", v: selectedZoneSummary.hair },
+                      { k: "Nail", v: selectedZoneSummary.nail },
+                      { k: "Esthe", v: selectedZoneSummary.esthe },
+                      { k: "Barber", v: selectedZoneSummary.barber },
+                      { k: "Spa", v: selectedZoneSummary.spa },
+                      { k: "Suite", v: selectedZoneSummary.suite },
+                      { k: "Approved", v: selectedZoneApprovedLiveUnits.length },
+                    ] as const
+                  ).map(({ k, v }) => (
+                    <span
+                      key={k}
+                      role="listitem"
+                      className="inline-flex min-w-0 items-baseline gap-1 rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1"
+                    >
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-500">{k}</span>
+                      <span className="tabular-nums text-xs font-semibold text-neutral-900">{v}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setZoneSummaryOpen((o) => !o)}
+              aria-expanded={zoneSummaryOpen}
+              className="shrink-0 rounded-md border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-[10px] font-semibold text-sky-800 transition hover:bg-white"
+            >
+              {zoneSummaryOpen ? "Close" : "Open"}
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {filters.zoneId === "ALL" ? (
         <section aria-label="Zone quick links">
@@ -526,27 +581,7 @@ export default function MarketsClient({
           </div>
 
           <div className="border-b border-neutral-200 px-4 py-4">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-8">
-              {[
-                { label: "Total Members", value: selectedZoneSummary.total },
-                { label: "Hair", value: selectedZoneSummary.hair },
-                { label: "Nail", value: selectedZoneSummary.nail },
-                { label: "Esthe", value: selectedZoneSummary.esthe },
-                { label: "Barber", value: selectedZoneSummary.barber },
-                { label: "Spa", value: selectedZoneSummary.spa },
-                { label: "Suite", value: selectedZoneSummary.suite },
-                { label: "Approved Units", value: selectedZoneApprovedLiveUnits.length },
-              ].map((item) => (
-                <div key={item.label} className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2">
-                  <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
-                    {item.label}
-                  </div>
-                  <div className="mt-1 text-lg font-semibold text-neutral-900">{item.value}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3">
               <label className="min-w-[140px] flex-1">
                 <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-neutral-500">
                   Activity
