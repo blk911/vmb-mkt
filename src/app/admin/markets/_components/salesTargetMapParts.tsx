@@ -13,11 +13,14 @@ import {
 import { GrayResolutionBadge } from "@/components/admin/GrayResolution";
 import { PathEnrichmentBadge } from "@/components/admin/PathEnrichment";
 import { PresenceBadges } from "@/components/admin/PresenceBadges";
-import { buildMemberDetailPath, type MarketsUrlState } from "@/app/admin/markets/_lib/marketsUrlState";
+import { type MarketsUrlState } from "@/app/admin/markets/_lib/marketsUrlState";
 import {
   type NearbyProspectRow,
+  type ProspectMarkerKind,
   SALES_TARGET_RINGS,
+  classifyProspect,
   memberHasValidCoords,
+  prospectTypeLabel,
 } from "@/app/admin/markets/_lib/salesTargetMapHelpers";
 import type { EnrichedBeautyZoneMember } from "@/lib/markets";
 
@@ -78,30 +81,9 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-type ProspectMarkerKind = "anchor" | "active" | "path" | "resolved" | "fallback";
-
-function classifyProspect(row: NearbyProspectRow): ProspectMarkerKind {
-  if (row.member.is_anchor) return "anchor";
-  if (row.active) return "active";
-  if (row.member.path_enrichment_matched === true) return "path";
-  if (row.member.gray_resolution_matched === true) return "resolved";
-  return "fallback";
-}
-
-function typeLabel(kind: ProspectMarkerKind): string {
-  switch (kind) {
-    case "anchor":
-      return "Anchor";
-    case "active":
-      return "Active";
-    case "path":
-      return "Path enriched";
-    case "resolved":
-      return "Resolved";
-    default:
-      return "Low signal";
-  }
-}
+export type { ProspectMarkerKind };
+export { classifyProspect, prospectTypeLabel as typeLabel };
+const typeLabel = prospectTypeLabel;
 
 function opacityForDistance(miles: number): number {
   if (miles <= 0.25) return 1;
@@ -188,15 +170,15 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
     nearbyRows,
     size = "default",
     interactive = false,
-    marketsUrlState,
+    marketsUrlState: _marketsUrlState,
     highlightProspectId = null,
     onProspectSelectFromMap,
   },
   ref
 ) {
+  void _marketsUrlState;
   const elRef = useRef<HTMLDivElement>(null);
   const apiKey = readBrowserMapsKey();
-  const [mounted, setMounted] = useState(false);
 
   const nearbyKey = useMemo(
     () => nearbyRows.map((r) => r.member.location_id).join("|"),
@@ -218,8 +200,6 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
   const originMarkerRef = useRef<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hoverInfoRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const detailInfoRef = useRef<any>(null);
   const hoverCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const gRef = useRef<any>(null);
 
@@ -228,65 +208,23 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
   const minH = size === "large" ? "min-h-[min(52vh,560px)]" : "min-h-[360px]";
   const minFallback = size === "large" ? "min-h-[400px]" : "min-h-[320px]";
 
-  useEffect(() => {
-    setMounted(true);
+  /** Pan/zoom to prospect marker; closes hover. No detail InfoWindow (inline summary panel is primary). */
+  const panToProspectOnly = useCallback((locationId: string) => {
+    const map = mapRef.current;
+    const marker = markersByIdRef.current.get(locationId);
+    if (!map || !marker) return;
+    hoverInfoRef.current?.close();
+    if (hoverCloseTimerRef.current) {
+      clearTimeout(hoverCloseTimerRef.current);
+      hoverCloseTimerRef.current = null;
+    }
+    map.panTo(marker.getPosition());
+    const z = map.getZoom();
+    if (z != null && z < 15) map.setZoom(15);
   }, []);
 
-  const openDetailFor = useCallback(
-    (locationId: string) => {
-      const g = gRef.current;
-      const map = mapRef.current;
-      const marker = markersByIdRef.current.get(locationId);
-      const row = rowById.get(locationId);
-      if (!g || !map || !marker || !row) return;
-
-      if (hoverInfoRef.current) hoverInfoRef.current.close();
-      if (hoverCloseTimerRef.current) {
-        clearTimeout(hoverCloseTimerRef.current);
-        hoverCloseTimerRef.current = null;
-      }
-
-      const m = row.member;
-      const detailPath = buildMemberDetailPath(locationId, marketsUrlState);
-      const badges: string[] = [];
-      if (m.is_anchor) badges.push("Anchor");
-      if (row.active) badges.push("Active");
-      if (m.instagram_url || m.instagram_handle) badges.push("IG");
-      if (m.booking_provider || m.booking_url) badges.push("Booking");
-      if (m.path_enrichment_matched === true) badges.push("Path");
-      if (m.gray_resolution_matched === true) badges.push("Resolved");
-      const badgeStr = badges.length ? badges.join(" · ") : "—";
-      const prospectKind = classifyProspect(row);
-      const resolvedDetailHint =
-        prospectKind === "resolved"
-          ? `<div style="color:#6d28d9;font-size:10px;margin-bottom:6px;line-height:1.3">${escapeHtml("Resolved — supplemental gray-pin hint; not primary presence.")}</div>`
-          : "";
-
-      const html = `
-        <div style="font-family:system-ui,sans-serif;max-width:240px;padding:4px 2px;font-size:12px;line-height:1.35">
-          <div style="font-weight:700;margin-bottom:4px">${escapeHtml(m.name)}</div>
-          <div style="color:#444;margin-bottom:4px">${escapeHtml(m.category)}/${escapeHtml(m.subtype)}</div>
-          <div style="color:#666;margin-bottom:4px">${row.distance_miles.toFixed(2)} mi · ${escapeHtml(typeLabel(prospectKind))}</div>
-          ${resolvedDetailHint}
-          <div style="font-size:11px;color:#555;margin-bottom:8px">${escapeHtml(badgeStr)}</div>
-          <a href="${detailPath}" style="color:#0369a1;font-weight:600">Open detail →</a>
-        </div>`;
-
-      if (!detailInfoRef.current) {
-        detailInfoRef.current = new g.InfoWindow({ content: html });
-      } else {
-        detailInfoRef.current.setContent(html);
-      }
-      detailInfoRef.current.open({ map, anchor: marker });
-      map.panTo(marker.getPosition());
-      const z = map.getZoom();
-      if (z != null && z < 15) map.setZoom(15);
-    },
-    [marketsUrlState, rowById]
-  );
-
-  const openDetailRef = useRef(openDetailFor);
-  openDetailRef.current = openDetailFor;
+  const panToProspectRef = useRef(panToProspectOnly);
+  panToProspectRef.current = panToProspectOnly;
   const onSelectRef = useRef(onProspectSelectFromMap);
   onSelectRef.current = onProspectSelectFromMap;
 
@@ -294,10 +232,10 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
     ref,
     () => ({
       focusProspect: (locationId: string) => {
-        openDetailFor(locationId);
+        panToProspectRef.current(locationId);
       },
     }),
-    [openDetailFor]
+    []
   );
 
   useEffect(() => {
@@ -393,7 +331,6 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
       overlays.push(originMarker);
 
       hoverInfoRef.current = new g.InfoWindow({ disableAutoPan: true });
-      detailInfoRef.current = new g.InfoWindow({});
 
       const tooltipHtml = (row: NearbyProspectRow) => {
         const kind = classifyProspect(row);
@@ -430,8 +367,6 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
               clearTimeout(hoverCloseTimerRef.current);
               hoverCloseTimerRef.current = null;
             }
-            if (detailInfoRef.current && typeof detailInfoRef.current.getMap === "function" && detailInfoRef.current.getMap())
-              return;
             hoverInfoRef.current.setContent(tooltipHtml(row));
             hoverInfoRef.current.open({ map, anchor: marker });
           });
@@ -446,7 +381,7 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
               hoverCloseTimerRef.current = null;
             }
             hoverInfoRef.current?.close();
-            openDetailRef.current(m.location_id);
+            panToProspectRef.current(m.location_id);
             onSelectRef.current?.(m.location_id);
           });
         }
@@ -465,14 +400,12 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
       disposeOverlays = () => {
         setMapReady(false);
         hoverInfoRef.current?.close();
-        detailInfoRef.current?.close();
         overlays.forEach((o) => o.setMap(null));
         markersByIdRef.current.clear();
         prospectKindsRef.current.clear();
         originMarkerRef.current = null;
         mapRef.current = null;
         hoverInfoRef.current = null;
-        detailInfoRef.current = null;
         gRef.current = null;
       };
     });
@@ -486,11 +419,6 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
   }, [apiKey, origin.location_id, origin.lat, origin.lon, nearbyKey, interactive]);
 
   if (!apiKey) {
-    const windowDefined = typeof window !== "undefined";
-    const keyRaw = readBrowserMapsKey();
-    const keyLen = keyRaw.length;
-    const keyPrefix = keyLen >= 6 ? keyRaw.slice(0, 6) : "";
-    const debugLine = `Map debug: client=${mounted ? "yes" : "no"}, window=${windowDefined ? "yes" : "no"}, keyPresent=no, keyLength=${keyLen}, keyPrefix=${keyPrefix || "(none)"}`;
     return (
       <div
         className={`flex ${minFallback} flex-col items-center justify-center rounded-xl border border-dashed border-amber-300 bg-amber-50/50 p-4 text-center text-sm text-amber-900`}
@@ -500,7 +428,6 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
           Set <code className="rounded bg-white px-1">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code>. The nearby list still
           works.
         </p>
-        <p className="mt-3 max-w-full break-all font-mono text-[10px] leading-snug text-amber-950/90">{debugLine}</p>
       </div>
     );
   }
@@ -513,19 +440,8 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
     );
   }
 
-  const keyRawForDebug = readBrowserMapsKey();
-  const keyLenOk = keyRawForDebug.length;
-  const keyPrefixOk = keyLenOk >= 6 ? keyRawForDebug.slice(0, 6) : "";
-  const windowOk = typeof window !== "undefined";
-  const debugOk = `Map debug: client=${mounted ? "yes" : "no"}, window=${windowOk ? "yes" : "no"}, keyPresent=yes, keyLength=${keyLenOk}, keyPrefix=${keyPrefixOk || "(none)"}`;
-
   return (
-    <div className="space-y-1">
-      <div ref={elRef} className={`${minH} w-full rounded-xl border border-neutral-200 bg-neutral-100`} />
-      <p className="max-w-full break-all font-mono text-[10px] leading-snug text-neutral-500" aria-hidden>
-        {debugOk}
-      </p>
-    </div>
+    <div ref={elRef} className={`${minH} w-full rounded-xl border border-neutral-200 bg-neutral-100`} />
   );
 });
 
@@ -542,6 +458,8 @@ export type ProspectRowProps = {
   interactive?: boolean;
   highlightFlash?: boolean;
   isSidebarHovered?: boolean;
+  /** Selected for map/list/panel sync */
+  isSelected?: boolean;
   onRowPointerEnter?: () => void;
   onRowPointerLeave?: () => void;
   onRowActivate?: () => void;
@@ -553,6 +471,7 @@ export function ProspectRow({
   interactive = false,
   highlightFlash = false,
   isSidebarHovered = false,
+  isSelected = false,
   onRowPointerEnter,
   onRowPointerLeave,
   onRowActivate,
@@ -560,12 +479,14 @@ export function ProspectRow({
   const m = row.member;
   const rowDomId = `vmb-prospect-${m.location_id}`;
   const ring = highlightFlash ? "ring-2 ring-sky-500 ring-offset-1 bg-sky-50/70" : "";
-  const hoverBg = isSidebarHovered && !highlightFlash ? "bg-neutral-100/90" : "";
+  const selectedRing =
+    isSelected && !highlightFlash ? "ring-2 ring-violet-400 ring-offset-1 bg-violet-50/50" : "";
+  const hoverBg = isSidebarHovered && !highlightFlash && !isSelected ? "bg-neutral-100/90" : "";
 
   return (
     <div
       id={rowDomId}
-      className={`border-b border-neutral-100 py-1.5 last:border-0 ${prospectRowEmphasis(row.nearby_prospect_score)} ${ring} ${hoverBg} transition-colors ${
+      className={`border-b border-neutral-100 py-1.5 last:border-0 ${prospectRowEmphasis(row.nearby_prospect_score)} ${ring} ${selectedRing} ${hoverBg} transition-colors ${
         interactive ? "cursor-pointer rounded px-0.5" : ""
       }`}
       onMouseEnter={interactive ? onRowPointerEnter : undefined}
@@ -631,6 +552,7 @@ export type NearbyProspectSectionProps = {
   interactive?: boolean;
   flashProspectId?: string | null;
   hoveredSidebarProspectId?: string | null;
+  selectedProspectId?: string | null;
   onSidebarHover?: (locationId: string | null) => void;
   onSidebarRowActivate?: (locationId: string) => void;
 };
@@ -642,6 +564,7 @@ export function NearbyProspectSection({
   interactive = false,
   flashProspectId,
   hoveredSidebarProspectId,
+  selectedProspectId,
   onSidebarHover,
   onSidebarRowActivate,
 }: NearbyProspectSectionProps) {
@@ -660,6 +583,7 @@ export function NearbyProspectSection({
               interactive={interactive}
               highlightFlash={flashProspectId === id}
               isSidebarHovered={hoveredSidebarProspectId === id}
+              isSelected={selectedProspectId === id}
               onRowPointerEnter={interactive ? () => onSidebarHover?.(id) : undefined}
               onRowPointerLeave={interactive ? () => onSidebarHover?.(null) : undefined}
               onRowActivate={interactive ? () => onSidebarRowActivate?.(id) : undefined}

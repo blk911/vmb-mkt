@@ -56,6 +56,32 @@ export type NearbyProspectRow = NearbyProspectFlags & {
   nearby_prospect_score: number;
 };
 
+/** Map marker / summary classification (anchor → active → path → resolved → fallback). */
+export type ProspectMarkerKind = "anchor" | "active" | "path" | "resolved" | "fallback";
+
+export function classifyProspect(row: NearbyProspectRow): ProspectMarkerKind {
+  if (row.member.is_anchor) return "anchor";
+  if (row.active) return "active";
+  if (row.member.path_enrichment_matched === true) return "path";
+  if (row.member.gray_resolution_matched === true) return "resolved";
+  return "fallback";
+}
+
+export function prospectTypeLabel(kind: ProspectMarkerKind): string {
+  switch (kind) {
+    case "anchor":
+      return "Anchor";
+    case "active":
+      return "Active";
+    case "path":
+      return "Path enriched";
+    case "resolved":
+      return "Resolved";
+    default:
+      return "Low signal";
+  }
+}
+
 /** Phone / contact hub signals (JSON may include `phone` without TS field). */
 function memberHasDirectOutreachSignals(m: EnrichedBeautyZoneMember): boolean {
   const raw = m as Record<string, unknown>;

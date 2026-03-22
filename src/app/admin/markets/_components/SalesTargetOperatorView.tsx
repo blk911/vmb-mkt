@@ -23,6 +23,7 @@ import {
   sortNearbyProspectsByRank,
 } from "@/app/admin/markets/_lib/salesTargetMapHelpers";
 import type { EnrichedBeautyZoneMember } from "@/lib/markets";
+import { SelectedProspectSummaryPanel } from "./SelectedProspectSummaryPanel";
 import { NearbyProspectSection, SalesMapCanvas, type SalesMapCanvasHandle } from "./salesTargetMapParts";
 
 function hiddenOppCount(rows: NearbyProspectRow[], maxMiles: number): number {
@@ -79,6 +80,9 @@ export function SalesTargetOperatorView({
   const [copyFlash, setCopyFlash] = useState<string | null>(null);
   const [sidebarHoverProspectId, setSidebarHoverProspectId] = useState<string | null>(null);
   const [flashProspectId, setFlashProspectId] = useState<string | null>(null);
+  const [selectedProspectId, setSelectedProspectId] = useState<string | null>(null);
+  const [summaryPanelVisible, setSummaryPanelVisible] = useState(false);
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
 
   const backHref = buildMarketsListPath(marketsUrlState);
 
@@ -123,16 +127,33 @@ export function SalesTargetOperatorView({
     window.setTimeout(() => setCopyFlash(null), 2000);
   }, []);
 
-  const onProspectSelectFromMap = useCallback((locationId: string) => {
+  const mapHighlightId = selectedProspectId ?? sidebarHoverProspectId;
+
+  const selectedProspectRow = useMemo(() => {
+    if (!selectedProspectId) return null;
+    return nearbyRows.find((r) => r.member.location_id === selectedProspectId) ?? null;
+  }, [nearbyRows, selectedProspectId]);
+
+  const selectProspect = useCallback((locationId: string, opts?: { panMap?: boolean }) => {
+    setSelectedProspectId(locationId);
+    setSummaryPanelVisible(true);
+    setSummaryExpanded(false);
     setFlashProspectId(locationId);
     window.setTimeout(() => setFlashProspectId(null), 2200);
+    if (opts?.panMap !== false) mapRef.current?.focusProspect(locationId);
     const el = document.getElementById(`vmb-prospect-${locationId}`);
     el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, []);
 
-  const onSidebarRowActivate = useCallback((locationId: string) => {
-    mapRef.current?.focusProspect(locationId);
-  }, []);
+  const onProspectSelectFromMap = useCallback(
+    (locationId: string) => selectProspect(locationId, { panMap: false }),
+    [selectProspect]
+  );
+
+  const onSidebarRowActivate = useCallback(
+    (locationId: string) => selectProspect(locationId, { panMap: true }),
+    [selectProspect]
+  );
 
   const copyList = useCallback(async () => {
     const text = formatProspectListText(origin, ringMiles, nearbyRows);
@@ -300,9 +321,20 @@ export function SalesTargetOperatorView({
             size="large"
             interactive
             marketsUrlState={marketsUrlState}
-            highlightProspectId={sidebarHoverProspectId}
+            highlightProspectId={mapHighlightId}
             onProspectSelectFromMap={onProspectSelectFromMap}
           />
+          {selectedProspectId && selectedProspectRow ? (
+            <SelectedProspectSummaryPanel
+              row={selectedProspectRow}
+              visible={summaryPanelVisible}
+              expanded={summaryExpanded}
+              onToggleExpanded={() => setSummaryExpanded((e) => !e)}
+              onClose={() => setSummaryPanelVisible(false)}
+              onOpen={() => setSummaryPanelVisible(true)}
+              marketsUrlState={marketsUrlState}
+            />
+          ) : null}
         </div>
         <aside className="w-full shrink-0 rounded-xl border border-neutral-200 bg-neutral-50/80 p-3 xl:w-[22rem]">
           <div className="text-xs font-semibold text-neutral-800">
@@ -314,7 +346,7 @@ export function SalesTargetOperatorView({
             <span className="mx-1 inline-block h-2 w-2 rounded-full bg-red-600" /> 1.0 mi
           </div>
           <p className="mt-1.5 text-[9px] leading-snug text-neutral-500">
-            Pins: gold anchor · green active · blue path · gray low signal · large blue = origin
+            Pins: gold anchor · green active · blue path · violet resolved · gray low signal · large blue = origin
           </p>
           <div className="mt-3 max-h-[min(70vh,560px)] overflow-y-auto pr-1">
             <NearbyProspectSection
@@ -324,6 +356,7 @@ export function SalesTargetOperatorView({
               interactive
               hoveredSidebarProspectId={sidebarHoverProspectId}
               flashProspectId={flashProspectId}
+              selectedProspectId={selectedProspectId}
               onSidebarHover={setSidebarHoverProspectId}
               onSidebarRowActivate={onSidebarRowActivate}
             />
@@ -334,6 +367,7 @@ export function SalesTargetOperatorView({
               interactive
               hoveredSidebarProspectId={sidebarHoverProspectId}
               flashProspectId={flashProspectId}
+              selectedProspectId={selectedProspectId}
               onSidebarHover={setSidebarHoverProspectId}
               onSidebarRowActivate={onSidebarRowActivate}
             />
@@ -344,6 +378,7 @@ export function SalesTargetOperatorView({
               interactive
               hoveredSidebarProspectId={sidebarHoverProspectId}
               flashProspectId={flashProspectId}
+              selectedProspectId={selectedProspectId}
               onSidebarHover={setSidebarHoverProspectId}
               onSidebarRowActivate={onSidebarRowActivate}
             />
