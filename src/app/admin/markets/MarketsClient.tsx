@@ -469,7 +469,17 @@ export default function MarketsClient({
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-xl font-semibold">Markets</h1>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <div className="flex flex-wrap items-baseline gap-3">
+          <h1 className="text-xl font-semibold">Markets</h1>
+          <Link
+            href="/admin/markets/unknown-resolver"
+            className="text-xs font-semibold text-sky-700 underline-offset-2 hover:underline"
+          >
+            Unknown resolver queue
+          </Link>
+        </div>
+      </div>
 
       <MarketZoneFilters
         key={`${filters.regionId}-${filters.zoneId}`}
