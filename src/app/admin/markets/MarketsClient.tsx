@@ -17,6 +17,7 @@ import type {
 import {
   buildMarketsListPath,
   buildMemberDetailPath,
+  buildSalesTargetPath,
   marketsListPathsEqual,
   marketsUrlStateKey,
   type MarketsSortDir as SortDir,
@@ -1073,12 +1074,19 @@ export default function MarketsClient({
                             </span>
                           ) : null}
                           <PathEnrichmentBadge member={member} />
+                          <Link
+                            href={buildSalesTargetPath(member.location_id, marketsUrlState, salesRingMiles)}
+                            className="inline-flex shrink-0 rounded border border-neutral-800 bg-neutral-900 px-1.5 py-0.5 text-[10px] font-semibold text-white hover:bg-neutral-800"
+                            title="Open full-screen sales target console for this business"
+                          >
+                            Target page
+                          </Link>
                           {marketsViewMode === "sales_map" ? (
                             <button
                               type="button"
                               onClick={() => setSalesOrigin(member)}
                               className="inline-flex shrink-0 rounded border border-sky-300 bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold text-sky-900 hover:bg-sky-100"
-                              title="Set as map origin (center rings on this business)"
+                              title="Set as map origin (inline map below)"
                             >
                               Set origin
                             </button>

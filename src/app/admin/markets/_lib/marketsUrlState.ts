@@ -1,4 +1,5 @@
 import type { BeautyRegion, BeautyZone } from "@/lib/markets";
+import type { SalesRingMiles } from "@/app/admin/markets/_lib/salesTargetMapHelpers";
 
 export type MarketsSortKey =
   | "upgraded_priority_score"
@@ -142,5 +143,33 @@ export function buildMemberDetailPath(locationId: string, state: MarketsUrlState
   if (state.sortDir !== d.sortDir) p.set("sortDir", state.sortDir);
   const q = p.toString();
   const base = `/admin/markets/member/${encodeURIComponent(locationId)}`;
+  return q ? `${base}?${q}` : base;
+}
+
+/** List radius for `/admin/markets/target/[locationId]?ring=` (default 0.5 mi). */
+export function parseRingQuery(raw: string | undefined): SalesRingMiles {
+  if (raw === "0.25") return 0.25;
+  if (raw === "1" || raw === "1.0") return 1.0;
+  return 0.5;
+}
+
+/**
+ * Dedicated sales target console; preserves zone/markets filters for back navigation.
+ * Optional `ring` only added when not default (0.5 mi).
+ */
+export function buildSalesTargetPath(locationId: string, state: MarketsUrlState, ring?: SalesRingMiles): string {
+  const d = defaultMarketsUrlState();
+  const p = new URLSearchParams();
+  if (state.regionId !== d.regionId) p.set("region", state.regionId);
+  if (state.zoneId !== d.zoneId) p.set("zone", state.zoneId);
+  if (state.category !== d.category) p.set("category", state.category);
+  if (state.subtype !== d.subtype) p.set("subtype", state.subtype);
+  if (state.sort !== d.sort) p.set("sort", state.sort);
+  if (state.sortDir !== d.sortDir) p.set("sortDir", state.sortDir);
+  if (ring != null && ring !== 0.5) {
+    p.set("ring", ring === 1 ? "1" : String(ring));
+  }
+  const q = p.toString();
+  const base = `/admin/markets/target/${encodeURIComponent(locationId)}`;
   return q ? `${base}?${q}` : base;
 }
