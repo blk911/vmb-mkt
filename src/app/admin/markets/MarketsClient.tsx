@@ -24,12 +24,6 @@ import {
   type MarketsSortKey as SortKey,
   type MarketsUrlState,
 } from "./_lib/marketsUrlState";
-import { SalesTargetMapMode } from "./_components/SalesTargetMapMode";
-import {
-  buildNearbyProspects,
-  rollupForRing,
-  type SalesRingMiles,
-} from "./_lib/salesTargetMapHelpers";
 import {
   clusterDisplayTitle,
   computeClusterActiveMetrics,
@@ -248,10 +242,6 @@ export default function MarketsClient({
   const [hotClustersOpen, setHotClustersOpen] = useState(false);
   /** Hidden Opportunity Clusters — collapsed on load. */
   const [hiddenOpportunityOpen, setHiddenOpportunityOpen] = useState(false);
-  /** Review table vs sales map lens (origin + rings + nearby prospects). */
-  const [marketsViewMode, setMarketsViewMode] = useState<"review" | "sales_map">("review");
-  const [salesOrigin, setSalesOrigin] = useState<EnrichedBeautyZoneMember | null>(null);
-  const [salesRingMiles, setSalesRingMiles] = useState<SalesRingMiles>(0.5);
   /** Client-only filter for site_identity presence fields on members (optional in JSON). */
   const [presenceFilter, setPresenceFilter] = useState<string>("all");
   /** Optional: members with path_enrichment_matched (supplemental layer). */
@@ -399,20 +389,6 @@ export default function MarketsClient({
     return map;
   }, [selectedZoneClusters, selectedZoneMembers]);
 
-  const salesNearbyRows = useMemo(() => {
-    if (!salesOrigin) return [];
-    return buildNearbyProspects(salesOrigin, selectedZoneMembers, clusterMetricsById, 1.0);
-  }, [salesOrigin, selectedZoneMembers, clusterMetricsById]);
-
-  const salesRingRollups = useMemo(() => {
-    if (!salesOrigin) return null;
-    return {
-      r25: rollupForRing(salesNearbyRows, 0.25),
-      r5: rollupForRing(salesNearbyRows, 0.5),
-      r1: rollupForRing(salesNearbyRows, 1.0),
-    };
-  }, [salesOrigin, salesNearbyRows]);
-
   const hotClusters = useMemo(() => {
     return [...selectedZoneClusters]
       .map((cluster) => ({
@@ -541,45 +517,13 @@ export default function MarketsClient({
 
       {filters.zoneId !== "ALL" ? (
         <section className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200 px-4 py-3">
+          <div className="border-b border-neutral-200 px-4 py-3">
             <h2 className="text-base font-semibold text-neutral-900">Salon Members</h2>
-            <div
-              className="flex rounded-lg border border-neutral-200 bg-neutral-50 p-0.5"
-              role="group"
-              aria-label="Markets view mode"
-            >
-              <button
-                type="button"
-                onClick={() => setMarketsViewMode("review")}
-                className={`rounded-md px-3 py-1 text-xs font-semibold transition ${
-                  marketsViewMode === "review" ? "bg-white text-neutral-900 shadow-sm" : "text-neutral-600 hover:text-neutral-900"
-                }`}
-              >
-                Review
-              </button>
-              <button
-                type="button"
-                onClick={() => setMarketsViewMode("sales_map")}
-                className={`rounded-md px-3 py-1 text-xs font-semibold transition ${
-                  marketsViewMode === "sales_map" ? "bg-white text-neutral-900 shadow-sm" : "text-neutral-600 hover:text-neutral-900"
-                }`}
-              >
-                Sales Target Map
-              </button>
-            </div>
+            <p className="mt-0.5 text-xs text-neutral-500">
+              Use <span className="font-semibold text-neutral-700">Target page</span> on a row to open the map and operator
+              console.
+            </p>
           </div>
-
-          {marketsViewMode === "sales_map" ? (
-            <SalesTargetMapMode
-              origin={salesOrigin}
-              onClearOrigin={() => setSalesOrigin(null)}
-              nearbyRows={salesNearbyRows}
-              ringMiles={salesRingMiles}
-              onRingMiles={setSalesRingMiles}
-              ringRollups={salesRingRollups}
-              marketsUrlState={marketsUrlState}
-            />
-          ) : null}
 
           <div className="border-b border-neutral-200 px-4 py-4">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-8">
@@ -1075,22 +1019,12 @@ export default function MarketsClient({
                           ) : null}
                           <PathEnrichmentBadge member={member} />
                           <Link
-                            href={buildSalesTargetPath(member.location_id, marketsUrlState, salesRingMiles)}
+                            href={buildSalesTargetPath(member.location_id, marketsUrlState)}
                             className="inline-flex shrink-0 rounded border border-neutral-800 bg-neutral-900 px-1.5 py-0.5 text-[10px] font-semibold text-white hover:bg-neutral-800"
-                            title="Open full-screen sales target console for this business"
+                            title="Open sales target map and operator console for this business"
                           >
                             Target page
                           </Link>
-                          {marketsViewMode === "sales_map" ? (
-                            <button
-                              type="button"
-                              onClick={() => setSalesOrigin(member)}
-                              className="inline-flex shrink-0 rounded border border-sky-300 bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold text-sky-900 hover:bg-sky-100"
-                              title="Set as map origin (inline map below)"
-                            >
-                              Set origin
-                            </button>
-                          ) : null}
                         </div>
                       </td>
                       <td className="px-4 py-3">{member.category}</td>
