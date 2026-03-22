@@ -122,6 +122,19 @@ export type BeautyZoneMember = {
   path_enrichment_website_url?: string | null;
   path_enrichment_source_url?: string | null;
   path_enrichment_match_notes?: string | null;
+  /** Supplemental: gray-pin AUTO merge (`merge_gray_pin_matches_into_markets.py`); not primary site_identity. */
+  gray_resolution_matched?: boolean | null;
+  gray_resolution_score?: number | null;
+  gray_resolution_match_count?: number | null;
+  gray_resolution_match_url?: string | null;
+  gray_resolution_match_title?: string | null;
+  gray_resolution_match_name?: string | null;
+  gray_resolution_match_address?: string | null;
+  gray_resolution_instagram_url?: string | null;
+  gray_resolution_booking_url?: string | null;
+  gray_resolution_booking_provider?: string | null;
+  gray_resolution_source_query?: string | null;
+  gray_resolution_match_notes?: string | null;
 };
 
 export type BeautyZoneCluster = {

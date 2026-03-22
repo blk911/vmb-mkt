@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { buildMarketsListPath, parseMarketsUrlSearchParams } from "../../_lib/marketsUrlState";
 import { getEnrichedMemberByLocationId, getMarketById, getMarkets, getRegions } from "@/lib/markets";
 import LicenseHoldersTable from "./LicenseHoldersTable";
+import { GrayResolutionSection } from "@/components/admin/GrayResolution";
 import { PathEnrichmentSection } from "@/components/admin/PathEnrichment";
 import { PresenceBadges, PresenceRawLinksDetails } from "@/components/admin/PresenceBadges";
 
@@ -118,6 +119,7 @@ export default async function MarketMemberListingPage({ params, searchParams }: 
           </div>
 
           <PathEnrichmentSection member={member} />
+          <GrayResolutionSection member={member} />
         </header>
 
         <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">

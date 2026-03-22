@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { GrayResolutionBadge } from "@/components/admin/GrayResolution";
 import { PathEnrichmentBadge } from "@/components/admin/PathEnrichment";
 import { formatBookingProviderLabel } from "@/components/admin/PresenceBadges";
 import type { ClusterActiveMetrics } from "@/app/admin/markets/_lib/marketsClusterActive";
@@ -17,6 +18,9 @@ function compareClusterEvidenceMembers(a: EnrichedBeautyZoneMember, b: EnrichedB
   const path =
     (b.path_enrichment_matched === true ? 1 : 0) - (a.path_enrichment_matched === true ? 1 : 0);
   if (path !== 0) return path;
+  const gray =
+    (b.gray_resolution_matched === true ? 1 : 0) - (a.gray_resolution_matched === true ? 1 : 0);
+  if (gray !== 0) return gray;
   const pa = a.priority_score ?? 0;
   const pb = b.priority_score ?? 0;
   if (pb !== pa) return pb - pa;
@@ -55,8 +59,10 @@ export function ClusterEvidencePanel({ members, metrics, marketsUrlState }: Prop
         <div className="mt-2 rounded-lg border border-neutral-200 bg-neutral-50/90 px-2.5 py-2 shadow-inner">
           <p className="text-[10px] font-mono leading-snug text-neutral-700 tabular-nums">
             {metrics.total_member_count} members · Active {metrics.active_member_count} · Path{" "}
-            {metrics.path_enriched_member_count} · IG {metrics.instagram_member_count} · Booking{" "}
-            {metrics.booking_member_count} · Opp {metrics.cluster_opportunity_score}
+            {metrics.path_enriched_member_count}
+            {metrics.resolved_member_count > 0 ? ` · Resolved ${metrics.resolved_member_count}` : ""} · IG{" "}
+            {metrics.instagram_member_count} · Booking {metrics.booking_member_count} · Opp{" "}
+            {metrics.cluster_opportunity_score}
           </p>
           <ul className="mt-2 max-h-56 space-y-2 overflow-y-auto pr-0.5">
             {sorted.map((m) => {
@@ -81,6 +87,7 @@ export function ClusterEvidencePanel({ members, metrics, marketsUrlState }: Prop
                       </span>
                     ) : null}
                     <PathEnrichmentBadge member={m} />
+                    <GrayResolutionBadge member={m} />
                     {m.is_anchor ? (
                       <span className="inline-flex shrink-0 rounded bg-amber-100 px-1 py-0.5 text-[9px] font-semibold text-amber-900">
                         Anchor

@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { GrayResolutionBadge } from "@/components/admin/GrayResolution";
 import { PathEnrichmentBadge } from "@/components/admin/PathEnrichment";
 import { PresenceBadges } from "@/components/admin/PresenceBadges";
 import { buildMemberDetailPath, type MarketsUrlState } from "@/app/admin/markets/_lib/marketsUrlState";
@@ -77,12 +78,13 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-type ProspectMarkerKind = "anchor" | "active" | "path" | "fallback";
+type ProspectMarkerKind = "anchor" | "active" | "path" | "resolved" | "fallback";
 
 function classifyProspect(row: NearbyProspectRow): ProspectMarkerKind {
   if (row.member.is_anchor) return "anchor";
   if (row.active) return "active";
   if (row.member.path_enrichment_matched === true) return "path";
+  if (row.member.gray_resolution_matched === true) return "resolved";
   return "fallback";
 }
 
@@ -94,6 +96,8 @@ function typeLabel(kind: ProspectMarkerKind): string {
       return "Active";
     case "path":
       return "Path enriched";
+    case "resolved":
+      return "Resolved";
     default:
       return "Low signal";
   }
@@ -110,7 +114,7 @@ function prospectSymbol(g: any, kind: ProspectMarkerKind, opts: { emphasized?: b
   const path = g.SymbolPath.CIRCLE;
   const emphasized = !!opts.emphasized;
   const scale = emphasized ? 9.5 : 7;
-  const strokeWeight = kind === "path" ? 2.5 : 2;
+  const strokeWeight = kind === "path" || kind === "resolved" ? 2.5 : 2;
   switch (kind) {
     case "anchor":
       return {
@@ -137,6 +141,15 @@ function prospectSymbol(g: any, kind: ProspectMarkerKind, opts: { emphasized?: b
         fillColor: "#bfdbfe",
         fillOpacity: 1,
         strokeColor: "#2563eb",
+        strokeWeight,
+      };
+    case "resolved":
+      return {
+        path,
+        scale: emphasized ? scale * 1.12 : scale,
+        fillColor: "#ede9fe",
+        fillOpacity: 1,
+        strokeColor: "#7c3aed",
         strokeWeight,
       };
     default:
@@ -240,13 +253,21 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
       if (row.active) badges.push("Active");
       if (m.instagram_url || m.instagram_handle) badges.push("IG");
       if (m.booking_provider || m.booking_url) badges.push("Booking");
+      if (m.path_enrichment_matched === true) badges.push("Path");
+      if (m.gray_resolution_matched === true) badges.push("Resolved");
       const badgeStr = badges.length ? badges.join(" · ") : "—";
+      const prospectKind = classifyProspect(row);
+      const resolvedDetailHint =
+        prospectKind === "resolved"
+          ? `<div style="color:#6d28d9;font-size:10px;margin-bottom:6px;line-height:1.3">${escapeHtml("Resolved — supplemental gray-pin hint; not primary presence.")}</div>`
+          : "";
 
       const html = `
         <div style="font-family:system-ui,sans-serif;max-width:240px;padding:4px 2px;font-size:12px;line-height:1.35">
           <div style="font-weight:700;margin-bottom:4px">${escapeHtml(m.name)}</div>
           <div style="color:#444;margin-bottom:4px">${escapeHtml(m.category)}/${escapeHtml(m.subtype)}</div>
-          <div style="color:#666;margin-bottom:4px">${row.distance_miles.toFixed(2)} mi · ${escapeHtml(typeLabel(classifyProspect(row)))}</div>
+          <div style="color:#666;margin-bottom:4px">${row.distance_miles.toFixed(2)} mi · ${escapeHtml(typeLabel(prospectKind))}</div>
+          ${resolvedDetailHint}
           <div style="font-size:11px;color:#555;margin-bottom:8px">${escapeHtml(badgeStr)}</div>
           <a href="${detailPath}" style="color:#0369a1;font-weight:600">Open detail →</a>
         </div>`;
@@ -376,10 +397,15 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
 
       const tooltipHtml = (row: NearbyProspectRow) => {
         const kind = classifyProspect(row);
-        return `<div style="font-family:system-ui,sans-serif;padding:6px 8px;font-size:12px;max-width:200px">
+        const resolvedHint =
+          kind === "resolved"
+            ? `<div style="color:#6d28d9;font-size:10px;margin-top:4px;line-height:1.3">Gray resolution (supplemental hint — not primary presence)</div>`
+            : "";
+        return `<div style="font-family:system-ui,sans-serif;padding:6px 8px;font-size:12px;max-width:220px">
           <div style="font-weight:600">${escapeHtml(row.member.name)}</div>
           <div style="color:#555;margin-top:2px">${row.distance_miles.toFixed(2)} mi</div>
           <div style="color:#666;font-size:11px;margin-top:2px">${escapeHtml(typeLabel(kind))}</div>
+          ${resolvedHint}
         </div>`;
       };
 
@@ -580,6 +606,7 @@ export function ProspectRow({
           <span className="rounded bg-teal-100 px-1 py-0.5 text-[9px] font-semibold text-teal-900">Active</span>
         ) : null}
         <PathEnrichmentBadge member={m} />
+        <GrayResolutionBadge member={m} />
       </div>
       <div className="mt-0.5 flex flex-wrap gap-1 text-[10px] text-neutral-600">
         <span>

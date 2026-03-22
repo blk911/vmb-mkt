@@ -15,10 +15,12 @@ export type ClusterActiveMetrics = {
   instagram_member_count: number;
   /** Members with path_enrichment_matched (supplemental merge). */
   path_enriched_member_count: number;
+  /** Members with gray_resolution_matched (supplemental gray-pin merge). */
+  resolved_member_count: number;
   /** Members with no core IG/booking presence (weak / missing primary signals). */
   unresolved_member_count: number;
   /**
-   * Opportunity signal: booking×3 + IG×1 + path×2 + unresolved×1.
+   * Opportunity signal: booking×3 + IG×1 + path×2 + unresolved×1 + resolved×1.
    * UI-only; not stored on cluster JSON.
    */
   cluster_opportunity_score: number;
@@ -70,9 +72,11 @@ export function computeClusterActiveMetrics(
   const active_member_count = mems.filter(memberHasActivePresence).length;
   const total_member_count = mems.length;
   let path_enriched_member_count = 0;
+  let resolved_member_count = 0;
   let unresolved_member_count = 0;
   for (const m of mems) {
     if (m.path_enrichment_matched === true) path_enriched_member_count += 1;
+    if (m.gray_resolution_matched === true) resolved_member_count += 1;
     if (!memberHasActivePresence(m)) unresolved_member_count += 1;
   }
 
@@ -80,7 +84,8 @@ export function computeClusterActiveMetrics(
     booking_member_count * 3 +
     instagram_member_count * 1 +
     path_enriched_member_count * 2 +
-    unresolved_member_count * 1;
+    unresolved_member_count * 1 +
+    resolved_member_count * 1;
 
   const is_hidden_opportunity =
     total_member_count > 0 &&
@@ -94,6 +99,7 @@ export function computeClusterActiveMetrics(
     booking_member_count,
     instagram_member_count,
     path_enriched_member_count,
+    resolved_member_count,
     unresolved_member_count,
     cluster_opportunity_score,
     is_hidden_opportunity,

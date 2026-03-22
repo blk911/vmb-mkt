@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import MarketZoneFilters from "@/components/admin/MarketZoneFilters";
 import { ClusterEvidencePanel } from "@/components/admin/ClusterEvidencePanel";
+import { GrayResolutionBadge } from "@/components/admin/GrayResolution";
 import { PathEnrichmentBadge } from "@/components/admin/PathEnrichment";
 import { PresenceBadges, formatBookingProviderLabel } from "@/components/admin/PresenceBadges";
 import type {
@@ -771,7 +772,9 @@ export default function MarketsClient({
                                   Active: {met.active_member_count} / {met.total_member_count || cluster.member_count}
                                 </div>
                                 <div>
-                                  Path: {met.path_enriched_member_count} · Score: {met.cluster_opportunity_score}
+                                  Path: {met.path_enriched_member_count}
+                                  {met.resolved_member_count > 0 ? ` · Resolved: ${met.resolved_member_count}` : ""} · Score:{" "}
+                                  {met.cluster_opportunity_score}
                                 </div>
                                 <div>
                                   IG count: {met.instagram_member_count} · Booking count: {met.booking_member_count}
@@ -826,7 +829,9 @@ export default function MarketsClient({
                         Active: {met.active_member_count} / {cluster.member_count}
                       </div>
                       <div className="mt-0.5 font-mono text-[11px] tabular-nums text-neutral-700">
-                        Path: {met.path_enriched_member_count} · Score: {met.cluster_opportunity_score}
+                        Path: {met.path_enriched_member_count}
+                        {met.resolved_member_count > 0 ? ` · Resolved: ${met.resolved_member_count}` : ""} · Score:{" "}
+                        {met.cluster_opportunity_score}
                       </div>
                       <div className="mt-1 text-[11px] text-neutral-600">
                         IG {met.instagram_member_count} · Booking {met.booking_member_count}
@@ -862,7 +867,9 @@ export default function MarketsClient({
                         {cluster.member_count} businesses · Active {met.active_member_count}/{cluster.member_count}
                       </div>
                       <div className="mt-1 font-mono text-[11px] tabular-nums text-neutral-700">
-                        Path: {met.path_enriched_member_count} · Opp score: {met.cluster_opportunity_score}
+                        Path: {met.path_enriched_member_count}
+                        {met.resolved_member_count > 0 ? ` · Resolved: ${met.resolved_member_count}` : ""} · Opp score:{" "}
+                        {met.cluster_opportunity_score}
                       </div>
                       <div className="mt-2 flex flex-wrap gap-1">
                         <span className="inline-flex rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-violet-900">
@@ -1053,6 +1060,7 @@ export default function MarketsClient({
                             </span>
                           ) : null}
                           <PathEnrichmentBadge member={member} />
+                          <GrayResolutionBadge member={member} />
                           <Link
                             href={buildSalesTargetPath(member.location_id, marketsUrlState)}
                             className="inline-flex shrink-0 rounded border border-neutral-800 bg-neutral-900 px-1.5 py-0.5 text-[10px] font-semibold text-white hover:bg-neutral-800"
@@ -1096,8 +1104,8 @@ export default function MarketsClient({
                       <td
                         className="max-w-[14rem] px-4 py-3"
                         title={
-                          member.path_enrichment_matched
-                            ? "Presence = site_identity. Path badge = supplemental corroboration from path enrichment (not primary truth)."
+                          member.path_enrichment_matched || member.gray_resolution_matched
+                            ? "Presence = site_identity. Path / Resolved badges = supplemental (not primary truth)."
                             : "Presence = site_identity outbound links"
                         }
                       >
@@ -1105,10 +1113,16 @@ export default function MarketsClient({
                           <PresenceBadges member={member} />
                           <div className="flex flex-wrap items-center gap-1">
                             <PathEnrichmentBadge member={member} />
+                            <GrayResolutionBadge member={member} />
                           </div>
                           {member.path_enrichment_matched ? (
                             <span className="text-[10px] leading-snug text-neutral-400">
                               Path = supplemental corroboration
+                            </span>
+                          ) : null}
+                          {member.gray_resolution_matched ? (
+                            <span className="text-[10px] leading-snug text-neutral-400">
+                              Resolved = gray-pin supplemental
                             </span>
                           ) : null}
                         </div>
