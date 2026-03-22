@@ -134,6 +134,32 @@ python tools/site_identity/merge_path_enrichment_into_markets.py ^
   --holdout-output data/output/path_enrichment/path_candidates_holdout.json
 ```
 
+### Gray pin resolver (query generation + scoring)
+
+**Purpose:** Turn **gray** market members (no Instagram/booking on the member row, not anchor, no `path_enrichment_matched`) into **actionable search queries** for identity recovery — then **score** structured candidates before merge.
+
+**Library:** `lib/gray_pin_resolver.py`
+
+| Function | Role |
+|----------|------|
+| `member_is_gray_pin(row)` | Same semantics as the admin map “gray / low signal” pin. |
+| `build_gray_resolution_queries(name, address, city, state, category)` | Exact geo, category, address-first, platform `site:` probes, partial-name fallbacks. |
+| `build_address_instagram_probe(address, city?, state?)` | Bonus: `{address city state} instagram` for tagged/geo discovery. |
+| `score_candidate_against_member(member, candidate)` | Returns `(score, detail)` using additive rules: name >0.8 → +3, address match +3, geo ≤0.1 mi +2, IG/booking found +3, suite/building +2. **Tier:** ≥7 `auto`, 4–6 `review`, &lt;4 `discard`. |
+| `compute_gray_resolution_score(...)` / `classify_resolution_tier(score)` | Lower-level scoring if you already have booleans. |
+
+**No search API in-repo:** run queries via your search tool, then pass each hit dict into `score_candidate_against_member` (expects optional keys: `discovered_name` / `title`, `formatted_address`, `lat`/`lng`, `instagram_url`, `booking_url`, `suite_match`).
+
+**CLI:** emit JSONL of queries per gray member (optional `--zone-id`, `--limit`):
+
+```bash
+cd tools/site_identity
+python gray_pin_emit_queries.py ^
+  --markets-input ../../data/markets/beauty_zone_members_enriched_full.json ^
+  --output ../../data/output/gray_pin/gray_resolution_queries.jsonl ^
+  --limit 50
+```
+
 ### Updates (March 2026)
 
 - **Storefront → DORA pre-step:** `--dora-enrich` joins `places_candidates`-style rows to DORA shop names via nearest `beauty_zone_members` (within `--dora-max-meters`) → `shop_anchor_map` by `google_location_id`. Adds `source_name_dora` / match metadata used by clustering and scoring (no redesign of score weights).
