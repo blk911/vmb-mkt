@@ -1,16 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { buildHouseCleaningQueries } from "@/lib/unknown-resolver/resolver-query-generator";
-import { scoreHouseCleaningRecord } from "@/lib/unknown-resolver/resolver-score";
+import { mergeStoredScoreBreakdown, scoreHouseCleaningRecord } from "@/lib/unknown-resolver/resolver-score";
 import {
   applyUnknownResolverFilters,
   DEFAULT_UNKNOWN_RESOLVER_FILTERS,
   sortUnknownResolverQueue,
 } from "@/lib/unknown-resolver/resolver-filters";
 import type { EnrichedResolverRow, ResolverDecision, UnknownResolverFiltersState } from "@/lib/unknown-resolver/resolver-types";
-import { loadUnknownResolverCandidates, loadUnknownResolverQueue, saveOperatorDecision } from "@/lib/unknown-resolver/resolver-storage";
+import {
+  hydrateQueueScores,
+  loadUnknownResolverCandidates,
+  loadUnknownResolverQueue,
+  promoteToOutreach,
+  saveOperatorDecision,
+  type PromoteToOutreachInput,
+} from "@/lib/unknown-resolver/resolver-storage";
 import UnknownResolverFilters from "./UnknownResolverFilters";
 import UnknownResolverQueue from "./UnknownResolverQueue";
 
@@ -18,7 +25,8 @@ function buildEnriched(records: ReturnType<typeof loadUnknownResolverQueue>): En
   return records.map((record) => {
     const candidates = loadUnknownResolverCandidates(record.id);
     const querySet = buildHouseCleaningQueries(record);
-    const score = scoreHouseCleaningRecord(record, candidates);
+    const computed = scoreHouseCleaningRecord(record, candidates);
+    const score = mergeStoredScoreBreakdown(record, computed);
     return {
       record,
       querySet,
@@ -32,6 +40,11 @@ function buildEnriched(records: ReturnType<typeof loadUnknownResolverQueue>): En
 export default function UnknownResolverPage() {
   const [records, setRecords] = useState(() => loadUnknownResolverQueue());
   const [filters, setFilters] = useState<UnknownResolverFiltersState>(DEFAULT_UNKNOWN_RESOLVER_FILTERS);
+
+  useEffect(() => {
+    hydrateQueueScores();
+    setRecords(loadUnknownResolverQueue());
+  }, []);
 
   const fullEnriched = useMemo(() => buildEnriched(records), [records]);
 
@@ -75,6 +88,13 @@ export default function UnknownResolverPage() {
     }
   }, []);
 
+  const onPromoteToOutreach = useCallback((recordId: string, input: PromoteToOutreachInput) => {
+    const u = promoteToOutreach(recordId, input);
+    if (u) {
+      setRecords(loadUnknownResolverQueue());
+    }
+  }, []);
+
   return (
     <div className="min-h-0 flex-1 space-y-4 p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -82,15 +102,23 @@ export default function UnknownResolverPage() {
           <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Markets · Internal</p>
           <h1 className="text-xl font-semibold text-neutral-900">Unknown Resolver Review Queue</h1>
           <p className="mt-1 max-w-2xl text-sm text-neutral-600">
-            Review unresolved local opportunities and classify them as yes / review / no. Summary stat cards use the full queue (not the active filter).
+            Review unresolved local opportunities and classify them as yes / review / no. Summary stat cards use the full queue (not the active filter). Scores are persisted after first load.
           </p>
         </div>
-        <Link
-          href="/admin/markets"
-          className="rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-50"
-        >
-          ← Back to Markets
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/admin/markets/outreach-queue"
+            className="rounded-full border border-sky-300 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-900 hover:bg-sky-100"
+          >
+            Outreach queue →
+          </Link>
+          <Link
+            href="/admin/markets"
+            className="rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-50"
+          >
+            ← Back to Markets
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
@@ -115,7 +143,7 @@ export default function UnknownResolverPage() {
         <h2 className="text-sm font-semibold text-neutral-900">Queue</h2>
         <p className="text-xs text-neutral-500">Collapsed by default. Undecided & higher scores sort first.</p>
         <div className="mt-2">
-          <UnknownResolverQueue rows={filteredSorted} onUpdateDecision={onUpdateDecision} />
+          <UnknownResolverQueue rows={filteredSorted} onUpdateDecision={onUpdateDecision} onPromoteToOutreach={onPromoteToOutreach} />
         </div>
       </section>
     </div>

@@ -123,6 +123,48 @@ export default function UnknownResolverFilters({ filters, setFilters, cityOption
           Only undecided
         </label>
       </div>
+
+      <div className="mt-3 grid gap-3 border-t border-neutral-200 pt-3 sm:grid-cols-2 lg:grid-cols-4">
+        <label className="block text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          Outreach status
+          <select
+            value={filters.outreachStatus}
+            onChange={(e) =>
+              setFilters((f) => ({
+                ...f,
+                outreachStatus: e.target.value as UnknownResolverFiltersState["outreachStatus"],
+              }))
+            }
+            className="mt-1 w-full rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
+          >
+            <option value="all">All</option>
+            <option value="none">None</option>
+            <option value="new">New</option>
+            <option value="researching">Researching</option>
+            <option value="ready">Ready</option>
+            <option value="contacted">Contacted</option>
+            <option value="ignored">Ignored</option>
+          </select>
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 pt-5 text-xs text-neutral-800">
+          <input
+            type="checkbox"
+            checked={filters.promotedOnly}
+            onChange={(e) => setFilters((f) => ({ ...f, promotedOnly: e.target.checked }))}
+            className="rounded border-neutral-400"
+          />
+          Promoted only
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 pt-5 text-xs text-neutral-800">
+          <input
+            type="checkbox"
+            checked={filters.operatorYesOnly}
+            onChange={(e) => setFilters((f) => ({ ...f, operatorYesOnly: e.target.checked }))}
+            className="rounded border-neutral-400"
+          />
+          Operator yes only
+        </label>
+      </div>
     </div>
   );
 }

@@ -231,3 +231,16 @@ export function scoreHouseCleaningRecord(
     reasoning,
   };
 }
+
+/** Overlay persisted snapshot onto computed breakdown for stable UI / downstream. */
+export function mergeStoredScoreBreakdown(
+  record: UnknownResolverRecord,
+  computed: ResolverScoreBreakdown
+): ResolverScoreBreakdown {
+  return {
+    ...computed,
+    finalScore: record.systemScore ?? computed.finalScore,
+    recommendation: record.systemRecommendation ?? computed.recommendation,
+    reasoning: record.scoreReasoning ?? computed.reasoning,
+  };
+}

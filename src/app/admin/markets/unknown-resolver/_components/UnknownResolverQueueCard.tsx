@@ -1,18 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import type { PromoteToOutreachInput } from "@/lib/unknown-resolver/resolver-storage";
 import type { EnrichedResolverRow, ResolverDecision } from "@/lib/unknown-resolver/resolver-types";
 import UnknownResolverDetailPanel from "./UnknownResolverDetailPanel";
 import ResolverOperatorActions from "./ResolverOperatorActions";
+import ResolverPromoteSection from "./ResolverPromoteSection";
 import ResolverRecommendationBadge from "./ResolverRecommendationBadge";
 import ResolverScoreBadge from "./ResolverScoreBadge";
 
 type Props = {
   row: EnrichedResolverRow;
   onUpdateDecision: (recordId: string, decision: ResolverDecision, note: string | null) => void;
+  onPromoteToOutreach: (recordId: string, input: PromoteToOutreachInput) => void;
 };
 
-export default function UnknownResolverQueueCard({ row, onUpdateDecision }: Props) {
+export default function UnknownResolverQueueCard({ row, onUpdateDecision, onPromoteToOutreach }: Props) {
   const [open, setOpen] = useState(false);
   const { record, score, evidenceCount } = row;
   const displayName = record.sourceName ?? record.normalizedName ?? "(unnamed)";
@@ -38,6 +41,11 @@ export default function UnknownResolverQueueCard({ row, onUpdateDecision }: Prop
             ) : (
               <span className="text-[10px] font-medium text-neutral-400">Undecided</span>
             )}
+            {record.promotedAt ? (
+              <span className="rounded border border-sky-400 bg-sky-50 px-1.5 py-0.5 text-[10px] font-bold uppercase text-sky-900">
+                Outreach
+              </span>
+            ) : null}
           </div>
           <div className="mt-1 text-[11px] text-neutral-600">{addrLine}</div>
           <div className="mt-1 flex flex-wrap gap-2 text-[10px] text-neutral-500">
@@ -62,6 +70,7 @@ export default function UnknownResolverQueueCard({ row, onUpdateDecision }: Prop
               initialNote={record.operatorNote}
               onSave={onUpdateDecision}
             />
+            <ResolverPromoteSection record={record} onPromote={(input) => onPromoteToOutreach(record.id, input)} />
           </div>
         </>
       ) : null}

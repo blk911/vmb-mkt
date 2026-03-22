@@ -14,6 +14,9 @@ export const DEFAULT_UNKNOWN_RESOLVER_FILTERS: UnknownResolverFiltersState = {
   minScore: 0,
   searchText: "",
   onlyUndecided: false,
+  outreachStatus: "all",
+  promotedOnly: false,
+  operatorYesOnly: false,
 };
 
 function recRank(r: ResolverRecommendation): number {
@@ -76,6 +79,12 @@ export function applyUnknownResolverFilters(
     if (row.score.finalScore < filters.minScore) return false;
 
     if (filters.onlyUndecided && row.record.operatorDecision != null) return false;
+
+    if (filters.outreachStatus !== "all" && row.record.outreachStatus !== filters.outreachStatus) return false;
+
+    if (filters.promotedOnly && row.record.promotedAt == null) return false;
+
+    if (filters.operatorYesOnly && row.record.operatorDecision !== "yes") return false;
 
     if (!matchesSearch(row, filters.searchText)) return false;
 

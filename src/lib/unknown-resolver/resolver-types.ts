@@ -2,6 +2,13 @@ export type ResolverDecision = "yes" | "review" | "no";
 export type ResolverRecommendation = "yes" | "review" | "no";
 export type ResolverStatus = "unreviewed" | "reviewed";
 
+/** Downstream outreach workflow (house_cleaning v1). */
+export type OutreachStatus = "none" | "new" | "researching" | "ready" | "contacted" | "ignored";
+
+export type ContactConfidence = "high" | "medium" | "low";
+
+export type BestContactMethod = "phone" | "email" | "website" | "instagram" | "facebook" | "unknown";
+
 export type ResolverSource =
   | "google"
   | "website"
@@ -30,8 +37,34 @@ export interface UnknownResolverRecord {
   status: ResolverStatus;
   operatorDecision: ResolverDecision | null;
   operatorNote: string | null;
+  /** Persisted snapshot from scoring engine (stable for UI / outreach). */
   systemRecommendation: ResolverRecommendation | null;
   systemScore: number | null;
+  scoreReasoning: string | null;
+  lastScoredAt: string | null;
+  outreachStatus: OutreachStatus;
+  /** Human-readable join of outreach tags; optional freeform. */
+  outreachLabel: string | null;
+  /** Selected segmentation chips (house_cleaning). */
+  outreachTags: string[];
+  pitchLabel: string | null;
+  promotedAt: string | null;
+  /** Contact enrichment (promoted outreach). */
+  phone: string | null;
+  email: string | null;
+  websiteUrl: string | null;
+  bookingUrl: string | null;
+  instagramHandle: string | null;
+  facebookUrl: string | null;
+  contactConfidence: ContactConfidence | null;
+  bestContactMethod: BestContactMethod;
+  contactSource: string | null;
+  lastEnrichedAt: string | null;
+  firstTouchPlan: string | null;
+  phoneScript: string | null;
+  dmScript: string | null;
+  emailScript: string | null;
+  contactReadinessScore: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -77,6 +110,9 @@ export interface UnknownResolverFiltersState {
   minScore: number;
   searchText: string;
   onlyUndecided: boolean;
+  outreachStatus: "all" | OutreachStatus;
+  promotedOnly: boolean;
+  operatorYesOnly: boolean;
 }
 
 export type EnrichedResolverRow = {

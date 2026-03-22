@@ -478,6 +478,12 @@ export default function MarketsClient({
           >
             Unknown resolver queue
           </Link>
+          <Link
+            href="/admin/markets/outreach-queue"
+            className="text-xs font-semibold text-sky-700 underline-offset-2 hover:underline"
+          >
+            Outreach queue
+          </Link>
         </div>
       </div>
 
