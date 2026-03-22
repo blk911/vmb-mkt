@@ -160,6 +160,18 @@ python gray_pin_emit_queries.py ^
   --limit 50
 ```
 
+**Candidate scoring (manual results):** After you collect search hits offline, save them as **JSON array** or **JSONL** with fields such as `market_member_id`, `query`, `candidate_url`, `candidate_title`, optional address/lat/lon/IG/booking/suite flags (see `gray_pin_score_results.py` docstring). Then run:
+
+```bash
+cd tools/site_identity
+python gray_pin_score_results.py ^
+  --markets-input ../../data/markets/beauty_zone_members_enriched_full.json ^
+  --candidates-input ../../data/output/gray_pin/my_candidates.jsonl ^
+  --output-dir ../../data/output/gray_pin
+```
+
+Writes `gray_resolution_scored_candidates.json` + `.csv`, `gray_resolution_auto_matches.json`, `gray_resolution_review_matches.json`, and `gray_resolution_summary.json`. Uses `score_candidate_against_member` / `classify_resolution_tier` only — **no** search APIs.
+
 ### Updates (March 2026)
 
 - **Storefront → DORA pre-step:** `--dora-enrich` joins `places_candidates`-style rows to DORA shop names via nearest `beauty_zone_members` (within `--dora-max-meters`) → `shop_anchor_map` by `google_location_id`. Adds `source_name_dora` / match metadata used by clustering and scoring (no redesign of score weights).
