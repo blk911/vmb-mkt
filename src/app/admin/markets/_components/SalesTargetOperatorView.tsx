@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { PathEnrichmentBadge } from "@/components/admin/PathEnrichment";
 import { PresenceBadges } from "@/components/admin/PresenceBadges";
 import {
@@ -23,7 +23,7 @@ import {
   sortNearbyProspectsByRank,
 } from "@/app/admin/markets/_lib/salesTargetMapHelpers";
 import type { EnrichedBeautyZoneMember } from "@/lib/markets";
-import { NearbyProspectSection, SalesMapCanvas } from "./salesTargetMapParts";
+import { NearbyProspectSection, SalesMapCanvas, type SalesMapCanvasHandle } from "./salesTargetMapParts";
 
 function hiddenOppCount(rows: NearbyProspectRow[], maxMiles: number): number {
   return rows.filter((r) => r.distance_miles <= maxMiles && r.is_hidden_cluster).length;
@@ -74,8 +74,11 @@ export function SalesTargetOperatorView({
   initialRing,
 }: SalesTargetOperatorViewProps) {
   const router = useRouter();
+  const mapRef = useRef<SalesMapCanvasHandle>(null);
   const [ringMiles, setRingMiles] = useState<SalesRingMiles>(initialRing);
   const [copyFlash, setCopyFlash] = useState<string | null>(null);
+  const [sidebarHoverProspectId, setSidebarHoverProspectId] = useState<string | null>(null);
+  const [flashProspectId, setFlashProspectId] = useState<string | null>(null);
 
   const backHref = buildMarketsListPath(marketsUrlState);
 
@@ -118,6 +121,17 @@ export function SalesTargetOperatorView({
   const flash = useCallback((label: string) => {
     setCopyFlash(label);
     window.setTimeout(() => setCopyFlash(null), 2000);
+  }, []);
+
+  const onProspectSelectFromMap = useCallback((locationId: string) => {
+    setFlashProspectId(locationId);
+    window.setTimeout(() => setFlashProspectId(null), 2200);
+    const el = document.getElementById(`vmb-prospect-${locationId}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, []);
+
+  const onSidebarRowActivate = useCallback((locationId: string) => {
+    mapRef.current?.focusProspect(locationId);
   }, []);
 
   const copyList = useCallback(async () => {
@@ -279,7 +293,16 @@ export function SalesTargetOperatorView({
       {/* C + D — Map + prospects */}
       <div className="flex flex-col gap-4 xl:flex-row">
         <div className="min-w-0 flex-1 space-y-3">
-          <SalesMapCanvas origin={origin} nearbyRows={nearbyRows} size="large" />
+          <SalesMapCanvas
+            ref={mapRef}
+            origin={origin}
+            nearbyRows={nearbyRows}
+            size="large"
+            interactive
+            marketsUrlState={marketsUrlState}
+            highlightProspectId={sidebarHoverProspectId}
+            onProspectSelectFromMap={onProspectSelectFromMap}
+          />
         </div>
         <aside className="w-full shrink-0 rounded-xl border border-neutral-200 bg-neutral-50/80 p-3 xl:w-[22rem]">
           <div className="text-xs font-semibold text-neutral-800">
@@ -290,10 +313,40 @@ export function SalesTargetOperatorView({
             <span className="mx-1 inline-block h-2 w-2 rounded-full bg-yellow-600" /> 0.5 mi
             <span className="mx-1 inline-block h-2 w-2 rounded-full bg-red-600" /> 1.0 mi
           </div>
+          <p className="mt-1.5 text-[9px] leading-snug text-neutral-500">
+            Pins: gold anchor · green active · blue path · gray low signal · large blue = origin
+          </p>
           <div className="mt-3 max-h-[min(70vh,560px)] overflow-y-auto pr-1">
-            <NearbyProspectSection title="Anchors nearby" rows={anchors} marketsUrlState={marketsUrlState} />
-            <NearbyProspectSection title="Active nearby" rows={activeOnly} marketsUrlState={marketsUrlState} />
-            <NearbyProspectSection title="Hidden-opportunity nearby" rows={hiddenOpp} marketsUrlState={marketsUrlState} />
+            <NearbyProspectSection
+              title="Anchors nearby"
+              rows={anchors}
+              marketsUrlState={marketsUrlState}
+              interactive
+              hoveredSidebarProspectId={sidebarHoverProspectId}
+              flashProspectId={flashProspectId}
+              onSidebarHover={setSidebarHoverProspectId}
+              onSidebarRowActivate={onSidebarRowActivate}
+            />
+            <NearbyProspectSection
+              title="Active nearby"
+              rows={activeOnly}
+              marketsUrlState={marketsUrlState}
+              interactive
+              hoveredSidebarProspectId={sidebarHoverProspectId}
+              flashProspectId={flashProspectId}
+              onSidebarHover={setSidebarHoverProspectId}
+              onSidebarRowActivate={onSidebarRowActivate}
+            />
+            <NearbyProspectSection
+              title="Hidden-opportunity nearby"
+              rows={hiddenOpp}
+              marketsUrlState={marketsUrlState}
+              interactive
+              hoveredSidebarProspectId={sidebarHoverProspectId}
+              flashProspectId={flashProspectId}
+              onSidebarHover={setSidebarHoverProspectId}
+              onSidebarRowActivate={onSidebarRowActivate}
+            />
             {!anchors.length && !activeOnly.length && !hiddenOpp.length ? (
               <p className="text-xs text-neutral-500">No prospects in this ring with these groupings.</p>
             ) : null}
