@@ -13,7 +13,7 @@ import {
 import { GrayResolutionBadge } from "@/components/admin/GrayResolution";
 import { PathEnrichmentBadge } from "@/components/admin/PathEnrichment";
 import { PresenceBadges } from "@/components/admin/PresenceBadges";
-import { type MarketsUrlState } from "@/app/admin/markets/_lib/marketsUrlState";
+import { buildMemberDetailPath, type MarketsUrlState } from "@/app/admin/markets/_lib/marketsUrlState";
 import {
   type NearbyProspectRow,
   type ProspectMarkerKind,
