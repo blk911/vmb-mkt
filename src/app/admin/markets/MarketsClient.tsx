@@ -181,6 +181,39 @@ function SortTh({
   );
 }
 
+/** Compact strip card for Clusters / Hidden / Hot / Top Targets (toggle only — content renders below). */
+function ClusterInsightsSummaryCard({
+  title,
+  count,
+  subtitle,
+  open,
+  onToggle,
+}: {
+  title: string;
+  count: number;
+  subtitle: string;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      className={`flex min-h-[5.25rem] flex-col rounded-xl border px-2.5 py-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 ${
+        open
+          ? "border-sky-400 bg-white shadow-sm ring-1 ring-sky-200/70"
+          : "border-neutral-200 bg-neutral-50 hover:border-neutral-300 hover:bg-white"
+      }`}
+    >
+      <span className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">{title}</span>
+      <span className="mt-0.5 text-2xl font-bold tabular-nums leading-none text-neutral-900">{count}</span>
+      <span className="mt-0.5 line-clamp-2 text-[9px] leading-snug text-neutral-500">{subtitle}</span>
+      <span className="mt-auto pt-1 text-[10px] font-semibold text-sky-700">{open ? "Close" : "Open"}</span>
+    </button>
+  );
+}
+
 type Props = {
   regions: BeautyRegion[];
   zones: BeautyZone[];
@@ -398,6 +431,14 @@ export default function MarketsClient({
       })
       .slice(0, 5);
   }, [clusterMetricsById, selectedZoneClusters, selectedZoneMembers]);
+
+  /** All qualifying hidden-opportunity clusters in zone (not capped at 5). */
+  const hiddenOpportunityQualifyingCount = useMemo(() => {
+    return selectedZoneClusters.reduce((n, cl) => {
+      const met = clusterMetricsById.get(cl.cluster_id);
+      return met?.is_hidden_opportunity ? n + 1 : n;
+    }, 0);
+  }, [clusterMetricsById, selectedZoneClusters]);
 
   /** Path-assisted underrepresentation: active &lt; half of members but ≥2 path-enriched; top 5 by opportunity score. */
   const hiddenOpportunityClusters = useMemo(() => {
@@ -651,31 +692,43 @@ export default function MarketsClient({
             </p>
           </div>
 
-          <div className="border-b border-neutral-200 px-4 py-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <h3 className="text-sm font-semibold text-neutral-900">Clusters</h3>
-                <p className="text-xs text-neutral-500">
-                  {selectedZoneClusters.length} clusters · largest {selectedZoneClusters[0]?.member_count ?? 0} members
-                  {" · "}
-                  <span className="text-neutral-400">
-                    Sorted by size here; use Hot Clusters below for presence-ranked picks.
-                  </span>
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setClustersOpen((o) => !o)}
-                aria-expanded={clustersOpen}
-                className="shrink-0 rounded-full border border-neutral-300 bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-800 transition hover:bg-neutral-50"
-              >
-                {clustersOpen ? "CLOSE" : "OPEN"}
-              </button>
+          <div className="border-b border-neutral-200 px-4 py-3">
+            <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+              <ClusterInsightsSummaryCard
+                title="Clusters"
+                count={selectedZoneClusters.length}
+                subtitle="Size-sorted · full list"
+                open={clustersOpen}
+                onToggle={() => setClustersOpen((o) => !o)}
+              />
+              <ClusterInsightsSummaryCard
+                title="Hidden opportunity"
+                count={hiddenOpportunityQualifyingCount}
+                subtitle="Path gap · top 5 when open"
+                open={hiddenOpportunityOpen}
+                onToggle={() => setHiddenOpportunityOpen((o) => !o)}
+              />
+              <ClusterInsightsSummaryCard
+                title="Hot clusters"
+                count={hotClusters.length}
+                subtitle="Presence-ranked · top 5"
+                open={hotClustersOpen}
+                onToggle={() => setHotClustersOpen((o) => !o)}
+              />
+              <ClusterInsightsSummaryCard
+                title="Top targets"
+                count={topTargets.length}
+                subtitle="Ranked members · top 5"
+                open={topTargetsOpen}
+                onToggle={() => setTopTargetsOpen((o) => !o)}
+              />
             </div>
+          </div>
 
-            {clustersOpen ? (
-              selectedZoneClusters.length ? (
-                <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {clustersOpen ? (
+            <div className="border-b border-neutral-200 px-4 py-4">
+              {selectedZoneClusters.length ? (
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                   {selectedZoneClusters.map((cluster) => {
                     const met = clusterMetricsById.get(cluster.cluster_id);
                     const mems = selectedZoneMembers.filter((m) => m.cluster_id === cluster.cluster_id);
@@ -761,32 +814,15 @@ export default function MarketsClient({
                   })}
                 </div>
               ) : (
-                <p className="mt-3 text-sm text-neutral-600">No clusters detected for this zone.</p>
-              )
-            ) : null}
-          </div>
-
-          <div className="border-b border-neutral-200 px-4 py-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <h3 className="text-sm font-semibold text-neutral-900">Hidden Opportunity Clusters</h3>
-                <p className="text-xs text-neutral-500">
-                  Clusters with underrepresented activity recovered via path enrichment
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setHiddenOpportunityOpen((o) => !o)}
-                aria-expanded={hiddenOpportunityOpen}
-                className="shrink-0 rounded-full border border-neutral-300 bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-800 transition hover:bg-neutral-50"
-              >
-                {hiddenOpportunityOpen ? "CLOSE" : "OPEN"}
-              </button>
+                <p className="text-sm text-neutral-600">No clusters detected for this zone.</p>
+              )}
             </div>
+          ) : null}
 
-            {hiddenOpportunityOpen ? (
-              hiddenOpportunityClusters.length ? (
-                <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          {hiddenOpportunityOpen ? (
+            <div className="border-b border-neutral-200 px-4 py-4">
+              {hiddenOpportunityClusters.length ? (
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
                   {hiddenOpportunityClusters.map(({ cluster, metrics: met, mems }, index) => (
                     <article
                       key={cluster.cluster_id}
@@ -820,34 +856,17 @@ export default function MarketsClient({
                   ))}
                 </div>
               ) : (
-                <p className="mt-3 text-sm text-neutral-600">
+                <p className="text-sm text-neutral-600">
                   No clusters match hidden-opportunity rules (active &lt; 50% with ≥2 path-enriched members).
                 </p>
-              )
-            ) : null}
-          </div>
-
-          <div className="border-b border-neutral-200 px-4 py-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <h3 className="text-sm font-semibold text-neutral-900">Hot Clusters</h3>
-                <p className="text-xs text-neutral-500">
-                  Top clusters by active presence and density — full cluster list above stays size-sorted
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setHotClustersOpen((o) => !o)}
-                aria-expanded={hotClustersOpen}
-                className="shrink-0 rounded-full border border-neutral-300 bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-800 transition hover:bg-neutral-50"
-              >
-                {hotClustersOpen ? "CLOSE" : "OPEN"}
-              </button>
+              )}
             </div>
+          ) : null}
 
-            {hotClustersOpen ? (
-              hotClusters.length ? (
-                <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          {hotClustersOpen ? (
+            <div className="border-b border-neutral-200 px-4 py-4">
+              {hotClusters.length ? (
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
                   {hotClusters.map(({ cluster, metrics: met, mems }, index) => (
                     <article
                       key={cluster.cluster_id}
@@ -900,32 +919,15 @@ export default function MarketsClient({
                   ))}
                 </div>
               ) : (
-                <p className="mt-3 text-sm text-neutral-600">No clusters in this zone.</p>
-              )
-            ) : null}
-          </div>
-
-          <div className="border-b border-neutral-200 px-4 py-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <h3 className="text-sm font-semibold text-neutral-900">Top Targets</h3>
-                <p className="text-xs text-neutral-500">
-                  Top 5 by presence, anchors, booking, then upgraded score
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setTopTargetsOpen((o) => !o)}
-                aria-expanded={topTargetsOpen}
-                className="shrink-0 rounded-full border border-neutral-300 bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-800 transition hover:bg-neutral-50"
-              >
-                {topTargetsOpen ? "CLOSE" : "OPEN"}
-              </button>
+                <p className="text-sm text-neutral-600">No clusters in this zone.</p>
+              )}
             </div>
+          ) : null}
 
-            {topTargetsOpen ? (
-              topTargets.length ? (
-                <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          {topTargetsOpen ? (
+            <div className="border-b border-neutral-200 px-4 py-4">
+              {topTargets.length ? (
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
                   {topTargets.map((member, index) => (
                     <article
                       key={member.location_id}
@@ -975,10 +977,10 @@ export default function MarketsClient({
                   ))}
                 </div>
               ) : (
-                <p className="mt-3 text-sm text-neutral-600">No top targets available for this zone.</p>
-              )
-            ) : null}
-          </div>
+                <p className="text-sm text-neutral-600">No top targets available for this zone.</p>
+              )}
+            </div>
+          ) : null}
 
           {visibleMembers.length ? (
             <div className="overflow-x-auto">
