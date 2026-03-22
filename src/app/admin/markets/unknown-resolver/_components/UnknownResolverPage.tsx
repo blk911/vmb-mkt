@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { buildHouseCleaningQueries } from "@/lib/unknown-resolver/resolver-query-generator";
-import { mergeStoredScoreBreakdown, scoreHouseCleaningRecord } from "@/lib/unknown-resolver/resolver-score";
+import { buildResolverQueries } from "@/lib/unknown-resolver/resolver-query-generator";
+import { mergeStoredScoreBreakdown, scoreResolverRecord } from "@/lib/unknown-resolver/resolver-score";
 import {
   applyUnknownResolverFilters,
   DEFAULT_UNKNOWN_RESOLVER_FILTERS,
@@ -21,12 +21,12 @@ import {
 import UnknownResolverFilters from "./UnknownResolverFilters";
 import UnknownResolverQueue from "./UnknownResolverQueue";
 
-/** Queue rows include `zones` / `primaryZone` from resolver-storage (lat/lng → TARGET_ZONES). */
+/** Queue rows are category-gated house_cleaning; `zones` / `primaryZone` from resolver-storage. */
 function buildEnriched(records: ReturnType<typeof loadUnknownResolverQueue>): EnrichedResolverRow[] {
   return records.map((record) => {
     const candidates = loadUnknownResolverCandidates(record.id);
-    const querySet = buildHouseCleaningQueries(record);
-    const computed = scoreHouseCleaningRecord(record, candidates);
+    const querySet = buildResolverQueries(record);
+    const computed = scoreResolverRecord(record, candidates);
     const score = mergeStoredScoreBreakdown(record, computed);
     return {
       record,
@@ -103,7 +103,7 @@ export default function UnknownResolverPage() {
           <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Markets · Internal</p>
           <h1 className="text-xl font-semibold text-neutral-900">Unknown Resolver Review Queue</h1>
           <p className="mt-1 max-w-2xl text-sm text-neutral-600">
-            Review unresolved local opportunities and classify them as yes / review / no. Summary stat cards use the full queue (not the active filter). Scores are persisted after first load.
+            House cleaning resolver queue — review opportunities as yes / review / no. Summary stat cards use the full queue (not the active filter). Scores are persisted after first load.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

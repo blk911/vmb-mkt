@@ -8,9 +8,11 @@ import type {
   ResolverDecision,
   UnknownResolverRecord,
 } from "./resolver-types";
+import { normalizeResolverCategory } from "./resolver-categories";
+import { canEnterHouseCleaningResolver, canPromoteResolverRecord } from "./resolver-category-guards";
 import { applyContactEnrichmentDerivation } from "./resolver-contact-readiness";
 import { deriveNextFollowUpAt, deriveStatusFromActivity } from "./resolver-followup";
-import { scoreHouseCleaningRecord } from "./resolver-score";
+import { scoreResolverRecord } from "./resolver-score";
 import { assignZonesToRecord } from "@/lib/geo/zone-assignment";
 import { HOUSE_CLEANING_CANDIDATES_BY_RECORD } from "@/lib/mock/unknownResolver/houseCleaningCandidates";
 import { HOUSE_CLEANING_QUEUE_SEED } from "@/lib/mock/unknownResolver/houseCleaningQueue";
@@ -20,13 +22,18 @@ let queueOverride: UnknownResolverRecord[] | null = null;
 /** Session-persisted activity log (v1). */
 let activityStore: OutreachActivity[] = [];
 
-function migrateOutreachRecord(r: UnknownResolverRecord): UnknownResolverRecord {
+/**
+ * Normalize category (never silent house_cleaning), legacy outreach fields, then zone assignment.
+ */
+function normalizeAndMigrateRecord(r: UnknownResolverRecord): UnknownResolverRecord {
+  const category = normalizeResolverCategory((r as { category?: string }).category);
   let outreachStatus = r.outreachStatus;
   if ((r.outreachStatus as string) === "contacted") {
     outreachStatus = "attempted";
   }
   const withLegacy: UnknownResolverRecord = {
     ...r,
+    category,
     outreachStatus,
     lastContactAt: r.lastContactAt ?? null,
     nextFollowUpAt: r.nextFollowUpAt ?? null,
@@ -38,9 +45,15 @@ function migrateOutreachRecord(r: UnknownResolverRecord): UnknownResolverRecord 
   return assignZonesToRecord(withLegacy);
 }
 
+/** Full session queue after seed/override + normalization (all categories). */
 function materializeQueue(): UnknownResolverRecord[] {
   const raw = queueOverride ?? [...HOUSE_CLEANING_QUEUE_SEED];
-  return raw.map(migrateOutreachRecord);
+  return raw.map(normalizeAndMigrateRecord);
+}
+
+/** House cleaning Unknown Resolver UI: excludes non-house_cleaning rows. */
+function materializeHouseCleaningQueue(): UnknownResolverRecord[] {
+  return materializeQueue().filter((r) => canEnterHouseCleaningResolver(r));
 }
 
 function newActivityId(): string {
@@ -50,18 +63,18 @@ function newActivityId(): string {
   return `act-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
 
-/** Future: Firestore / API. For v1 returns in-memory or seed. */
+/** House cleaning resolver queue only (category-gated). */
 export function loadUnknownResolverQueue(): UnknownResolverRecord[] {
-  return materializeQueue();
+  return materializeHouseCleaningQueue();
 }
 
 export function loadUnknownResolverCandidates(recordId: string) {
   return [...(HOUSE_CLEANING_CANDIDATES_BY_RECORD[recordId] ?? [])];
 }
 
-/** Promoted rows only (downstream outreach). */
+/** Promoted rows for outreach (v1: house_cleaning only). */
 export function loadOutreachQueue(): UnknownResolverRecord[] {
-  return loadUnknownResolverQueue().filter((r) => r.promotedAt != null);
+  return materializeHouseCleaningQueue().filter((r) => r.promotedAt != null);
 }
 
 /**
@@ -75,7 +88,7 @@ export function hydrateQueueScores(): void {
   const next = q.map((r) => {
     if (r.lastScoredAt != null) return r;
     const cands = loadUnknownResolverCandidates(r.id);
-    const bd = scoreHouseCleaningRecord(r, cands);
+    const bd = scoreResolverRecord(r, cands);
     changed = true;
     return {
       ...r,
@@ -128,6 +141,7 @@ export function promoteToOutreach(recordId: string, input: PromoteToOutreachInpu
   if (idx < 0) return null;
   const cur = q[idx];
   if (cur.operatorDecision !== "yes") return null;
+  if (!canPromoteResolverRecord(cur)) return null;
   if (cur.promotedAt != null) return cur;
   const t = new Date().toISOString();
   const outreachLabel = input.outreachTags.length > 0 ? input.outreachTags.join(" · ") : null;

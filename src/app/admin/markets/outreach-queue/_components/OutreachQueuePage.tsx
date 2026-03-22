@@ -296,6 +296,7 @@ export default function OutreachQueuePage() {
               <th className="w-8 px-2 py-2" />
               <th className="px-2 py-2">Name</th>
               <th className="px-2 py-2">City</th>
+              <th className="px-2 py-2">Category</th>
               <th className="px-2 py-2">Zone</th>
               <th className="px-2 py-2">Score</th>
               <th className="px-2 py-2">Ready</th>
@@ -309,7 +310,7 @@ export default function OutreachQueuePage() {
           <tbody className="text-neutral-800">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={11} className="px-3 py-8 text-center text-sm text-neutral-500">
+                <td colSpan={12} className="px-3 py-8 text-center text-sm text-neutral-500">
                   No rows match filters. Approve <strong>yes</strong> in Unknown Resolver and click <strong>Promote to Outreach</strong>, or loosen filters.
                 </td>
               </tr>

@@ -1,3 +1,4 @@
+import { RESOLVER_CATEGORY_LABELS } from "@/lib/unknown-resolver/resolver-categories";
 import type { EnrichedResolverRow } from "@/lib/unknown-resolver/resolver-types";
 import ResolverRecommendationBadge from "./ResolverRecommendationBadge";
 import ResolverScoreBadge from "./ResolverScoreBadge";
@@ -32,7 +33,10 @@ export default function UnknownResolverDetailPanel({ row }: Props) {
           </div>
           <div>
             <dt className="text-neutral-500">Category</dt>
-            <dd className="font-mono">{record.category}</dd>
+            <dd>
+              <span className="text-neutral-800">{RESOLVER_CATEGORY_LABELS[record.category]}</span>{" "}
+              <span className="font-mono text-[10px] text-neutral-500">({record.category})</span>
+            </dd>
           </div>
           <div>
             <dt className="text-neutral-500">Address</dt>

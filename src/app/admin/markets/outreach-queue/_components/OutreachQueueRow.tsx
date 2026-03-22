@@ -4,6 +4,7 @@ import { Fragment, useCallback, useEffect, useState } from "react";
 import ZoneBadge from "@/app/admin/markets/_components/ZoneBadge";
 import ResolverScoreBadge from "@/app/admin/markets/unknown-resolver/_components/ResolverScoreBadge";
 import { getZoneLabel } from "@/lib/geo/zone-assignment";
+import { RESOLVER_CATEGORY_LABELS } from "@/lib/unknown-resolver/resolver-categories";
 import type {
   BestContactMethod,
   ContactConfidence,
@@ -185,6 +186,9 @@ export default function OutreachQueueRow({ record, onRefresh }: Props) {
         <td className="whitespace-nowrap px-2 py-2 text-[11px] text-sky-800">{open ? "▼" : "▶"}</td>
         <td className="px-2 py-2 font-semibold">{name}</td>
         <td className="px-2 py-2">{record.city ?? "—"}</td>
+        <td className="max-w-[5rem] px-1 py-2 text-[10px] text-neutral-700" title={record.category}>
+          {RESOLVER_CATEGORY_LABELS[record.category]}
+        </td>
         <td className="max-w-[7rem] px-1 py-2 align-middle">
           {record.primaryZone ? (
             <ZoneBadge
@@ -224,7 +228,7 @@ export default function OutreachQueueRow({ record, onRefresh }: Props) {
       </tr>
       {open ? (
         <tr className="border-b border-neutral-200 bg-neutral-50/90">
-          <td colSpan={11} className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
+          <td colSpan={12} className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50/40 px-3 py-2">
               <h3 className="text-[10px] font-bold uppercase tracking-wide text-indigo-900">Target zones</h3>
               {record.zones.length > 0 ? (

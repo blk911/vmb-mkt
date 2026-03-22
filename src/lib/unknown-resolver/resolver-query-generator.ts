@@ -1,3 +1,4 @@
+import { canUseHouseCleaningScoring } from "./resolver-category-guards";
 import type { ResolverQuerySet, UnknownResolverRecord } from "./resolver-types";
 import { compactAddress, maybeStreetFragment, normalizeBusinessName } from "./resolver-normalize";
 
@@ -9,6 +10,14 @@ function q(parts: Array<string | null | undefined>): string | null {
     .replace(/\s+/g, " ")
     .trim();
   return s.length >= 3 ? s : null;
+}
+
+/** Dispatch by category; only house_cleaning gets query strings in v1. */
+export function buildResolverQueries(record: UnknownResolverRecord): ResolverQuerySet {
+  if (!canUseHouseCleaningScoring(record)) {
+    return { recordId: record.id, queries: [] };
+  }
+  return buildHouseCleaningQueries(record);
 }
 
 /**

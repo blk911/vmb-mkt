@@ -2,6 +2,7 @@
 
 import type { Dispatch, SetStateAction } from "react";
 import { TARGET_ZONES } from "@/lib/geo/target-zones";
+import { RESOLVER_CATEGORY_LABELS } from "@/lib/unknown-resolver/resolver-categories";
 import type { UnknownResolverFiltersState } from "@/lib/unknown-resolver/resolver-types";
 
 type Props = {
@@ -18,12 +19,13 @@ export default function UnknownResolverFilters({ filters, setFilters, cityOption
         <label className="block text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
           Category
           <select
-            value={filters.category}
+            value="house_cleaning"
             disabled
             className="mt-1 w-full rounded border border-neutral-300 bg-neutral-100 px-2 py-1.5 text-xs text-neutral-700"
           >
-            <option value="house_cleaning">house_cleaning</option>
+            <option value="house_cleaning">{RESOLVER_CATEGORY_LABELS.house_cleaning}</option>
           </select>
+          <p className="mt-1 text-[9px] font-normal normal-case text-neutral-500">Other categories later.</p>
         </label>
         <label className="block text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
           Ring

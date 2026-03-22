@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { canPromoteResolverRecord } from "@/lib/unknown-resolver/resolver-category-guards";
 import type { UnknownResolverRecord } from "@/lib/unknown-resolver/resolver-types";
 import type { PromoteToOutreachInput } from "@/lib/unknown-resolver/resolver-storage";
 import { HOUSE_CLEANING_OUTREACH_CHIPS, HOUSE_CLEANING_PITCH_LABELS } from "@/lib/unknown-resolver/resolver-outreach-labels";
@@ -25,6 +26,15 @@ export default function ResolverPromoteSection({ record, onPromote }: Props) {
   }, [onPromote, pitch, tags]);
 
   if (record.operatorDecision !== "yes") return null;
+
+  if (!canPromoteResolverRecord(record)) {
+    return (
+      <div className="rounded border border-amber-200 bg-amber-50/90 px-3 py-2 text-[11px] text-amber-950">
+        Outreach promotion is only available for <strong>House Cleaning</strong> leads. This record is{" "}
+        <span className="font-mono">{record.category}</span>.
+      </div>
+    );
+  }
 
   if (promoted) {
     return (

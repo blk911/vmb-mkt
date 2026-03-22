@@ -1,3 +1,4 @@
+import { canUseHouseCleaningScoring } from "./resolver-category-guards";
 import type {
   ResolverCandidate,
   ResolverRecommendation,
@@ -193,6 +194,28 @@ function buildReasoning(
   return `Evidence points to unrelated cleaning vertical or weak match. ${catNote}${
     penaltyReason ? ` ${penaltyReason}` : ""
   }`;
+}
+
+/** Category-aware entry point: only house_cleaning uses the full resolver; others get a neutral breakdown. */
+export function scoreResolverRecord(
+  record: UnknownResolverRecord,
+  candidates: ResolverCandidate[]
+): ResolverScoreBreakdown {
+  if (!canUseHouseCleaningScoring(record)) {
+    return {
+      recordId: record.id,
+      nameScore: 0,
+      categoryScore: 0,
+      geoScore: 0,
+      webPresenceScore: 0,
+      platformScore: 0,
+      conflictPenalty: 0,
+      finalScore: 0,
+      recommendation: "no",
+      reasoning: "Unsupported category for current resolver.",
+    };
+  }
+  return scoreHouseCleaningRecord(record, candidates);
 }
 
 /**

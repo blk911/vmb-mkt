@@ -1,3 +1,7 @@
+import type { ResolverCategory } from "./resolver-categories";
+
+export type { ResolverCategory } from "./resolver-categories";
+
 export type ResolverDecision = "yes" | "review" | "no";
 export type ResolverRecommendation = "yes" | "review" | "no";
 export type ResolverStatus = "unreviewed" | "reviewed";
@@ -160,7 +164,8 @@ export interface ResolverScoreBreakdown {
 export type ResolverZoneFilterId = "all" | string;
 
 export interface UnknownResolverFiltersState {
-  category: "house_cleaning";
+  /** Resolver queue scope; "all" reserved for future multi-category views. */
+  category: ResolverCategory | "all";
   ring: string;
   city: string;
   systemRecommendation: "all" | ResolverRecommendation;

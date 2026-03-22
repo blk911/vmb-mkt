@@ -53,7 +53,7 @@ export function applyUnknownResolverFilters(
   filters: UnknownResolverFiltersState
 ): EnrichedResolverRow[] {
   return rows.filter((row) => {
-    if (filters.category !== row.record.category) return false;
+    if (filters.category !== "all" && row.record.category !== filters.category) return false;
 
     if (filters.ring !== "all") {
       const want = Number(filters.ring);
