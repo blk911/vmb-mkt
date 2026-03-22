@@ -2,8 +2,54 @@ export type ResolverDecision = "yes" | "review" | "no";
 export type ResolverRecommendation = "yes" | "review" | "no";
 export type ResolverStatus = "unreviewed" | "reviewed";
 
+/** Logged touch / research row (session store v1). */
+export type OutreachActivityType =
+  | "call"
+  | "text"
+  | "email"
+  | "dm"
+  | "facebook_message"
+  | "research"
+  | "note"
+  | "meeting"
+  | "other";
+
+export type OutreachActivityOutcome =
+  | "attempted"
+  | "left_message"
+  | "no_answer"
+  | "sent"
+  | "replied"
+  | "interested"
+  | "not_now"
+  | "closed_won"
+  | "closed_lost"
+  | "bad_fit"
+  | "other";
+
+export interface OutreachActivity {
+  id: string;
+  recordId: string;
+  activityType: OutreachActivityType;
+  outcome: OutreachActivityOutcome;
+  note: string | null;
+  createdAt: string;
+  createdBy: string | null;
+}
+
 /** Downstream outreach workflow (house_cleaning v1). */
-export type OutreachStatus = "none" | "new" | "researching" | "ready" | "contacted" | "ignored";
+export type OutreachStatus =
+  | "none"
+  | "new"
+  | "researching"
+  | "ready"
+  | "attempted"
+  | "awaiting_response"
+  | "follow_up_due"
+  | "interested"
+  | "not_now"
+  | "closed_won"
+  | "ignored";
 
 export type ContactConfidence = "high" | "medium" | "low";
 
@@ -65,6 +111,16 @@ export interface UnknownResolverRecord {
   dmScript: string | null;
   emailScript: string | null;
   contactReadinessScore: number | null;
+  /** Target pin zones (may overlap); IDs from TARGET_ZONES. */
+  zones: string[];
+  /** Closest zone center among matches; null if no coords or no match. */
+  primaryZone: string | null;
+  /** Last outbound / logged touch (ISO). */
+  lastContactAt: string | null;
+  /** Scheduled follow-up (ISO). */
+  nextFollowUpAt: string | null;
+  lastActivityType: OutreachActivityType | null;
+  lastOutcome: OutreachActivityOutcome | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -101,6 +157,8 @@ export interface ResolverScoreBreakdown {
   reasoning: string;
 }
 
+export type ResolverZoneFilterId = "all" | string;
+
 export interface UnknownResolverFiltersState {
   category: "house_cleaning";
   ring: string;
@@ -113,6 +171,8 @@ export interface UnknownResolverFiltersState {
   outreachStatus: "all" | OutreachStatus;
   promotedOnly: boolean;
   operatorYesOnly: boolean;
+  /** Filter by membership in a target pin zone (any overlap). */
+  zoneId: ResolverZoneFilterId;
 }
 
 export type EnrichedResolverRow = {

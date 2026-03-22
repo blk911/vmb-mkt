@@ -21,6 +21,7 @@ import {
 import UnknownResolverFilters from "./UnknownResolverFilters";
 import UnknownResolverQueue from "./UnknownResolverQueue";
 
+/** Queue rows include `zones` / `primaryZone` from resolver-storage (lat/lng → TARGET_ZONES). */
 function buildEnriched(records: ReturnType<typeof loadUnknownResolverQueue>): EnrichedResolverRow[] {
   return records.map((record) => {
     const candidates = loadUnknownResolverCandidates(record.id);

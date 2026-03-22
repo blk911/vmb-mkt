@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import ZoneBadge from "@/app/admin/markets/_components/ZoneBadge";
+import { getZoneLabel } from "@/lib/geo/zone-assignment";
 import type { PromoteToOutreachInput } from "@/lib/unknown-resolver/resolver-storage";
 import type { EnrichedResolverRow, ResolverDecision } from "@/lib/unknown-resolver/resolver-types";
 import UnknownResolverDetailPanel from "./UnknownResolverDetailPanel";
@@ -46,6 +48,13 @@ export default function UnknownResolverQueueCard({ row, onUpdateDecision, onProm
                 Outreach
               </span>
             ) : null}
+            {record.primaryZone ? (
+              <ZoneBadge
+                variant="primary"
+                label={getZoneLabel(record.primaryZone) ?? record.primaryZone}
+                title={`Primary zone: ${record.primaryZone}`}
+              />
+            ) : null}
           </div>
           <div className="mt-1 text-[11px] text-neutral-600">{addrLine}</div>
           <div className="mt-1 flex flex-wrap gap-2 text-[10px] text-neutral-500">
@@ -61,6 +70,36 @@ export default function UnknownResolverQueueCard({ row, onUpdateDecision, onProm
 
       {open ? (
         <>
+          {record.zones.length > 0 ? (
+            <div className="border-t border-neutral-100 bg-neutral-50/80 px-3 py-2">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">Target zones</p>
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                <span className="text-[10px] text-neutral-600">Primary:</span>
+                {record.primaryZone ? (
+                  <ZoneBadge
+                    variant="primary"
+                    label={getZoneLabel(record.primaryZone) ?? record.primaryZone}
+                  />
+                ) : (
+                  <span className="text-[10px] text-neutral-400">—</span>
+                )}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-1">
+                {record.zones.map((zid) => (
+                  <ZoneBadge
+                    key={zid}
+                    variant={zid === record.primaryZone ? "primary" : "default"}
+                    label={getZoneLabel(zid) ?? zid}
+                    title={zid}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="border-t border-neutral-100 px-3 py-2 text-[11px] text-neutral-500">
+              No target zone match (missing coords or outside pinned areas).
+            </div>
+          )}
           <UnknownResolverDetailPanel row={row} />
           <div className="border-t border-neutral-200 px-3 py-3">
             <ResolverOperatorActions

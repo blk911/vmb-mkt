@@ -1,23 +1,49 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useState } from "react";
+import ZoneBadge from "@/app/admin/markets/_components/ZoneBadge";
 import ResolverScoreBadge from "@/app/admin/markets/unknown-resolver/_components/ResolverScoreBadge";
+import { getZoneLabel } from "@/lib/geo/zone-assignment";
 import type {
   BestContactMethod,
   ContactConfidence,
+  OutreachActivity,
   OutreachStatus,
   UnknownResolverRecord,
 } from "@/lib/unknown-resolver/resolver-types";
-import { saveContactEnrichment, saveOutreachRecordPatch } from "@/lib/unknown-resolver/resolver-storage";
+import {
+  appendOutreachActivity,
+  loadOutreachActivities,
+  saveContactEnrichment,
+  saveOutreachRecordPatch,
+} from "@/lib/unknown-resolver/resolver-storage";
 
 type Props = {
   record: UnknownResolverRecord;
   onRefresh: () => void;
 };
 
+const PROMOTED_STATUS_OPTIONS: OutreachStatus[] = [
+  "new",
+  "researching",
+  "ready",
+  "attempted",
+  "awaiting_response",
+  "follow_up_due",
+  "interested",
+  "not_now",
+  "closed_won",
+  "ignored",
+];
+
 function ContactReadinessMini({ score }: { score: number | null }) {
   if (score == null) return <span className="text-[10px] text-neutral-400">—</span>;
-  const tier = score >= 70 ? "bg-emerald-100 text-emerald-900 border-emerald-300" : score >= 40 ? "bg-amber-100 text-amber-900 border-amber-300" : "bg-neutral-200 text-neutral-800 border-neutral-400";
+  const tier =
+    score >= 70
+      ? "bg-emerald-100 text-emerald-900 border-emerald-300"
+      : score >= 40
+        ? "bg-amber-100 text-amber-900 border-amber-300"
+        : "bg-neutral-200 text-neutral-800 border-neutral-400";
   return (
     <span className={`inline-flex rounded-full border px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${tier}`} title="Contact readiness">
       {score}
@@ -27,7 +53,12 @@ function ContactReadinessMini({ score }: { score: number | null }) {
 
 function ConfBadge({ c }: { c: ContactConfidence | null }) {
   if (!c) return <span className="text-[10px] text-neutral-400">—</span>;
-  const cls = c === "high" ? "bg-emerald-50 text-emerald-900 border-emerald-300" : c === "medium" ? "bg-amber-50 text-amber-900 border-amber-300" : "bg-neutral-100 text-neutral-700 border-neutral-300";
+  const cls =
+    c === "high"
+      ? "bg-emerald-50 text-emerald-900 border-emerald-300"
+      : c === "medium"
+        ? "bg-amber-50 text-amber-900 border-amber-300"
+        : "bg-neutral-100 text-neutral-700 border-neutral-300";
   return (
     <span className={`rounded border px-1 py-0.5 text-[9px] font-bold uppercase ${cls}`}>{c}</span>
   );
@@ -42,8 +73,14 @@ function MethodBadge({ m }: { m: BestContactMethod }) {
 const METHOD_OPTIONS: BestContactMethod[] = ["unknown", "phone", "email", "website", "instagram", "facebook"];
 const CONF_OPTIONS: (ContactConfidence | "")[] = ["", "high", "medium", "low"];
 
+function formatActivityLine(a: OutreachActivity): string {
+  return `${a.activityType} · ${a.outcome}`;
+}
+
 export default function OutreachQueueRow({ record, onRefresh }: Props) {
   const [open, setOpen] = useState(false);
+  const [activities, setActivities] = useState<OutreachActivity[]>([]);
+  const [activityNote, setActivityNote] = useState("");
   const [phone, setPhone] = useState(record.phone ?? "");
   const [email, setEmail] = useState(record.email ?? "");
   const [websiteUrl, setWebsiteUrl] = useState(record.websiteUrl ?? "");
@@ -76,7 +113,29 @@ export default function OutreachQueueRow({ record, onRefresh }: Props) {
     setOperatorNote(record.operatorNote ?? "");
   }, [record]);
 
+  useEffect(() => {
+    if (open) {
+      setActivities(loadOutreachActivities(record.id));
+    }
+  }, [open, record.id, record.updatedAt, record.lastContactAt]);
+
   const name = record.sourceName ?? record.normalizedName ?? "(unnamed)";
+
+  const logTouch = useCallback(
+    (activityType: OutreachActivity["activityType"], outcome: OutreachActivity["outcome"]) => {
+      const note = activityNote.trim() || null;
+      appendOutreachActivity({
+        recordId: record.id,
+        activityType,
+        outcome,
+        note,
+      });
+      setActivityNote("");
+      setActivities(loadOutreachActivities(record.id));
+      onRefresh();
+    },
+    [record.id, activityNote, onRefresh]
+  );
 
   const saveAll = useCallback(() => {
     saveContactEnrichment(record.id, {
@@ -126,6 +185,17 @@ export default function OutreachQueueRow({ record, onRefresh }: Props) {
         <td className="whitespace-nowrap px-2 py-2 text-[11px] text-sky-800">{open ? "▼" : "▶"}</td>
         <td className="px-2 py-2 font-semibold">{name}</td>
         <td className="px-2 py-2">{record.city ?? "—"}</td>
+        <td className="max-w-[7rem] px-1 py-2 align-middle">
+          {record.primaryZone ? (
+            <ZoneBadge
+              variant="primary"
+              label={getZoneLabel(record.primaryZone) ?? record.primaryZone}
+              title={record.primaryZone}
+            />
+          ) : (
+            <span className="text-[10px] text-neutral-400">—</span>
+          )}
+        </td>
         <td className="px-2 py-2">{record.systemScore != null ? <ResolverScoreBadge score={record.systemScore} /> : "—"}</td>
         <td className="px-2 py-2">
           <ContactReadinessMini score={record.contactReadinessScore} />
@@ -141,11 +211,11 @@ export default function OutreachQueueRow({ record, onRefresh }: Props) {
           <select
             value={record.outreachStatus}
             onChange={(e) => onStatusChange(e.target.value as OutreachStatus)}
-            className="max-w-[8rem] rounded border border-neutral-300 bg-white px-1 py-0.5 text-[10px]"
+            className="max-w-[9rem] rounded border border-neutral-300 bg-white px-1 py-0.5 text-[10px]"
           >
-            {(["new", "researching", "ready", "contacted", "ignored"] as const).map((s) => (
+            {PROMOTED_STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {s.replace(/_/g, " ")}
               </option>
             ))}
           </select>
@@ -154,8 +224,146 @@ export default function OutreachQueueRow({ record, onRefresh }: Props) {
       </tr>
       {open ? (
         <tr className="border-b border-neutral-200 bg-neutral-50/90">
-          <td colSpan={10} className="px-3 py-4">
-            <div className="grid gap-4 lg:grid-cols-2">
+          <td colSpan={11} className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50/40 px-3 py-2">
+              <h3 className="text-[10px] font-bold uppercase tracking-wide text-indigo-900">Target zones</h3>
+              {record.zones.length > 0 ? (
+                <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] text-indigo-900">Primary:</span>
+                  {record.primaryZone ? (
+                    <ZoneBadge variant="primary" label={getZoneLabel(record.primaryZone) ?? record.primaryZone} />
+                  ) : (
+                    <span className="text-[10px] text-neutral-500">—</span>
+                  )}
+                </div>
+              ) : null}
+              <div className="mt-2 flex flex-wrap gap-1">
+                {record.zones.length > 0 ? (
+                  record.zones.map((zid) => (
+                    <ZoneBadge
+                      key={zid}
+                      variant={zid === record.primaryZone ? "primary" : "default"}
+                      label={getZoneLabel(zid) ?? zid}
+                      title={zid}
+                    />
+                  ))
+                ) : (
+                  <span className="text-[11px] text-neutral-600">No zone match (no coords or outside pinned areas).</span>
+                )}
+              </div>
+            </div>
+
+            <div className="mb-4 flex flex-wrap gap-3 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[11px] text-neutral-700">
+              <span>
+                <span className="font-semibold text-neutral-500">Last contact:</span>{" "}
+                {record.lastContactAt ? new Date(record.lastContactAt).toLocaleString() : "—"}
+              </span>
+              <span>
+                <span className="font-semibold text-neutral-500">Next follow-up:</span>{" "}
+                {record.nextFollowUpAt ? new Date(record.nextFollowUpAt).toLocaleString() : "—"}
+              </span>
+              {record.lastActivityType ? (
+                <span>
+                  <span className="font-semibold text-neutral-500">Last:</span> {record.lastActivityType} · {record.lastOutcome}
+                </span>
+              ) : null}
+            </div>
+
+            <div className="rounded-lg border border-sky-200 bg-sky-50/50 p-3">
+              <h3 className="text-[10px] font-bold uppercase tracking-wide text-sky-900">Log outreach</h3>
+              <p className="mt-1 text-[11px] text-sky-800">Optional note applies to the next quick action you click.</p>
+              <textarea
+                value={activityNote}
+                onChange={(e) => setActivityNote(e.target.value)}
+                rows={2}
+                placeholder="Optional note with next log…"
+                className="mt-2 w-full rounded border border-sky-200 bg-white px-2 py-1.5 text-xs"
+              />
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  className="rounded border border-neutral-300 bg-white px-2 py-1 text-[11px] font-medium hover:bg-neutral-50"
+                  onClick={() => logTouch("call", "attempted")}
+                >
+                  Called
+                </button>
+                <button
+                  type="button"
+                  className="rounded border border-neutral-300 bg-white px-2 py-1 text-[11px] font-medium hover:bg-neutral-50"
+                  onClick={() => logTouch("dm", "sent")}
+                >
+                  DM sent
+                </button>
+                <button
+                  type="button"
+                  className="rounded border border-neutral-300 bg-white px-2 py-1 text-[11px] font-medium hover:bg-neutral-50"
+                  onClick={() => logTouch("email", "sent")}
+                >
+                  Emailed
+                </button>
+                <button
+                  type="button"
+                  className="rounded border border-neutral-300 bg-white px-2 py-1 text-[11px] font-medium hover:bg-neutral-50"
+                  onClick={() => logTouch("call", "no_answer")}
+                >
+                  No answer
+                </button>
+                <button
+                  type="button"
+                  className="rounded border border-neutral-300 bg-white px-2 py-1 text-[11px] font-medium hover:bg-neutral-50"
+                  onClick={() => logTouch("other", "replied")}
+                >
+                  Replied
+                </button>
+                <button
+                  type="button"
+                  className="rounded border border-emerald-300 bg-emerald-50 px-2 py-1 text-[11px] font-medium text-emerald-900 hover:bg-emerald-100"
+                  onClick={() => logTouch("call", "interested")}
+                >
+                  Interested
+                </button>
+                <button
+                  type="button"
+                  className="rounded border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-900 hover:bg-amber-100"
+                  onClick={() => logTouch("note", "not_now")}
+                >
+                  Not now
+                </button>
+                <button
+                  type="button"
+                  className="rounded border border-emerald-600 bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-emerald-700"
+                  onClick={() => logTouch("meeting", "closed_won")}
+                >
+                  Closed won
+                </button>
+                <button
+                  type="button"
+                  className="rounded border border-neutral-500 bg-neutral-700 px-2 py-1 text-[11px] font-semibold text-white hover:bg-neutral-800"
+                  onClick={() => logTouch("note", "closed_lost")}
+                >
+                  Dead lead
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-lg border border-neutral-200 bg-white p-3">
+              <h3 className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">Activity timeline</h3>
+              {activities.length === 0 ? (
+                <p className="mt-2 text-xs text-neutral-500">No logged touches yet.</p>
+              ) : (
+                <ul className="mt-2 space-y-2">
+                  {activities.map((a) => (
+                    <li key={a.id} className="border-b border-neutral-100 pb-2 text-[11px] last:border-0">
+                      <div className="font-medium text-neutral-800">{new Date(a.createdAt).toLocaleString()}</div>
+                      <div className="text-neutral-700">{formatActivityLine(a)}</div>
+                      {a.note ? <p className="mt-0.5 text-neutral-600">{a.note}</p> : null}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="mt-4 grid gap-4 lg:grid-cols-2">
               <div className="space-y-2">
                 <h3 className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">Contact enrichment</h3>
                 <div className="grid gap-2 sm:grid-cols-2">
@@ -273,14 +481,9 @@ export default function OutreachQueueRow({ record, onRefresh }: Props) {
               <textarea value={operatorNote} onChange={(e) => setOperatorNote(e.target.value)} rows={2} className="mt-1 w-full rounded border border-neutral-300 px-2 py-1.5 text-xs" />
             </label>
 
-            <div className="mt-3 rounded border border-dashed border-neutral-300 bg-neutral-50 px-2 py-2 text-[10px] text-neutral-600">
-              <span className="font-semibold text-neutral-700">Status history:</span> Not tracked in v1 — future CRM sync.
-            </div>
-
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={() => {
                 saveAll();
               }}
               className="mt-3 rounded bg-neutral-900 px-4 py-2 text-xs font-semibold text-white hover:bg-neutral-800"

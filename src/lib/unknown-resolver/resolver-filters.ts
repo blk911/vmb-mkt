@@ -17,6 +17,7 @@ export const DEFAULT_UNKNOWN_RESOLVER_FILTERS: UnknownResolverFiltersState = {
   outreachStatus: "all",
   promotedOnly: false,
   operatorYesOnly: false,
+  zoneId: "all",
 };
 
 function recRank(r: ResolverRecommendation): number {
@@ -87,6 +88,10 @@ export function applyUnknownResolverFilters(
     if (filters.operatorYesOnly && row.record.operatorDecision !== "yes") return false;
 
     if (!matchesSearch(row, filters.searchText)) return false;
+
+    if (filters.zoneId !== "all") {
+      if (!row.record.zones.includes(filters.zoneId)) return false;
+    }
 
     return true;
   });

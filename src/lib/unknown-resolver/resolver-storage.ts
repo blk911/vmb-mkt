@@ -1,19 +1,53 @@
 import type {
   BestContactMethod,
   ContactConfidence,
+  OutreachActivity,
+  OutreachActivityOutcome,
+  OutreachActivityType,
   OutreachStatus,
   ResolverDecision,
   UnknownResolverRecord,
 } from "./resolver-types";
 import { applyContactEnrichmentDerivation } from "./resolver-contact-readiness";
+import { deriveNextFollowUpAt, deriveStatusFromActivity } from "./resolver-followup";
 import { scoreHouseCleaningRecord } from "./resolver-score";
+import { assignZonesToRecord } from "@/lib/geo/zone-assignment";
 import { HOUSE_CLEANING_CANDIDATES_BY_RECORD } from "@/lib/mock/unknownResolver/houseCleaningCandidates";
 import { HOUSE_CLEANING_QUEUE_SEED } from "@/lib/mock/unknownResolver/houseCleaningQueue";
 
 let queueOverride: UnknownResolverRecord[] | null = null;
 
+/** Session-persisted activity log (v1). */
+let activityStore: OutreachActivity[] = [];
+
+function migrateOutreachRecord(r: UnknownResolverRecord): UnknownResolverRecord {
+  let outreachStatus = r.outreachStatus;
+  if ((r.outreachStatus as string) === "contacted") {
+    outreachStatus = "attempted";
+  }
+  const withLegacy: UnknownResolverRecord = {
+    ...r,
+    outreachStatus,
+    lastContactAt: r.lastContactAt ?? null,
+    nextFollowUpAt: r.nextFollowUpAt ?? null,
+    lastActivityType: r.lastActivityType ?? null,
+    lastOutcome: r.lastOutcome ?? null,
+    zones: r.zones ?? [],
+    primaryZone: r.primaryZone ?? null,
+  };
+  return assignZonesToRecord(withLegacy);
+}
+
 function materializeQueue(): UnknownResolverRecord[] {
-  return queueOverride ?? [...HOUSE_CLEANING_QUEUE_SEED];
+  const raw = queueOverride ?? [...HOUSE_CLEANING_QUEUE_SEED];
+  return raw.map(migrateOutreachRecord);
+}
+
+function newActivityId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `act-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
 
 /** Future: Firestore / API. For v1 returns in-memory or seed. */
@@ -107,7 +141,15 @@ export function promoteToOutreach(recordId: string, input: PromoteToOutreachInpu
     updatedAt: t,
   };
   const derived = applyContactEnrichmentDerivation(base);
-  const updated: UnknownResolverRecord = { ...base, ...derived, lastEnrichedAt: null };
+  const updated: UnknownResolverRecord = {
+    ...base,
+    ...derived,
+    lastEnrichedAt: null,
+    lastContactAt: null,
+    nextFollowUpAt: null,
+    lastActivityType: null,
+    lastOutcome: null,
+  };
   const next = [...q];
   next[idx] = updated;
   queueOverride = next;
@@ -224,7 +266,96 @@ export function saveOutreachRecordPatch(recordId: string, patch: OutreachPatch):
   return updated;
 }
 
+/** Newest-first activity history for a promoted lead. */
+export function loadOutreachActivities(recordId: string): OutreachActivity[] {
+  return activityStore
+    .filter((a) => a.recordId === recordId)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export function hasOutreachActivities(recordId: string): boolean {
+  return activityStore.some((a) => a.recordId === recordId);
+}
+
+export type AppendOutreachActivityInput = {
+  recordId: string;
+  activityType: OutreachActivityType;
+  outcome: OutreachActivityOutcome;
+  note?: string | null;
+  createdBy?: string | null;
+};
+
+/**
+ * Log one touch: appends activity, updates last contact / outcome / status / next follow-up.
+ */
+export function appendOutreachActivity(input: AppendOutreachActivityInput): UnknownResolverRecord | null {
+  const q = materializeQueue();
+  const idx = q.findIndex((r) => r.id === input.recordId);
+  if (idx < 0) return null;
+  const cur = q[idx];
+  if (cur.promotedAt == null) return null;
+  const now = new Date();
+  const createdAt = now.toISOString();
+  const activity: OutreachActivity = {
+    id: newActivityId(),
+    recordId: input.recordId,
+    activityType: input.activityType,
+    outcome: input.outcome,
+    note: input.note?.trim() || null,
+    createdAt,
+    createdBy: input.createdBy ?? null,
+  };
+  activityStore = [...activityStore, activity];
+  const nextFollow = deriveNextFollowUpAt(input.outcome, now);
+  const outreachStatus = deriveStatusFromActivity(input.activityType, input.outcome);
+  const updated: UnknownResolverRecord = {
+    ...cur,
+    lastContactAt: createdAt,
+    lastActivityType: input.activityType,
+    lastOutcome: input.outcome,
+    nextFollowUpAt: nextFollow,
+    outreachStatus,
+    updatedAt: createdAt,
+  };
+  const next = [...q];
+  next[idx] = updated;
+  queueOverride = next;
+  return updated;
+}
+
+export type FollowUpPatch = {
+  nextFollowUpAt?: string | null;
+  lastContactAt?: string | null;
+  outreachStatus?: OutreachStatus;
+  lastActivityType?: OutreachActivityType | null;
+  lastOutcome?: OutreachActivityOutcome | null;
+};
+
+/** Manual schedule / status tweaks without logging a new activity row. */
+export function saveFollowUpPatch(recordId: string, patch: FollowUpPatch): UnknownResolverRecord | null {
+  const q = materializeQueue();
+  const idx = q.findIndex((r) => r.id === recordId);
+  if (idx < 0) return null;
+  const cur = q[idx];
+  if (cur.promotedAt == null) return null;
+  const t = new Date().toISOString();
+  const updated: UnknownResolverRecord = {
+    ...cur,
+    nextFollowUpAt: patch.nextFollowUpAt !== undefined ? patch.nextFollowUpAt : cur.nextFollowUpAt,
+    lastContactAt: patch.lastContactAt !== undefined ? patch.lastContactAt : cur.lastContactAt,
+    outreachStatus: patch.outreachStatus ?? cur.outreachStatus,
+    lastActivityType: patch.lastActivityType !== undefined ? patch.lastActivityType : cur.lastActivityType,
+    lastOutcome: patch.lastOutcome !== undefined ? patch.lastOutcome : cur.lastOutcome,
+    updatedAt: t,
+  };
+  const next = [...q];
+  next[idx] = updated;
+  queueOverride = next;
+  return updated;
+}
+
 /** Test / reset helper */
 export function resetUnknownResolverQueueForTests(): void {
   queueOverride = null;
+  activityStore = [];
 }

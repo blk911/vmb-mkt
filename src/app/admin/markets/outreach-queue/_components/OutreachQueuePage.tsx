@@ -2,12 +2,26 @@
 
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
-import type { BestContactMethod, ContactConfidence, OutreachStatus } from "@/lib/unknown-resolver/resolver-types";
-import { loadOutreachQueue } from "@/lib/unknown-resolver/resolver-storage";
+import { TARGET_ZONES } from "@/lib/geo/target-zones";
+import type { BestContactMethod, ContactConfidence, OutreachStatus, ResolverZoneFilterId } from "@/lib/unknown-resolver/resolver-types";
+import { hasOutreachActivities, loadOutreachQueue } from "@/lib/unknown-resolver/resolver-storage";
 import { isReadyToContact } from "@/lib/unknown-resolver/resolver-contact-readiness";
+import { hasLoggedContact, isFollowUpDue } from "@/lib/unknown-resolver/resolver-followup";
 import OutreachQueueRow from "./OutreachQueueRow";
 
-const STATUS_FILTER_OPTIONS: OutreachStatus[] = ["none", "new", "researching", "ready", "contacted", "ignored"];
+const STATUS_FILTER_OPTIONS: OutreachStatus[] = [
+  "none",
+  "new",
+  "researching",
+  "ready",
+  "attempted",
+  "awaiting_response",
+  "follow_up_due",
+  "interested",
+  "not_now",
+  "closed_won",
+  "ignored",
+];
 
 const METHOD_FILTER: Array<"all" | BestContactMethod> = [
   "all",
@@ -29,10 +43,26 @@ export default function OutreachQueuePage() {
   const [contactConfidence, setContactConfidence] = useState<"all" | ContactConfidence>("all");
   const [minReadinessScore, setMinReadinessScore] = useState<string>("");
   const [sortBy, setSortBy] = useState<"promoted" | "readiness">("promoted");
+  const [followUpDueOnly, setFollowUpDueOnly] = useState(false);
+  const [noActivityOnly, setNoActivityOnly] = useState(false);
+  const [interestedOnly, setInterestedOnly] = useState(false);
+  const [closedOnly, setClosedOnly] = useState(false);
+  const [zoneId, setZoneId] = useState<ResolverZoneFilterId>("all");
 
   const refresh = useCallback(() => {
     setRows(loadOutreachQueue());
   }, []);
+
+  const now = useMemo(() => new Date(), [rows]);
+
+  const summary = useMemo(() => {
+    const readyToContact = rows.filter((r) => isReadyToContact(r)).length;
+    const contacted = rows.filter((r) => hasLoggedContact(r)).length;
+    const followUpDue = rows.filter((r) => isFollowUpDue(r, now)).length;
+    const interested = rows.filter((r) => r.outreachStatus === "interested").length;
+    const closedWon = rows.filter((r) => r.outreachStatus === "closed_won").length;
+    return { readyToContact, contacted, followUpDue, interested, closedWon };
+  }, [rows, now]);
 
   const filtered = useMemo(() => {
     let list = [...rows];
@@ -56,6 +86,21 @@ export default function OutreachQueuePage() {
         list = list.filter((r) => (r.contactReadinessScore ?? 0) >= minN);
       }
     }
+    if (followUpDueOnly) {
+      list = list.filter((r) => isFollowUpDue(r, new Date()));
+    }
+    if (noActivityOnly) {
+      list = list.filter((r) => !hasOutreachActivities(r.id));
+    }
+    if (interestedOnly) {
+      list = list.filter((r) => r.outreachStatus === "interested");
+    }
+    if (closedOnly) {
+      list = list.filter((r) => r.outreachStatus === "closed_won" || r.outreachStatus === "ignored");
+    }
+    if (zoneId !== "all") {
+      list = list.filter((r) => r.zones.includes(zoneId));
+    }
 
     if (sortBy === "promoted") {
       list.sort((a, b) => {
@@ -75,7 +120,20 @@ export default function OutreachQueuePage() {
     }
 
     return list;
-  }, [rows, statusFilter, readyToContactOnly, bestContactMethod, contactConfidence, minReadinessScore, sortBy]);
+  }, [
+    rows,
+    statusFilter,
+    readyToContactOnly,
+    bestContactMethod,
+    contactConfidence,
+    minReadinessScore,
+    sortBy,
+    followUpDueOnly,
+    noActivityOnly,
+    interestedOnly,
+    closedOnly,
+    zoneId,
+  ]);
 
   return (
     <div className="min-h-0 flex-1 space-y-4 p-6">
@@ -84,7 +142,7 @@ export default function OutreachQueuePage() {
           <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Markets · Internal</p>
           <h1 className="text-xl font-semibold text-neutral-900">Outreach Queue</h1>
           <p className="mt-1 max-w-2xl text-sm text-neutral-600">
-            House cleaning targets promoted from Unknown Resolver. Enrich contacts, first-touch plan, and scripts — session-persisted.
+            House cleaning targets promoted from Unknown Resolver. Log touches, follow-ups, and enrichment — session-persisted.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -103,6 +161,29 @@ export default function OutreachQueuePage() {
         </div>
       </div>
 
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 px-3 py-2">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-800">Ready to contact</p>
+          <p className="text-2xl font-bold tabular-nums text-emerald-950">{summary.readyToContact}</p>
+        </div>
+        <div className="rounded-xl border border-sky-200 bg-sky-50/80 px-3 py-2">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-sky-800">Contacted</p>
+          <p className="text-2xl font-bold tabular-nums text-sky-950">{summary.contacted}</p>
+        </div>
+        <div className="rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-amber-900">Follow-up due</p>
+          <p className="text-2xl font-bold tabular-nums text-amber-950">{summary.followUpDue}</p>
+        </div>
+        <div className="rounded-xl border border-violet-200 bg-violet-50/80 px-3 py-2">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-violet-900">Interested</p>
+          <p className="text-2xl font-bold tabular-nums text-violet-950">{summary.interested}</p>
+        </div>
+        <div className="rounded-xl border border-green-300 bg-green-50/80 px-3 py-2">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-green-900">Closed won</p>
+          <p className="text-2xl font-bold tabular-nums text-green-950">{summary.closedWon}</p>
+        </div>
+      </div>
+
       <div className="flex flex-wrap items-end gap-3 rounded-xl border border-neutral-200 bg-neutral-50/80 p-3">
         <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
           Status
@@ -114,7 +195,22 @@ export default function OutreachQueuePage() {
             <option value="all">All</option>
             {STATUS_FILTER_OPTIONS.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {s.replace(/_/g, " ")}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          Target zone
+          <select
+            value={zoneId}
+            onChange={(e) => setZoneId(e.target.value as ResolverZoneFilterId)}
+            className="mt-0.5 block max-w-[11rem] rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
+          >
+            <option value="all">All zones</option>
+            {TARGET_ZONES.filter((z) => z.active).map((z) => (
+              <option key={z.id} value={z.id}>
+                {z.label}
               </option>
             ))}
           </select>
@@ -122,6 +218,22 @@ export default function OutreachQueuePage() {
         <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
           <input type="checkbox" checked={readyToContactOnly} onChange={(e) => setReadyToContactOnly(e.target.checked)} className="rounded border-neutral-300" />
           Ready to contact
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+          <input type="checkbox" checked={followUpDueOnly} onChange={(e) => setFollowUpDueOnly(e.target.checked)} className="rounded border-neutral-300" />
+          Follow-up due
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+          <input type="checkbox" checked={noActivityOnly} onChange={(e) => setNoActivityOnly(e.target.checked)} className="rounded border-neutral-300" />
+          No activity
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+          <input type="checkbox" checked={interestedOnly} onChange={(e) => setInterestedOnly(e.target.checked)} className="rounded border-neutral-300" />
+          Interested only
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+          <input type="checkbox" checked={closedOnly} onChange={(e) => setClosedOnly(e.target.checked)} className="rounded border-neutral-300" />
+          Closed (won or dead)
         </label>
         <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
           Best method
@@ -184,6 +296,7 @@ export default function OutreachQueuePage() {
               <th className="w-8 px-2 py-2" />
               <th className="px-2 py-2">Name</th>
               <th className="px-2 py-2">City</th>
+              <th className="px-2 py-2">Zone</th>
               <th className="px-2 py-2">Score</th>
               <th className="px-2 py-2">Ready</th>
               <th className="px-2 py-2">Conf</th>
@@ -196,7 +309,7 @@ export default function OutreachQueuePage() {
           <tbody className="text-neutral-800">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={10} className="px-3 py-8 text-center text-sm text-neutral-500">
+                <td colSpan={11} className="px-3 py-8 text-center text-sm text-neutral-500">
                   No rows match filters. Approve <strong>yes</strong> in Unknown Resolver and click <strong>Promote to Outreach</strong>, or loosen filters.
                 </td>
               </tr>

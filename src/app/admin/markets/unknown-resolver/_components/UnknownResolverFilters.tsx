@@ -1,6 +1,7 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
+import { TARGET_ZONES } from "@/lib/geo/target-zones";
 import type { UnknownResolverFiltersState } from "@/lib/unknown-resolver/resolver-types";
 
 type Props = {
@@ -13,7 +14,7 @@ type Props = {
 export default function UnknownResolverFilters({ filters, setFilters, cityOptions, ringOptions }: Props) {
   return (
     <div className="rounded-xl border border-neutral-200 bg-neutral-50/80 p-3">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
         <label className="block text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
           Category
           <select
@@ -49,6 +50,26 @@ export default function UnknownResolverFilters({ filters, setFilters, cityOption
             {cityOptions.map((c) => (
               <option key={c} value={c}>
                 {c}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          Target zone
+          <select
+            value={filters.zoneId}
+            onChange={(e) =>
+              setFilters((f) => ({
+                ...f,
+                zoneId: e.target.value as UnknownResolverFiltersState["zoneId"],
+              }))
+            }
+            className="mt-1 w-full rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
+          >
+            <option value="all">All zones</option>
+            {TARGET_ZONES.filter((z) => z.active).map((z) => (
+              <option key={z.id} value={z.id}>
+                {z.label}
               </option>
             ))}
           </select>
@@ -142,7 +163,12 @@ export default function UnknownResolverFilters({ filters, setFilters, cityOption
             <option value="new">New</option>
             <option value="researching">Researching</option>
             <option value="ready">Ready</option>
-            <option value="contacted">Contacted</option>
+            <option value="attempted">Attempted</option>
+            <option value="awaiting_response">Awaiting response</option>
+            <option value="follow_up_due">Follow-up due</option>
+            <option value="interested">Interested</option>
+            <option value="not_now">Not now</option>
+            <option value="closed_won">Closed won</option>
             <option value="ignored">Ignored</option>
           </select>
         </label>
