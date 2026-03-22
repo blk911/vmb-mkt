@@ -99,6 +99,8 @@ export function SalesMapCanvas({ origin, nearbyRows, size = "default" }: SalesMa
         mapTypeControl: false,
         streetViewControl: false,
         fullscreenControl: true,
+        /** Wheel zoom (default Maps behavior is cooperative = Ctrl+scroll only). */
+        gestureHandling: "greedy",
       });
 
       const overlays: Array<{ setMap: (x: null) => void }> = [];
