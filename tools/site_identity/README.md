@@ -172,6 +172,21 @@ python gray_pin_score_results.py ^
 
 Writes `gray_resolution_scored_candidates.json` + `.csv`, `gray_resolution_auto_matches.json`, `gray_resolution_review_matches.json`, and `gray_resolution_summary.json`. Uses `score_candidate_against_member` / `classify_resolution_tier` only — **no** search APIs.
 
+### Gray-pin auto merge (supplemental layer)
+
+**Purpose:** Copy **AUTO** tier rows from `gray_resolution_auto_matches.json` into a **new** markets file with **`gray_resolution_*`** fields only. Does **not** overwrite core `instagram_url`, `booking_provider`, `website_url`, or `phone`. Review-tier rows are **not** merged.
+
+**Deterministic winner** when multiple AUTO rows share a `market_member_id`: highest `gray_resolution_score`, then `candidate_url` string order. Sets `gray_resolution_match_count` to the number of AUTO rows for that member.
+
+```bash
+cd tools/site_identity
+python merge_gray_pin_matches_into_markets.py ^
+  --markets-input ../../data/markets/beauty_zone_members_enriched_full.json ^
+  --auto-matches-input ../../data/output/gray_pin/gray_resolution_auto_matches.json ^
+  --output ../../data/markets/beauty_zone_members_enriched_resolved.json ^
+  --summary-output ../../data/output/gray_pin/gray_resolution_merge_summary.json
+```
+
 ### Updates (March 2026)
 
 - **Storefront → DORA pre-step:** `--dora-enrich` joins `places_candidates`-style rows to DORA shop names via nearest `beauty_zone_members` (within `--dora-max-meters`) → `shop_anchor_map` by `google_location_id`. Adds `source_name_dora` / match metadata used by clustering and scoring (no redesign of score weights).
