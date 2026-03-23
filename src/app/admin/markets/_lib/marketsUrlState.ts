@@ -1,6 +1,11 @@
 import type { BeautyRegion, BeautyZone } from "@/lib/markets";
 import { resolveUrlZoneParamToMarketZoneId } from "@/lib/geo/target-zones";
 import type { SalesRingMiles } from "@/app/admin/markets/_lib/salesTargetMapHelpers";
+import { MARKETS_WORK_PRESETS, type MarketsWorkPreset } from "@/lib/markets/zone-ops-types";
+
+const WORK_PRESET_SET = new Set<string>(MARKETS_WORK_PRESETS);
+
+export type { MarketsWorkPreset };
 
 export type MarketsSortKey =
   | "upgraded_priority_score"
@@ -37,6 +42,8 @@ export type MarketsUrlState = {
   subtype: (typeof SUBTYPE_FILTERS)[number];
   sort: MarketsSortKey;
   sortDir: MarketsSortDir;
+  /** Client-side work packet filter (query: workPreset). */
+  workPreset: MarketsWorkPreset | null;
 };
 
 function getFirst(raw: Record<string, string | string[] | undefined>, key: string): string | undefined {
@@ -53,6 +60,7 @@ export function defaultMarketsUrlState(): MarketsUrlState {
     subtype: "All",
     sort: "upgraded_priority_score",
     sortDir: "desc",
+    workPreset: null,
   };
 }
 
@@ -90,12 +98,18 @@ export function parseMarketsUrlSearchParams(
   const dirRaw = getFirst(raw, "sortDir") ?? "desc";
   const sortDir: MarketsSortDir = dirRaw === "asc" ? "asc" : "desc";
 
-  return { regionId, zoneId, category, subtype, sort, sortDir };
+  const wpRaw = getFirst(raw, "workPreset") ?? getFirst(raw, "preset");
+  let workPreset: MarketsWorkPreset | null = null;
+  if (wpRaw && WORK_PRESET_SET.has(wpRaw)) {
+    workPreset = wpRaw as MarketsWorkPreset;
+  }
+
+  return { regionId, zoneId, category, subtype, sort, sortDir, workPreset };
 }
 
 /** Stable identity for React `key` + syncing client state to URL-driven props. */
 export function marketsUrlStateKey(state: MarketsUrlState): string {
-  return [state.regionId, state.zoneId, state.category, state.subtype, state.sort, state.sortDir].join("|");
+  return [state.regionId, state.zoneId, state.category, state.subtype, state.sort, state.sortDir, state.workPreset ?? ""].join("|");
 }
 
 function normalizePathQuery(path: string): string {
@@ -127,6 +141,7 @@ export function buildMarketsListPath(state: MarketsUrlState): string {
   if (state.subtype !== d.subtype) p.set("subtype", state.subtype);
   if (state.sort !== d.sort) p.set("sort", state.sort);
   if (state.sortDir !== d.sortDir) p.set("sortDir", state.sortDir);
+  if (state.workPreset) p.set("workPreset", state.workPreset);
   const q = p.toString();
   return q ? `/admin/markets?${q}` : "/admin/markets";
 }
@@ -141,6 +156,7 @@ export function buildMemberDetailPath(locationId: string, state: MarketsUrlState
   if (state.subtype !== d.subtype) p.set("subtype", state.subtype);
   if (state.sort !== d.sort) p.set("sort", state.sort);
   if (state.sortDir !== d.sortDir) p.set("sortDir", state.sortDir);
+  if (state.workPreset) p.set("workPreset", state.workPreset);
   const q = p.toString();
   const base = `/admin/markets/member/${encodeURIComponent(locationId)}`;
   return q ? `${base}?${q}` : base;
@@ -166,6 +182,7 @@ export function buildSalesTargetPath(locationId: string, state: MarketsUrlState,
   if (state.subtype !== d.subtype) p.set("subtype", state.subtype);
   if (state.sort !== d.sort) p.set("sort", state.sort);
   if (state.sortDir !== d.sortDir) p.set("sortDir", state.sortDir);
+  if (state.workPreset) p.set("workPreset", state.workPreset);
   if (ring != null && ring !== 0.5) {
     p.set("ring", ring === 1 ? "1" : String(ring));
   }

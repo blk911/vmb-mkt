@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import MarketZoneFilters from "@/components/admin/MarketZoneFilters";
 import { compareZoneIdsForDisplay, getZoneDisplayLabel } from "@/lib/geo/target-zones";
 import { ClusterEvidencePanel } from "@/components/admin/ClusterEvidencePanel";
@@ -20,12 +20,17 @@ import {
   buildMarketsListPath,
   buildMemberDetailPath,
   buildSalesTargetPath,
+  defaultMarketsUrlState,
   marketsListPathsEqual,
   marketsUrlStateKey,
   type MarketsSortDir as SortDir,
   type MarketsSortKey as SortKey,
   type MarketsUrlState,
 } from "./_lib/marketsUrlState";
+import { deriveZoneOpsSummaries, filterMembersByWorkPreset, getZoneOpsSummaryForId } from "@/lib/markets/zone-ops-logic";
+import type { MarketsWorkPreset } from "@/lib/markets/zone-ops-types";
+import ZoneOpsStats from "@/app/admin/markets/_components/ZoneOpsStats";
+import ZoneWorkPacketHeader from "@/app/admin/markets/_components/ZoneWorkPacketHeader";
 import {
   clusterDisplayTitle,
   computeClusterActiveMetrics,
@@ -232,6 +237,7 @@ export default function MarketsClient({
     regionId: initialUrlState.regionId,
     zoneId: initialUrlState.zoneId,
   });
+  const [workPreset, setWorkPreset] = useState<MarketsWorkPreset | null>(initialUrlState.workPreset ?? null);
   const [categoryFilter, setCategoryFilter] = useState<(typeof CATEGORY_FILTERS)[number]>(initialUrlState.category);
   const [subtypeFilter, setSubtypeFilter] = useState<(typeof SUBTYPE_FILTERS)[number]>(initialUrlState.subtype);
   const [sortKey, setSortKey] = useState<SortKey>(initialUrlState.sort);
@@ -270,8 +276,9 @@ export default function MarketsClient({
       subtype: subtypeFilter,
       sort: sortKey,
       sortDir,
+      workPreset,
     }),
-    [filters.regionId, filters.zoneId, categoryFilter, subtypeFilter, sortKey, sortDir]
+    [filters.regionId, filters.zoneId, categoryFilter, subtypeFilter, sortKey, sortDir, workPreset]
   );
 
   /** Keep filters in sync when URL-driven props change (e.g. client nav) even if React reuses the tree. */
@@ -282,9 +289,20 @@ export default function MarketsClient({
     setSubtypeFilter(initialUrlState.subtype);
     setSortKey(initialUrlState.sort);
     setSortDir(initialUrlState.sortDir);
+    setWorkPreset(initialUrlState.workPreset ?? null);
     // Only re-run when URL-derived identity changes; RSC may pass a new object each render with the same key.
   // eslint-disable-next-line react-hooks/exhaustive-deps -- initialUrlState fields are implied by initialUrlStateKey
   }, [initialUrlStateKey]);
+
+  const handleZoneFiltersChange = useCallback(
+    (next: { regionId: string; zoneId: string }) => {
+      if (next.regionId !== filters.regionId || next.zoneId !== filters.zoneId) {
+        setWorkPreset(null);
+      }
+      setFilters(next);
+    },
+    [filters.regionId, filters.zoneId]
+  );
 
   /** Keep the address bar aligned with dropdown/table state (same canonical path as quick links). */
   useEffect(() => {
@@ -312,11 +330,35 @@ export default function MarketsClient({
     }, {});
   }, [members]);
 
+  const zoneOpsSummaries = useMemo(() => deriveZoneOpsSummaries(members, clusters, zones), [members, clusters, zones]);
+
+  const selectedZone = useMemo(
+    () => (filters.zoneId === "ALL" ? undefined : zones.find((z) => z.zone_id === filters.zoneId)),
+    [filters.zoneId, zones]
+  );
+
+  const buildZoneWorkPath = useCallback(
+    (zoneId: string, preset: MarketsWorkPreset | null) =>
+      buildMarketsListPath({
+        ...defaultMarketsUrlState(),
+        regionId: filters.regionId,
+        zoneId,
+        category: "All",
+        subtype: "All",
+        sort: "upgraded_priority_score",
+        sortDir: "desc",
+        workPreset: preset,
+      }),
+    [filters.regionId]
+  );
+
   const visibleMembers = useMemo(() => {
     if (filters.zoneId === "ALL") return [];
 
-    return members
-      .filter((member) => member.zone_id === filters.zoneId)
+    const zoneScoped = members.filter((member) => member.zone_id === filters.zoneId);
+    const presetScoped = filterMembersByWorkPreset(zoneScoped, workPreset);
+
+    return presetScoped
       .filter((member) => {
         if (activityScope === "active" && !memberHasActivePresence(member)) return false;
         if (categoryFilter !== "All" && member.category !== categoryFilter.toLowerCase()) return false;
@@ -334,6 +376,9 @@ export default function MarketsClient({
       })
       .sort((a, b) => {
         if (sortKey === "upgraded_priority_score" && sortDir === "desc") {
+          if (workPreset === "top_targets") {
+            return compareTopTargetRank(a, b);
+          }
           return compareDefaultSalonSort(a, b);
         }
         return compareMembersWithAnchorTiebreak(a, b, sortKey, sortDir);
@@ -343,11 +388,12 @@ export default function MarketsClient({
     categoryFilter,
     filters.zoneId,
     members,
-    presenceFilter,
     pathEnrichmentFilter,
+    presenceFilter,
     sortDir,
     sortKey,
     subtypeFilter,
+    workPreset,
   ]);
 
   const selectedZoneMembers = useMemo(() => {
@@ -497,8 +543,17 @@ export default function MarketsClient({
         zones={zones}
         initialRegionId={filters.regionId}
         initialZoneId={filters.zoneId}
-        onChange={setFilters}
+        onChange={handleZoneFiltersChange}
       />
+
+      {selectedZone ? (
+        <ZoneWorkPacketHeader
+          zone={selectedZone}
+          summary={getZoneOpsSummaryForId(zoneOpsSummaries, selectedZone.zone_id)}
+          workPreset={workPreset}
+          onWorkPresetChange={setWorkPreset}
+        />
+      ) : null}
 
       {filters.zoneId !== "ALL" ? (
         <div className="rounded-lg border border-neutral-200 bg-white px-3 py-2 shadow-sm">
@@ -556,36 +611,72 @@ export default function MarketsClient({
             {visibleZones.map((zone) => {
               const count = zoneCounts[zone.zone_id] ?? 0;
               const zoneLabel = getZoneDisplayLabel(zone.zone_id);
-              const href = buildMarketsListPath({ ...marketsUrlState, zoneId: zone.zone_id });
+              const ops = getZoneOpsSummaryForId(zoneOpsSummaries, zone.zone_id);
+              const primaryHref = buildZoneWorkPath(zone.zone_id, "top_targets");
               return (
-                <Link
+                <div
                   key={zone.zone_id}
-                  href={href}
-                  prefetch
-                  aria-label={`Open ${zoneLabel} market view, ${count} members`}
-                  title={`Open zone: ${zoneLabel}`}
-                  className="group block rounded-lg border border-neutral-200 bg-white px-2.5 py-2 shadow-sm transition hover:border-sky-500 hover:bg-sky-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
+                  className="group flex flex-col rounded-lg border border-neutral-200 bg-white px-2.5 py-2 shadow-sm transition hover:border-sky-500 hover:bg-sky-50/70"
                 >
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-sky-700">Area</span>
-                  <div className="mt-0.5 line-clamp-2 min-h-[2.25rem] text-[13px] font-semibold leading-snug text-neutral-900 group-hover:underline group-hover:decoration-sky-500/80 group-hover:underline-offset-2">
-                    {zoneLabel}
-                  </div>
-                  <div className="mt-0.5 truncate text-[11px] text-neutral-500" title={zone.market}>
-                    {zone.market}
-                  </div>
-                  <div className="mt-1 flex items-baseline justify-between gap-1">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-lg font-bold tabular-nums leading-none text-neutral-900">{count}</span>
-                      <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-500">members</span>
+                  <Link
+                    href={primaryHref}
+                    prefetch
+                    aria-label={`Open ${zoneLabel} work packet (top targets), ${count} members`}
+                    title={`Open zone work packet: ${zoneLabel}`}
+                    className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
+                  >
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-sky-700">Zone</span>
+                    <div className="mt-0.5 line-clamp-2 min-h-[2.25rem] text-[13px] font-semibold leading-snug text-neutral-900 group-hover:underline group-hover:decoration-sky-500/80 group-hover:underline-offset-2">
+                      {zoneLabel}
                     </div>
-                    <span
-                      className="text-neutral-400 transition group-hover:text-sky-600"
-                      aria-hidden
+                    <div className="mt-0.5 truncate text-[11px] text-neutral-500" title={zone.market}>
+                      {zone.market}
+                    </div>
+                    <div className="mt-1 flex items-baseline justify-between gap-1">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-lg font-bold tabular-nums leading-none text-neutral-900">{count}</span>
+                        <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-500">members</span>
+                      </div>
+                      <span className="text-neutral-400 transition group-hover:text-sky-600" aria-hidden>
+                        →
+                      </span>
+                    </div>
+                  </Link>
+                  {ops ? (
+                    <div className="mt-2 border-t border-neutral-100 pt-2">
+                      <ZoneOpsStats summary={ops} compact />
+                    </div>
+                  ) : null}
+                  <div className="mt-1.5 flex flex-wrap gap-1.5 border-t border-neutral-100 pt-1.5">
+                    <Link
+                      href={buildZoneWorkPath(zone.zone_id, "top_targets")}
+                      className="text-[9px] font-semibold text-sky-700 underline-offset-2 hover:underline"
+                      prefetch
                     >
-                      →
+                      Targets
+                    </Link>
+                    <span className="text-neutral-300" aria-hidden>
+                      ·
                     </span>
+                    <Link
+                      href={buildZoneWorkPath(zone.zone_id, "anchors")}
+                      className="text-[9px] font-semibold text-sky-700 underline-offset-2 hover:underline"
+                      prefetch
+                    >
+                      Anchors
+                    </Link>
+                    <span className="text-neutral-300" aria-hidden>
+                      ·
+                    </span>
+                    <Link
+                      href={buildZoneWorkPath(zone.zone_id, "bookable")}
+                      className="text-[9px] font-semibold text-sky-700 underline-offset-2 hover:underline"
+                      prefetch
+                    >
+                      Bookable
+                    </Link>
                   </div>
-                </Link>
+                </div>
               );
             })}
           </div>
