@@ -79,8 +79,8 @@ function isUnreviewed(rs: ReviewStatusLite): boolean {
   return rs === undefined;
 }
 
-/** Whether row passes the preset filter (deterministic). */
-export function rowMatchesPreset(row: WorkModeRow, presetId: WorkPresetId, reviewStatus: ReviewStatusLite): boolean {
+/** Strict preset match (no score/zone broadening). Exported for diagnostics. */
+export function rowMatchesPresetStrict(row: WorkModeRow, presetId: WorkPresetId, reviewStatus: ReviewStatusLite): boolean {
   const score = getEffectiveScore(row);
   const z = getZoneId(row);
   const nails = isNailsRelatedCategory(row.operational_category);
@@ -121,12 +121,81 @@ export function rowMatchesPreset(row: WorkModeRow, presetId: WorkPresetId, revie
   }
 }
 
+/** Alias for strict match — used for “matches preset” badges and diagnostics. */
+export function rowMatchesPreset(row: WorkModeRow, presetId: WorkPresetId, reviewStatus: ReviewStatusLite): boolean {
+  return rowMatchesPresetStrict(row, presetId, reviewStatus);
+}
+
+function matchQuebecLoose(row: WorkModeRow, rs: ReviewStatusLite, minScore: number): boolean {
+  if (!isNailsRelatedCategory(row.operational_category)) return false;
+  if (getZoneId(row) !== "QUEBEC_CORRIDOR") return false;
+  if (isRejected(rs)) return false;
+  return getEffectiveScore(row) >= minScore;
+}
+
+function matchQuebecBroad(row: WorkModeRow, rs: ReviewStatusLite): boolean {
+  if (!isNailsRelatedCategory(row.operational_category)) return false;
+  if (getZoneId(row) !== "QUEBEC_CORRIDOR") return false;
+  return !isRejected(rs);
+}
+
+function matchDowntownLoose(row: WorkModeRow, rs: ReviewStatusLite, minScore: number, requireDense: boolean): boolean {
+  if (!isNailsRelatedCategory(row.operational_category)) return false;
+  if (getZoneId(row) !== "DOWNTOWN_CORE") return false;
+  if (isRejected(rs)) return false;
+  if (getEffectiveScore(row) < minScore) return false;
+  if (requireDense) return isDenseNeighborSignal(row);
+  return true;
+}
+
+function matchBookingLoose(row: WorkModeRow, rs: ReviewStatusLite, minScore: number): boolean {
+  if (!isNailsRelatedCategory(row.operational_category)) return false;
+  if (isRejected(rs)) return false;
+  if (getEffectiveScore(row) < minScore) return false;
+  return hasWebsiteSignal(row);
+}
+
+/**
+ * Apply preset with resilience: if strict match yields &lt; 3 rows, broaden thresholds (deterministic tiers).
+ * NEW_LEADS / NEEDS_REVIEW: strict only.
+ */
 export function applyWorkPreset<T extends WorkModeRow>(
   rows: T[],
   presetId: WorkPresetId,
   getReviewStatus: (liveUnitId: string) => ReviewStatusLite
 ): T[] {
-  return rows.filter((row) => rowMatchesPreset(row, presetId, getReviewStatus(row.live_unit_id)));
+  const g = (row: T) => getReviewStatus(row.live_unit_id);
+
+  const strict = rows.filter((row) => rowMatchesPresetStrict(row, presetId, g(row)));
+  if (presetId === "NEW_LEADS" || presetId === "NEEDS_REVIEW") {
+    return strict;
+  }
+  if (strict.length >= 3) {
+    return strict;
+  }
+
+  if (presetId === "QUEBEC_HIGH_VALUE") {
+    const t2 = rows.filter((row) => matchQuebecLoose(row, g(row), 60));
+    if (t2.length >= 3 || (t2.length > 0 && strict.length === 0)) return t2.length ? t2 : strict;
+    const t3 = rows.filter((row) => matchQuebecBroad(row, g(row)));
+    return t3.length ? t3 : t2.length ? t2 : strict;
+  }
+
+  if (presetId === "DOWNTOWN_DENSE") {
+    const t1 = rows.filter((row) => matchDowntownLoose(row, g(row), 60, false));
+    if (t1.length >= 3 || (t1.length > 0 && strict.length === 0)) return t1.length ? t1 : strict;
+    const t2 = rows.filter((row) => matchDowntownLoose(row, g(row), 55, false));
+    return t2.length ? t2 : t1.length ? t1 : strict;
+  }
+
+  if (presetId === "BOOKING_READY") {
+    const t1 = rows.filter((row) => matchBookingLoose(row, g(row), 60));
+    if (t1.length >= 3 || (t1.length > 0 && strict.length === 0)) return t1.length ? t1 : strict;
+    const t2 = rows.filter((row) => matchBookingLoose(row, g(row), 55));
+    return t2.length ? t2 : t1.length ? t1 : strict;
+  }
+
+  return strict;
 }
 
 /** Pick default preset: Quebec high-value if enough matches, else new leads. */
@@ -262,7 +331,7 @@ export function deriveWorkStateForRow(
   const priority = derivePriority(row, reviewStatus);
   const nextAction = deriveNextAction(row, reviewStatus, priority);
   const matchesActivePreset = activePreset
-    ? rowMatchesPreset(row, activePreset, reviewStatus)
+    ? rowMatchesPresetStrict(row, activePreset, reviewStatus)
     : false;
 
   let presetReason: string | null = null;
