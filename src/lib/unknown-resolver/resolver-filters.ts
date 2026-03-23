@@ -6,7 +6,7 @@ import type {
 import { normalizeBusinessName } from "./resolver-normalize";
 
 export const DEFAULT_UNKNOWN_RESOLVER_FILTERS: UnknownResolverFiltersState = {
-  category: "house_cleaning",
+  category: "nails",
   ring: "all",
   city: "all",
   systemRecommendation: "all",

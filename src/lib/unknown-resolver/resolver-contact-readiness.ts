@@ -1,3 +1,6 @@
+import { isActiveResolverCategory } from "./resolver-categories";
+import { canUseHouseCleaningScoring, canUseNailsScoring } from "./resolver-category-guards";
+import { buildNailsFirstTouchScripts, deriveNailsFirstTouchPlan } from "./resolver-nails-contact";
 import type { UnknownResolverRecord } from "./resolver-types";
 
 export type HouseCleaningFirstTouchScripts = {
@@ -100,6 +103,26 @@ export type ContactEnrichmentDerivation = {
 
 /** Recompute derived first-touch fields + readiness from current record snapshot. */
 export function applyContactEnrichmentDerivation(record: UnknownResolverRecord): ContactEnrichmentDerivation {
+  if (canUseNailsScoring(record) && isActiveResolverCategory("nails")) {
+    const scripts = buildNailsFirstTouchScripts(record);
+    return {
+      firstTouchPlan: deriveNailsFirstTouchPlan(record),
+      phoneScript: scripts.phoneScript,
+      dmScript: scripts.dmScript,
+      emailScript: scripts.emailScript,
+      contactReadinessScore: computeContactReadinessScore(record),
+    };
+  }
+  if (canUseHouseCleaningScoring(record) && isActiveResolverCategory("house_cleaning")) {
+    const scripts = buildHouseCleaningFirstTouchScripts(record);
+    return {
+      firstTouchPlan: deriveFirstTouchPlan(record),
+      phoneScript: scripts.phoneScript,
+      dmScript: scripts.dmScript,
+      emailScript: scripts.emailScript,
+      contactReadinessScore: computeContactReadinessScore(record),
+    };
+  }
   const scripts = buildHouseCleaningFirstTouchScripts(record);
   return {
     firstTouchPlan: deriveFirstTouchPlan(record),

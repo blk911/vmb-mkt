@@ -1,3 +1,4 @@
+/* Parked reference seed + scoring fixtures — not in ACTIVE_RESOLVER_CATEGORIES while house_cleaning is inactive. */
 import type { UnknownResolverRecord } from "@/lib/unknown-resolver/resolver-types";
 
 const iso = (d: string) => new Date(d).toISOString();

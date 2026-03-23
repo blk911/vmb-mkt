@@ -16,8 +16,24 @@ export const RESOLVER_CATEGORY_LABELS: Record<ResolverCategory, string> = {
   unknown: "Unknown",
 };
 
-/** Categories with an active resolver/scorer in this codebase (v1: house_cleaning only). */
-export const ACTIVE_RESOLVER_CATEGORIES: ResolverCategory[] = ["house_cleaning"];
+/**
+ * Live resolver pipeline (Unknown Resolver + promote + outreach).
+ * Other recognized categories may exist in data/seeds as parked reference (e.g. house_cleaning).
+ */
+export const ACTIVE_RESOLVER_CATEGORIES: ResolverCategory[] = ["nails"];
+
+export function getActiveResolverCategories(): readonly ResolverCategory[] {
+  return ACTIVE_RESOLVER_CATEGORIES;
+}
+
+/** Alias for product copy / config readers. */
+export function getLiveResolverCategories(): readonly ResolverCategory[] {
+  return getActiveResolverCategories();
+}
+
+export function isActiveResolverCategory(category: ResolverCategory | null | undefined): boolean {
+  return category != null && (ACTIVE_RESOLVER_CATEGORIES as readonly string[]).includes(category);
+}
 
 export function isSupportedResolverCategory(value: string | null | undefined): value is ResolverCategory {
   if (value == null || value === "") return false;

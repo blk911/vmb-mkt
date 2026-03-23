@@ -12,6 +12,12 @@ type LiveUnitsShellProps = {
   title?: string;
   subtitle?: string;
   badges?: React.ReactNode;
+  /** e.g. Review / Work mode toggle — aligned with title row */
+  headerActions?: React.ReactNode;
+  /** e.g. Work Mode operator panel — below title, above filters */
+  workModeSlot?: React.ReactNode;
+  /** When true, hide Queue Controls + filter grid (keep in DOM for state preservation). */
+  collapseFilters?: boolean;
   metrics: MetricCard[];
   quickViews?: React.ReactNode;
   bulkActions?: React.ReactNode;
@@ -95,6 +101,9 @@ export default function LiveUnitsShell({
   title = "Live Units",
   subtitle = "Review queue for combined Google, DORA, and online identity signals.",
   badges,
+  headerActions,
+  workModeSlot,
+  collapseFilters = false,
   metrics,
   quickViews,
   bulkActions,
@@ -114,11 +123,15 @@ export default function LiveUnitsShell({
             <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
             {badges ? <div className="mt-3 flex flex-wrap gap-2">{badges}</div> : null}
           </div>
+          {headerActions ? (
+            <div className="flex shrink-0 flex-col items-stretch gap-2 sm:flex-row sm:items-center">{headerActions}</div>
+          ) : null}
         </div>
+        {workModeSlot ? <div className="mt-4">{workModeSlot}</div> : null}
       </div>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(860px,1fr)_16ch]">
-        <div className="space-y-4">
+        <div className={cx("space-y-4", collapseFilters && "hidden")} aria-hidden={collapseFilters}>
           {(quickViews || bulkActions) && (
             <SectionCard title="Queue Controls">
               <div className="space-y-4">
@@ -158,7 +171,12 @@ export default function LiveUnitsShell({
           </div>
         </div>
 
-        <aside className="space-y-3 self-start xl:justify-self-end">
+        <aside
+          className={cx(
+            "space-y-3 self-start xl:justify-self-end",
+            collapseFilters && "xl:col-span-2 xl:max-w-sm xl:justify-self-start"
+          )}
+        >
           <SectionCard title="Queue Snapshot">
             <div className="flex flex-col gap-2">
               {metrics.map((metric) => (

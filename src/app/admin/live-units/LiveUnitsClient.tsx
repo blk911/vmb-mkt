@@ -8,6 +8,17 @@ import {
   FilterGrid,
   PillButton,
 } from "@/components/admin/live-units/LiveUnitsFields";
+import WorkModePanel from "@/app/admin/live-units/_components/WorkModePanel";
+import WorkModeToggle from "@/app/admin/live-units/_components/WorkModeToggle";
+import WorkNextActionBadge from "@/app/admin/live-units/_components/WorkNextActionBadge";
+import WorkPriorityBadge from "@/app/admin/live-units/_components/WorkPriorityBadge";
+import type { LiveUnitsMode, WorkPresetId } from "@/lib/live-units/work-mode-types";
+import {
+  applyWorkPreset,
+  deriveWorkStateForRow,
+  pickDefaultWorkPreset,
+  summarizeWorkMode,
+} from "@/lib/live-units/work-mode-logic";
 
 type Confidence = "strong" | "likely" | "candidate_review" | "ambiguous";
 type ReviewStatus = "approved" | "rejected" | "watch" | "needs_research";
@@ -476,6 +487,8 @@ export default function LiveUnitsClient({
   const [savingBulkAction, setSavingBulkAction] = useState<string | null>(null);
   const [savingTechActionKey, setSavingTechActionKey] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [liveUnitsMode, setLiveUnitsMode] = useState<LiveUnitsMode>("review");
+  const [workPresetId, setWorkPresetId] = useState<WorkPresetId | null>(null);
 
   const counts = useMemo(() => summaryCounts(rows), [rows]);
   const reviewCounts = useMemo(() => reviewSummaryCounts(rows, reviewState), [rows, reviewState]);
@@ -592,7 +605,22 @@ export default function LiveUnitsClient({
       });
   }, [category, city, confidence, reviewFilter, reviewState, rows, scoreBand, signalMix, sortDir, sortKey, subtypeFilter, tuningFilter, zipQuery, zone]);
 
-  const visibleIds = useMemo(() => filteredRows.map((row) => row.live_unit_id), [filteredRows]);
+  const displayRows = useMemo(() => {
+    if (liveUnitsMode !== "work" || !workPresetId) return filteredRows;
+    return applyWorkPreset(filteredRows, workPresetId, (id) => reviewState[id]?.review_status);
+  }, [filteredRows, liveUnitsMode, workPresetId, reviewState]);
+
+  const workSummary = useMemo(
+    () => summarizeWorkMode(filteredRows, (id) => reviewState[id]?.review_status),
+    [filteredRows, reviewState]
+  );
+
+  useEffect(() => {
+    if (liveUnitsMode !== "work" || workPresetId !== null) return;
+    setWorkPresetId(pickDefaultWorkPreset(filteredRows, (id) => reviewState[id]?.review_status));
+  }, [liveUnitsMode, workPresetId, filteredRows, reviewState]);
+
+  const visibleIds = useMemo(() => displayRows.map((row) => row.live_unit_id), [displayRows]);
   const selectedVisibleIds = useMemo(
     () => visibleIds.filter((id) => selectedIds.includes(id)),
     [selectedIds, visibleIds]
@@ -600,8 +628,12 @@ export default function LiveUnitsClient({
   const allVisibleSelected = visibleIds.length > 0 && selectedVisibleIds.length === visibleIds.length;
   const someVisibleSelected = selectedVisibleIds.length > 0 && !allVisibleSelected;
   const selectedEntity = useMemo(
-    () => filteredRows.find((row) => entityIdFor(row) === openEntityId) || rows.find((row) => entityIdFor(row) === openEntityId) || null,
-    [filteredRows, openEntityId, rows]
+    () =>
+      displayRows.find((row) => entityIdFor(row) === openEntityId) ||
+      filteredRows.find((row) => entityIdFor(row) === openEntityId) ||
+      rows.find((row) => entityIdFor(row) === openEntityId) ||
+      null,
+    [displayRows, filteredRows, openEntityId, rows]
   );
   const shopByLicenseId = useMemo(
     () => new Map(shopIndex.map((shop) => [shop.license_id, shop] as const)),
@@ -967,11 +999,35 @@ export default function LiveUnitsClient({
     }
   }
 
+  const tableColSpan = liveUnitsMode === "work" ? 13 : 11;
+
   return (
     <>
       <LiveUnitsShell
         title="Live Units"
-        subtitle="Review queue for combined Google, DORA, and online identity signals."
+        subtitle={
+          liveUnitsMode === "work"
+            ? "Operator queue — top nail targets by zone, score, and review state. Switch to Review Mode to tune filters."
+            : "Review queue for combined Google, DORA, and online identity signals."
+        }
+        headerActions={
+          <WorkModeToggle
+            mode={liveUnitsMode}
+            onChange={(next) => {
+              setLiveUnitsMode(next);
+            }}
+          />
+        }
+        workModeSlot={
+          liveUnitsMode === "work" ? (
+            <WorkModePanel
+              summary={workSummary}
+              activePresetId={workPresetId}
+              onSelectPreset={(id) => setWorkPresetId(id)}
+            />
+          ) : null
+        }
+        collapseFilters={liveUnitsMode === "work"}
         badges={
           <>
             <span
@@ -1268,7 +1324,12 @@ export default function LiveUnitsClient({
 
             <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
               <div className="flex items-center gap-3">
-                <span>Showing {filteredRows.length} rows</span>
+                <span>
+                  Showing {displayRows.length} rows
+                  {liveUnitsMode === "work" && workPresetId ? (
+                    <span className="ml-2 text-slate-500">(Work preset + your Review Mode filters)</span>
+                  ) : null}
+                </span>
                 <label className="inline-flex items-center gap-2">
                   <input
                     type="checkbox"
@@ -1288,7 +1349,9 @@ export default function LiveUnitsClient({
 
             <div className="overflow-hidden rounded-2xl border border-slate-200">
               <div className="overflow-x-auto">
-                <table className="min-w-[1320px] table-fixed divide-y divide-neutral-200 text-sm">
+                <table
+                  className={`${liveUnitsMode === "work" ? "min-w-[1480px]" : "min-w-[1320px]"} table-fixed divide-y divide-neutral-200 text-sm`}
+                >
             <thead className="sticky top-0 z-10 bg-neutral-50">
               <tr className="text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
                 <th className="px-3 py-2.5">
@@ -1320,6 +1383,16 @@ export default function LiveUnitsClient({
                     ) : null}
                   </button>
                 </th>
+                {liveUnitsMode === "work" ? (
+                  <>
+                    <th className="px-3 py-2.5 whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                      Priority
+                    </th>
+                    <th className="px-3 py-2.5 whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                      Next
+                    </th>
+                  </>
+                ) : null}
                 <th
                   className="px-3 py-2.5 whitespace-nowrap"
                   aria-sort={sortKey === "category" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
@@ -1451,11 +1524,12 @@ export default function LiveUnitsClient({
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200">
-              {filteredRows.map((row) => {
+              {displayRows.map((row) => {
                 const currentReview = reviewState[row.live_unit_id];
                 const currentStatus = currentReview?.review_status || "unreviewed";
                 const isSaving = savingLiveUnitId === row.live_unit_id;
                 const signalStatus = signalStatusFor(row, currentReview);
+                const workState = deriveWorkStateForRow(row, currentReview?.review_status, workPresetId);
                 const googleAddress = googleAddressFor(row) || buildShopAddress(row.shop_license ? shopByLicenseId.get(row.shop_license) || null : null) || "-";
                 const linkedDoraIds = row.raw_snippets?.dora?.license_row_ids || [];
                 const signalPopoverOpen = openSignalPopoverId === row.live_unit_id;
@@ -1527,6 +1601,16 @@ export default function LiveUnitsClient({
                         ) : null}
                       </div>
                     </td>
+                    {liveUnitsMode === "work" ? (
+                      <>
+                        <td className="px-2 py-2 align-middle whitespace-nowrap">
+                          <WorkPriorityBadge priority={workState.priority} />
+                        </td>
+                        <td className="px-2 py-2 align-middle whitespace-nowrap">
+                          <WorkNextActionBadge action={workState.nextAction} />
+                        </td>
+                      </>
+                    ) : null}
                     <td className="px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{row.operational_category}</td>
                     <td className="w-[120px] px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{getZoneName(row)}</td>
                     <td className="w-[130px] px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">
@@ -1605,7 +1689,7 @@ export default function LiveUnitsClient({
                     </tr>
                     {expandedRowId === row.live_unit_id ? (
                       <tr className="bg-neutral-50/60">
-                        <td colSpan={11} className="px-3 py-3">
+                        <td colSpan={tableColSpan} className="px-3 py-3">
                           <div className="grid gap-2 lg:grid-cols-4">
                             <div className="rounded-lg border border-neutral-200 bg-white px-3 py-2">
                               <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">Explanation</div>
@@ -1647,10 +1731,12 @@ export default function LiveUnitsClient({
                   </Fragment>
                 );
               })}
-              {filteredRows.length === 0 ? (
+              {displayRows.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="px-4 py-8 text-center text-sm text-neutral-500">
-                    No live units match the current review filters.
+                  <td colSpan={tableColSpan} className="px-4 py-8 text-center text-sm text-neutral-500">
+                    {liveUnitsMode === "work"
+                      ? "No rows match this work preset on top of your current filters. Try another preset or switch to Review Mode."
+                      : "No live units match the current review filters."}
                   </td>
                 </tr>
               ) : null}

@@ -71,7 +71,7 @@ export type ResolverSource =
 
 export interface UnknownResolverRecord {
   id: string;
-  category: "house_cleaning";
+  category: ResolverCategory;
   sourceName: string | null;
   normalizedName: string | null;
   address: string | null;
@@ -164,7 +164,7 @@ export interface ResolverScoreBreakdown {
 export type ResolverZoneFilterId = "all" | string;
 
 export interface UnknownResolverFiltersState {
-  /** Resolver queue scope; "all" reserved for future multi-category views. */
+  /** Queue scope; live vertical is nails (house_cleaning is recognized but not active). */
   category: ResolverCategory | "all";
   ring: string;
   city: string;

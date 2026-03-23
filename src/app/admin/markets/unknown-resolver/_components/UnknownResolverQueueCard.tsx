@@ -3,6 +3,7 @@
 import { useState } from "react";
 import ZoneBadge from "@/app/admin/markets/_components/ZoneBadge";
 import { getZoneLabel } from "@/lib/geo/zone-assignment";
+import { RESOLVER_CATEGORY_LABELS } from "@/lib/unknown-resolver/resolver-categories";
 import type { PromoteToOutreachInput } from "@/lib/unknown-resolver/resolver-storage";
 import type { EnrichedResolverRow, ResolverDecision } from "@/lib/unknown-resolver/resolver-types";
 import UnknownResolverDetailPanel from "./UnknownResolverDetailPanel";
@@ -34,6 +35,12 @@ export default function UnknownResolverQueueCard({ row, onUpdateDecision, onProm
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="truncate text-sm font-semibold text-neutral-900">{displayName}</span>
+            <span
+              className="shrink-0 rounded border border-amber-200 bg-amber-50/90 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-950"
+              title={record.category}
+            >
+              {RESOLVER_CATEGORY_LABELS[record.category]}
+            </span>
             <ResolverScoreBadge score={score.finalScore} />
             <ResolverRecommendationBadge recommendation={score.recommendation} label={`SYS ${score.recommendation}`} />
             {record.operatorDecision ? (

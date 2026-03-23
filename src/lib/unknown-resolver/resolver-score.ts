@@ -1,4 +1,6 @@
-import { canUseHouseCleaningScoring } from "./resolver-category-guards";
+import { isActiveResolverCategory } from "./resolver-categories";
+import { canUseHouseCleaningScoring, canUseNailsScoring } from "./resolver-category-guards";
+import { scoreNailsRecord } from "./resolver-nails-score";
 import type {
   ResolverCandidate,
   ResolverRecommendation,
@@ -196,12 +198,15 @@ function buildReasoning(
   }`;
 }
 
-/** Category-aware entry point: only house_cleaning uses the full resolver; others get a neutral breakdown. */
+/**
+ * Category-aware entry point. Parked categories (e.g. house_cleaning) stay in repo but are inactive — no score path.
+ * Active category (nails) uses nails scorer.
+ */
 export function scoreResolverRecord(
   record: UnknownResolverRecord,
   candidates: ResolverCandidate[]
 ): ResolverScoreBreakdown {
-  if (!canUseHouseCleaningScoring(record)) {
+  if (!isActiveResolverCategory(record.category)) {
     return {
       recordId: record.id,
       nameScore: 0,
@@ -212,14 +217,32 @@ export function scoreResolverRecord(
       conflictPenalty: 0,
       finalScore: 0,
       recommendation: "no",
-      reasoning: "Unsupported category for current resolver.",
+      reasoning: "Inactive or unsupported resolver category for this pipeline.",
     };
   }
-  return scoreHouseCleaningRecord(record, candidates);
+  if (canUseHouseCleaningScoring(record)) {
+    return scoreHouseCleaningRecord(record, candidates);
+  }
+  if (canUseNailsScoring(record)) {
+    return scoreNailsRecord(record, candidates);
+  }
+  return {
+    recordId: record.id,
+    nameScore: 0,
+    categoryScore: 0,
+    geoScore: 0,
+    webPresenceScore: 0,
+    platformScore: 0,
+    conflictPenalty: 0,
+    finalScore: 0,
+    recommendation: "no",
+    reasoning: "Unsupported category for current resolver.",
+  };
 }
 
 /**
  * Deterministic 0–100 score for house cleaning from record + candidate evidence.
+ * Parked reference — unused at runtime while `house_cleaning` ∉ ACTIVE_RESOLVER_CATEGORIES.
  */
 export function scoreHouseCleaningRecord(
   record: UnknownResolverRecord,

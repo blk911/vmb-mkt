@@ -142,7 +142,7 @@ export default function OutreachQueuePage() {
           <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Markets · Internal</p>
           <h1 className="text-xl font-semibold text-neutral-900">Outreach Queue</h1>
           <p className="mt-1 max-w-2xl text-sm text-neutral-600">
-            House cleaning targets promoted from Unknown Resolver. Log touches, follow-ups, and enrichment — session-persisted.
+            Nails vertical — promoted leads from Unknown Resolver. Log touches, follow-ups, and enrichment (session-persisted).
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -185,6 +185,12 @@ export default function OutreachQueuePage() {
       </div>
 
       <div className="flex flex-wrap items-end gap-3 rounded-xl border border-neutral-200 bg-neutral-50/80 p-3">
+        <div className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          Vertical
+          <div className="mt-0.5 rounded border border-amber-200 bg-amber-50/90 px-2 py-1.5 text-xs font-semibold text-amber-950">
+            Nails
+          </div>
+        </div>
         <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
           Status
           <select

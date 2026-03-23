@@ -1,4 +1,4 @@
-/** Selectable segmentation chips for house_cleaning outreach (v1). */
+/** Parked reference: house_cleaning outreach chips (inactive until category is re-activated). */
 export const HOUSE_CLEANING_OUTREACH_CHIPS: string[] = [
   "Solo cleaner",
   "Team / company",

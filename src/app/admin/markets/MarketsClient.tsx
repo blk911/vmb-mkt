@@ -476,7 +476,7 @@ export default function MarketsClient({
             href="/admin/markets/unknown-resolver"
             className="text-xs font-semibold text-sky-700 underline-offset-2 hover:underline"
           >
-            Unknown resolver queue
+            Nails · Unknown resolver
           </Link>
           <Link
             href="/admin/markets/outreach-queue"

@@ -1,4 +1,6 @@
-import { canUseHouseCleaningScoring } from "./resolver-category-guards";
+import { isActiveResolverCategory } from "./resolver-categories";
+import { canUseHouseCleaningScoring, canUseNailsScoring } from "./resolver-category-guards";
+import { buildNailsQueries } from "./resolver-nails-queries";
 import type { ResolverQuerySet, UnknownResolverRecord } from "./resolver-types";
 import { compactAddress, maybeStreetFragment, normalizeBusinessName } from "./resolver-normalize";
 
@@ -12,12 +14,18 @@ function q(parts: Array<string | null | undefined>): string | null {
   return s.length >= 3 ? s : null;
 }
 
-/** Dispatch by category; only house_cleaning gets query strings in v1. */
+/** Dispatch by category; parked house_cleaning modules stay unused until re-activated. */
 export function buildResolverQueries(record: UnknownResolverRecord): ResolverQuerySet {
-  if (!canUseHouseCleaningScoring(record)) {
+  if (!isActiveResolverCategory(record.category)) {
     return { recordId: record.id, queries: [] };
   }
-  return buildHouseCleaningQueries(record);
+  if (canUseHouseCleaningScoring(record)) {
+    return buildHouseCleaningQueries(record);
+  }
+  if (canUseNailsScoring(record)) {
+    return buildNailsQueries(record);
+  }
+  return { recordId: record.id, queries: [] };
 }
 
 /**

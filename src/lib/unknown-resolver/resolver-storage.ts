@@ -5,17 +5,20 @@ import type {
   OutreachActivityOutcome,
   OutreachActivityType,
   OutreachStatus,
+  ResolverCandidate,
   ResolverDecision,
   UnknownResolverRecord,
 } from "./resolver-types";
 import { normalizeResolverCategory } from "./resolver-categories";
-import { canEnterHouseCleaningResolver, canPromoteResolverRecord } from "./resolver-category-guards";
+import { canEnterActiveResolverQueue, canPromoteResolverRecord } from "./resolver-category-guards";
 import { applyContactEnrichmentDerivation } from "./resolver-contact-readiness";
 import { deriveNextFollowUpAt, deriveStatusFromActivity } from "./resolver-followup";
 import { scoreResolverRecord } from "./resolver-score";
 import { assignZonesToRecord } from "@/lib/geo/zone-assignment";
 import { HOUSE_CLEANING_CANDIDATES_BY_RECORD } from "@/lib/mock/unknownResolver/houseCleaningCandidates";
 import { HOUSE_CLEANING_QUEUE_SEED } from "@/lib/mock/unknownResolver/houseCleaningQueue";
+import { NAILS_CANDIDATES_BY_RECORD } from "@/lib/mock/unknownResolver/nailsCandidates";
+import { NAILS_QUEUE_SEED } from "@/lib/mock/unknownResolver/nailsQueue";
 
 let queueOverride: UnknownResolverRecord[] | null = null;
 
@@ -45,15 +48,18 @@ function normalizeAndMigrateRecord(r: UnknownResolverRecord): UnknownResolverRec
   return assignZonesToRecord(withLegacy);
 }
 
-/** Full session queue after seed/override + normalization (all categories). */
+/** Internal session store: includes parked seeds (e.g. house_cleaning) for reference; not all rows are “live”. */
+const COMBINED_QUEUE_SEED: UnknownResolverRecord[] = [...HOUSE_CLEANING_QUEUE_SEED, ...NAILS_QUEUE_SEED];
+
+/** Full materialized queue after seed/override + normalization (all categories in combined seed). */
 function materializeQueue(): UnknownResolverRecord[] {
-  const raw = queueOverride ?? [...HOUSE_CLEANING_QUEUE_SEED];
+  const raw = queueOverride ?? [...COMBINED_QUEUE_SEED];
   return raw.map(normalizeAndMigrateRecord);
 }
 
-/** House cleaning Unknown Resolver UI: excludes non-house_cleaning rows. */
-function materializeHouseCleaningQueue(): UnknownResolverRecord[] {
-  return materializeQueue().filter((r) => canEnterHouseCleaningResolver(r));
+/** Unknown Resolver / outreach list views: active resolver categories only (currently nails). */
+function materializeActiveResolverQueue(): UnknownResolverRecord[] {
+  return materializeQueue().filter((r) => canEnterActiveResolverQueue(r));
 }
 
 function newActivityId(): string {
@@ -63,18 +69,23 @@ function newActivityId(): string {
   return `act-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
 
-/** House cleaning resolver queue only (category-gated). */
+/** Active resolver queue (live categories only). */
 export function loadUnknownResolverQueue(): UnknownResolverRecord[] {
-  return materializeHouseCleaningQueue();
+  return materializeActiveResolverQueue();
 }
+
+const COMBINED_CANDIDATES_BY_RECORD: Record<string, ResolverCandidate[]> = {
+  ...HOUSE_CLEANING_CANDIDATES_BY_RECORD,
+  ...NAILS_CANDIDATES_BY_RECORD,
+};
 
 export function loadUnknownResolverCandidates(recordId: string) {
-  return [...(HOUSE_CLEANING_CANDIDATES_BY_RECORD[recordId] ?? [])];
+  return [...(COMBINED_CANDIDATES_BY_RECORD[recordId] ?? [])];
 }
 
-/** Promoted rows for outreach (v1: house_cleaning only). */
+/** Promoted rows for outreach (active categories only; parked categories excluded). */
 export function loadOutreachQueue(): UnknownResolverRecord[] {
-  return materializeHouseCleaningQueue().filter((r) => r.promotedAt != null);
+  return materializeActiveResolverQueue().filter((r) => r.promotedAt != null);
 }
 
 /**

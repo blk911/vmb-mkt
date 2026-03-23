@@ -21,7 +21,7 @@ import {
 import UnknownResolverFilters from "./UnknownResolverFilters";
 import UnknownResolverQueue from "./UnknownResolverQueue";
 
-/** Queue rows are category-gated house_cleaning; `zones` / `primaryZone` from resolver-storage. */
+/** Enriched rows for the live resolver vertical (nails); zones from resolver-storage. */
 function buildEnriched(records: ReturnType<typeof loadUnknownResolverQueue>): EnrichedResolverRow[] {
   return records.map((record) => {
     const candidates = loadUnknownResolverCandidates(record.id);
@@ -103,7 +103,7 @@ export default function UnknownResolverPage() {
           <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Markets · Internal</p>
           <h1 className="text-xl font-semibold text-neutral-900">Unknown Resolver Review Queue</h1>
           <p className="mt-1 max-w-2xl text-sm text-neutral-600">
-            House cleaning resolver queue — review opportunities as yes / review / no. Summary stat cards use the full queue (not the active filter). Scores are persisted after first load.
+            Review unresolved nail businesses and solo tech opportunities (yes / review / no). Summary stat cards use the full queue (not filters). Scores hydrate after first load.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

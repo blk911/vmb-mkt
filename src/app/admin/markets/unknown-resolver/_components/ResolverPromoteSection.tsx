@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { canPromoteResolverRecord } from "@/lib/unknown-resolver/resolver-category-guards";
 import type { UnknownResolverRecord } from "@/lib/unknown-resolver/resolver-types";
 import type { PromoteToOutreachInput } from "@/lib/unknown-resolver/resolver-storage";
-import { HOUSE_CLEANING_OUTREACH_CHIPS, HOUSE_CLEANING_PITCH_LABELS } from "@/lib/unknown-resolver/resolver-outreach-labels";
+import { NAILS_OUTREACH_CHIPS, NAILS_PITCH_LABELS } from "@/lib/unknown-resolver/resolver-nails-labels";
 
 type Props = {
   record: UnknownResolverRecord;
@@ -30,7 +30,7 @@ export default function ResolverPromoteSection({ record, onPromote }: Props) {
   if (!canPromoteResolverRecord(record)) {
     return (
       <div className="rounded border border-amber-200 bg-amber-50/90 px-3 py-2 text-[11px] text-amber-950">
-        Outreach promotion is only available for <strong>House Cleaning</strong> leads. This record is{" "}
+        Outreach promotion is only available for the <strong>live nails</strong> pipeline. This record is{" "}
         <span className="font-mono">{record.category}</span>.
       </div>
     );
@@ -58,7 +58,7 @@ export default function ResolverPromoteSection({ record, onPromote }: Props) {
       <div>
         <div className="text-[10px] font-semibold text-neutral-600">Outreach chips</div>
         <div className="mt-1 flex flex-wrap gap-1.5">
-          {HOUSE_CLEANING_OUTREACH_CHIPS.map((chip) => {
+          {NAILS_OUTREACH_CHIPS.map((chip) => {
             const on = tags.includes(chip);
             return (
               <button
@@ -84,7 +84,7 @@ export default function ResolverPromoteSection({ record, onPromote }: Props) {
           className="mt-1 w-full max-w-xs rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
         >
           <option value="">— None —</option>
-          {HOUSE_CLEANING_PITCH_LABELS.map((p) => (
+          {NAILS_PITCH_LABELS.map((p) => (
             <option key={p} value={p}>
               {p}
             </option>

@@ -1,3 +1,4 @@
+/* Parked reference evidence map for house_cleaning — inactive in live resolver until re-listed in ACTIVE_RESOLVER_CATEGORIES. */
 import type { ResolverCandidate } from "@/lib/unknown-resolver/resolver-types";
 
 function c(p: ResolverCandidate): ResolverCandidate {
