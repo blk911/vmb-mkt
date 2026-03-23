@@ -15,6 +15,7 @@ import {
 import { deriveEntityDisplayStateForRow, type EntityDisplayRowInput } from "./entity-display-logic";
 import { getSurfacedOperatorCount } from "./operator-extraction-logic";
 import { deriveServiceSignalsForRow, isNailsCategoryString } from "./service-signal-logic";
+import type { PlatformSignalsRecord } from "./platform-signal-types";
 
 export type ReviewStatusLite = "approved" | "rejected" | "watch" | "needs_research" | undefined;
 
@@ -38,6 +39,8 @@ export type WorkModeRow = {
   /** Shop / business name when anchored (helps entity-first salon detection). */
   shop_license_name?: string | null;
   tech_count_nearby?: number;
+  /** High-confidence booking platform signals attached to this entity only (never create-from-platform). */
+  platformSignals?: PlatformSignalsRecord | null;
 };
 
 function toEntityDisplayInput(row: WorkModeRow): EntityDisplayRowInput {
@@ -55,6 +58,7 @@ function toEntityDisplayInput(row: WorkModeRow): EntityDisplayRowInput {
     confidence: row.confidence,
     tuned_confidence: row.tuned_confidence,
     raw_snippets: row.raw_snippets,
+    platformSignals: row.platformSignals,
   };
 }
 
@@ -71,6 +75,42 @@ export function rowHasNailsLedSignal(row: WorkModeRow): boolean {
 
 export function getEffectiveScore(row: WorkModeRow): number {
   return typeof row.tuned_entity_score === "number" ? row.tuned_entity_score : row.entity_score;
+}
+
+/** Small additive boost per bookable platform (capped) — does not replace core scoring. */
+export const PLATFORM_BOOKING_BOOST_PER_SIGNAL = 2;
+export const PLATFORM_BOOKING_BOOST_MAX = 4;
+
+export function platformBookingBoostScore(row: WorkModeRow): number {
+  const ps = row.platformSignals;
+  if (!ps) return 0;
+  let n = 0;
+  for (const p of ["fresha", "vagaro", "booksy", "glossgenius"] as const) {
+    if (ps[p]?.isBookable) n += 1;
+  }
+  return Math.min(n * PLATFORM_BOOKING_BOOST_PER_SIGNAL, PLATFORM_BOOKING_BOOST_MAX);
+}
+
+/** Score used for Work Mode priority tiers — includes small platform booking boost. */
+export function adjustedScoreForWorkMode(row: WorkModeRow): number {
+  return getEffectiveScore(row) + platformBookingBoostScore(row);
+}
+
+function rowHasAnyBookablePlatform(row: WorkModeRow): boolean {
+  const ps = row.platformSignals;
+  if (!ps) return false;
+  return !!(ps.fresha?.isBookable || ps.vagaro?.isBookable || ps.booksy?.isBookable || ps.glossgenius?.isBookable);
+}
+
+/**
+ * When a validated booking platform signal exists, prefer outreach over open-ended research
+ * (simple refinement — does not override reject/skip).
+ */
+export function refineNextActionForPlatformSignals(row: WorkModeRow, action: WorkNextAction): WorkNextAction {
+  if (action !== "research") return action;
+  if (!rowHasAnyBookablePlatform(row)) return action;
+  if (hasWebsiteSignal(row)) return "dm";
+  return "review";
 }
 
 export function getZoneId(row: WorkModeRow): string {
@@ -278,7 +318,7 @@ export function summarizeWorkMode<T extends WorkModeRow>(
  * - low: everything else (non-nails or weak)
  */
 export function derivePriority(row: WorkModeRow, reviewStatus: ReviewStatusLite): WorkPriority {
-  const score = getEffectiveScore(row);
+  const score = adjustedScoreForWorkMode(row);
   const nailsLed = rowHasNailsLedSignal(row);
   const z = getZoneId(row);
   const conf = getEffectiveConfidence(row);
@@ -340,7 +380,7 @@ export function derivePriority(row: WorkModeRow, reviewStatus: ReviewStatusLite)
  * - skip: low priority nail or rejected-adjacent
  */
 export function deriveNextAction(row: WorkModeRow, reviewStatus: ReviewStatusLite, priority: WorkPriority): WorkNextAction {
-  const score = getEffectiveScore(row);
+  const score = adjustedScoreForWorkMode(row);
   const nailsLed = rowHasNailsLedSignal(row);
   const conf = getEffectiveConfidence(row);
   const entity = deriveEntityDisplayStateForRow(toEntityDisplayInput(row));
@@ -402,7 +442,8 @@ export function deriveWorkStateForRow(
   activePreset: WorkPresetId | null
 ): WorkDerivedState {
   const priority = derivePriority(row, reviewStatus);
-  const nextAction = deriveNextAction(row, reviewStatus, priority);
+  let nextAction = deriveNextAction(row, reviewStatus, priority);
+  nextAction = refineNextActionForPlatformSignals(row, nextAction);
   const matchesActivePreset = activePreset
     ? rowMatchesPresetStrict(row, activePreset, reviewStatus)
     : false;

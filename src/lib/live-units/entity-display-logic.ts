@@ -10,6 +10,7 @@ import type {
   LiveLabel,
   RelationshipHint,
 } from "./entity-display-types";
+import type { PlatformSignalsRecord, PlatformType } from "./platform-signal-types";
 import type { DerivedServiceSignals } from "./service-signal-types";
 import { deriveServiceSignalsForRow, type ServiceSignalRowInput } from "./service-signal-logic";
 
@@ -24,6 +25,8 @@ export type EntityDisplayRowInput = ServiceSignalRowInput & {
   raw_snippets?: {
     google?: { zone_id?: string; zone_name?: string; website_domain?: string };
   };
+  /** Optional — attached booking platform signals (high-confidence only). */
+  platformSignals?: PlatformSignalsRecord | null;
 };
 
 function haystack(row: EntityDisplayRowInput): string {
@@ -199,6 +202,23 @@ function liveLabelFrom(kind: EntityKind, likelyLive: boolean): LiveLabel {
   return "Unclear";
 }
 
+const PLATFORM_ORDER: PlatformType[] = ["booksy", "fresha", "glossgenius", "vagaro"];
+const PLATFORM_SHORT: Record<PlatformType, string> = {
+  fresha: "Fresha",
+  vagaro: "Vagaro",
+  booksy: "Booksy",
+  glossgenius: "GlossGenius",
+};
+
+function bookingPlatformHintFrom(signals?: PlatformSignalsRecord | null): string | null {
+  if (!signals) return null;
+  for (const p of PLATFORM_ORDER) {
+    const s = signals[p];
+    if (s?.isBookable) return `Bookable via ${PLATFORM_SHORT[p]}`;
+  }
+  return null;
+}
+
 export function deriveEntityDisplayStateForRow(row: EntityDisplayRowInput): DerivedEntityDisplayState {
   const sig = deriveServiceSignalsForRow(row);
   const hay = haystack(row);
@@ -209,6 +229,7 @@ export function deriveEntityDisplayStateForRow(row: EntityDisplayRowInput): Deri
   const zoneName = row.raw_snippets?.google?.zone_name || "No zone";
   const operatorSummary = buildOperatorSummary(entityKind, relationshipHint, sig, zoneName, likelyLive);
   const liveLabel = liveLabelFrom(entityKind, likelyLive);
+  const bookingPlatformHint = bookingPlatformHintFrom(row.platformSignals);
 
   return {
     entityKind,
@@ -217,5 +238,6 @@ export function deriveEntityDisplayStateForRow(row: EntityDisplayRowInput): Deri
     entryOptions,
     likelyLive,
     operatorSummary,
+    bookingPlatformHint,
   };
 }

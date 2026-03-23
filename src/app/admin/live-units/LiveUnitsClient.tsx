@@ -39,6 +39,10 @@ import { getSurfacedOperatorsForBusinessId, operatorAttachmentSuffix } from "@/l
 import EntityKindBadge from "@/app/admin/live-units/_components/EntityKindBadge";
 import EntryOptionChips from "@/app/admin/live-units/_components/EntryOptionChips";
 import RelationshipHintBadge from "@/app/admin/live-units/_components/RelationshipHintBadge";
+import PlatformSignalBadges from "@/app/admin/live-units/_components/PlatformSignalBadges";
+import { attachPlatformSignals } from "@/lib/live-units/platform-signal-attach";
+import { MOCK_PLATFORM_LISTINGS } from "@/lib/mock/liveUnits/platformListings";
+import type { PlatformSignalsRecord } from "@/lib/live-units/platform-signal-types";
 
 type Confidence = "strong" | "likely" | "candidate_review" | "ambiguous";
 type ReviewStatus = "approved" | "rejected" | "watch" | "needs_research";
@@ -109,6 +113,11 @@ type LiveUnitRow = {
   shop_distance?: number | null;
   association_confidence?: "strong" | "likely" | "weak" | null;
   tech_count_nearby?: number;
+  /** From ingest JSON — used for platform listing geo match only. */
+  lat?: number | null;
+  lon?: number | null;
+  /** Attached high-confidence booking platform signals (overlay; never entity creation). */
+  platformSignals?: PlatformSignalsRecord;
 };
 
 type ReviewDecision = {
@@ -475,13 +484,17 @@ function signalStatusFor(row: LiveUnitRow, review?: ReviewDecision) {
 }
 
 export default function LiveUnitsClient({
-  rows,
+  rows: rowsFromProps,
   source,
   initialReviewState,
   initialSalonTechReviewState,
   shopIndex,
   techAssociations,
 }: Props) {
+  const rows = useMemo(
+    () => attachPlatformSignals(rowsFromProps, MOCK_PLATFORM_LISTINGS),
+    [rowsFromProps]
+  );
   const [confidence, setConfidence] = useState<"all" | Confidence>("all");
   const [signalMix, setSignalMix] = useState("all");
   const [category, setCategory] = useState("all");
@@ -1791,6 +1804,9 @@ export default function LiveUnitsClient({
                                 {entityDisplay.operatorSummary}
                                 {operatorAttachmentSuffix(surfacedOps.length)}
                               </div>
+                              {entityDisplay.bookingPlatformHint ? (
+                                <div className="text-xs font-medium text-teal-800">{entityDisplay.bookingPlatformHint}</div>
+                              ) : null}
                               <div>
                                 Entity: {entityDisplay.entityKind.replaceAll("_", " ")} · Live posture: {entityDisplay.liveLabel}
                               </div>
@@ -1814,10 +1830,14 @@ export default function LiveUnitsClient({
                       <p className="mt-1 max-w-[288px] pl-5 text-[11px] leading-snug text-neutral-600 line-clamp-2">
                         {entityDisplay.operatorSummary}
                         {operatorAttachmentSuffix(surfacedOps.length)}
+                        {entityDisplay.bookingPlatformHint ? (
+                          <span className="mt-0.5 block text-teal-800">{entityDisplay.bookingPlatformHint}</span>
+                        ) : null}
                       </p>
                       <div className="mt-1 flex max-w-[288px] flex-wrap items-center gap-1 pl-5">
                         <MultiServiceBadge isMultiService={rowSig.isMultiService} />
                         <ServiceSignalChips signals={rowSig.serviceSignals} />
+                        <PlatformSignalBadges platformSignals={row.platformSignals} />
                         <RelationshipHintBadge hint={entityDisplay.relationshipHint} />
                         <EntryOptionChips options={entityDisplay.entryOptions} />
                       </div>

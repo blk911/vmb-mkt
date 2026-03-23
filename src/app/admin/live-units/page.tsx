@@ -38,6 +38,8 @@ type LiveUnitRow = {
   shop_distance?: number | null;
   association_confidence?: "strong" | "likely" | "weak" | null;
   tech_count_nearby?: number;
+  lat?: number | null;
+  lon?: number | null;
 };
 
 type LiveUnitsFile = {

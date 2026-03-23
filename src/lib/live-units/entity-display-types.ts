@@ -28,4 +28,6 @@ export type DerivedEntityDisplayState = {
   entryOptions: EntryOption[];
   likelyLive: boolean;
   operatorSummary: string;
+  /** Short hint when a high-confidence booking platform signal is attached, e.g. "Bookable via Fresha". */
+  bookingPlatformHint: string | null;
 };
