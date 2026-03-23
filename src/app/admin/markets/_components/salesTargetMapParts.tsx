@@ -208,8 +208,13 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
   const minH = size === "large" ? "min-h-[min(52vh,560px)]" : "min-h-[360px]";
   const minFallback = size === "large" ? "min-h-[400px]" : "min-h-[320px]";
 
-  /** Pan/zoom to prospect marker; closes hover. No detail InfoWindow (inline summary panel is primary). */
-  const panToProspectOnly = useCallback((locationId: string) => {
+  /**
+   * Brings the prospect marker into view without changing zoom.
+   * If the marker is already inside the current viewport bounds, the map does not move.
+   * Otherwise performs a minimal pan only (no fitBounds / setZoom / flyTo).
+   * Closes hover InfoWindow. Inline summary panel remains the primary selection UI.
+   */
+  const ensureProspectVisible = useCallback((locationId: string) => {
     const map = mapRef.current;
     const marker = markersByIdRef.current.get(locationId);
     if (!map || !marker) return;
@@ -218,13 +223,15 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
       clearTimeout(hoverCloseTimerRef.current);
       hoverCloseTimerRef.current = null;
     }
-    map.panTo(marker.getPosition());
-    const z = map.getZoom();
-    if (z != null && z < 15) map.setZoom(15);
+    const pos = marker.getPosition?.();
+    if (!pos) return;
+    const bounds = map.getBounds?.();
+    if (bounds && typeof bounds.contains === "function" && bounds.contains(pos)) return;
+    map.panTo(pos);
   }, []);
 
-  const panToProspectRef = useRef(panToProspectOnly);
-  panToProspectRef.current = panToProspectOnly;
+  const ensureProspectVisibleRef = useRef(ensureProspectVisible);
+  ensureProspectVisibleRef.current = ensureProspectVisible;
   const onSelectRef = useRef(onProspectSelectFromMap);
   onSelectRef.current = onProspectSelectFromMap;
 
@@ -232,7 +239,7 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
     ref,
     () => ({
       focusProspect: (locationId: string) => {
-        panToProspectRef.current(locationId);
+        ensureProspectVisibleRef.current(locationId);
       },
     }),
     []
@@ -336,12 +343,12 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
         const kind = classifyProspect(row);
         const resolvedHint =
           kind === "resolved"
-            ? `<div style="color:#6d28d9;font-size:10px;margin-top:4px;line-height:1.3">Gray resolution (supplemental hint — not primary presence)</div>`
+            ? `<div style="color:#6d28d9;font-size:11px;margin-top:4px;line-height:1.35">Gray resolution (supplemental hint — not primary presence)</div>`
             : "";
-        return `<div style="font-family:system-ui,sans-serif;padding:6px 8px;font-size:12px;max-width:220px">
-          <div style="font-weight:600">${escapeHtml(row.member.name)}</div>
-          <div style="color:#555;margin-top:2px">${row.distance_miles.toFixed(2)} mi</div>
-          <div style="color:#666;font-size:11px;margin-top:2px">${escapeHtml(typeLabel(kind))}</div>
+        return `<div style="font-family:system-ui,sans-serif;padding:8px 10px;font-size:13px;line-height:1.35;max-width:260px;color:#171717">
+          <div style="font-weight:600;font-size:14px">${escapeHtml(row.member.name)}</div>
+          <div style="color:#525252;margin-top:4px;font-size:12px">${row.distance_miles.toFixed(2)} mi · ${escapeHtml(row.member.category)}</div>
+          <div style="color:#737373;font-size:12px;margin-top:2px">${escapeHtml(typeLabel(kind))}</div>
           ${resolvedHint}
         </div>`;
       };
@@ -381,7 +388,7 @@ export const SalesMapCanvas = forwardRef<SalesMapCanvasHandle, SalesMapCanvasPro
               hoverCloseTimerRef.current = null;
             }
             hoverInfoRef.current?.close();
-            panToProspectRef.current(m.location_id);
+            ensureProspectVisibleRef.current(m.location_id);
             onSelectRef.current?.(m.location_id);
           });
         }
