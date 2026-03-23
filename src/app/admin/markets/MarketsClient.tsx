@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import MarketZoneFilters from "@/components/admin/MarketZoneFilters";
+import { compareZoneIdsForDisplay, getZoneDisplayLabel } from "@/lib/geo/target-zones";
 import { ClusterEvidencePanel } from "@/components/admin/ClusterEvidencePanel";
 import { GrayResolutionBadge } from "@/components/admin/GrayResolution";
 import { PathEnrichmentBadge } from "@/components/admin/PathEnrichment";
@@ -294,11 +295,14 @@ export default function MarketsClient({
   }, [marketsUrlState, currentPathWithQuery, router]);
 
   const visibleZones = useMemo(() => {
-    return zones.filter((zone) => {
-      if (zone.region_id !== filters.regionId) return false;
-      if (filters.zoneId !== "ALL" && zone.zone_id !== filters.zoneId) return false;
-      return true;
-    });
+    return zones
+      .filter((zone) => {
+        if (zone.region_id !== filters.regionId) return false;
+        if (filters.zoneId !== "ALL" && zone.zone_id !== filters.zoneId) return false;
+        return true;
+      })
+      .slice()
+      .sort((a, b) => compareZoneIdsForDisplay(a.zone_id, b.zone_id));
   }, [filters, zones]);
 
   const zoneCounts = useMemo(() => {
@@ -546,24 +550,25 @@ export default function MarketsClient({
       {filters.zoneId === "ALL" ? (
         <section aria-label="Zone quick links">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-            Quick links — open a corridor (live links to that market view)
+            Quick links — open a zone (live links to that market view)
           </p>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {visibleZones.map((zone) => {
               const count = zoneCounts[zone.zone_id] ?? 0;
+              const zoneLabel = getZoneDisplayLabel(zone.zone_id);
               const href = buildMarketsListPath({ ...marketsUrlState, zoneId: zone.zone_id });
               return (
                 <Link
                   key={zone.zone_id}
                   href={href}
                   prefetch
-                  aria-label={`Open ${zone.zone_name} corridor, ${count} members`}
-                  title={`Open corridor: ${zone.zone_name}`}
+                  aria-label={`Open ${zoneLabel} market view, ${count} members`}
+                  title={`Open zone: ${zoneLabel}`}
                   className="group block rounded-lg border border-neutral-200 bg-white px-2.5 py-2 shadow-sm transition hover:border-sky-500 hover:bg-sky-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
                 >
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-sky-700">Corridor</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-sky-700">Area</span>
                   <div className="mt-0.5 line-clamp-2 min-h-[2.25rem] text-[13px] font-semibold leading-snug text-neutral-900 group-hover:underline group-hover:decoration-sky-500/80 group-hover:underline-offset-2">
-                    {zone.zone_name}
+                    {zoneLabel}
                   </div>
                   <div className="mt-0.5 truncate text-[11px] text-neutral-500" title={zone.market}>
                     {zone.market}

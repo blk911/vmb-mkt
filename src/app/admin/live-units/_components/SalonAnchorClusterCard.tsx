@@ -11,10 +11,11 @@ import PlatformSignalBadges from "@/app/admin/live-units/_components/PlatformSig
 import EntryOptionChips from "@/app/admin/live-units/_components/EntryOptionChips";
 import ClusterStrengthBadge from "@/app/admin/live-units/_components/ClusterStrengthBadge";
 import RelatedTechList, { type RelatedTechRowProps } from "@/app/admin/live-units/_components/RelatedTechList";
+import { getZoneDisplayLabel } from "@/lib/geo/target-zones";
 
 function zoneLabel(zoneId: string | null, zoneName: string | null): string {
-  if (zoneName && zoneName !== "No zone") return zoneName;
-  if (zoneId) return zoneId;
+  if (zoneId) return getZoneDisplayLabel(zoneId);
+  if (zoneName && zoneName !== "No zone") return getZoneDisplayLabel(zoneName);
   return "—";
 }
 

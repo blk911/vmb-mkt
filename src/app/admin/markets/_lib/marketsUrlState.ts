@@ -1,4 +1,5 @@
 import type { BeautyRegion, BeautyZone } from "@/lib/markets";
+import { resolveUrlZoneParamToMarketZoneId } from "@/lib/geo/target-zones";
 import type { SalesRingMiles } from "@/app/admin/markets/_lib/salesTargetMapHelpers";
 
 export type MarketsSortKey =
@@ -61,13 +62,12 @@ export function parseMarketsUrlSearchParams(
   regions: BeautyRegion[]
 ): MarketsUrlState {
   const regionIds = new Set(regions.map((r) => r.region_id));
-  const zoneIds = new Set(zones.map((z) => z.zone_id));
 
   let regionId = getFirst(raw, "region") ?? defaultMarketsUrlState().regionId;
   if (!regionIds.has(regionId)) regionId = defaultMarketsUrlState().regionId;
 
   let zoneId = getFirst(raw, "zone") ?? defaultMarketsUrlState().zoneId;
-  if (zoneId !== "ALL" && !zoneIds.has(zoneId)) zoneId = "ALL";
+  zoneId = resolveUrlZoneParamToMarketZoneId(zoneId, zones);
   if (zoneId !== "ALL" && !zones.some((z) => z.zone_id === zoneId && z.region_id === regionId)) {
     zoneId = "ALL";
   }

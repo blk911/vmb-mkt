@@ -16,8 +16,7 @@ import { getSurfacedOperatorsForBusinessId } from "./operator-extraction-logic";
 import type { SurfacedOperator } from "./operator-extraction-types";
 import type { DerivedServiceSignals } from "./service-signal-types";
 import { serviceSignalLabel } from "./service-signal-logic";
-
-const ACTIVE_ZONE_IDS = new Set(["QUEBEC_CORRIDOR", "DOWNTOWN_CORE", "CHERRY_CREEK", "CC01"]);
+import { isActiveOperationalZoneId } from "@/lib/geo/target-zones";
 
 /** Prefer missing related rows over false positives. */
 const MIN_ANCHOR_SCORE = 36;
@@ -111,7 +110,7 @@ export function scoreAnchorCandidate(
   if (validatedOpCount > 0) s += Math.min(14, validatedOpCount * 5);
 
   const z = getZoneId(row);
-  if (z && ACTIVE_ZONE_IDS.has(z)) s += 5;
+  if (z && isActiveOperationalZoneId(z)) s += 5;
 
   if (ed.likelyLive === false) s -= 12;
 

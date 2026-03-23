@@ -1,6 +1,7 @@
 /**
  * Work Mode zero-state / constrained-state routing — explains empty results and suggests recovery.
  */
+import { getZoneDisplayLabel, normalizeZoneId } from "@/lib/geo/target-zones";
 import type { WorkPresetId } from "./work-mode-types";
 import type { ServiceSignal } from "./service-signal-types";
 import { deriveServiceSignalsForRow, serviceSignalLabel } from "./service-signal-logic";
@@ -50,7 +51,7 @@ export type WorkResolutionState = {
   recommendedPresetId: WorkPresetId | null;
   recommendedPresetLabel: string | null;
   suggestedActions: WorkResolutionSuggestedAction[];
-  /** Results header: e.g. "0 active rows for Quebec Corridor — High Value" */
+  /** Results header: e.g. "0 active rows for Quebec — High Value" */
   resultsHeaderLine: string;
   /** Subtext under header: "Using saved filters" | "Using preset only" */
   scopeSubtext: string;
@@ -91,7 +92,7 @@ export function describeBlockingConstraints(s: LiveUnitsFilterSnapshot): string[
   if (s.confidence !== "all") out.push(`Confidence: ${formatLabel(s.confidence)}`);
   if (s.signalMix !== "all") out.push(`Signal mix: ${s.signalMix}`);
   if (s.category !== "all") out.push(`Category: ${s.category}`);
-  if (s.zone !== "all") out.push(`Zone: ${s.zone}`);
+  if (s.zone !== "all") out.push(`Zone: ${getZoneDisplayLabel(s.zone)}`);
   if (s.city !== "all") out.push(`City: ${s.city}`);
   const zq = s.zipQuery.trim();
   if (zq) out.push(`ZIP ${zq}`);
@@ -108,7 +109,7 @@ export function describeBlockingConstraints(s: LiveUnitsFilterSnapshot): string[
 function countQuebecNailMixedServiceRows<T extends WorkModeRow>(rows: T[]): number {
   let n = 0;
   for (const row of rows) {
-    if (getZoneId(row) !== "QUEBEC_CORRIDOR") continue;
+    if (normalizeZoneId(getZoneId(row)) !== "QUEBEC_CORRIDOR") continue;
     const sig = deriveServiceSignalsForRow(row);
     if (sig.hasNails && sig.isMultiService) n += 1;
   }

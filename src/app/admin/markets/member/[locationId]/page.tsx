@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildMarketsListPath, parseMarketsUrlSearchParams } from "../../_lib/marketsUrlState";
+import { getZoneDisplayLabel } from "@/lib/geo/target-zones";
 import { getEnrichedMemberByLocationId, getMarketById, getMarkets, getRegions } from "@/lib/markets";
 import LicenseHoldersTable from "./LicenseHoldersTable";
 import { GrayResolutionSection } from "@/components/admin/GrayResolution";
@@ -78,7 +79,7 @@ export default async function MarketMemberListingPage({ params, searchParams }: 
           <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Salon listing</p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900">{member.name}</h1>
           <p className="mt-1 text-sm text-neutral-600">
-            {zone?.zone_name ?? member.zone_name} · {member.market}
+            {getZoneDisplayLabel(zone?.zone_id ?? member.zone_id)} · {member.market}
           </p>
 
           <dl className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

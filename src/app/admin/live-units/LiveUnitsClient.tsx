@@ -16,6 +16,8 @@ import type { LiveUnitsMode, WorkPresetId } from "@/lib/live-units/work-mode-typ
 import {
   applyWorkPreset,
   deriveWorkStateForRow,
+  getZoneId,
+  getZoneName,
   pickDefaultWorkPreset,
   summarizeWorkMode,
 } from "@/lib/live-units/work-mode-logic";
@@ -46,6 +48,7 @@ import PlatformSignalBadges from "@/app/admin/live-units/_components/PlatformSig
 import { attachPlatformSignals } from "@/lib/live-units/platform-signal-attach";
 import { MOCK_PLATFORM_LISTINGS } from "@/lib/mock/liveUnits/platformListings";
 import type { PlatformSignalsRecord } from "@/lib/live-units/platform-signal-types";
+import { compareZoneIdsForDisplay } from "@/lib/geo/target-zones";
 import { buildSalonAnchorClusters } from "@/lib/live-units/cluster-mode-logic";
 import { deriveClusterEmptyState } from "@/lib/live-units/cluster-debug-logic";
 import ClusterModeDebugStrip from "@/app/admin/live-units/_components/ClusterModeDebugStrip";
@@ -174,9 +177,8 @@ type BulkActionKind = ReviewStatus | "clear";
 
 type Props = {
   rows: LiveUnitRow[];
-  source: "shop_context" | "tuned" | "base";
   /** Server load checkpoints — aligns Queue Snapshot with the same row array. */
-  loadTrace?: LiveUnitsLoadTrace;
+  loadTrace: LiveUnitsLoadTrace;
   initialReviewState: Record<string, ReviewDecision>;
   initialSalonTechReviewState: Record<string, SalonTechLinkReviewDecision>;
   shopIndex: ShopIndexRow[];
@@ -285,14 +287,6 @@ function getReviewStatusRank(status: ReviewStatus | "unreviewed") {
   if (status === "watch") return 3;
   if (status === "rejected") return 2;
   return 1;
-}
-
-function getZoneId(row: LiveUnitRow) {
-  return row.raw_snippets?.google?.zone_id || "NO_ZONE";
-}
-
-function getZoneName(row: LiveUnitRow) {
-  return row.raw_snippets?.google?.zone_name || "No zone";
 }
 
 function hasFeedbackTuning(row: LiveUnitRow) {
@@ -495,7 +489,6 @@ function signalStatusFor(row: LiveUnitRow, review?: ReviewDecision) {
 
 export default function LiveUnitsClient({
   rows: rowsFromProps,
-  source,
   loadTrace,
   initialReviewState,
   initialSalonTechReviewState,
@@ -554,15 +547,15 @@ export default function LiveUnitsClient({
   }, [rows]);
 
   const zoneOptions = useMemo(() => {
-    const zoneMap = new Map<string, string>();
+    const firstById = new Map<string, LiveUnitRow>();
     for (const row of rows) {
-      zoneMap.set(getZoneId(row), getZoneName(row));
+      const id = getZoneId(row);
+      if (id && id !== "NO_ZONE" && !firstById.has(id)) firstById.set(id, row);
     }
+    const ids = Array.from(firstById.keys()).sort(compareZoneIdsForDisplay);
     return [
       { value: "all", label: "All zones" },
-      ...Array.from(zoneMap.entries())
-        .sort((a, b) => a[1].localeCompare(b[1]))
-        .map(([value, label]) => ({ value, label })),
+      ...ids.map((id) => ({ value: id, label: getZoneName(firstById.get(id)!) })),
     ];
   }, [rows]);
 
@@ -1221,27 +1214,29 @@ export default function LiveUnitsClient({
           ) : null
         }
         diagnosticSlot={
-          loadTrace ? (
-            <LiveUnitsDebugStrip trace={loadTrace} hydratedRowCount={rows.length} visibleRowCount={displayRows.length} />
-          ) : null
+          <LiveUnitsDebugStrip trace={loadTrace} hydratedRowCount={rows.length} visibleRowCount={displayRows.length} />
         }
         collapseFilters={liveUnitsMode === "work"}
         badges={
           <>
             <span
               className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                source === "shop_context"
-                  ? "bg-violet-100 text-violet-700"
-                  : source === "tuned"
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-slate-100 text-slate-700"
+                loadTrace.sourceMode === "api"
+                  ? "bg-sky-100 text-sky-800"
+                  : loadTrace.sourceMode === "datastore"
+                    ? "bg-violet-100 text-violet-800"
+                    : loadTrace.sourceMode === "artifact_fallback"
+                      ? "bg-slate-100 text-slate-700"
+                      : "bg-amber-100 text-amber-900"
               }`}
             >
-              {source === "shop_context"
-                ? "Using shop-context artifact"
-                : source === "tuned"
-                  ? "Using tuned artifact"
-                  : "Using base artifact fallback"}
+              {loadTrace.sourceMode === "api"
+                ? "Dataset: API (HTTP)"
+                : loadTrace.sourceMode === "datastore"
+                  ? "Dataset: Firestore"
+                  : loadTrace.sourceMode === "artifact_fallback"
+                    ? `Dataset: file artifact (${loadTrace.artifactTier ?? "?"})`
+                    : "Dataset: none"}
             </span>
             <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
               Default sort: highest tuned score

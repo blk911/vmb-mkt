@@ -12,6 +12,7 @@ import type {
 } from "./entity-display-types";
 import type { PlatformSignalsRecord, PlatformType } from "./platform-signal-types";
 import type { DerivedServiceSignals } from "./service-signal-types";
+import { getZoneDisplayLabel } from "@/lib/geo/target-zones";
 import { deriveServiceSignalsForRow, type ServiceSignalRowInput } from "./service-signal-logic";
 
 export type EntityDisplayRowInput = ServiceSignalRowInput & {
@@ -226,7 +227,12 @@ export function deriveEntityDisplayStateForRow(row: EntityDisplayRowInput): Deri
   const entityKind = inferEntityKind(row, sig, hay);
   const relationshipHint = inferRelationshipHint(row, entityKind, hay);
   const entryOptions = inferEntryOptions(entityKind, relationshipHint, sig, likelyLive);
-  const zoneName = row.raw_snippets?.google?.zone_name || "No zone";
+  const zid = row.raw_snippets?.google?.zone_id;
+  const zoneName = zid
+    ? getZoneDisplayLabel(zid)
+    : row.raw_snippets?.google?.zone_name
+      ? getZoneDisplayLabel(row.raw_snippets.google.zone_name)
+      : "No zone";
   const operatorSummary = buildOperatorSummary(entityKind, relationshipHint, sig, zoneName, likelyLive);
   const liveLabel = liveLabelFrom(entityKind, likelyLive);
   const bookingPlatformHint = bookingPlatformHintFrom(row.platformSignals);

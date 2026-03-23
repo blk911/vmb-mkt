@@ -32,12 +32,12 @@ export type WorkPresetMeta = {
 export const WORK_PRESETS: WorkPresetMeta[] = [
   {
     id: "QUEBEC_HIGH_VALUE",
-    label: "Quebec Corridor — High Value",
+    label: "Quebec — High Value",
     shortHint: "Nail-led targets (incl. mixed-service w/ nail signal) in Quebec zone, high score, not rejected.",
   },
   {
     id: "DOWNTOWN_DENSE",
-    label: "Downtown Core — Dense Targets",
+    label: "Downtown — Dense Targets",
     shortHint: "Downtown nail-led rows with storefront or dense neighbor signals.",
   },
   {

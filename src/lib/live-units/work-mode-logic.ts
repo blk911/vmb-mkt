@@ -4,6 +4,7 @@
  *
  * Priority / next-action are operator hints only — not persisted.
  */
+import { getZoneDisplayLabel, isActiveOperationalZoneId, normalizeZoneId } from "@/lib/geo/target-zones";
 import {
   WORK_PRESETS,
   type WorkDerivedState,
@@ -118,7 +119,17 @@ export function getZoneId(row: WorkModeRow): string {
 }
 
 export function getZoneName(row: WorkModeRow): string {
-  return row.raw_snippets?.google?.zone_name || "No zone";
+  const id = row.raw_snippets?.google?.zone_id;
+  if (id) return getZoneDisplayLabel(id);
+  const nm = row.raw_snippets?.google?.zone_name;
+  if (nm) return getZoneDisplayLabel(nm);
+  return "No zone";
+}
+
+function canonicalZoneId(row: WorkModeRow): string {
+  const raw = getZoneId(row);
+  if (raw === "NO_ZONE") return raw;
+  return normalizeZoneId(raw);
 }
 
 /** Category-string nails heuristic (legacy / diagnostics). Prefer {@link rowHasNailsLedSignal} for presets. */
@@ -156,7 +167,7 @@ function isUnreviewed(rs: ReviewStatusLite): boolean {
 /** Strict preset match (no score/zone broadening). Exported for diagnostics. */
 export function rowMatchesPresetStrict(row: WorkModeRow, presetId: WorkPresetId, reviewStatus: ReviewStatusLite): boolean {
   const score = getEffectiveScore(row);
-  const z = getZoneId(row);
+  const z = canonicalZoneId(row);
   const nailsLed = rowHasNailsLedSignal(row);
   const conf = getEffectiveConfidence(row);
 
@@ -202,20 +213,20 @@ export function rowMatchesPreset(row: WorkModeRow, presetId: WorkPresetId, revie
 
 function matchQuebecLoose(row: WorkModeRow, rs: ReviewStatusLite, minScore: number): boolean {
   if (!rowHasNailsLedSignal(row)) return false;
-  if (getZoneId(row) !== "QUEBEC_CORRIDOR") return false;
+  if (canonicalZoneId(row) !== "QUEBEC_CORRIDOR") return false;
   if (isRejected(rs)) return false;
   return getEffectiveScore(row) >= minScore;
 }
 
 function matchQuebecBroad(row: WorkModeRow, rs: ReviewStatusLite): boolean {
   if (!rowHasNailsLedSignal(row)) return false;
-  if (getZoneId(row) !== "QUEBEC_CORRIDOR") return false;
+  if (canonicalZoneId(row) !== "QUEBEC_CORRIDOR") return false;
   return !isRejected(rs);
 }
 
 function matchDowntownLoose(row: WorkModeRow, rs: ReviewStatusLite, minScore: number, requireDense: boolean): boolean {
   if (!rowHasNailsLedSignal(row)) return false;
-  if (getZoneId(row) !== "DOWNTOWN_CORE") return false;
+  if (canonicalZoneId(row) !== "DOWNTOWN_CORE") return false;
   if (isRejected(rs)) return false;
   if (getEffectiveScore(row) < minScore) return false;
   if (requireDense) return isDenseNeighborSignal(row);
@@ -288,8 +299,6 @@ export type WorkSummaryCounts = {
   inActiveZone: number;
 };
 
-const ACTIVE_ZONE_IDS = new Set(["QUEBEC_CORRIDOR", "DOWNTOWN_CORE", "CHERRY_CREEK"]);
-
 export function summarizeWorkMode<T extends WorkModeRow>(
   rows: T[],
   getReviewStatus: (liveUnitId: string) => ReviewStatusLite
@@ -304,7 +313,7 @@ export function summarizeWorkMode<T extends WorkModeRow>(
     if (d.priority === "high") highPriority += 1;
     if (d.priority === "ready") readyToWork += 1;
     if (d.priority === "review") needsReview += 1;
-    if (ACTIVE_ZONE_IDS.has(getZoneId(row))) inActiveZone += 1;
+    if (isActiveOperationalZoneId(getZoneId(row))) inActiveZone += 1;
   }
 
   return { highPriority, readyToWork, needsReview, inActiveZone };
@@ -467,7 +476,7 @@ export function getWorkPresetMeta(id: WorkPresetId): WorkPresetMeta | undefined 
 }
 
 export function zoneEmphasisForPreset(presetId: WorkPresetId): string | null {
-  if (presetId === "QUEBEC_HIGH_VALUE") return "Quebec Corridor";
-  if (presetId === "DOWNTOWN_DENSE") return "Downtown Core";
+  if (presetId === "QUEBEC_HIGH_VALUE") return "Quebec";
+  if (presetId === "DOWNTOWN_DENSE") return "Downtown";
   return null;
 }

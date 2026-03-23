@@ -1,12 +1,23 @@
 /**
- * Loads Live Units JSON artifacts with **empty-aware cascade**:
- * prefers shop_context → tuned → base, but **skips** a file that exists with 0 rows
- * so a stale/empty shop_context does not hide a full base artifact.
+ * Loads Live Units data for server render:
+ * 1) Optional HTTP JSON (`LIVE_UNITS_JSON_URL`)
+ * 2) Optional Firestore document (`LIVE_UNITS_FIRESTORE_*`)
+ * 3) Local JSON artifact cascade (shop_context → tuned → base), unless disabled
+ *
+ * `LIVE_UNITS_FORCE_ARTIFACT_FIRST=1` — try files before remote (local dev).
  */
 import "server-only";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import type { LiveUnitsArtifactSource, LiveUnitsLoadTrace } from "./live-units-debug-types";
+import type {
+  LiveUnitsArtifactSource,
+  LiveUnitsLoadAttempt,
+  LiveUnitsLoadTrace,
+  LiveUnitsRemoteAttempt,
+  LiveUnitsSourceMode,
+} from "./live-units-debug-types";
+import { gateLiveUnitRows } from "./live-units-parse";
+import { loadRowsFromFirestoreDocument, loadRowsFromHttpJsonUrl } from "./live-units-remote";
 
 type LiveUnitsFileShape = {
   rows?: unknown;
@@ -34,31 +45,18 @@ function parseRowsFromFile(filePath: string): { rows: unknown[]; parseError?: st
   }
 }
 
-/** Minimal shape required for LiveUnitsClient / filters */
-function passesRequiredFields(row: unknown): boolean {
-  if (row === null || typeof row !== "object") return false;
-  const o = row as Record<string, unknown>;
-  const id = o.live_unit_id;
-  if (typeof id !== "string" || !id.trim()) return false;
-  if (typeof o.name_display !== "string") return false;
-  if (typeof o.signal_mix !== "string") return false;
-  if (typeof o.entity_score !== "number" || Number.isNaN(o.entity_score)) return false;
-  return true;
-}
-
-export type LoadedLiveUnitsPayload = {
-  rows: unknown[];
-  source: LiveUnitsArtifactSource;
-  trace: LiveUnitsLoadTrace;
-};
-
 /**
- * CHECKPOINT 1–4: raw file → parsed array → required-field gate → (caller maps to client shape).
+ * File-only cascade — same semantics as legacy loader (prefers first non-empty file).
  */
-export function loadLiveUnitsWithTrace(): LoadedLiveUnitsPayload {
-  const cwd = process.cwd();
-  const attempts: LiveUnitsLoadTrace["attempts"] = [];
-  let chosenSource: LiveUnitsArtifactSource | null = null;
+export function loadLiveUnitsFromArtifactsSync(): {
+  rawRows: unknown[];
+  attempts: LiveUnitsLoadAttempt[];
+  artifactTier: LiveUnitsArtifactSource | null;
+  chosenPath: string | null;
+  parseError?: string;
+} {
+  const attempts: LiveUnitsLoadAttempt[] = [];
+  let artifactTier: LiveUnitsArtifactSource | null = null;
   let chosenPath: string | null = null;
   let rawRows: unknown[] = [];
   let parseError: string | undefined;
@@ -79,20 +77,19 @@ export function loadLiveUnitsWithTrace(): LoadedLiveUnitsPayload {
     });
     if (parsed.parseError) parseError = parsed.parseError;
     if (parsed.rows.length > 0) {
-      chosenSource = source;
+      artifactTier = source;
       chosenPath = filePath;
       rawRows = parsed.rows;
       break;
     }
   }
 
-  /** Every file missing or every existing file had 0 rows — attach to last existing file for diagnostics */
-  if (chosenSource === null) {
+  if (artifactTier === null) {
     for (const { source, basename } of [...ARTIFACT_ORDER].reverse()) {
       const filePath = artifactPath(basename);
       if (!existsSync(filePath)) continue;
       const parsed = parseRowsFromFile(filePath);
-      chosenSource = source;
+      artifactTier = source;
       chosenPath = filePath;
       rawRows = parsed.rows;
       if (parsed.parseError) parseError = parsed.parseError;
@@ -100,39 +97,185 @@ export function loadLiveUnitsWithTrace(): LoadedLiveUnitsPayload {
     }
   }
 
-  if (chosenSource === null) {
-    chosenSource = "base";
+  if (artifactTier === null) {
+    artifactTier = "base";
     chosenPath = artifactPath(ARTIFACT_ORDER[ARTIFACT_ORDER.length - 1]!.basename);
   }
 
-  const rowsLoadedRaw = rawRows.length;
-  const rowsAfterParse = rawRows.length;
+  return { rawRows, attempts, artifactTier, chosenPath, parseError };
+}
 
-  const gated: unknown[] = [];
-  let droppedMalformed = 0;
-  for (const row of rawRows) {
-    if (passesRequiredFields(row)) gated.push(row);
-    else droppedMalformed += 1;
-  }
+export type LoadedLiveUnitsPayload = {
+  rows: unknown[];
+  trace: LiveUnitsLoadTrace;
+};
 
-  const rowsAfterRequiredFieldGates = gated.length;
-
-  const trace: LiveUnitsLoadTrace = {
-    cwd,
-    attempts,
-    chosenSource,
-    chosenPath,
+function buildTrace(input: {
+  cwd: string;
+  sourceMode: LiveUnitsSourceMode;
+  artifactTier: LiveUnitsArtifactSource | null;
+  remoteAttempts: LiveUnitsRemoteAttempt[];
+  attempts: LiveUnitsLoadAttempt[];
+  chosenPath: string | null;
+  rawRows: unknown[];
+  parseError?: string;
+  gatedRows: unknown[];
+  droppedMalformed: number;
+}): LiveUnitsLoadTrace {
+  const rowsLoadedRaw = input.rawRows.length;
+  const rowsAfterParse = input.rawRows.length;
+  const rowsAfterRequiredFieldGates = input.gatedRows.length;
+  return {
+    cwd: input.cwd,
+    sourceMode: input.sourceMode,
+    artifactTier: input.artifactTier,
+    remoteAttempts: input.remoteAttempts,
+    attempts: input.attempts,
+    chosenPath: input.chosenPath,
     rowsLoadedRaw,
     rowsAfterParse,
     rowsAfterRequiredFieldGates,
     rowsSentToClient: rowsAfterRequiredFieldGates,
-    droppedMalformed,
-    parseError,
+    droppedMalformed: input.droppedMalformed,
+    parseError: input.parseError,
+  };
+}
+
+function parseFirestorePath(combined: string): { collectionId: string; documentId: string } | null {
+  const s = combined.trim();
+  const idx = s.indexOf("/");
+  if (idx <= 0 || idx === s.length - 1) return null;
+  return { collectionId: s.slice(0, idx), documentId: s.slice(idx + 1) };
+}
+
+/**
+ * CHECKPOINT 1–4: remote or file → parsed array → required-field gate → (caller maps to client shape).
+ */
+export async function loadLiveUnitsWithTrace(): Promise<LoadedLiveUnitsPayload> {
+  const cwd = process.cwd();
+  const remoteAttempts: LiveUnitsRemoteAttempt[] = [];
+  const disableArtifact = process.env.LIVE_UNITS_DISABLE_ARTIFACT === "1";
+  const forceArtifactFirst = process.env.LIVE_UNITS_FORCE_ARTIFACT_FIRST === "1";
+
+  const finalize = (
+    rawRows: unknown[],
+    opts: {
+      sourceMode: LiveUnitsSourceMode;
+      artifactTier: LiveUnitsArtifactSource | null;
+      attempts: LiveUnitsLoadAttempt[];
+      chosenPath: string | null;
+      parseError?: string;
+    }
+  ): LoadedLiveUnitsPayload => {
+    const { gated, droppedMalformed } = gateLiveUnitRows(rawRows);
+    const trace = buildTrace({
+      cwd,
+      sourceMode: opts.sourceMode,
+      artifactTier: opts.artifactTier,
+      remoteAttempts,
+      attempts: opts.attempts,
+      chosenPath: opts.chosenPath,
+      rawRows,
+      parseError: opts.parseError,
+      gatedRows: gated,
+      droppedMalformed,
+    });
+    return { rows: gated, trace };
   };
 
-  return {
-    rows: gated,
-    source: chosenSource,
-    trace,
+  const emptyArtifactAttempts = (): LiveUnitsLoadAttempt[] => {
+    return ARTIFACT_ORDER.map(({ source, basename }) => {
+      const p = artifactPath(basename);
+      return {
+        source,
+        path: p,
+        fileExists: existsSync(p),
+        rawRowsInFile: existsSync(p) ? parseRowsFromFile(p).rows.length : 0,
+      };
+    });
   };
+
+  if (forceArtifactFirst && !disableArtifact) {
+    const local = loadLiveUnitsFromArtifactsSync();
+    if (local.rawRows.length > 0) {
+      return finalize(local.rawRows, {
+        sourceMode: "artifact_fallback",
+        artifactTier: local.artifactTier,
+        attempts: local.attempts,
+        chosenPath: local.chosenPath,
+        parseError: local.parseError,
+      });
+    }
+  }
+
+  const httpUrl = process.env.LIVE_UNITS_JSON_URL?.trim();
+  if (httpUrl) {
+    const { rows, result } = await loadRowsFromHttpJsonUrl(httpUrl);
+    remoteAttempts.push({
+      kind: "http",
+      label: result.sanitizedUrl,
+      ok: result.ok,
+      rowCount: result.rowCount,
+      error: result.error,
+      httpStatus: result.status,
+    });
+    if (result.ok && rows.length > 0) {
+      return finalize(rows, {
+        sourceMode: "api",
+        artifactTier: null,
+        attempts: emptyArtifactAttempts(),
+        chosenPath: result.sanitizedUrl,
+      });
+    }
+  }
+
+  let collectionId = process.env.LIVE_UNITS_FIRESTORE_COLLECTION?.trim();
+  let documentId = process.env.LIVE_UNITS_FIRESTORE_DOC_ID?.trim();
+  const combinedPath = process.env.LIVE_UNITS_FIRESTORE_DOC_PATH?.trim();
+  if ((!collectionId || !documentId) && combinedPath) {
+    const parsed = parseFirestorePath(combinedPath);
+    if (parsed) {
+      collectionId = parsed.collectionId;
+      documentId = parsed.documentId;
+    }
+  }
+
+  if (collectionId && documentId && process.env.FIREBASE_PROJECT_ID) {
+    const fs = await loadRowsFromFirestoreDocument(collectionId, documentId);
+    remoteAttempts.push({
+      kind: "firestore",
+      label: fs.path,
+      ok: fs.ok,
+      rowCount: fs.rows.length,
+      error: fs.error,
+    });
+    if (fs.ok && fs.rows.length > 0) {
+      return finalize(fs.rows, {
+        sourceMode: "datastore",
+        artifactTier: null,
+        attempts: emptyArtifactAttempts(),
+        chosenPath: `${collectionId}/${documentId}`,
+      });
+    }
+  }
+
+  if (!disableArtifact) {
+    const local = loadLiveUnitsFromArtifactsSync();
+    const anyArtifactFile = local.attempts.some((a) => a.fileExists);
+    const mode: LiveUnitsSourceMode = anyArtifactFile ? "artifact_fallback" : "none";
+    return finalize(local.rawRows, {
+      sourceMode: mode,
+      artifactTier: local.artifactTier,
+      attempts: local.attempts,
+      chosenPath: local.chosenPath,
+      parseError: local.parseError,
+    });
+  }
+
+  return finalize([], {
+    sourceMode: "none",
+    artifactTier: null,
+    attempts: emptyArtifactAttempts(),
+    chosenPath: null,
+  });
 }

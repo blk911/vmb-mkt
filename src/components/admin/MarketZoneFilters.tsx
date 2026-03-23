@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { compareZoneIdsForDisplay, getZoneDisplayLabel } from "@/lib/geo/target-zones";
 import { BeautyRegion, BeautyZone } from "@/lib/markets";
 
 type Props = {
@@ -82,7 +83,7 @@ export default function MarketZoneFilters({
           <option value="ALL">All zones</option>
           {filteredZones.map((zone) => (
             <option key={zone.zone_id} value={zone.zone_id}>
-              {zone.zone_name}
+              {getZoneDisplayLabel(zone.zone_id)}
             </option>
           ))}
         </select>

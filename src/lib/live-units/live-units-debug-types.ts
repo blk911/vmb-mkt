@@ -4,6 +4,9 @@
 
 export type LiveUnitsArtifactSource = "shop_context" | "tuned" | "base";
 
+/** How the primary dataset was resolved for this request. */
+export type LiveUnitsSourceMode = "api" | "datastore" | "artifact_fallback" | "none";
+
 export type LiveUnitsLoadAttempt = {
   source: LiveUnitsArtifactSource;
   /** Absolute or cwd-relative path attempted */
@@ -13,10 +16,23 @@ export type LiveUnitsLoadAttempt = {
   rawRowsInFile: number;
 };
 
+export type LiveUnitsRemoteAttempt = {
+  kind: "http" | "firestore";
+  /** Sanitized target (URL without query / collection path) */
+  label: string;
+  ok: boolean;
+  rowCount?: number;
+  error?: string;
+  httpStatus?: number;
+};
+
 export type LiveUnitsLoadTrace = {
   cwd: string;
+  sourceMode: LiveUnitsSourceMode;
+  /** When loading from JSON files — which tier supplied rows (or last tried). */
+  artifactTier: LiveUnitsArtifactSource | null;
+  remoteAttempts: LiveUnitsRemoteAttempt[];
   attempts: LiveUnitsLoadAttempt[];
-  chosenSource: LiveUnitsArtifactSource | null;
   chosenPath: string | null;
   /** CHECKPOINT 1 */
   rowsLoadedRaw: number;

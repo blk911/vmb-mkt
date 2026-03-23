@@ -1,5 +1,5 @@
 import type { UnknownResolverRecord } from "@/lib/unknown-resolver/resolver-types";
-import { TARGET_ZONES, type GeoTargetZone } from "./target-zones";
+import { TARGET_ZONES, getZoneDisplayLabel, type GeoTargetZone } from "./target-zones";
 
 function toRad(value: number): number {
   return (value * Math.PI) / 180;
@@ -54,8 +54,8 @@ export function getPrimaryZoneForPoint(
 }
 
 export function getZoneLabel(zoneId: string): string | null {
-  const z = TARGET_ZONES.find((x) => x.id === zoneId);
-  return z?.label ?? null;
+  if (!zoneId || zoneId === "NO_ZONE") return null;
+  return getZoneDisplayLabel(zoneId);
 }
 
 /** Assign zones + primary from record coordinates. Display/filter only — does not affect scoring. */

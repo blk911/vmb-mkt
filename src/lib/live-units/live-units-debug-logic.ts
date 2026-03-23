@@ -9,6 +9,17 @@ export function basenameFromPath(filePath: string): string {
   return parts[parts.length - 1] || filePath;
 }
 
+export function formatRemoteAttemptsSummary(trace: LiveUnitsLoadTrace): string {
+  if (!trace.remoteAttempts.length) return "—";
+  return trace.remoteAttempts
+    .map((a) => {
+      const n = typeof a.rowCount === "number" ? `${a.rowCount}` : "?";
+      const err = a.error ? ` err=${a.error}` : "";
+      return `${a.kind}:${a.label} ok=${a.ok} rows=${n}${err}`;
+    })
+    .join(" · ");
+}
+
 export function formatAttemptsSummary(trace: LiveUnitsLoadTrace): string {
   return trace.attempts
     .map((a) => `${a.source}:${a.fileExists ? `${a.rawRowsInFile}` : "missing"}`)
@@ -20,13 +31,23 @@ export function explainEmptyDataset(trace: LiveUnitsLoadTrace): string | null {
   if (trace.parseError) {
     return `Parse error on artifact: ${trace.parseError}`;
   }
+  if (trace.sourceMode === "api") {
+    const http = trace.remoteAttempts.find((r) => r.kind === "http");
+    if (http?.error) return `HTTP source failed: ${http.error}`;
+    return "HTTP JSON URL returned no rows or unreachable — check LIVE_UNITS_JSON_URL and auth.";
+  }
+  if (trace.sourceMode === "datastore") {
+    const fs = trace.remoteAttempts.find((r) => r.kind === "firestore");
+    if (fs?.error) return `Firestore source failed: ${fs.error}`;
+    return "Firestore document had no rows — check LIVE_UNITS_FIRESTORE_* env and document shape `{ rows: [...] }`.";
+  }
   const anyFile = trace.attempts.some((a) => a.fileExists);
   if (!anyFile) {
-    return "No Live Units JSON artifacts found under data/markets/ (expected beauty_live_units*.v1.json).";
+    return "No Live Units JSON artifacts under data/markets/ and no remote source produced rows. Configure LIVE_UNITS_JSON_URL or Firestore, or deploy with data files.";
   }
   const allZero = trace.attempts.filter((a) => a.fileExists).every((a) => a.rawRowsInFile === 0);
   if (allZero && trace.attempts.some((a) => a.fileExists)) {
-    return "Fallback / candidate artifacts loaded but every file had 0 rows (empty or wrong schema).";
+    return "Artifact files exist but every file had 0 rows (empty or wrong schema).";
   }
   if (trace.droppedMalformed > 0 && trace.rowsAfterRequiredFieldGates === 0) {
     return `All ${trace.rowsLoadedRaw} raw rows failed required-field validation (live_unit_id, name_display, signal_mix, entity_score).`;

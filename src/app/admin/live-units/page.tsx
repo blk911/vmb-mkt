@@ -104,8 +104,8 @@ function loadTechAssociations(): TechAssociationRow[] {
   return Array.isArray(parsed.rows) ? parsed.rows : [];
 }
 
-export default function LiveUnitsPage() {
-  const loaded = loadLiveUnitsWithTrace();
+export default async function LiveUnitsPage() {
+  const loaded = await loadLiveUnitsWithTrace();
   const rows = loaded.rows as LiveUnitRow[];
   const loadTrace: LiveUnitsLoadTrace = {
     ...loaded.trace,
@@ -122,7 +122,6 @@ export default function LiveUnitsPage() {
         ...row,
         entity_id: row.entity_id || row.live_unit_id,
       }))}
-      source={loaded.source}
       loadTrace={loadTrace}
       initialReviewState={reviewState}
       initialSalonTechReviewState={salonTechReviewState}

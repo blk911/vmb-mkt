@@ -2,7 +2,7 @@
   "zones": [
     {
       "zone_id": "CC01",
-      "zone_name": "Cherry Creek Core",
+      "zone_name": "Cherry Creek",
       "region_id": "DEN",
       "region_name": "Denver Metro",
       "market": "Cherry Creek",
@@ -14,7 +14,7 @@
     },
     {
       "zone_id": "DT01",
-      "zone_name": "Downtown Denver Beauty Corridor",
+      "zone_name": "Downtown",
       "region_id": "DEN",
       "region_name": "Denver Metro",
       "market": "Downtown Denver",
@@ -26,7 +26,7 @@
     },
     {
       "zone_id": "DTC01",
-      "zone_name": "DTC Belleview Corridor",
+      "zone_name": "DTC Belleview",
       "region_id": "DEN",
       "region_name": "Denver Metro",
       "market": "DTC / Greenwood Village",
@@ -37,8 +37,20 @@
       "notes": "Corporate nail + hair corridor"
     },
     {
+      "zone_id": "QC01",
+      "zone_name": "Quebec",
+      "region_id": "DEN",
+      "region_name": "Denver Metro",
+      "market": "Southeast Denver",
+      "center_lat": 39.567222,
+      "center_lon": -104.959583,
+      "radius_miles": 0.75,
+      "status": "target",
+      "notes": "Quebec St. trade area"
+    },
+    {
       "zone_id": "TH01",
-      "zone_name": "Thornton Beauty Corridor",
+      "zone_name": "Thornton",
       "region_id": "DEN",
       "region_name": "Denver Metro",
       "market": "Thornton / Westminster",
@@ -49,8 +61,32 @@
       "notes": "North metro retail strip salon cluster"
     },
     {
+      "zone_id": "WM01",
+      "zone_name": "Westminster",
+      "region_id": "DEN",
+      "region_name": "Denver Metro",
+      "market": "Westminster",
+      "center_lat": 39.861700,
+      "center_lon": -105.050500,
+      "radius_miles": 1.0,
+      "status": "target",
+      "notes": "Westminster trade area"
+    },
+    {
+      "zone_id": "LF01",
+      "zone_name": "Lafayette",
+      "region_id": "DEN",
+      "region_name": "Denver Metro",
+      "market": "Lafayette",
+      "center_lat": 39.993600,
+      "center_lon": -105.089700,
+      "radius_miles": 0.75,
+      "status": "target",
+      "notes": "Lafayette trade area"
+    },
+    {
       "zone_id": "BD01",
-      "zone_name": "Boulder Core",
+      "zone_name": "Boulder",
       "region_id": "BDR",
       "region_name": "Boulder",
       "market": "Boulder",
@@ -62,7 +98,7 @@
     },
     {
       "zone_id": "FC01",
-      "zone_name": "Fort Collins Core",
+      "zone_name": "Fort Collins",
       "region_id": "FCO",
       "region_name": "Fort Collins",
       "market": "Fort Collins",
@@ -74,7 +110,7 @@
     },
     {
       "zone_id": "CS01",
-      "zone_name": "Colorado Springs Core",
+      "zone_name": "Colorado Springs",
       "region_id": "COS",
       "region_name": "Colorado Springs",
       "market": "Colorado Springs",
