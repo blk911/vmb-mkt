@@ -16,6 +16,8 @@ type LiveUnitsShellProps = {
   headerActions?: React.ReactNode;
   /** e.g. Work Mode operator panel — below title, above filters */
   workModeSlot?: React.ReactNode;
+  /** Server/client data load diagnostics — below Work Mode slot */
+  diagnosticSlot?: React.ReactNode;
   /** When true, hide Queue Controls + filter grid (keep in DOM for state preservation). */
   collapseFilters?: boolean;
   metrics: MetricCard[];
@@ -103,6 +105,7 @@ export default function LiveUnitsShell({
   badges,
   headerActions,
   workModeSlot,
+  diagnosticSlot,
   collapseFilters = false,
   metrics,
   quickViews,
@@ -128,6 +131,7 @@ export default function LiveUnitsShell({
           ) : null}
         </div>
         {workModeSlot ? <div className="mt-4">{workModeSlot}</div> : null}
+        {diagnosticSlot ? <div className="mt-4">{diagnosticSlot}</div> : null}
       </div>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(860px,1fr)_16ch]">

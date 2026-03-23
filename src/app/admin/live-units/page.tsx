@@ -1,11 +1,13 @@
-import { existsSync, readFileSync } from "node:fs";
-import path from "node:path";
 import LiveUnitsClient from "./LiveUnitsClient";
 import { readReviewState, type ReviewDecision } from "@/app/admin/_lib/live-units/review-state";
 import {
   readSalonTechLinksReviewState,
   type SalonTechLinkReviewDecision,
 } from "@/app/admin/_lib/live-units/salon-tech-links-review-state";
+import { loadLiveUnitsWithTrace } from "@/lib/live-units/live-units-loader";
+import type { LiveUnitsLoadTrace } from "@/lib/live-units/live-units-debug-types";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 
 type LiveUnitRow = {
   live_unit_id: string;
@@ -40,10 +42,6 @@ type LiveUnitRow = {
   tech_count_nearby?: number;
   lat?: number | null;
   lon?: number | null;
-};
-
-type LiveUnitsFile = {
-  rows?: LiveUnitRow[];
 };
 
 type ReviewStateMap = Record<string, ReviewDecision>;
@@ -83,39 +81,6 @@ type TechAssociationsFile = {
   rows?: TechAssociationRow[];
 };
 
-type LoadedLiveUnits = {
-  rows: LiveUnitRow[];
-  source: "shop_context" | "tuned" | "base";
-};
-
-function loadLiveUnits(): LoadedLiveUnits {
-  const shopContextPath = path.join(process.cwd(), "data", "markets", "beauty_live_units_shop_context.v1.json");
-  const tunedPath = path.join(process.cwd(), "data", "markets", "beauty_live_units_tuned.v1.json");
-  const basePath = path.join(process.cwd(), "data", "markets", "beauty_live_units.v1.json");
-
-  const filePath = existsSync(shopContextPath)
-    ? shopContextPath
-    : existsSync(tunedPath)
-      ? tunedPath
-      : basePath;
-  const source: LoadedLiveUnits["source"] =
-    filePath === shopContextPath ? "shop_context" : filePath === tunedPath ? "tuned" : "base";
-  if (!existsSync(filePath)) return { rows: [], source };
-  const parsed = JSON.parse(readFileSync(filePath, "utf8")) as LiveUnitsFile;
-  return {
-    rows: Array.isArray(parsed.rows) ? parsed.rows : [],
-    source,
-  };
-}
-
-function loadReviewState(): ReviewStateMap {
-  return readReviewState().decisions;
-}
-
-function loadSalonTechReviewState(): SalonTechReviewStateMap {
-  return readSalonTechLinksReviewState().links;
-}
-
 function loadShopIndex(): ShopIndexRow[] {
   const filePath = path.join(
     process.cwd(),
@@ -140,18 +105,25 @@ function loadTechAssociations(): TechAssociationRow[] {
 }
 
 export default function LiveUnitsPage() {
-  const liveUnits = loadLiveUnits();
-  const reviewState = loadReviewState();
-  const salonTechReviewState = loadSalonTechReviewState();
+  const loaded = loadLiveUnitsWithTrace();
+  const rows = loaded.rows as LiveUnitRow[];
+  const loadTrace: LiveUnitsLoadTrace = {
+    ...loaded.trace,
+    rowsSentToClient: rows.length,
+  };
+  const reviewState = readReviewState().decisions;
+  const salonTechReviewState = readSalonTechLinksReviewState().links;
   const shopIndex = loadShopIndex();
   const techAssociations = loadTechAssociations();
+
   return (
     <LiveUnitsClient
-      rows={liveUnits.rows.map((row) => ({
+      rows={rows.map((row) => ({
         ...row,
         entity_id: row.entity_id || row.live_unit_id,
       }))}
-      source={liveUnits.source}
+      source={loaded.source}
+      loadTrace={loadTrace}
       initialReviewState={reviewState}
       initialSalonTechReviewState={salonTechReviewState}
       shopIndex={shopIndex}

@@ -49,6 +49,8 @@ import type { PlatformSignalsRecord } from "@/lib/live-units/platform-signal-typ
 import { buildSalonAnchorClusters } from "@/lib/live-units/cluster-mode-logic";
 import { deriveClusterEmptyState } from "@/lib/live-units/cluster-debug-logic";
 import ClusterModeDebugStrip from "@/app/admin/live-units/_components/ClusterModeDebugStrip";
+import LiveUnitsDebugStrip from "@/app/admin/live-units/_components/LiveUnitsDebugStrip";
+import type { LiveUnitsLoadTrace } from "@/lib/live-units/live-units-debug-types";
 
 type Confidence = "strong" | "likely" | "candidate_review" | "ambiguous";
 type ReviewStatus = "approved" | "rejected" | "watch" | "needs_research";
@@ -173,6 +175,8 @@ type BulkActionKind = ReviewStatus | "clear";
 type Props = {
   rows: LiveUnitRow[];
   source: "shop_context" | "tuned" | "base";
+  /** Server load checkpoints — aligns Queue Snapshot with the same row array. */
+  loadTrace?: LiveUnitsLoadTrace;
   initialReviewState: Record<string, ReviewDecision>;
   initialSalonTechReviewState: Record<string, SalonTechLinkReviewDecision>;
   shopIndex: ShopIndexRow[];
@@ -492,6 +496,7 @@ function signalStatusFor(row: LiveUnitRow, review?: ReviewDecision) {
 export default function LiveUnitsClient({
   rows: rowsFromProps,
   source,
+  loadTrace,
   initialReviewState,
   initialSalonTechReviewState,
   shopIndex,
@@ -1213,6 +1218,11 @@ export default function LiveUnitsClient({
               usePresetOnly={usePresetOnly}
               onUsePresetOnlyChange={setUsePresetOnly}
             />
+          ) : null
+        }
+        diagnosticSlot={
+          loadTrace ? (
+            <LiveUnitsDebugStrip trace={loadTrace} hydratedRowCount={rows.length} visibleRowCount={displayRows.length} />
           ) : null
         }
         collapseFilters={liveUnitsMode === "work"}
