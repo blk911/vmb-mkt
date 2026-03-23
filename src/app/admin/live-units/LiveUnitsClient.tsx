@@ -35,6 +35,7 @@ import {
   serviceSignalLabel,
 } from "@/lib/live-units/service-signal-logic";
 import { deriveEntityDisplayStateForRow } from "@/lib/live-units/entity-display-logic";
+import { getSurfacedOperatorsForBusinessId, operatorAttachmentSuffix } from "@/lib/live-units/operator-extraction-logic";
 import EntityKindBadge from "@/app/admin/live-units/_components/EntityKindBadge";
 import EntryOptionChips from "@/app/admin/live-units/_components/EntryOptionChips";
 import RelationshipHintBadge from "@/app/admin/live-units/_components/RelationshipHintBadge";
@@ -561,6 +562,14 @@ export default function LiveUnitsClient({
     const m = new Map<string, ReturnType<typeof deriveEntityDisplayStateForRow>>();
     for (const row of rows) {
       m.set(row.live_unit_id, deriveEntityDisplayStateForRow(row));
+    }
+    return m;
+  }, [rows]);
+
+  const surfacedOperatorsByUnitId = useMemo(() => {
+    const m = new Map<string, ReturnType<typeof getSurfacedOperatorsForBusinessId>>();
+    for (const row of rows) {
+      m.set(row.live_unit_id, getSurfacedOperatorsForBusinessId(row.live_unit_id));
     }
     return m;
   }, [rows]);
@@ -1706,6 +1715,7 @@ export default function LiveUnitsClient({
               {displayRows.map((row) => {
                 const rowSig = serviceSignalsByUnitId.get(row.live_unit_id)!;
                 const entityDisplay = entityDisplayByUnitId.get(row.live_unit_id)!;
+                const surfacedOps = surfacedOperatorsByUnitId.get(row.live_unit_id) ?? [];
                 const currentReview = reviewState[row.live_unit_id];
                 const currentStatus = currentReview?.review_status || "unreviewed";
                 const isSaving = savingLiveUnitId === row.live_unit_id;
@@ -1754,6 +1764,11 @@ export default function LiveUnitsClient({
                           {row.name_display}
                         </button>
                         <EntityKindBadge label={entityDisplay.liveLabel} />
+                        {surfacedOps.length > 0 ? (
+                          <span className="shrink-0 text-[10px] font-semibold text-slate-600" title="Validated providers (Tier A)">
+                            Ops: {surfacedOps.length}
+                          </span>
+                        ) : null}
                         <span className="shrink-0 text-xs font-semibold text-neutral-500">
                           DORA {renderDoraTierDots(doraEvidenceTier(row))}
                         </span>
@@ -1772,7 +1787,10 @@ export default function LiveUnitsClient({
                           <div className="absolute left-0 top-full z-20 mt-2 w-72 rounded-xl border border-neutral-200 bg-white p-3 shadow-xl">
                             <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Signal Details</div>
                             <div className="mt-2 space-y-1 text-sm text-neutral-700">
-                              <div className="text-xs font-semibold text-neutral-600">{entityDisplay.operatorSummary}</div>
+                              <div className="text-xs font-semibold text-neutral-600">
+                                {entityDisplay.operatorSummary}
+                                {operatorAttachmentSuffix(surfacedOps.length)}
+                              </div>
                               <div>
                                 Entity: {entityDisplay.entityKind.replaceAll("_", " ")} · Live posture: {entityDisplay.liveLabel}
                               </div>
@@ -1795,6 +1813,7 @@ export default function LiveUnitsClient({
                       </div>
                       <p className="mt-1 max-w-[288px] pl-5 text-[11px] leading-snug text-neutral-600 line-clamp-2">
                         {entityDisplay.operatorSummary}
+                        {operatorAttachmentSuffix(surfacedOps.length)}
                       </p>
                       <div className="mt-1 flex max-w-[288px] flex-wrap items-center gap-1 pl-5">
                         <MultiServiceBadge isMultiService={rowSig.isMultiService} />
@@ -1927,6 +1946,7 @@ export default function LiveUnitsClient({
                               ) : null}
                             </div>
                           </div>
+                          <OperatorRosterSection businessLabel={row.name_display} operators={surfacedOps} className="mt-3" />
                         </td>
                       </tr>
                     ) : null}
@@ -2028,6 +2048,11 @@ export default function LiveUnitsClient({
                   </span>
                 </div>
               </section>
+
+              <OperatorRosterSection
+                businessLabel={selectedEntity.name_display}
+                operators={surfacedOperatorsByUnitId.get(selectedEntity.live_unit_id) ?? []}
+              />
 
               <section className="rounded-2xl border border-neutral-200 bg-white p-4">
                 <details>

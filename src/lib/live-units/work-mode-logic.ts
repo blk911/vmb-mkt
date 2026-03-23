@@ -13,6 +13,7 @@ import {
   type WorkPresetMeta,
 } from "./work-mode-types";
 import { deriveEntityDisplayStateForRow, type EntityDisplayRowInput } from "./entity-display-logic";
+import { getSurfacedOperatorCount } from "./operator-extraction-logic";
 import { deriveServiceSignalsForRow, isNailsCategoryString } from "./service-signal-logic";
 
 export type ReviewStatusLite = "approved" | "rejected" | "watch" | "needs_research" | undefined;
@@ -307,12 +308,18 @@ export function derivePriority(row: WorkModeRow, reviewStatus: ReviewStatusLite)
     return "high";
   }
 
-  if (
+  const hasReadyBase =
     nailsLed &&
     score >= 65 &&
     (hasWebsiteSignal(row) || isDenseNeighborSignal(row) || !!row.shop_license) &&
-    !isRejected(reviewStatus)
-  ) {
+    !isRejected(reviewStatus);
+
+  if (hasReadyBase) {
+    /** Multiple validated attached operators + active zone → stronger queue position (v1). */
+    const opCount = getSurfacedOperatorCount(row.live_unit_id);
+    if (opCount >= 2 && ACTIVE_ZONE_IDS.has(z) && reviewStatus !== "approved") {
+      return "high";
+    }
     return "ready";
   }
 
