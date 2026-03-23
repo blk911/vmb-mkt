@@ -19,6 +19,12 @@ import {
   pickDefaultWorkPreset,
   summarizeWorkMode,
 } from "@/lib/live-units/work-mode-logic";
+import {
+  deriveWorkResolutionState,
+  type LiveUnitsFilterSnapshot,
+  type WorkResolutionSuggestedAction,
+} from "@/lib/live-units/work-mode-resolution";
+import WorkModeResolutionStrip from "@/app/admin/live-units/_components/WorkModeResolutionStrip";
 
 type Confidence = "strong" | "likely" | "candidate_review" | "ambiguous";
 type ReviewStatus = "approved" | "rejected" | "watch" | "needs_research";
@@ -489,6 +495,7 @@ export default function LiveUnitsClient({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [liveUnitsMode, setLiveUnitsMode] = useState<LiveUnitsMode>("review");
   const [workPresetId, setWorkPresetId] = useState<WorkPresetId | null>(null);
+  const [usePresetOnly, setUsePresetOnly] = useState(true);
 
   const counts = useMemo(() => summaryCounts(rows), [rows]);
   const reviewCounts = useMemo(() => reviewSummaryCounts(rows, reviewState), [rows, reviewState]);
@@ -605,20 +612,78 @@ export default function LiveUnitsClient({
       });
   }, [category, city, confidence, reviewFilter, reviewState, rows, scoreBand, signalMix, sortDir, sortKey, subtypeFilter, tuningFilter, zipQuery, zone]);
 
-  const displayRows = useMemo(() => {
-    if (liveUnitsMode !== "work" || !workPresetId) return filteredRows;
-    return applyWorkPreset(filteredRows, workPresetId, (id) => reviewState[id]?.review_status);
-  }, [filteredRows, liveUnitsMode, workPresetId, reviewState]);
-
-  const workSummary = useMemo(
-    () => summarizeWorkMode(filteredRows, (id) => reviewState[id]?.review_status),
-    [filteredRows, reviewState]
+  const filterSnapshot = useMemo(
+    (): LiveUnitsFilterSnapshot => ({
+      confidence,
+      signalMix,
+      category,
+      zone,
+      city,
+      zipQuery,
+      scoreBand,
+      reviewFilter,
+      subtypeFilter,
+      tuningFilter,
+    }),
+    [category, city, confidence, reviewFilter, scoreBand, signalMix, subtypeFilter, tuningFilter, zipQuery, zone]
   );
+
+  const workModeBundle = useMemo(() => {
+    if (liveUnitsMode !== "work") return null;
+    if (!workPresetId) return { displayRows: filteredRows, resolution: null };
+    const getReviewStatus = (id: string) => reviewState[id]?.review_status;
+    const presetRows = applyWorkPreset(rows, workPresetId, getReviewStatus);
+    const presetOnReviewFiltered = applyWorkPreset(filteredRows, workPresetId, getReviewStatus);
+    const resolution = deriveWorkResolutionState({
+      allRows: rows,
+      presetRows,
+      presetOnReviewFiltered,
+      usePresetOnly,
+      filters: filterSnapshot,
+      activePresetId: workPresetId,
+      getReviewStatus,
+    });
+    const displayRows = usePresetOnly ? presetRows : presetOnReviewFiltered;
+    return { displayRows, resolution };
+  }, [filteredRows, filterSnapshot, liveUnitsMode, reviewState, rows, usePresetOnly, workPresetId]);
+
+  const displayRows = useMemo(() => {
+    if (liveUnitsMode !== "work") return filteredRows;
+    return workModeBundle!.displayRows;
+  }, [filteredRows, liveUnitsMode, workModeBundle]);
+
+  const workResolution = workModeBundle?.resolution ?? null;
+
+  const workSummary = useMemo(() => {
+    const base = liveUnitsMode === "work" ? rows : filteredRows;
+    return summarizeWorkMode(base, (id) => reviewState[id]?.review_status);
+  }, [filteredRows, liveUnitsMode, reviewState, rows]);
 
   useEffect(() => {
     if (liveUnitsMode !== "work" || workPresetId !== null) return;
-    setWorkPresetId(pickDefaultWorkPreset(filteredRows, (id) => reviewState[id]?.review_status));
-  }, [liveUnitsMode, workPresetId, filteredRows, reviewState]);
+    setWorkPresetId(pickDefaultWorkPreset(rows, (id) => reviewState[id]?.review_status));
+  }, [liveUnitsMode, workPresetId, reviewState, rows]);
+
+  function resetReviewFiltersToDefaults() {
+    setConfidence("all");
+    setSignalMix("all");
+    setCategory("all");
+    setZone("all");
+    setCity("all");
+    setZipQuery("");
+    setScoreBand("all");
+    setReviewFilter("all");
+    setSubtypeFilter("all");
+    setTuningFilter("all");
+    setActivePreset(null);
+  }
+
+  function handleWorkResolutionAction(action: WorkResolutionSuggestedAction) {
+    if (action.action === "use_preset_only") setUsePresetOnly(true);
+    else if (action.action === "clear_filters") resetReviewFiltersToDefaults();
+    else if (action.action === "switch_preset" && action.targetPresetId) setWorkPresetId(action.targetPresetId);
+    else if (action.action === "open_review") setLiveUnitsMode("review");
+  }
 
   const visibleIds = useMemo(() => displayRows.map((row) => row.live_unit_id), [displayRows]);
   const selectedVisibleIds = useMemo(
@@ -1024,6 +1089,8 @@ export default function LiveUnitsClient({
               summary={workSummary}
               activePresetId={workPresetId}
               onSelectPreset={(id) => setWorkPresetId(id)}
+              usePresetOnly={usePresetOnly}
+              onUsePresetOnlyChange={setUsePresetOnly}
             />
           ) : null
         }
@@ -1322,14 +1389,20 @@ export default function LiveUnitsClient({
               </div>
             ) : null}
 
+            {liveUnitsMode === "work" && workResolution?.showResolutionStrip && workPresetId ? (
+              <WorkModeResolutionStrip resolution={workResolution} onAction={handleWorkResolutionAction} />
+            ) : null}
+
             <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
               <div className="flex items-center gap-3">
-                <span>
-                  Showing {displayRows.length} rows
-                  {liveUnitsMode === "work" && workPresetId ? (
-                    <span className="ml-2 text-slate-500">(Work preset + your Review Mode filters)</span>
-                  ) : null}
-                </span>
+                {liveUnitsMode === "work" && workResolution && workPresetId ? (
+                  <span>
+                    <span className="font-semibold text-slate-900">{workResolution.resultsHeaderLine}</span>
+                    <span className="ml-2 text-slate-500">{workResolution.scopeSubtext}</span>
+                  </span>
+                ) : (
+                  <span>Showing {displayRows.length} rows</span>
+                )}
                 <label className="inline-flex items-center gap-2">
                   <input
                     type="checkbox"
