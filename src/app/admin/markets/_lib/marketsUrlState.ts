@@ -35,6 +35,9 @@ const SORT_KEYS = new Set<MarketsSortKey>([
 const CATEGORY_FILTERS = ["All", "Hair", "Nail", "Esthe", "Barber", "Spa", "Beauty"] as const;
 const SUBTYPE_FILTERS = ["All", "Storefront", "Suite"] as const;
 
+/** Markets page surface: operational work vs build/survey tooling. */
+export type MarketsPageMode = "work" | "build";
+
 export type MarketsUrlState = {
   regionId: string;
   zoneId: string;
@@ -44,6 +47,8 @@ export type MarketsUrlState = {
   sortDir: MarketsSortDir;
   /** Client-side work packet filter (query: workPreset). */
   workPreset: MarketsWorkPreset | null;
+  /** Query `mode=build` — build/survey entry; default work. */
+  mode: MarketsPageMode;
 };
 
 function getFirst(raw: Record<string, string | string[] | undefined>, key: string): string | undefined {
@@ -61,6 +66,7 @@ export function defaultMarketsUrlState(): MarketsUrlState {
     sort: "upgraded_priority_score",
     sortDir: "desc",
     workPreset: null,
+    mode: "work",
   };
 }
 
@@ -104,12 +110,15 @@ export function parseMarketsUrlSearchParams(
     workPreset = wpRaw as MarketsWorkPreset;
   }
 
-  return { regionId, zoneId, category, subtype, sort, sortDir, workPreset };
+  const modeRaw = getFirst(raw, "mode");
+  const mode: MarketsPageMode = modeRaw === "build" ? "build" : "work";
+
+  return { regionId, zoneId, category, subtype, sort, sortDir, workPreset, mode };
 }
 
 /** Stable identity for React `key` + syncing client state to URL-driven props. */
 export function marketsUrlStateKey(state: MarketsUrlState): string {
-  return [state.regionId, state.zoneId, state.category, state.subtype, state.sort, state.sortDir, state.workPreset ?? ""].join("|");
+  return [state.regionId, state.zoneId, state.category, state.subtype, state.sort, state.sortDir, state.workPreset ?? "", state.mode].join("|");
 }
 
 function normalizePathQuery(path: string): string {
@@ -142,6 +151,7 @@ export function buildMarketsListPath(state: MarketsUrlState): string {
   if (state.sort !== d.sort) p.set("sort", state.sort);
   if (state.sortDir !== d.sortDir) p.set("sortDir", state.sortDir);
   if (state.workPreset) p.set("workPreset", state.workPreset);
+  if (state.mode !== "work") p.set("mode", state.mode);
   const q = p.toString();
   return q ? `/admin/markets?${q}` : "/admin/markets";
 }
@@ -157,6 +167,7 @@ export function buildMemberDetailPath(locationId: string, state: MarketsUrlState
   if (state.sort !== d.sort) p.set("sort", state.sort);
   if (state.sortDir !== d.sortDir) p.set("sortDir", state.sortDir);
   if (state.workPreset) p.set("workPreset", state.workPreset);
+  if (state.mode !== "work") p.set("mode", state.mode);
   const q = p.toString();
   const base = `/admin/markets/member/${encodeURIComponent(locationId)}`;
   return q ? `${base}?${q}` : base;
@@ -183,6 +194,7 @@ export function buildSalesTargetPath(locationId: string, state: MarketsUrlState,
   if (state.sort !== d.sort) p.set("sort", state.sort);
   if (state.sortDir !== d.sortDir) p.set("sortDir", state.sortDir);
   if (state.workPreset) p.set("workPreset", state.workPreset);
+  if (state.mode !== "work") p.set("mode", state.mode);
   if (ring != null && ring !== 0.5) {
     p.set("ring", ring === 1 ? "1" : String(ring));
   }

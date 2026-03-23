@@ -5,6 +5,9 @@ import type { BeautyZone } from "@/lib/markets";
  * IDs are stable for resolver/geo assignment, URL aliases, and work-mode logic.
  * Display labels are short human names only (no “core / corridor / zone” suffixes).
  */
+/** Operational readiness of a zone for Markets / ops (not geo math). */
+export type ZoneMaturity = "active" | "partial" | "needs_survey";
+
 export interface GeoTargetZone {
   id: string;
   label: string;
@@ -15,6 +18,8 @@ export interface GeoTargetZone {
   active: boolean;
   /** Optional UI grouping, e.g. “Denver Metro”. */
   region?: string | null;
+  /** Product maturity: built vs buildable vs unsurveyed. */
+  maturity: ZoneMaturity;
 }
 
 /** Ingest / Markets `zone_id` (beauty_zones.json, live units) → canonical id. */
@@ -67,6 +72,7 @@ export const TARGET_ZONES: GeoTargetZone[] = [
     priority: 1,
     active: true,
     region: "Denver Metro",
+    maturity: "active",
   },
   {
     id: "CHERRY_CREEK",
@@ -77,6 +83,7 @@ export const TARGET_ZONES: GeoTargetZone[] = [
     priority: 2,
     active: true,
     region: "Denver Metro",
+    maturity: "active",
   },
   {
     id: "DTC_BELLEVUE",
@@ -87,6 +94,7 @@ export const TARGET_ZONES: GeoTargetZone[] = [
     priority: 3,
     active: true,
     region: "Denver Metro",
+    maturity: "active",
   },
   {
     id: "QUEBEC_CORRIDOR",
@@ -97,6 +105,7 @@ export const TARGET_ZONES: GeoTargetZone[] = [
     priority: 4,
     active: true,
     region: "Denver Metro",
+    maturity: "partial",
   },
   {
     id: "THORNTON_EAST_I25",
@@ -107,6 +116,7 @@ export const TARGET_ZONES: GeoTargetZone[] = [
     priority: 5,
     active: true,
     region: "Denver Metro",
+    maturity: "active",
   },
   {
     id: "WESTMINSTER_CORE",
@@ -117,6 +127,7 @@ export const TARGET_ZONES: GeoTargetZone[] = [
     priority: 6,
     active: true,
     region: "Denver Metro",
+    maturity: "needs_survey",
   },
   {
     id: "LAFAYETTE_CORE",
@@ -127,6 +138,7 @@ export const TARGET_ZONES: GeoTargetZone[] = [
     priority: 7,
     active: true,
     region: "North Metro",
+    maturity: "needs_survey",
   },
   {
     id: "FORT_COLLINS_CORE",
@@ -137,6 +149,7 @@ export const TARGET_ZONES: GeoTargetZone[] = [
     priority: 8,
     active: true,
     region: "Fort Collins",
+    maturity: "partial",
   },
 ];
 
@@ -148,6 +161,12 @@ const BY_ID = new Map(TARGET_ZONES.map((z) => [z.id, z]));
 export const EXTRA_MARKET_ZONE_LABELS: Record<string, string> = {
   BD01: "Boulder",
   CS01: "Colorado Springs",
+};
+
+/** Maturity for catalog zones not in TARGET_ZONES (e.g. planned placeholders). */
+export const EXTRA_MARKET_ZONE_MATURITY: Record<string, ZoneMaturity> = {
+  BD01: "needs_survey",
+  CS01: "needs_survey",
 };
 
 const ACTIVE_CANONICAL_IDS = new Set(TARGET_ZONES.filter((z) => z.active).map((z) => z.id));
@@ -189,6 +208,18 @@ export function compareZoneIdsForDisplay(a: string, b: string): number {
 }
 
 /** User-facing label for any zone id or legacy display string. */
+/**
+ * Maturity for Markets UI: canonical TARGET_ZONES row, extra catalog ids, else conservative default.
+ */
+export function getZoneMaturity(zoneId: string): ZoneMaturity {
+  const extra = EXTRA_MARKET_ZONE_MATURITY[zoneId];
+  if (extra) return extra;
+  const canonical = normalizeZoneId(zoneId);
+  const z = BY_ID.get(canonical);
+  if (z?.maturity) return z.maturity;
+  return "partial";
+}
+
 export function getZoneDisplayLabel(raw: string | null | undefined): string {
   if (raw == null || raw === "" || raw === "NO_ZONE") return "No zone";
   const extra = EXTRA_MARKET_ZONE_LABELS[raw];

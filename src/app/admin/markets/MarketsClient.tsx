@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MarketZoneFilters from "@/components/admin/MarketZoneFilters";
-import { compareZoneIdsForDisplay, getZoneDisplayLabel } from "@/lib/geo/target-zones";
+import { compareZoneIdsForDisplay, getZoneDisplayLabel, getZoneMaturity } from "@/lib/geo/target-zones";
 import { ClusterEvidencePanel } from "@/components/admin/ClusterEvidencePanel";
 import { GrayResolutionBadge } from "@/components/admin/GrayResolution";
 import { PathEnrichmentBadge } from "@/components/admin/PathEnrichment";
@@ -27,6 +27,9 @@ import {
   type MarketsSortKey as SortKey,
   type MarketsUrlState,
 } from "./_lib/marketsUrlState";
+import { deriveZoneBuildSummary } from "@/lib/markets/zone-build-logic";
+import ZoneBuildModePanel from "@/app/admin/markets/_components/ZoneBuildModePanel";
+import ZoneMaturityBadge from "@/app/admin/markets/_components/ZoneMaturityBadge";
 import { deriveZoneOpsSummaries, filterMembersByWorkPreset, getZoneOpsSummaryForId } from "@/lib/markets/zone-ops-logic";
 import type { MarketsWorkPreset } from "@/lib/markets/zone-ops-types";
 import ZoneOpsStats from "@/app/admin/markets/_components/ZoneOpsStats";
@@ -238,6 +241,7 @@ export default function MarketsClient({
     zoneId: initialUrlState.zoneId,
   });
   const [workPreset, setWorkPreset] = useState<MarketsWorkPreset | null>(initialUrlState.workPreset ?? null);
+  const [pageMode, setPageMode] = useState(initialUrlState.mode);
   const [categoryFilter, setCategoryFilter] = useState<(typeof CATEGORY_FILTERS)[number]>(initialUrlState.category);
   const [subtypeFilter, setSubtypeFilter] = useState<(typeof SUBTYPE_FILTERS)[number]>(initialUrlState.subtype);
   const [sortKey, setSortKey] = useState<SortKey>(initialUrlState.sort);
@@ -277,8 +281,9 @@ export default function MarketsClient({
       sort: sortKey,
       sortDir,
       workPreset,
+      mode: pageMode,
     }),
-    [filters.regionId, filters.zoneId, categoryFilter, subtypeFilter, sortKey, sortDir, workPreset]
+    [filters.regionId, filters.zoneId, categoryFilter, subtypeFilter, sortKey, sortDir, workPreset, pageMode]
   );
 
   /** Keep filters in sync when URL-driven props change (e.g. client nav) even if React reuses the tree. */
@@ -290,6 +295,7 @@ export default function MarketsClient({
     setSortKey(initialUrlState.sort);
     setSortDir(initialUrlState.sortDir);
     setWorkPreset(initialUrlState.workPreset ?? null);
+    setPageMode(initialUrlState.mode);
     // Only re-run when URL-derived identity changes; RSC may pass a new object each render with the same key.
   // eslint-disable-next-line react-hooks/exhaustive-deps -- initialUrlState fields are implied by initialUrlStateKey
   }, [initialUrlStateKey]);
@@ -298,6 +304,7 @@ export default function MarketsClient({
     (next: { regionId: string; zoneId: string }) => {
       if (next.regionId !== filters.regionId || next.zoneId !== filters.zoneId) {
         setWorkPreset(null);
+        setPageMode("work");
       }
       setFilters(next);
     },
@@ -337,8 +344,18 @@ export default function MarketsClient({
     [filters.zoneId, zones]
   );
 
+  const selectedZoneMaturity = useMemo(
+    () => (selectedZone ? getZoneMaturity(selectedZone.zone_id) : undefined),
+    [selectedZone]
+  );
+
+  const selectedZoneBuildSummary = useMemo(() => {
+    if (!selectedZone) return null;
+    return deriveZoneBuildSummary(selectedZone.zone_id, members, clusters, approvedLiveUnits);
+  }, [selectedZone, members, clusters, approvedLiveUnits]);
+
   const buildZoneWorkPath = useCallback(
-    (zoneId: string, preset: MarketsWorkPreset | null) =>
+    (zoneId: string, preset: MarketsWorkPreset | null, mode: "work" | "build" = "work") =>
       buildMarketsListPath({
         ...defaultMarketsUrlState(),
         regionId: filters.regionId,
@@ -348,6 +365,7 @@ export default function MarketsClient({
         sort: "upgraded_priority_score",
         sortDir: "desc",
         workPreset: preset,
+        mode,
       }),
     [filters.regionId]
   );
@@ -546,13 +564,24 @@ export default function MarketsClient({
         onChange={handleZoneFiltersChange}
       />
 
-      {selectedZone ? (
-        <ZoneWorkPacketHeader
-          zone={selectedZone}
-          summary={getZoneOpsSummaryForId(zoneOpsSummaries, selectedZone.zone_id)}
-          workPreset={workPreset}
-          onWorkPresetChange={setWorkPreset}
-        />
+      {selectedZone && selectedZoneBuildSummary && selectedZoneMaturity != null ? (
+        pageMode === "build" ? (
+          <ZoneBuildModePanel
+            zone={selectedZone}
+            maturity={selectedZoneMaturity}
+            summary={selectedZoneBuildSummary}
+            onContinueWorkPacket={() => setPageMode("work")}
+          />
+        ) : (
+          <ZoneWorkPacketHeader
+            zone={selectedZone}
+            summary={getZoneOpsSummaryForId(zoneOpsSummaries, selectedZone.zone_id)}
+            workPreset={workPreset}
+            onWorkPresetChange={setWorkPreset}
+            maturity={selectedZoneMaturity}
+            partialNote={selectedZoneMaturity === "partial"}
+          />
+        )
       ) : null}
 
       {filters.zoneId !== "ALL" ? (
@@ -612,36 +641,50 @@ export default function MarketsClient({
               const count = zoneCounts[zone.zone_id] ?? 0;
               const zoneLabel = getZoneDisplayLabel(zone.zone_id);
               const ops = getZoneOpsSummaryForId(zoneOpsSummaries, zone.zone_id);
-              const primaryHref = buildZoneWorkPath(zone.zone_id, "top_targets");
+              const maturity = getZoneMaturity(zone.zone_id);
+              const primaryHref =
+                maturity === "needs_survey"
+                  ? buildZoneWorkPath(zone.zone_id, null, "build")
+                  : buildZoneWorkPath(zone.zone_id, "top_targets", "work");
+              const primaryLabel =
+                maturity === "needs_survey"
+                  ? `Open ${zoneLabel} build mode (survey)`
+                  : `Open ${zoneLabel} work packet (top targets), ${count} members`;
               return (
                 <div
                   key={zone.zone_id}
                   className="group flex flex-col rounded-lg border border-neutral-200 bg-white px-2.5 py-2 shadow-sm transition hover:border-sky-500 hover:bg-sky-50/70"
                 >
-                  <Link
-                    href={primaryHref}
-                    prefetch
-                    aria-label={`Open ${zoneLabel} work packet (top targets), ${count} members`}
-                    title={`Open zone work packet: ${zoneLabel}`}
-                    className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
-                  >
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-sky-700">Zone</span>
-                    <div className="mt-0.5 line-clamp-2 min-h-[2.25rem] text-[13px] font-semibold leading-snug text-neutral-900 group-hover:underline group-hover:decoration-sky-500/80 group-hover:underline-offset-2">
-                      {zoneLabel}
-                    </div>
-                    <div className="mt-0.5 truncate text-[11px] text-neutral-500" title={zone.market}>
-                      {zone.market}
-                    </div>
-                    <div className="mt-1 flex items-baseline justify-between gap-1">
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-lg font-bold tabular-nums leading-none text-neutral-900">{count}</span>
-                        <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-500">members</span>
+                  <div className="flex items-start justify-between gap-1">
+                    <Link
+                      href={primaryHref}
+                      prefetch
+                      aria-label={primaryLabel}
+                      title={primaryLabel}
+                      className="min-w-0 flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
+                    >
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-sky-700">Zone</span>
+                      <div className="mt-0.5 line-clamp-2 min-h-[2.25rem] text-[13px] font-semibold leading-snug text-neutral-900 group-hover:underline group-hover:decoration-sky-500/80 group-hover:underline-offset-2">
+                        {zoneLabel}
                       </div>
-                      <span className="text-neutral-400 transition group-hover:text-sky-600" aria-hidden>
-                        →
-                      </span>
-                    </div>
-                  </Link>
+                      <div className="mt-0.5 truncate text-[11px] text-neutral-500" title={zone.market}>
+                        {zone.market}
+                      </div>
+                      <div className="mt-1 flex items-baseline justify-between gap-1">
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-lg font-bold tabular-nums leading-none text-neutral-900">{count}</span>
+                          <span className="text-[10px] font-medium uppercase tracking-wide text-neutral-500">members</span>
+                        </div>
+                        <span className="text-neutral-400 transition group-hover:text-sky-600" aria-hidden>
+                          →
+                        </span>
+                      </div>
+                    </Link>
+                    <ZoneMaturityBadge maturity={maturity} />
+                  </div>
+                  {maturity === "partial" ? (
+                    <p className="mt-1 text-[9px] leading-snug text-amber-900/90">Partial — data may be incomplete.</p>
+                  ) : null}
                   {ops ? (
                     <div className="mt-2 border-t border-neutral-100 pt-2">
                       <ZoneOpsStats summary={ops} compact />
@@ -649,7 +692,7 @@ export default function MarketsClient({
                   ) : null}
                   <div className="mt-1.5 flex flex-wrap gap-1.5 border-t border-neutral-100 pt-1.5">
                     <Link
-                      href={buildZoneWorkPath(zone.zone_id, "top_targets")}
+                      href={buildZoneWorkPath(zone.zone_id, "top_targets", "work")}
                       className="text-[9px] font-semibold text-sky-700 underline-offset-2 hover:underline"
                       prefetch
                     >
@@ -659,7 +702,7 @@ export default function MarketsClient({
                       ·
                     </span>
                     <Link
-                      href={buildZoneWorkPath(zone.zone_id, "anchors")}
+                      href={buildZoneWorkPath(zone.zone_id, "anchors", "work")}
                       className="text-[9px] font-semibold text-sky-700 underline-offset-2 hover:underline"
                       prefetch
                     >
@@ -669,13 +712,39 @@ export default function MarketsClient({
                       ·
                     </span>
                     <Link
-                      href={buildZoneWorkPath(zone.zone_id, "bookable")}
+                      href={buildZoneWorkPath(zone.zone_id, "bookable", "work")}
                       className="text-[9px] font-semibold text-sky-700 underline-offset-2 hover:underline"
                       prefetch
                     >
                       Bookable
                     </Link>
+                    {maturity === "needs_survey" ? (
+                      <>
+                        <span className="text-neutral-300" aria-hidden>
+                          ·
+                        </span>
+                        <Link
+                          href={buildZoneWorkPath(zone.zone_id, null, "build")}
+                          className="text-[9px] font-semibold text-violet-800 underline-offset-2 hover:underline"
+                          prefetch
+                        >
+                          Build
+                        </Link>
+                      </>
+                    ) : null}
                   </div>
+                  {maturity === "needs_survey" ? (
+                    <p className="mt-1 text-[9px] text-neutral-500">
+                      <Link
+                        href={buildZoneWorkPath(zone.zone_id, "top_targets", "work")}
+                        className="font-semibold text-sky-800 underline-offset-2 hover:underline"
+                        prefetch
+                      >
+                        Open work packet
+                      </Link>{" "}
+                      if you still want the thin list.
+                    </p>
+                  ) : null}
                 </div>
               );
             })}
@@ -687,10 +756,38 @@ export default function MarketsClient({
         <section className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
           <div className="border-b border-neutral-200 px-4 py-3">
             <h2 className="text-base font-semibold text-neutral-900">Salon Members</h2>
-            <p className="mt-0.5 text-xs text-neutral-500">
-              Use <span className="font-semibold text-neutral-700">Target page</span> on a row to open the map and operator
-              console.
-            </p>
+            {pageMode === "build" ? (
+              <p className="mt-1.5 rounded-md border border-violet-200 bg-violet-50/80 px-2.5 py-1.5 text-xs text-violet-950">
+                <span className="font-semibold">Build mode:</span> showing the stitched member list below for survey. Use{" "}
+                <button
+                  type="button"
+                  className="font-semibold text-violet-900 underline underline-offset-2"
+                  onClick={() => setPageMode("work")}
+                >
+                  work packet
+                </button>{" "}
+                for full ops filters and presets.
+              </p>
+            ) : (
+              <p className="mt-0.5 text-xs text-neutral-500">
+                Use <span className="font-semibold text-neutral-700">Target page</span> on a row to open the map and operator
+                console.
+              </p>
+            )}
+            {selectedZoneMaturity === "needs_survey" && pageMode === "work" ? (
+              <p className="mt-2 rounded-md border border-violet-200 bg-violet-50/70 px-2.5 py-1.5 text-[11px] text-violet-950">
+                This zone is still in <span className="font-semibold">needs survey</span> maturity — sparse rows usually
+                mean not yet stitched, not zero opportunity. Consider{" "}
+                <button
+                  type="button"
+                  className="font-semibold text-violet-900 underline underline-offset-2"
+                  onClick={() => setPageMode("build")}
+                >
+                  build mode
+                </button>{" "}
+                for source signals.
+              </p>
+            ) : null}
           </div>
 
           <div className="border-b border-neutral-200 px-4 py-4">
