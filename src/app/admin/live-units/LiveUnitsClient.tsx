@@ -39,10 +39,14 @@ import { getSurfacedOperatorsForBusinessId, operatorAttachmentSuffix } from "@/l
 import EntityKindBadge from "@/app/admin/live-units/_components/EntityKindBadge";
 import EntryOptionChips from "@/app/admin/live-units/_components/EntryOptionChips";
 import RelationshipHintBadge from "@/app/admin/live-units/_components/RelationshipHintBadge";
+import ClusterModeToggle, { type LiveUnitsViewMode } from "@/app/admin/live-units/_components/ClusterModeToggle";
+import SalonAnchorClusterCard from "@/app/admin/live-units/_components/SalonAnchorClusterCard";
+import type { RelatedTechRowProps } from "@/app/admin/live-units/_components/RelatedTechList";
 import PlatformSignalBadges from "@/app/admin/live-units/_components/PlatformSignalBadges";
 import { attachPlatformSignals } from "@/lib/live-units/platform-signal-attach";
 import { MOCK_PLATFORM_LISTINGS } from "@/lib/mock/liveUnits/platformListings";
 import type { PlatformSignalsRecord } from "@/lib/live-units/platform-signal-types";
+import { buildSalonAnchorClusters } from "@/lib/live-units/cluster-mode-logic";
 
 type Confidence = "strong" | "likely" | "candidate_review" | "ambiguous";
 type ReviewStatus = "approved" | "rejected" | "watch" | "needs_research";
@@ -525,6 +529,7 @@ export default function LiveUnitsClient({
   const [liveUnitsMode, setLiveUnitsMode] = useState<LiveUnitsMode>("review");
   const [workPresetId, setWorkPresetId] = useState<WorkPresetId | null>(null);
   const [usePresetOnly, setUsePresetOnly] = useState(true);
+  const [viewMode, setViewMode] = useState<LiveUnitsViewMode>("rows");
 
   const counts = useMemo(() => summaryCounts(rows), [rows]);
   const reviewCounts = useMemo(() => reviewSummaryCounts(rows, reviewState), [rows, reviewState]);
@@ -742,6 +747,16 @@ export default function LiveUnitsClient({
     if (liveUnitsMode !== "work") return filteredRows;
     return workModeBundle!.displayRows;
   }, [filteredRows, liveUnitsMode, workModeBundle]);
+
+  const salonClusters = useMemo(
+    () => buildSalonAnchorClusters(displayRows, { entityDisplayByUnitId, serviceSignalsByUnitId }),
+    [displayRows, entityDisplayByUnitId, serviceSignalsByUnitId]
+  );
+
+  const displayRowById = useMemo(
+    () => new Map(displayRows.map((r) => [r.live_unit_id, r] as const)),
+    [displayRows]
+  );
 
   const workResolution = workModeBundle?.resolution ?? null;
 
@@ -1171,12 +1186,15 @@ export default function LiveUnitsClient({
             : "Review queue for combined Google, DORA, and online identity signals."
         }
         headerActions={
-          <WorkModeToggle
-            mode={liveUnitsMode}
-            onChange={(next) => {
-              setLiveUnitsMode(next);
-            }}
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            <ClusterModeToggle mode={viewMode} onChange={setViewMode} />
+            <WorkModeToggle
+              mode={liveUnitsMode}
+              onChange={(next) => {
+                setLiveUnitsMode(next);
+              }}
+            />
+          </div>
         }
         workModeSlot={
           liveUnitsMode === "work" ? (
@@ -1529,7 +1547,11 @@ export default function LiveUnitsClient({
                     <span className="ml-2 text-slate-500">{workResolution.scopeSubtext}</span>
                   </span>
                 ) : (
-                  <span>Showing {displayRows.length} rows</span>
+                  <span>
+                    {viewMode === "clusters"
+                      ? `${salonClusters.length} clusters · ${displayRows.length} rows in scope`
+                      : `Showing ${displayRows.length} rows`}
+                  </span>
                 )}
                 <label className="inline-flex items-center gap-2">
                   <input
@@ -1548,6 +1570,46 @@ export default function LiveUnitsClient({
 
             {saveError ? <div className="text-sm text-rose-600">{saveError}</div> : null}
 
+            {viewMode === "clusters" ? (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/40 p-4">
+                {salonClusters.length === 0 ? (
+                  <p className="text-sm text-slate-600">
+                    No salon-anchor clusters in the current filtered set. Grouping is conservative — try Rows view or relax filters.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {salonClusters.map((cluster) => {
+                      const anchorRow = displayRowById.get(cluster.anchorUnitId);
+                      if (!anchorRow) return null;
+                      const anchorEd = entityDisplayByUnitId.get(cluster.anchorUnitId);
+                      const anchorSvc = serviceSignalsByUnitId.get(cluster.anchorUnitId);
+                      if (!anchorEd || !anchorSvc) return null;
+                      const relatedItems: RelatedTechRowProps[] = [];
+                      for (const id of cluster.relatedUnitIds) {
+                        const row = displayRowById.get(id);
+                        const match = cluster.relatedMatches.find((m) => m.unitId === id);
+                        const ed = entityDisplayByUnitId.get(id);
+                        const sg = serviceSignalsByUnitId.get(id);
+                        if (row && match && ed && sg) {
+                          relatedItems.push({ row, match, entityDisplay: ed, serviceSig: sg });
+                        }
+                      }
+                      return (
+                        <SalonAnchorClusterCard
+                          key={cluster.anchorUnitId}
+                          cluster={cluster}
+                          anchorRow={anchorRow}
+                          anchorEntityDisplay={anchorEd}
+                          anchorServiceSig={anchorSvc}
+                          relatedItems={relatedItems}
+                          onOpenAnchor={() => setOpenEntityId(entityIdFor(anchorRow))}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ) : (
             <div className="overflow-hidden rounded-2xl border border-slate-200">
               <div className="overflow-x-auto">
                 <table
@@ -1986,6 +2048,7 @@ export default function LiveUnitsClient({
                 </table>
               </div>
             </div>
+            )}
           </div>
         }
       />
