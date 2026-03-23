@@ -33,22 +33,22 @@ export const WORK_PRESETS: WorkPresetMeta[] = [
   {
     id: "QUEBEC_HIGH_VALUE",
     label: "Quebec Corridor — High Value",
-    shortHint: "Nail targets in Quebec zone, high tuned score, not rejected.",
+    shortHint: "Nail-led targets (incl. mixed-service w/ nail signal) in Quebec zone, high score, not rejected.",
   },
   {
     id: "DOWNTOWN_DENSE",
     label: "Downtown Core — Dense Targets",
-    shortHint: "Downtown nail rows with storefront or dense neighbor signals.",
+    shortHint: "Downtown nail-led rows with storefront or dense neighbor signals.",
   },
   {
     id: "BOOKING_READY",
     label: "Booking Ready",
-    shortHint: "Nails + online identity (e.g. website) and strong score.",
+    shortHint: "Nail signal + online identity (e.g. website) and strong score.",
   },
   {
     id: "NEEDS_REVIEW",
     label: "Needs Review",
-    shortHint: "Mid scores or candidate/ambiguous confidence — human decision.",
+    shortHint: "Mid scores or ambiguous confidence — includes mixed-service rows.",
   },
   {
     id: "NEW_LEADS",

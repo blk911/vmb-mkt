@@ -12,6 +12,8 @@ import {
   type WorkPriority,
   type WorkPresetMeta,
 } from "./work-mode-types";
+import { deriveEntityDisplayStateForRow, type EntityDisplayRowInput } from "./entity-display-logic";
+import { deriveServiceSignalsForRow, isNailsCategoryString } from "./service-signal-logic";
 
 export type ReviewStatusLite = "approved" | "rejected" | "watch" | "needs_research" | undefined;
 
@@ -20,6 +22,9 @@ export type WorkModeRow = {
   live_unit_id: string;
   operational_category: string;
   subtype?: string;
+  /** Used with category/signal_mix to derive nail-led service signals (mixed beauty, etc.). */
+  name_display?: string;
+  explanation?: string;
   entity_score: number;
   tuned_entity_score?: number;
   signal_mix: string;
@@ -29,8 +34,39 @@ export type WorkModeRow = {
     google?: { zone_id?: string; zone_name?: string; website_domain?: string };
   };
   shop_license?: string | null;
+  /** Shop / business name when anchored (helps entity-first salon detection). */
+  shop_license_name?: string | null;
   tech_count_nearby?: number;
 };
+
+function toEntityDisplayInput(row: WorkModeRow): EntityDisplayRowInput {
+  return {
+    operational_category: row.operational_category,
+    subtype: row.subtype,
+    signal_mix: row.signal_mix,
+    name_display: row.name_display,
+    explanation: row.explanation,
+    shop_license: row.shop_license,
+    shop_license_name: row.shop_license_name,
+    tech_count_nearby: row.tech_count_nearby,
+    entity_score: row.entity_score,
+    tuned_entity_score: row.tuned_entity_score,
+    confidence: row.confidence,
+    tuned_confidence: row.tuned_confidence,
+    raw_snippets: row.raw_snippets,
+  };
+}
+
+/** True when derived signals include nails (not rigid category-only). */
+export function rowHasNailsLedSignal(row: WorkModeRow): boolean {
+  return deriveServiceSignalsForRow({
+    operational_category: row.operational_category,
+    subtype: row.subtype,
+    signal_mix: row.signal_mix,
+    name_display: row.name_display,
+    explanation: row.explanation,
+  }).hasNails;
+}
 
 export function getEffectiveScore(row: WorkModeRow): number {
   return typeof row.tuned_entity_score === "number" ? row.tuned_entity_score : row.entity_score;
@@ -44,12 +80,9 @@ export function getZoneName(row: WorkModeRow): string {
   return row.raw_snippets?.google?.zone_name || "No zone";
 }
 
-/** Nails-related operational category (v1 heuristic). */
+/** Category-string nails heuristic (legacy / diagnostics). Prefer {@link rowHasNailsLedSignal} for presets. */
 export function isNailsRelatedCategory(operationalCategory: string): boolean {
-  const c = operationalCategory.toLowerCase();
-  if (c.includes("nail") || c.includes("manicure") || c.includes("pedicure")) return true;
-  if (c.includes("gel") && c.includes("nail")) return true;
-  return false;
+  return isNailsCategoryString(operationalCategory);
 }
 
 function getEffectiveConfidence(row: WorkModeRow): string {
@@ -83,26 +116,26 @@ function isUnreviewed(rs: ReviewStatusLite): boolean {
 export function rowMatchesPresetStrict(row: WorkModeRow, presetId: WorkPresetId, reviewStatus: ReviewStatusLite): boolean {
   const score = getEffectiveScore(row);
   const z = getZoneId(row);
-  const nails = isNailsRelatedCategory(row.operational_category);
+  const nailsLed = rowHasNailsLedSignal(row);
   const conf = getEffectiveConfidence(row);
 
   switch (presetId) {
     case "QUEBEC_HIGH_VALUE":
-      if (!nails) return false;
+      if (!nailsLed) return false;
       if (z !== "QUEBEC_CORRIDOR") return false;
       if (score < 70) return false;
       if (isRejected(reviewStatus)) return false;
       return true;
 
     case "DOWNTOWN_DENSE":
-      if (!nails) return false;
+      if (!nailsLed) return false;
       if (z !== "DOWNTOWN_CORE") return false;
       if (score < 60) return false;
       if (isRejected(reviewStatus)) return false;
       return isDenseNeighborSignal(row);
 
     case "BOOKING_READY":
-      if (!nails) return false;
+      if (!nailsLed) return false;
       if (score < 65) return false;
       if (isRejected(reviewStatus)) return false;
       return hasWebsiteSignal(row);
@@ -127,20 +160,20 @@ export function rowMatchesPreset(row: WorkModeRow, presetId: WorkPresetId, revie
 }
 
 function matchQuebecLoose(row: WorkModeRow, rs: ReviewStatusLite, minScore: number): boolean {
-  if (!isNailsRelatedCategory(row.operational_category)) return false;
+  if (!rowHasNailsLedSignal(row)) return false;
   if (getZoneId(row) !== "QUEBEC_CORRIDOR") return false;
   if (isRejected(rs)) return false;
   return getEffectiveScore(row) >= minScore;
 }
 
 function matchQuebecBroad(row: WorkModeRow, rs: ReviewStatusLite): boolean {
-  if (!isNailsRelatedCategory(row.operational_category)) return false;
+  if (!rowHasNailsLedSignal(row)) return false;
   if (getZoneId(row) !== "QUEBEC_CORRIDOR") return false;
   return !isRejected(rs);
 }
 
 function matchDowntownLoose(row: WorkModeRow, rs: ReviewStatusLite, minScore: number, requireDense: boolean): boolean {
-  if (!isNailsRelatedCategory(row.operational_category)) return false;
+  if (!rowHasNailsLedSignal(row)) return false;
   if (getZoneId(row) !== "DOWNTOWN_CORE") return false;
   if (isRejected(rs)) return false;
   if (getEffectiveScore(row) < minScore) return false;
@@ -149,7 +182,7 @@ function matchDowntownLoose(row: WorkModeRow, rs: ReviewStatusLite, minScore: nu
 }
 
 function matchBookingLoose(row: WorkModeRow, rs: ReviewStatusLite, minScore: number): boolean {
-  if (!isNailsRelatedCategory(row.operational_category)) return false;
+  if (!rowHasNailsLedSignal(row)) return false;
   if (isRejected(rs)) return false;
   if (getEffectiveScore(row) < minScore) return false;
   return hasWebsiteSignal(row);
@@ -245,14 +278,15 @@ export function summarizeWorkMode<T extends WorkModeRow>(
  */
 export function derivePriority(row: WorkModeRow, reviewStatus: ReviewStatusLite): WorkPriority {
   const score = getEffectiveScore(row);
-  const nails = isNailsRelatedCategory(row.operational_category);
+  const nailsLed = rowHasNailsLedSignal(row);
   const z = getZoneId(row);
   const conf = getEffectiveConfidence(row);
+  const entity = deriveEntityDisplayStateForRow(toEntityDisplayInput(row));
 
   if (isRejected(reviewStatus)) return "low";
 
   if (
-    nails &&
+    nailsLed &&
     score >= 70 &&
     ACTIVE_ZONE_IDS.has(z) &&
     reviewStatus !== "approved"
@@ -260,8 +294,21 @@ export function derivePriority(row: WorkModeRow, reviewStatus: ReviewStatusLite)
     return "high";
   }
 
+  /** Entity-first boost: multi-tech salon / mixed nail-led location in an active zone. */
   if (
-    nails &&
+    nailsLed &&
+    score >= 68 &&
+    ACTIVE_ZONE_IDS.has(z) &&
+    reviewStatus !== "approved" &&
+    entity.likelyLive &&
+    (entity.entityKind === "salon" || entity.entityKind === "mixed_business") &&
+    entity.relationshipHint === "likely_multi_tech_location"
+  ) {
+    return "high";
+  }
+
+  if (
+    nailsLed &&
     score >= 65 &&
     (hasWebsiteSignal(row) || isDenseNeighborSignal(row) || !!row.shop_license) &&
     !isRejected(reviewStatus)
@@ -287,28 +334,47 @@ export function derivePriority(row: WorkModeRow, reviewStatus: ReviewStatusLite)
  */
 export function deriveNextAction(row: WorkModeRow, reviewStatus: ReviewStatusLite, priority: WorkPriority): WorkNextAction {
   const score = getEffectiveScore(row);
-  const nails = isNailsRelatedCategory(row.operational_category);
+  const nailsLed = rowHasNailsLedSignal(row);
   const conf = getEffectiveConfidence(row);
+  const entity = deriveEntityDisplayStateForRow(toEntityDisplayInput(row));
 
   if (isRejected(reviewStatus)) return "skip";
 
-  if (nails && score >= 85 && conf === "strong" && hasWebsiteSignal(row)) {
+  if (nailsLed && score >= 85 && conf === "strong" && hasWebsiteSignal(row)) {
     return "promote";
   }
 
-  if (nails && (row.subtype || "").toLowerCase() === "storefront" && !!row.shop_license) {
+  if (
+    nailsLed &&
+    entity.likelyLive &&
+    entity.entityKind === "tech" &&
+    hasWebsiteSignal(row) &&
+    entity.entryOptions.includes("direct_tech")
+  ) {
+    return "dm";
+  }
+
+  if (nailsLed && (row.subtype || "").toLowerCase() === "storefront" && !!row.shop_license) {
     return "call";
   }
 
-  if (nails && hasWebsiteSignal(row) && ((row.subtype || "") === "suite" || (row.tech_count_nearby ?? 0) > 0)) {
+  if (nailsLed && hasWebsiteSignal(row) && ((row.subtype || "") === "suite" || (row.tech_count_nearby ?? 0) > 0)) {
     return "dm";
+  }
+
+  if (
+    nailsLed &&
+    entity.entryOptions.includes("research_relationship") &&
+    (conf === "ambiguous" || conf === "candidate_review")
+  ) {
+    return "research";
   }
 
   if (priority === "review" || (score >= 40 && score <= 69)) {
     return "review";
   }
 
-  if (nails && score >= 55 && score < 70 && (conf === "likely" || conf === "candidate_review")) {
+  if (nailsLed && score >= 55 && score < 70 && (conf === "likely" || conf === "candidate_review")) {
     return "research";
   }
 

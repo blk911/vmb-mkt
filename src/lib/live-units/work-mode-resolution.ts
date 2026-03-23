@@ -2,7 +2,15 @@
  * Work Mode zero-state / constrained-state routing — explains empty results and suggests recovery.
  */
 import type { WorkPresetId } from "./work-mode-types";
-import { applyWorkPreset, getWorkPresetMeta, type ReviewStatusLite, type WorkModeRow } from "./work-mode-logic";
+import type { ServiceSignal } from "./service-signal-types";
+import { deriveServiceSignalsForRow, serviceSignalLabel } from "./service-signal-logic";
+import {
+  applyWorkPreset,
+  getWorkPresetMeta,
+  getZoneId,
+  type ReviewStatusLite,
+  type WorkModeRow,
+} from "./work-mode-logic";
 
 export type WorkResolutionAction =
   | "use_preset_only"
@@ -29,6 +37,8 @@ export type LiveUnitsFilterSnapshot = {
   reviewFilter: string;
   subtypeFilter: string;
   tuningFilter: string;
+  entryAngle: string;
+  serviceScope: string;
 };
 
 export type WorkResolutionState = {
@@ -50,6 +60,8 @@ export type WorkResolutionState = {
   blockedByLine: string | null;
   /** When preset-only and filters exist, remind they are not applied to the row set. */
   savedFiltersNote: string | null;
+  /** Optional: mixed-service / nail-signal opportunities when a nail-led preset is empty. */
+  opportunityHint: string | null;
 };
 
 /** First non-empty preset wins (spec order). */
@@ -87,7 +99,20 @@ export function describeBlockingConstraints(s: LiveUnitsFilterSnapshot): string[
   if (s.reviewFilter !== "all") out.push(`Review: ${formatLabel(s.reviewFilter)}`);
   if (s.subtypeFilter !== "all") out.push(`Subtype: ${formatLabel(s.subtypeFilter)}`);
   if (s.tuningFilter !== "all") out.push(`Tuning: ${formatLabel(s.tuningFilter)}`);
+  if (s.entryAngle !== "any") out.push(`Entry angle: ${serviceSignalLabel(s.entryAngle as ServiceSignal)}`);
+  if (s.serviceScope === "single") out.push("Service scope: Single-service only");
+  if (s.serviceScope === "multi") out.push("Service scope: Multi-service only");
   return out;
+}
+
+function countQuebecNailMixedServiceRows<T extends WorkModeRow>(rows: T[]): number {
+  let n = 0;
+  for (const row of rows) {
+    if (getZoneId(row) !== "QUEBEC_CORRIDOR") continue;
+    const sig = deriveServiceSignalsForRow(row);
+    if (sig.hasNails && sig.isMultiService) n += 1;
+  }
+  return n;
 }
 
 function countPreset<T extends WorkModeRow>(
@@ -158,6 +183,7 @@ export function deriveWorkResolutionState<T extends WorkModeRow>(input: {
       showResolutionStrip: false,
       blockedByLine: null,
       savedFiltersNote: null,
+      opportunityHint: null,
     };
   }
 
@@ -228,6 +254,14 @@ export function deriveWorkResolutionState<T extends WorkModeRow>(input: {
       ? "Saved review filters are not applied in Preset only scope — switch to Preset + saved filters or open Review Mode to use them."
       : null;
 
+  let opportunityHint: string | null = null;
+  if (activePresetId === "QUEBEC_HIGH_VALUE" && trueEmptyPreset) {
+    const mixedNails = countQuebecNailMixedServiceRows(allRows);
+    if (mixedNails > 0) {
+      opportunityHint = `No nail-led Quebec preset rows right now, but ${mixedNails} mixed-service salon${mixedNails === 1 ? "" : "s"} with a nail signal ${mixedNails === 1 ? "is" : "are"} in this dataset — try widening filters or another preset.`;
+    }
+  }
+
   const scopeSubtext = usePresetOnly ? "Using preset only" : "Using saved filters";
 
   const resultsHeaderLine =
@@ -249,5 +283,6 @@ export function deriveWorkResolutionState<T extends WorkModeRow>(input: {
     showResolutionStrip: showStrip,
     blockedByLine,
     savedFiltersNote,
+    opportunityHint,
   };
 }

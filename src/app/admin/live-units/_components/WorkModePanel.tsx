@@ -22,7 +22,8 @@ export default function WorkModePanel({ summary, activePresetId, onSelectPreset,
         <div>
           <h2 className="text-sm font-semibold text-slate-900">Work Mode</h2>
           <p className="mt-0.5 text-xs text-slate-600">
-            Top nail targets based on zone, score, and review state. Preset views focus the queue into operator-ready target sets.
+            Top nail-led targets (including mixed-service salons with a nail signal) by zone, score, and review state. Presets
+            focus the queue into operator-ready sets — you choose the follow-up.
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-slate-700">

@@ -25,6 +25,19 @@ import {
   type WorkResolutionSuggestedAction,
 } from "@/lib/live-units/work-mode-resolution";
 import WorkModeResolutionStrip from "@/app/admin/live-units/_components/WorkModeResolutionStrip";
+import MultiServiceBadge from "@/app/admin/live-units/_components/MultiServiceBadge";
+import ServiceSignalChips from "@/app/admin/live-units/_components/ServiceSignalChips";
+import type { EntryAngleFilter, ServiceScopeFilter } from "@/lib/live-units/service-signal-types";
+import {
+  deriveServiceSignalsForRow,
+  rowMatchesEntryAngle,
+  rowMatchesServiceScope,
+  serviceSignalLabel,
+} from "@/lib/live-units/service-signal-logic";
+import { deriveEntityDisplayStateForRow } from "@/lib/live-units/entity-display-logic";
+import EntityKindBadge from "@/app/admin/live-units/_components/EntityKindBadge";
+import EntryOptionChips from "@/app/admin/live-units/_components/EntryOptionChips";
+import RelationshipHintBadge from "@/app/admin/live-units/_components/RelationshipHintBadge";
 
 type Confidence = "strong" | "likely" | "candidate_review" | "ambiguous";
 type ReviewStatus = "approved" | "rejected" | "watch" | "needs_research";
@@ -478,6 +491,8 @@ export default function LiveUnitsClient({
   const [reviewFilter, setReviewFilter] = useState<ReviewFilter>("all");
   const [subtypeFilter, setSubtypeFilter] = useState<SubtypeFilter>("all");
   const [tuningFilter, setTuningFilter] = useState<TuningFilter>("all");
+  const [entryAngleFilter, setEntryAngleFilter] = useState<EntryAngleFilter>("any");
+  const [serviceScopeFilter, setServiceScopeFilter] = useState<ServiceScopeFilter>("any");
   const [sortKey, setSortKey] = useState<SortKey>("tuned_score");
   const [sortDir, setSortDir] = useState<ColumnSortDir>("desc");
   const [reviewState, setReviewState] = useState<Record<string, ReviewDecision>>(initialReviewState);
@@ -534,6 +549,22 @@ export default function LiveUnitsClient({
     ];
   }, [rows]);
 
+  const serviceSignalsByUnitId = useMemo(() => {
+    const m = new Map<string, ReturnType<typeof deriveServiceSignalsForRow>>();
+    for (const row of rows) {
+      m.set(row.live_unit_id, deriveServiceSignalsForRow(row));
+    }
+    return m;
+  }, [rows]);
+
+  const entityDisplayByUnitId = useMemo(() => {
+    const m = new Map<string, ReturnType<typeof deriveEntityDisplayStateForRow>>();
+    for (const row of rows) {
+      m.set(row.live_unit_id, deriveEntityDisplayStateForRow(row));
+    }
+    return m;
+  }, [rows]);
+
   const filteredRows = useMemo(() => {
     const normalizedZipQuery = zipQuery.trim().toLowerCase();
     return rows
@@ -555,6 +586,11 @@ export default function LiveUnitsClient({
         if (tuningFilter === "all") return true;
         if (tuningFilter === "changed") return getScoreDelta(row) !== 0;
         return getTuningState(row) === tuningFilter;
+      })
+      .filter((row) => {
+        const sig = serviceSignalsByUnitId.get(row.live_unit_id);
+        if (!sig) return true;
+        return rowMatchesEntryAngle(sig, entryAngleFilter) && rowMatchesServiceScope(sig, serviceScopeFilter);
       })
       .sort((a, b) => {
         const reviewStatusA = (reviewState[a.live_unit_id]?.review_status || "unreviewed") as ReviewStatus | "unreviewed";
@@ -610,7 +646,25 @@ export default function LiveUnitsClient({
           [getZoneName(b), b.operational_category, b.city ?? "", b.zip ?? "", b.name_display].join("|")
         );
       });
-  }, [category, city, confidence, reviewFilter, reviewState, rows, scoreBand, signalMix, sortDir, sortKey, subtypeFilter, tuningFilter, zipQuery, zone]);
+  }, [
+    category,
+    city,
+    confidence,
+    entryAngleFilter,
+    reviewFilter,
+    reviewState,
+    rows,
+    scoreBand,
+    serviceScopeFilter,
+    serviceSignalsByUnitId,
+    signalMix,
+    sortDir,
+    sortKey,
+    subtypeFilter,
+    tuningFilter,
+    zipQuery,
+    zone,
+  ]);
 
   const filterSnapshot = useMemo(
     (): LiveUnitsFilterSnapshot => ({
@@ -624,8 +678,23 @@ export default function LiveUnitsClient({
       reviewFilter,
       subtypeFilter,
       tuningFilter,
+      entryAngle: entryAngleFilter,
+      serviceScope: serviceScopeFilter,
     }),
-    [category, city, confidence, reviewFilter, scoreBand, signalMix, subtypeFilter, tuningFilter, zipQuery, zone]
+    [
+      category,
+      city,
+      confidence,
+      entryAngleFilter,
+      reviewFilter,
+      scoreBand,
+      serviceScopeFilter,
+      signalMix,
+      subtypeFilter,
+      tuningFilter,
+      zipQuery,
+      zone,
+    ]
   );
 
   const workModeBundle = useMemo(() => {
@@ -675,6 +744,8 @@ export default function LiveUnitsClient({
     setReviewFilter("all");
     setSubtypeFilter("all");
     setTuningFilter("all");
+    setEntryAngleFilter("any");
+    setServiceScopeFilter("any");
     setActivePreset(null);
   }
 
@@ -1033,6 +1104,8 @@ export default function LiveUnitsClient({
     setReviewFilter("all");
     setSubtypeFilter("all");
     setTuningFilter("all");
+    setEntryAngleFilter("any");
+    setServiceScopeFilter("any");
     setSortKey("tuned_score");
     setSortDir("desc");
 
@@ -1072,7 +1145,7 @@ export default function LiveUnitsClient({
         title="Live Units"
         subtitle={
           liveUnitsMode === "work"
-            ? "Operator queue — top nail targets by zone, score, and review state. Switch to Review Mode to tune filters."
+            ? "Operator queue — nail-led targets (incl. mixed-service w/ nail signals) by zone, score, and review. Switch to Review Mode to tune filters."
             : "Review queue for combined Google, DORA, and online identity signals."
         }
         headerActions={
@@ -1237,7 +1310,7 @@ export default function LiveUnitsClient({
               </select>
             </FilterField>
 
-            <FilterField label="Category" width="md">
+            <FilterField label="Category (legacy)" width="md">
               <select
                 value={category}
                 onChange={(event) => {
@@ -1251,6 +1324,39 @@ export default function LiveUnitsClient({
                     {option === "all" ? "All categories" : option}
                   </option>
                 ))}
+              </select>
+            </FilterField>
+
+            <FilterField label="Entry angle" width="md">
+              <select
+                value={entryAngleFilter}
+                onChange={(event) => {
+                  setActivePreset(null);
+                  setEntryAngleFilter(event.target.value as EntryAngleFilter);
+                }}
+                className="h-9 w-full rounded-md border border-slate-300 bg-white px-2.5 text-[13px]"
+                title="Filter by derived service signal (from name, category, signals)"
+              >
+                <option value="any">Any entry angle</option>
+                <option value="nails">Nails</option>
+                <option value="hair">Hair</option>
+                <option value="esthetics">Esthetics</option>
+                <option value="spa">Spa</option>
+              </select>
+            </FilterField>
+
+            <FilterField label="Service scope" width="md">
+              <select
+                value={serviceScopeFilter}
+                onChange={(event) => {
+                  setActivePreset(null);
+                  setServiceScopeFilter(event.target.value as ServiceScopeFilter);
+                }}
+                className="h-9 w-full rounded-md border border-slate-300 bg-white px-2.5 text-[13px]"
+              >
+                <option value="any">Any</option>
+                <option value="single">Single-service only</option>
+                <option value="multi">Multi-service only</option>
               </select>
             </FilterField>
 
@@ -1423,7 +1529,7 @@ export default function LiveUnitsClient({
             <div className="overflow-hidden rounded-2xl border border-slate-200">
               <div className="overflow-x-auto">
                 <table
-                  className={`${liveUnitsMode === "work" ? "min-w-[1480px]" : "min-w-[1320px]"} table-fixed divide-y divide-neutral-200 text-sm`}
+                  className={`${liveUnitsMode === "work" ? "min-w-[1600px]" : "min-w-[1320px]"} table-fixed divide-y divide-neutral-200 text-sm`}
                 >
             <thead className="sticky top-0 z-10 bg-neutral-50">
               <tr className="text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
@@ -1598,6 +1704,8 @@ export default function LiveUnitsClient({
             </thead>
             <tbody className="divide-y divide-neutral-200">
               {displayRows.map((row) => {
+                const rowSig = serviceSignalsByUnitId.get(row.live_unit_id)!;
+                const entityDisplay = entityDisplayByUnitId.get(row.live_unit_id)!;
                 const currentReview = reviewState[row.live_unit_id];
                 const currentStatus = currentReview?.review_status || "unreviewed";
                 const isSaving = savingLiveUnitId === row.live_unit_id;
@@ -1610,7 +1718,7 @@ export default function LiveUnitsClient({
                 return (
                   <Fragment key={row.live_unit_id}>
                     <tr
-                      className={`h-12 transition hover:bg-neutral-50 ${openEntityId === entityIdFor(row) ? "bg-sky-50" : ""}`}
+                      className={`min-h-[3.5rem] transition hover:bg-neutral-50 ${openEntityId === entityIdFor(row) ? "bg-sky-50" : ""}`}
                       onClick={() => setOpenEntityId(entityIdFor(row))}
                     >
                       <td className="px-3 py-2 align-middle">
@@ -1623,7 +1731,7 @@ export default function LiveUnitsClient({
                       />
                     </td>
                     <td className="w-[300px] px-3 py-2 align-middle font-medium text-neutral-900">
-                      <div className="relative flex items-center gap-2">
+                      <div className="relative flex flex-wrap items-center gap-1.5">
                         <button
                           type="button"
                           onClick={(event) => {
@@ -1640,11 +1748,12 @@ export default function LiveUnitsClient({
                             event.stopPropagation();
                             setOpenEntityId(entityIdFor(row));
                           }}
-                          className="block min-w-0 flex-1 truncate text-left transition hover:text-sky-700"
+                          className="block min-w-0 max-w-[140px] flex-1 truncate text-left text-sm transition hover:text-sky-700 sm:max-w-[180px]"
                           title={row.name_display}
                         >
                           {row.name_display}
                         </button>
+                        <EntityKindBadge label={entityDisplay.liveLabel} />
                         <span className="shrink-0 text-xs font-semibold text-neutral-500">
                           DORA {renderDoraTierDots(doraEvidenceTier(row))}
                         </span>
@@ -1663,6 +1772,17 @@ export default function LiveUnitsClient({
                           <div className="absolute left-0 top-full z-20 mt-2 w-72 rounded-xl border border-neutral-200 bg-white p-3 shadow-xl">
                             <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Signal Details</div>
                             <div className="mt-2 space-y-1 text-sm text-neutral-700">
+                              <div className="text-xs font-semibold text-neutral-600">{entityDisplay.operatorSummary}</div>
+                              <div>
+                                Entity: {entityDisplay.entityKind.replaceAll("_", " ")} · Live posture: {entityDisplay.liveLabel}
+                              </div>
+                              <div>
+                                Service signals:{" "}
+                                {rowSig.serviceSignals.length
+                                  ? rowSig.serviceSignals.map((s) => serviceSignalLabel(s)).join(" · ")
+                                  : "None detected"}
+                                {rowSig.isMultiService ? " (multi-service)" : ""}
+                              </div>
                               <div>Signal mix: {formatSignalMix(row.signal_mix)}</div>
                               <div>Tuned score: {getEffectiveScore(row)}</div>
                               <div>Original score: {row.entity_score}</div>
@@ -1672,6 +1792,15 @@ export default function LiveUnitsClient({
                             </div>
                           </div>
                         ) : null}
+                      </div>
+                      <p className="mt-1 max-w-[288px] pl-5 text-[11px] leading-snug text-neutral-600 line-clamp-2">
+                        {entityDisplay.operatorSummary}
+                      </p>
+                      <div className="mt-1 flex max-w-[288px] flex-wrap items-center gap-1 pl-5">
+                        <MultiServiceBadge isMultiService={rowSig.isMultiService} />
+                        <ServiceSignalChips signals={rowSig.serviceSignals} />
+                        <RelationshipHintBadge hint={entityDisplay.relationshipHint} />
+                        <EntryOptionChips options={entityDisplay.entryOptions} />
                       </div>
                     </td>
                     {liveUnitsMode === "work" ? (

@@ -12,7 +12,8 @@ type Props = {
  * Parent should only mount when resolution.showResolutionStrip is true.
  */
 export default function WorkModeResolutionStrip({ resolution, onAction }: Props) {
-  const { suggestedActions, explanation, blockedByLine, savedFiltersNote, recommendedPresetLabel } = resolution;
+  const { suggestedActions, explanation, blockedByLine, savedFiltersNote, recommendedPresetLabel, opportunityHint } =
+    resolution;
 
   return (
     <div className="rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2.5 text-xs text-amber-950">
@@ -26,6 +27,10 @@ export default function WorkModeResolutionStrip({ resolution, onAction }: Props)
       ) : null}
 
       {savedFiltersNote ? <p className="mt-2 text-[11px] text-amber-900/90">{savedFiltersNote}</p> : null}
+
+      {opportunityHint ? (
+        <p className="mt-2 text-[11px] leading-relaxed text-teal-900/95">{opportunityHint}</p>
+      ) : null}
 
       {recommendedPresetLabel ? (
         <p className="mt-2 text-[11px] font-medium text-amber-900">
