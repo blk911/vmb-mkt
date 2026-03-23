@@ -570,6 +570,9 @@ export default function MarketsClient({
             zone={selectedZone}
             maturity={selectedZoneMaturity}
             summary={selectedZoneBuildSummary}
+            rows={members}
+            approvedLiveUnits={approvedLiveUnits}
+            marketsUrlState={marketsUrlState}
             onContinueWorkPacket={() => setPageMode("work")}
           />
         ) : (

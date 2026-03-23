@@ -1,21 +1,45 @@
 "use client";
 
 import Link from "next/link";
-import type { BeautyZone } from "@/lib/markets";
+import { useMemo } from "react";
+import type { BeautyZone, ApprovedLiveUnit, EnrichedBeautyZoneMember } from "@/lib/markets";
 import type { ZoneBuildSummary } from "@/lib/markets/zone-build-types";
+import { deriveZoneBuildOpsData, type ApprovedLiveUnitWithSignals } from "@/lib/markets/zone-build-ops-logic";
 import { getZoneDisplayLabel } from "@/lib/geo/target-zones";
 import ZoneMaturityBadge from "./ZoneMaturityBadge";
 import type { ZoneMaturity } from "@/lib/geo/target-zones";
+import type { MarketsUrlState } from "@/app/admin/markets/_lib/marketsUrlState";
+import ZoneBuildSection from "./ZoneBuildSection";
+import ZoneUnresolvedList from "./ZoneUnresolvedList";
+import ZoneAnchorList from "./ZoneAnchorList";
+import ZonePlatformList from "./ZonePlatformList";
 
 type Props = {
   zone: BeautyZone;
   maturity: ZoneMaturity;
   summary: ZoneBuildSummary;
+  /** All enriched members (zone filtering happens inside derive). */
+  rows: EnrichedBeautyZoneMember[];
+  approvedLiveUnits: ApprovedLiveUnit[];
+  marketsUrlState: MarketsUrlState;
   onContinueWorkPacket: () => void;
 };
 
-export default function ZoneBuildModePanel({ zone, maturity, summary, onContinueWorkPacket }: Props) {
+export default function ZoneBuildModePanel({
+  zone,
+  maturity,
+  summary,
+  rows,
+  approvedLiveUnits,
+  marketsUrlState,
+  onContinueWorkPacket,
+}: Props) {
   const label = getZoneDisplayLabel(zone.zone_id);
+
+  const opsData = useMemo(
+    () => deriveZoneBuildOpsData(rows, zone.zone_id, approvedLiveUnits as ApprovedLiveUnitWithSignals[]),
+    [rows, zone.zone_id, approvedLiveUnits]
+  );
 
   return (
     <section className="rounded-2xl border border-violet-200/90 bg-gradient-to-br from-violet-50/90 to-white px-4 py-3 shadow-sm">
@@ -74,6 +98,18 @@ export default function ZoneBuildModePanel({ zone, maturity, summary, onContinue
         </div>
       </div>
 
+      <ZoneBuildSection title="Unresolved candidates" count={opsData.unresolved.length}>
+        <ZoneUnresolvedList items={opsData.unresolved} marketsUrlState={marketsUrlState} />
+      </ZoneBuildSection>
+
+      <ZoneBuildSection title="Potential anchors" count={opsData.anchors.length}>
+        <ZoneAnchorList items={opsData.anchors} marketsUrlState={marketsUrlState} />
+      </ZoneBuildSection>
+
+      <ZoneBuildSection title="Platform signals" count={opsData.platforms.length}>
+        <ZonePlatformList items={opsData.platforms} />
+      </ZoneBuildSection>
+
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           type="button"
@@ -99,6 +135,12 @@ export default function ZoneBuildModePanel({ zone, maturity, summary, onContinue
           className="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow-sm transition hover:bg-neutral-50"
         >
           Live Units
+        </Link>
+        <Link
+          href="/admin/vmb/places/review"
+          className="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow-sm transition hover:bg-neutral-50"
+        >
+          Candidate review
         </Link>
       </div>
     </section>
