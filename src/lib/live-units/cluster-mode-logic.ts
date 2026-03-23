@@ -4,9 +4,11 @@
  */
 import type { DerivedEntityDisplayState } from "./entity-display-types";
 import type {
+  ClusterBuildDebug,
   ClusterModeRow,
   ClusterReasonTag,
   ClusterStrength,
+  FallbackAnchorHint,
   RelatedRowMatch,
   SalonAnchorCluster,
 } from "./cluster-mode-types";
@@ -18,9 +20,11 @@ import { serviceSignalLabel } from "./service-signal-logic";
 const ACTIVE_ZONE_IDS = new Set(["QUEBEC_CORRIDOR", "DOWNTOWN_CORE", "CHERRY_CREEK", "CC01"]);
 
 /** Prefer missing related rows over false positives. */
-const MIN_ANCHOR_SCORE = 38;
-const MIN_RELATIONSHIP_SCORE = 50;
-const MAX_ASSIGN_DISTANCE_MI = 0.22;
+const MIN_ANCHOR_SCORE = 36;
+/** v1.1: small relaxation — still rejects weak matches. */
+const MIN_RELATIONSHIP_SCORE = 48;
+/** v1.1: max distance for assigning a related row to an anchor (miles). Slightly widened from 0.22; still tight. */
+const MAX_ASSIGN_DISTANCE_MI = 0.26;
 const SAME_BUILDING_MI = 0.09;
 
 function milesBetween(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -275,8 +279,46 @@ export type ClusterBuildContext = {
   serviceSignalsByUnitId: Map<string, DerivedServiceSignals>;
 };
 
-export function buildSalonAnchorClusters(rows: ClusterModeRow[], ctx: ClusterBuildContext): SalonAnchorCluster[] {
-  if (rows.length === 0) return [];
+function scoreBandLabelForHint(score: number): string {
+  if (score >= 72) return "Strong candidate";
+  if (score >= 55) return "Moderate candidate";
+  return "Weak candidate";
+}
+
+function buildReasonSummary(
+  row: ClusterModeRow,
+  ed: DerivedEntityDisplayState,
+  svc: DerivedServiceSignals,
+  validatedOpCount: number
+): string {
+  const parts: string[] = [ed.entityKind.replaceAll("_", " ")];
+  if ((row.subtype || "").toLowerCase() === "storefront") parts.push("storefront");
+  if (row.shop_license?.trim()) parts.push("shop license");
+  if ((row.tech_count_nearby ?? 0) >= 2) parts.push("nearby techs");
+  if (svc.isMultiService) parts.push("multi-service");
+  if (validatedOpCount > 0) parts.push("validated operators");
+  if (platformSignalCount(row) > 0) parts.push("booking signal");
+  return parts.join(" · ");
+}
+
+export type ClusterBuildResult = {
+  clusters: SalonAnchorCluster[];
+  debug: ClusterBuildDebug;
+};
+
+export function buildSalonAnchorClusters(rows: ClusterModeRow[], ctx: ClusterBuildContext): ClusterBuildResult {
+  const emptyDebug = (partial: Partial<ClusterBuildDebug> = {}): ClusterBuildDebug => ({
+    rowsConsidered: rows.length,
+    anchorCandidatesFound: 0,
+    clustersFormed: 0,
+    totalRelatedRowsGrouped: 0,
+    fallbackAnchors: [],
+    ...partial,
+  });
+
+  if (rows.length === 0) {
+    return { clusters: [], debug: emptyDebug({ rowsConsidered: 0 }) };
+  }
 
   const byId = new Map(rows.map((r) => [r.live_unit_id, r] as const));
 
@@ -395,5 +437,47 @@ export function buildSalonAnchorClusters(rows: ClusterModeRow[], ctx: ClusterBui
     return b.anchorScore - a.anchorScore;
   });
 
-  return clusters;
+  let totalRelatedRowsGrouped = 0;
+  for (const c of clusters) totalRelatedRowsGrouped += c.relatedUnitIds.length;
+
+  let fallbackAnchors: FallbackAnchorHint[] = [];
+  if (eligibleAnchors.length === 0 && rows.length > 0) {
+    const scored: Array<{
+      row: ClusterModeRow;
+      score: number;
+      ed: DerivedEntityDisplayState;
+      svc: DerivedServiceSignals;
+      opCount: number;
+    }> = [];
+    for (const row of rows) {
+      const ed = ctx.entityDisplayByUnitId.get(row.live_unit_id);
+      const svc = ctx.serviceSignalsByUnitId.get(row.live_unit_id);
+      if (!ed || !svc) continue;
+      const ops = getSurfacedOperatorsForBusinessId(row.live_unit_id);
+      const sc = anchorScores.get(row.live_unit_id) ?? scoreAnchorCandidate(row, ed, svc, ops.length);
+      scored.push({ row, score: sc, ed, svc, opCount: ops.length });
+    }
+    scored.sort((a, b) => b.score - a.score);
+    for (const s of scored.slice(0, 3)) {
+      fallbackAnchors.push({
+        unitId: s.row.live_unit_id,
+        name: s.row.name_display,
+        anchorScore: s.score,
+        scoreBandLabel: scoreBandLabelForHint(s.score),
+        entityKind: s.ed.entityKind,
+        liveLabel: s.ed.liveLabel,
+        reasonSummary: buildReasonSummary(s.row, s.ed, s.svc, s.opCount),
+      });
+    }
+  }
+
+  const debug: ClusterBuildDebug = {
+    rowsConsidered: rows.length,
+    anchorCandidatesFound: eligibleAnchors.length,
+    clustersFormed: clusters.length,
+    totalRelatedRowsGrouped,
+    fallbackAnchors,
+  };
+
+  return { clusters, debug };
 }

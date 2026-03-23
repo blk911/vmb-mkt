@@ -38,6 +38,26 @@ export interface SalonAnchorCluster {
   operatorSummary: string;
 }
 
+/** When no eligible anchors, top rows by raw anchor score (hints only — not clusters). */
+export interface FallbackAnchorHint {
+  unitId: string;
+  name: string;
+  anchorScore: number;
+  scoreBandLabel: string;
+  entityKind: string;
+  liveLabel: string;
+  reasonSummary: string;
+}
+
+/** Stats from one cluster build (same filtered row set as the table). */
+export interface ClusterBuildDebug {
+  rowsConsidered: number;
+  anchorCandidatesFound: number;
+  clustersFormed: number;
+  totalRelatedRowsGrouped: number;
+  fallbackAnchors: FallbackAnchorHint[];
+}
+
 /** Minimal row fields used by cluster heuristics (matches Live Unit rows). */
 export type ClusterModeRow = {
   live_unit_id: string;

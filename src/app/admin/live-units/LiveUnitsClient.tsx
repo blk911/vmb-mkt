@@ -47,6 +47,8 @@ import { attachPlatformSignals } from "@/lib/live-units/platform-signal-attach";
 import { MOCK_PLATFORM_LISTINGS } from "@/lib/mock/liveUnits/platformListings";
 import type { PlatformSignalsRecord } from "@/lib/live-units/platform-signal-types";
 import { buildSalonAnchorClusters } from "@/lib/live-units/cluster-mode-logic";
+import { deriveClusterEmptyState } from "@/lib/live-units/cluster-debug-logic";
+import ClusterModeDebugStrip from "@/app/admin/live-units/_components/ClusterModeDebugStrip";
 
 type Confidence = "strong" | "likely" | "candidate_review" | "ambiguous";
 type ReviewStatus = "approved" | "rejected" | "watch" | "needs_research";
@@ -593,14 +595,18 @@ export default function LiveUnitsClient({
   }, [rows]);
 
   const filteredRows = useMemo(() => {
-    const normalizedZipQuery = zipQuery.trim().toLowerCase();
+    const zipFilterActive = zipQuery.trim().length > 0;
+    const zipNeedle = zipFilterActive ? zipQuery.trim().toLowerCase() : "";
     return rows
       .filter((row) => (confidence === "all" ? true : getEffectiveConfidence(row) === confidence))
       .filter((row) => (signalMix === "all" ? true : row.signal_mix === signalMix))
       .filter((row) => (category === "all" ? true : row.operational_category === category))
       .filter((row) => (zone === "all" ? true : getZoneId(row) === zone))
       .filter((row) => (city === "all" ? true : row.city === city))
-      .filter((row) => (normalizedZipQuery ? (row.zip || "").toLowerCase().includes(normalizedZipQuery) : true))
+      .filter((row) => {
+        if (!zipFilterActive) return true;
+        return (row.zip || "").toLowerCase().includes(zipNeedle);
+      })
       .filter((row) => (scoreBand === "all" ? true : scoreBandFor(getEffectiveScore(row)) === scoreBand))
       .filter((row) => {
         const reviewStatus = reviewState[row.live_unit_id]?.review_status;
@@ -748,10 +754,12 @@ export default function LiveUnitsClient({
     return workModeBundle!.displayRows;
   }, [filteredRows, liveUnitsMode, workModeBundle]);
 
-  const salonClusters = useMemo(
+  const { clusters: salonClusters, debug: clusterDebug } = useMemo(
     () => buildSalonAnchorClusters(displayRows, { entityDisplayByUnitId, serviceSignalsByUnitId }),
     [displayRows, entityDisplayByUnitId, serviceSignalsByUnitId]
   );
+
+  const clusterEmptyState = useMemo(() => deriveClusterEmptyState(clusterDebug), [clusterDebug]);
 
   const displayRowById = useMemo(
     () => new Map(displayRows.map((r) => [r.live_unit_id, r] as const)),
@@ -1455,15 +1463,31 @@ export default function LiveUnitsClient({
             </FilterField>
 
             <FilterField label="Zip" width="sm">
-              <input
-                value={zipQuery}
-                onChange={(event) => {
-                  setActivePreset(null);
-                  setZipQuery(event.target.value);
-                }}
-                className="h-9 w-full rounded-md border border-slate-300 bg-white px-2.5 text-[13px]"
-                placeholder="80206"
-              />
+              <div className="flex items-center gap-1.5">
+                <input
+                  value={zipQuery}
+                  onChange={(event) => {
+                    setActivePreset(null);
+                    setZipQuery(event.target.value);
+                  }}
+                  className="h-9 min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-2.5 text-[13px]"
+                  placeholder="All ZIPs"
+                  aria-label="Filter by ZIP code"
+                  autoComplete="postal-code"
+                />
+                {zipQuery.trim().length > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActivePreset(null);
+                      setZipQuery("");
+                    }}
+                    className="shrink-0 rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Clear
+                  </button>
+                ) : null}
+              </div>
             </FilterField>
 
             <FilterField label="Score Band" width="md">
@@ -1571,43 +1595,49 @@ export default function LiveUnitsClient({
             {saveError ? <div className="text-sm text-rose-600">{saveError}</div> : null}
 
             {viewMode === "clusters" ? (
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/40 p-4">
-                {salonClusters.length === 0 ? (
-                  <p className="text-sm text-slate-600">
-                    No salon-anchor clusters in the current filtered set. Grouping is conservative — try Rows view or relax filters.
-                  </p>
-                ) : (
-                  <div className="space-y-4">
-                    {salonClusters.map((cluster) => {
-                      const anchorRow = displayRowById.get(cluster.anchorUnitId);
-                      if (!anchorRow) return null;
-                      const anchorEd = entityDisplayByUnitId.get(cluster.anchorUnitId);
-                      const anchorSvc = serviceSignalsByUnitId.get(cluster.anchorUnitId);
-                      if (!anchorEd || !anchorSvc) return null;
-                      const relatedItems: RelatedTechRowProps[] = [];
-                      for (const id of cluster.relatedUnitIds) {
-                        const row = displayRowById.get(id);
-                        const match = cluster.relatedMatches.find((m) => m.unitId === id);
-                        const ed = entityDisplayByUnitId.get(id);
-                        const sg = serviceSignalsByUnitId.get(id);
-                        if (row && match && ed && sg) {
-                          relatedItems.push({ row, match, entityDisplay: ed, serviceSig: sg });
+              <div className="space-y-3">
+                <ClusterModeDebugStrip
+                  debug={clusterDebug}
+                  emptyState={clusterEmptyState}
+                  onFocusUnit={(unitId) => {
+                    const row = displayRowById.get(unitId);
+                    if (row) setOpenEntityId(entityIdFor(row));
+                  }}
+                />
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/40 p-4">
+                  {salonClusters.length > 0 ? (
+                    <div className="space-y-4">
+                      {salonClusters.map((cluster) => {
+                        const anchorRow = displayRowById.get(cluster.anchorUnitId);
+                        if (!anchorRow) return null;
+                        const anchorEd = entityDisplayByUnitId.get(cluster.anchorUnitId);
+                        const anchorSvc = serviceSignalsByUnitId.get(cluster.anchorUnitId);
+                        if (!anchorEd || !anchorSvc) return null;
+                        const relatedItems: RelatedTechRowProps[] = [];
+                        for (const id of cluster.relatedUnitIds) {
+                          const row = displayRowById.get(id);
+                          const match = cluster.relatedMatches.find((m) => m.unitId === id);
+                          const ed = entityDisplayByUnitId.get(id);
+                          const sg = serviceSignalsByUnitId.get(id);
+                          if (row && match && ed && sg) {
+                            relatedItems.push({ row, match, entityDisplay: ed, serviceSig: sg });
+                          }
                         }
-                      }
-                      return (
-                        <SalonAnchorClusterCard
-                          key={cluster.anchorUnitId}
-                          cluster={cluster}
-                          anchorRow={anchorRow}
-                          anchorEntityDisplay={anchorEd}
-                          anchorServiceSig={anchorSvc}
-                          relatedItems={relatedItems}
-                          onOpenAnchor={() => setOpenEntityId(entityIdFor(anchorRow))}
-                        />
-                      );
-                    })}
-                  </div>
-                )}
+                        return (
+                          <SalonAnchorClusterCard
+                            key={cluster.anchorUnitId}
+                            cluster={cluster}
+                            anchorRow={anchorRow}
+                            anchorEntityDisplay={anchorEd}
+                            anchorServiceSig={anchorSvc}
+                            relatedItems={relatedItems}
+                            onOpenAnchor={() => setOpenEntityId(entityIdFor(anchorRow))}
+                          />
+                        );
+                      })}
+                    </div>
+                  ) : null}
+                </div>
               </div>
             ) : (
             <div className="overflow-hidden rounded-2xl border border-slate-200">
