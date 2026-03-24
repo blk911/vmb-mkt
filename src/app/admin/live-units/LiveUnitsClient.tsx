@@ -53,9 +53,24 @@ import type { PlatformSignalsRecord } from "@/lib/live-units/platform-signal-typ
 import { compareZoneIdsForDisplay } from "@/lib/geo/target-zones";
 import { buildSalonAnchorClusters } from "@/lib/live-units/cluster-mode-logic";
 import { deriveClusterEmptyState } from "@/lib/live-units/cluster-debug-logic";
+import OperatorRosterSection from "@/app/admin/live-units/_components/OperatorRosterSection";
 import ClusterModeDebugStrip from "@/app/admin/live-units/_components/ClusterModeDebugStrip";
 import LiveUnitsDebugStrip from "@/app/admin/live-units/_components/LiveUnitsDebugStrip";
 import type { LiveUnitsLoadTrace } from "@/lib/live-units/live-units-debug-types";
+import {
+  buildZoneExpansionSummary,
+  deriveNextSignalNeeded,
+  matchesScoreLayer,
+  needsIGEnrichment,
+  type ScoreLayerFilter,
+} from "@/lib/live-units/expansion-queue-logic";
+import {
+  deriveEnrichmentFeedbackResult,
+  getFeedbackAdjustedScoreForLayer,
+  isUpgradeableByFeedback,
+} from "@/lib/live-units/enrichment-feedback-logic";
+import EnrichmentUpgradeBadge from "@/app/admin/live-units/_components/EnrichmentUpgradeBadge";
+import ExpansionQueueSummary from "@/app/admin/live-units/_components/ExpansionQueueSummary";
 
 type Confidence = "strong" | "likely" | "candidate_review" | "ambiguous";
 type ReviewStatus = "approved" | "rejected" | "watch" | "needs_research";
@@ -532,6 +547,8 @@ export default function LiveUnitsClient({
   const [workPresetId, setWorkPresetId] = useState<WorkPresetId | null>(null);
   const [usePresetOnly, setUsePresetOnly] = useState(true);
   const [viewMode, setViewMode] = useState<LiveUnitsViewMode>("rows");
+  /** Queue A (≥70) vs Queue B expansion (60–69) vs all scores — default primary queue. */
+  const [scoreLayerFilter, setScoreLayerFilter] = useState<ScoreLayerFilter>("high_confidence");
 
   const counts = useMemo(() => summaryCounts(rows), [rows]);
   const reviewCounts = useMemo(() => reviewSummaryCounts(rows, reviewState), [rows, reviewState]);
@@ -597,7 +614,14 @@ export default function LiveUnitsClient({
   const filteredRows = useMemo(() => {
     const zipFilterActive = zipQuery.trim().length > 0;
     const zipNeedle = zipFilterActive ? zipQuery.trim().toLowerCase() : "";
+    const layerScoreForRow = (row: LiveUnitRow) => {
+      const ed = entityDisplayByUnitId.get(row.live_unit_id);
+      const ops = surfacedOperatorsByUnitId.get(row.live_unit_id) ?? [];
+      if (!ed) return getEffectiveScore(row);
+      return getFeedbackAdjustedScoreForLayer(row, ed, ops);
+    };
     return rows
+      .filter((row) => matchesScoreLayer(layerScoreForRow(row), scoreLayerFilter))
       .filter((row) => (confidence === "all" ? true : getEffectiveConfidence(row) === confidence))
       .filter((row) => (signalMix === "all" ? true : row.signal_mix === signalMix))
       .filter((row) => (category === "all" ? true : row.operational_category === category))
@@ -630,8 +654,8 @@ export default function LiveUnitsClient({
         const reviewStatusB = (reviewState[b.live_unit_id]?.review_status || "unreviewed") as ReviewStatus | "unreviewed";
 
         if (sortKey === "tuned_score") {
-          const sa = getEffectiveScore(a);
-          const sb = getEffectiveScore(b);
+          const sa = layerScoreForRow(a);
+          const sb = layerScoreForRow(b);
           if (sa !== sb) return sortDir === "desc" ? sb - sa : sa - sb;
         } else if (sortKey === "original_score") {
           if (a.entity_score !== b.entity_score) {
@@ -697,7 +721,29 @@ export default function LiveUnitsClient({
     tuningFilter,
     zipQuery,
     zone,
+    scoreLayerFilter,
+    entityDisplayByUnitId,
+    surfacedOperatorsByUnitId,
   ]);
+
+  const zoneExpansionSummary = useMemo(
+    () =>
+      buildZoneExpansionSummary(rows, {
+        layerScore: (row) => {
+          const ed = entityDisplayByUnitId.get(row.live_unit_id);
+          const ops = surfacedOperatorsByUnitId.get(row.live_unit_id) ?? [];
+          if (!ed) return getEffectiveScore(row);
+          return getFeedbackAdjustedScoreForLayer(row, ed, ops);
+        },
+        countUpgradeable: (row) => {
+          const ed = entityDisplayByUnitId.get(row.live_unit_id);
+          const ops = surfacedOperatorsByUnitId.get(row.live_unit_id) ?? [];
+          if (!ed) return false;
+          return isUpgradeableByFeedback(row, ed, ops);
+        },
+      }),
+    [rows, entityDisplayByUnitId, surfacedOperatorsByUnitId]
+  );
 
   const filterSnapshot = useMemo(
     (): LiveUnitsFilterSnapshot => ({
@@ -753,6 +799,42 @@ export default function LiveUnitsClient({
     if (liveUnitsMode !== "work") return filteredRows;
     return workModeBundle!.displayRows;
   }, [filteredRows, liveUnitsMode, workModeBundle]);
+
+  const expansionZoneBreakdown = useMemo(() => {
+    if (scoreLayerFilter !== "expansion") return [];
+    const m = new Map<string, { name: string; n: number }>();
+    for (const row of displayRows) {
+      const id = getZoneId(row);
+      const name = getZoneName(row);
+      const cur = m.get(id);
+      m.set(id, { name, n: (cur?.n ?? 0) + 1 });
+    }
+    return [...m.entries()]
+      .map(([zoneId, v]) => ({ zoneId, ...v }))
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+  }, [displayRows, scoreLayerFilter]);
+
+  const expansionQueueStats = useMemo(() => {
+    if (scoreLayerFilter !== "expansion") return null;
+    let igMissing = 0;
+    let upgradeable = 0;
+    let wouldMoveToHigh = 0;
+    for (const row of displayRows) {
+      const ed = entityDisplayByUnitId.get(row.live_unit_id);
+      const ops = surfacedOperatorsByUnitId.get(row.live_unit_id) ?? [];
+      if (!ed) continue;
+      if (needsIGEnrichment(row, ops)) igMissing += 1;
+      const fb = deriveEnrichmentFeedbackResult(row, ed, ops, row.platformSignals);
+      if (fb?.upgraded) upgradeable += 1;
+      if (fb?.movedToHighConfidence) wouldMoveToHigh += 1;
+    }
+    return {
+      expansionRows: displayRows.length,
+      igMissing,
+      upgradeable,
+      wouldMoveToHigh,
+    };
+  }, [displayRows, scoreLayerFilter, entityDisplayByUnitId, surfacedOperatorsByUnitId]);
 
   const { clusters: salonClusters, debug: clusterDebug } = useMemo(
     () => buildSalonAnchorClusters(displayRows, { entityDisplayByUnitId, serviceSignalsByUnitId }),
@@ -1190,11 +1272,28 @@ export default function LiveUnitsClient({
         title="Live Units"
         subtitle={
           liveUnitsMode === "work"
-            ? "Operator queue — nail-led targets (incl. mixed-service w/ nail signals) by zone, score, and review. Switch to Review Mode to tune filters."
-            : "Review queue for combined Google, DORA, and online identity signals."
+            ? `Operator queue — nail-led targets (incl. mixed-service w/ nail signals) by zone, score, and review.${
+                scoreLayerFilter === "expansion" ? " Score layer: Expansion (60–69)." : ""
+              } Switch to Review Mode to tune filters.`
+            : scoreLayerFilter === "expansion"
+              ? "Expansion layer (60–69) — signal completion and zone growth; separate from the primary ≥70 queue."
+              : scoreLayerFilter === "all"
+                ? "All score bands — combined with your filters."
+                : "Primary review queue — high-confidence layer (tuned score ≥70), separate from Expansion (60–69)."
         }
         headerActions={
           <div className="flex flex-wrap items-center gap-2">
+            <div className="flex max-w-full flex-wrap items-center gap-1 rounded-lg border border-slate-200 bg-slate-50/90 p-1">
+              <PillButton active={scoreLayerFilter === "high_confidence"} onClick={() => setScoreLayerFilter("high_confidence")}>
+                High Confidence (≥70)
+              </PillButton>
+              <PillButton active={scoreLayerFilter === "expansion"} onClick={() => setScoreLayerFilter("expansion")}>
+                Expansion (60–69)
+              </PillButton>
+              <PillButton active={scoreLayerFilter === "all"} onClick={() => setScoreLayerFilter("all")}>
+                All scores
+              </PillButton>
+            </div>
             <ClusterModeToggle mode={viewMode} onChange={setViewMode} />
             <WorkModeToggle
               mode={liveUnitsMode}
@@ -1271,26 +1370,32 @@ export default function LiveUnitsClient({
           </>
         }
         bulkActions={
-          <>
-            {visibleIds.length ? (
-              <>
-                <ActionButton tone="success" onClick={() => void applyReviewAction(visibleIds, "approved", "visible")}>
-                  Approve visible
-                </ActionButton>
-                <ActionButton onClick={() => void applyReviewAction(visibleIds, "watch", "visible")}>
-                  Watch visible
-                </ActionButton>
-                <ActionButton tone="warning" onClick={() => void applyReviewAction(visibleIds, "needs_research", "visible")}>
-                  Needs research visible
-                </ActionButton>
-                <ActionButton tone="danger" onClick={() => void applyReviewAction(visibleIds, "clear", "visible")}>
-                  Clear visible
-                </ActionButton>
-              </>
-            ) : (
-              <span className="text-sm text-slate-500">Visible-row actions appear when results are loaded.</span>
-            )}
-          </>
+          scoreLayerFilter === "expansion" ? (
+            <span className="text-sm text-slate-600">
+              Bulk review is disabled for Expansion — use per-row signal upgrades; scores ≥70 promote to High Confidence automatically.
+            </span>
+          ) : (
+            <>
+              {visibleIds.length ? (
+                <>
+                  <ActionButton tone="success" onClick={() => void applyReviewAction(visibleIds, "approved", "visible")}>
+                    Approve visible
+                  </ActionButton>
+                  <ActionButton onClick={() => void applyReviewAction(visibleIds, "watch", "visible")}>
+                    Watch visible
+                  </ActionButton>
+                  <ActionButton tone="warning" onClick={() => void applyReviewAction(visibleIds, "needs_research", "visible")}>
+                    Needs research visible
+                  </ActionButton>
+                  <ActionButton tone="danger" onClick={() => void applyReviewAction(visibleIds, "clear", "visible")}>
+                    Clear visible
+                  </ActionButton>
+                </>
+              ) : (
+                <span className="text-sm text-slate-500">Visible-row actions appear when results are loaded.</span>
+              )}
+            </>
+          )
         }
         primaryFilters={
           <FilterGrid cols="3">
@@ -1537,6 +1642,64 @@ export default function LiveUnitsClient({
         }
         results={
           <div className="space-y-4">
+            {scoreLayerFilter === "expansion" && expansionQueueStats ? (
+              <div className="space-y-2">
+                <ExpansionQueueSummary
+                  scopeLabel="Counts: current filters (same row set as the table below)."
+                  expansionRows={expansionQueueStats.expansionRows}
+                  igMissing={expansionQueueStats.igMissing}
+                  upgradeable={expansionQueueStats.upgradeable}
+                  wouldMoveToHigh={expansionQueueStats.wouldMoveToHigh}
+                />
+                {expansionZoneBreakdown.length ? (
+                  <div className="flex flex-wrap gap-x-2 gap-y-1 text-[11px] text-slate-600">
+                    <span className="font-medium text-slate-700">By zone (filtered):</span>
+                    {expansionZoneBreakdown.map((z) => (
+                      <span
+                        key={z.zoneId}
+                        className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-0.5 font-medium text-slate-800"
+                      >
+                        <span className="max-w-[140px] truncate">{z.name}</span>
+                        <span className="tabular-nums text-slate-600">{z.n}</span>
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
+            {(scoreLayerFilter === "expansion" || scoreLayerFilter === "all") &&
+            zoneExpansionSummary.some((z) => z.expansionCount > 0 || z.highConfidenceCount > 0 || z.upgradeableCount > 0) ? (
+              <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                <table className="w-full min-w-[520px] border-collapse text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                      <th className="px-3 py-2">Zone</th>
+                      <th className="px-3 py-2 tabular-nums">Expansion (60–69)</th>
+                      <th className="px-3 py-2 tabular-nums">High (≥70)</th>
+                      <th className="px-3 py-2 tabular-nums">Upgradeable</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {zoneExpansionSummary
+                      .filter((z) => z.expansionCount > 0 || z.highConfidenceCount > 0 || z.upgradeableCount > 0)
+                      .map((z) => (
+                        <tr key={z.zoneId} className="border-b border-slate-100 last:border-0">
+                          <td className="px-3 py-1.5 font-medium text-slate-800">{z.zoneName}</td>
+                          <td className="px-3 py-1.5 tabular-nums text-slate-700">{z.expansionCount}</td>
+                          <td className="px-3 py-1.5 tabular-nums text-slate-700">{z.highConfidenceCount}</td>
+                          <td className="px-3 py-1.5 tabular-nums text-slate-700">{z.upgradeableCount}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+                <p className="border-t border-slate-100 px-3 py-1.5 text-[10px] text-slate-500">
+                  Full dataset — layer bins use feedback-adjusted scores. Upgradeable = raw 60–69 rows with any positive feedback
+                  nudge. Compare zones for hidden potential vs solid coverage.
+                </p>
+              </div>
+            ) : null}
+
             {selectedIds.length ? (
               <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1551,19 +1714,25 @@ export default function LiveUnitsClient({
                     Clear selection
                   </button>
                 </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {(["approved", "rejected", "watch", "needs_research", "clear"] as BulkActionKind[]).map((action) => (
-                    <button
-                      key={action}
-                      type="button"
-                      onClick={() => void applyReviewAction(selectedIds, action, "selected")}
-                      disabled={!!savingBulkAction}
-                      className="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60"
-                    >
-                      {actionLabel(action, "selected")}
-                    </button>
-                  ))}
-                </div>
+                {scoreLayerFilter === "expansion" ? (
+                  <p className="mt-2 text-xs text-slate-600">
+                    Bulk classification is disabled in Expansion — clear selection or switch to High Confidence for batch review.
+                  </p>
+                ) : (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {(["approved", "rejected", "watch", "needs_research", "clear"] as BulkActionKind[]).map((action) => (
+                      <button
+                        key={action}
+                        type="button"
+                        onClick={() => void applyReviewAction(selectedIds, action, "selected")}
+                        disabled={!!savingBulkAction}
+                        className="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60"
+                      >
+                        {actionLabel(action, "selected")}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : null}
 
@@ -1838,6 +2007,12 @@ export default function LiveUnitsClient({
                 const googleAddress = googleAddressFor(row) || buildShopAddress(row.shop_license ? shopByLicenseId.get(row.shop_license) || null : null) || "-";
                 const linkedDoraIds = row.raw_snippets?.dora?.license_row_ids || [];
                 const signalPopoverOpen = openSignalPopoverId === row.live_unit_id;
+                const nextSignalLabel = deriveNextSignalNeeded(row, entityDisplay, surfacedOps);
+                const igEnrichment = needsIGEnrichment(row, surfacedOps);
+                const enrichmentFeedback =
+                  scoreLayerFilter === "expansion"
+                    ? deriveEnrichmentFeedbackResult(row, entityDisplay, surfacedOps, row.platformSignals)
+                    : null;
 
                 return (
                   <Fragment key={`${row.live_unit_id}-${rowIndex}`}>
@@ -1946,6 +2121,24 @@ export default function LiveUnitsClient({
                         <RelationshipHintBadge hint={entityDisplay.relationshipHint} />
                         <EntryOptionChips options={entityDisplay.entryOptions} />
                       </div>
+                      {nextSignalLabel || igEnrichment ? (
+                        <div className="mt-1 flex flex-wrap items-center gap-1 pl-5 pr-1">
+                          {nextSignalLabel ? (
+                            <span
+                              className="rounded-md bg-violet-100 px-1.5 py-0.5 text-[10px] font-semibold text-violet-900 ring-1 ring-violet-200/80"
+                              title="Suggested next signal for this 60–69 candidate"
+                            >
+                              {nextSignalLabel}
+                            </span>
+                          ) : null}
+                          {igEnrichment ? (
+                            <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900 ring-1 ring-amber-200/80">
+                              IG missing
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : null}
+                      {enrichmentFeedback?.upgraded ? <EnrichmentUpgradeBadge result={enrichmentFeedback} /> : null}
                     </td>
                     {liveUnitsMode === "work" ? (
                       <>
