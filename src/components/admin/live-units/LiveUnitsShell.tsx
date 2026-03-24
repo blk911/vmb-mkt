@@ -115,6 +115,7 @@ export default function LiveUnitsShell({
   primaryFilters,
   categoryFilters,
   geographyFilters,
+  geographyCollapsedDefault = false,
   results,
 }: LiveUnitsShellProps) {
   return (
