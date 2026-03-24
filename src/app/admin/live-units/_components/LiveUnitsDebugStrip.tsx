@@ -98,6 +98,12 @@ export default function LiveUnitsDebugStrip({ trace, hydratedRowCount, visibleRo
         {trace.droppedMalformed > 0 ? (
           <div className="sm:col-span-2 text-amber-900">
             <span className="text-slate-500">Dropped malformed:</span> {trace.droppedMalformed}
+            {trace.gateDropReasons?.length ? (
+              <span className="mt-1 block text-[10px] text-amber-950">
+                Gate reasons (most common):{" "}
+                {trace.gateDropReasons.map((g) => `${g.tag}×${g.count}`).join(" · ")}
+              </span>
+            ) : null}
           </div>
         ) : null}
       </div>

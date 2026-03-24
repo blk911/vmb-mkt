@@ -48,5 +48,7 @@ export type LiveUnitsLoadTrace = {
   /** CHECKPOINT 4 — after entity_id normalization, matches props.rows.length */
   rowsSentToClient: number;
   droppedMalformed: number;
+  /** When `droppedMalformed > 0`, counts per failed check (same labels as `listGateFailureReasons`). */
+  gateDropReasons?: Array<{ tag: string; count: number }>;
   parseError?: string;
 };

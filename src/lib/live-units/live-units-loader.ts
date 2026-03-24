@@ -20,7 +20,7 @@ import type {
   LiveUnitsRemoteAttempt,
   LiveUnitsSourceMode,
 } from "./live-units-debug-types";
-import { gateLiveUnitRows } from "./live-units-parse";
+import { aggregateGateDropReasons, gateLiveUnitRows } from "./live-units-parse";
 import { loadRowsFromFirestoreDocument, loadRowsFromHttpJsonUrl } from "./live-units-remote";
 
 type LiveUnitsFileShape = {
@@ -125,6 +125,7 @@ function buildTrace(input: {
   parseError?: string;
   gatedRows: unknown[];
   droppedMalformed: number;
+  gateDropReasons?: Array<{ tag: string; count: number }>;
 }): LiveUnitsLoadTrace {
   const rowsLoadedRaw = input.rawRows.length;
   const rowsAfterParse = input.rawRows.length;
@@ -141,6 +142,7 @@ function buildTrace(input: {
     rowsAfterRequiredFieldGates,
     rowsSentToClient: rowsAfterRequiredFieldGates,
     droppedMalformed: input.droppedMalformed,
+    gateDropReasons: input.gateDropReasons,
     parseError: input.parseError,
   };
 }
@@ -172,6 +174,8 @@ export async function loadLiveUnitsWithTrace(): Promise<LoadedLiveUnitsPayload> 
     }
   ): LoadedLiveUnitsPayload => {
     const { gated, droppedMalformed } = gateLiveUnitRows(rawRows);
+    const gateDropReasons =
+      droppedMalformed > 0 ? aggregateGateDropReasons(rawRows) : undefined;
     const trace = buildTrace({
       cwd,
       sourceMode: opts.sourceMode,
@@ -183,6 +187,7 @@ export async function loadLiveUnitsWithTrace(): Promise<LoadedLiveUnitsPayload> 
       parseError: opts.parseError,
       gatedRows: gated,
       droppedMalformed,
+      gateDropReasons,
     });
     return { rows: gated, trace };
   };

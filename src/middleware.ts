@@ -36,6 +36,15 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  /** Dev-only: curl / IDE fetch without cookies — never in production (see dataset route). */
+  if (
+    pathname === "/api/admin/live-units/dataset" &&
+    process.env.NODE_ENV !== "production" &&
+    process.env.LIVE_UNITS_DEBUG_BYPASS === "1"
+  ) {
+    return NextResponse.next();
+  }
+
   const sessionSecret = getSessionSecret();
   if (!sessionSecret) {
     return new NextResponse("Admin session auth is not configured.", { status: 503 });
