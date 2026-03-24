@@ -34,6 +34,8 @@ import { deriveZoneOpsSummaries, filterMembersByWorkPreset, getZoneOpsSummaryFor
 import type { MarketsWorkPreset } from "@/lib/markets/zone-ops-types";
 import ZoneOpsStats from "@/app/admin/markets/_components/ZoneOpsStats";
 import ZoneWorkPacketHeader from "@/app/admin/markets/_components/ZoneWorkPacketHeader";
+import WorkflowStateBadge from "@/components/admin/shared/WorkflowStateBadge";
+import { deriveWorkflowStateFromMarketMember } from "@/lib/workflow/workflow-state-logic";
 import {
   clusterDisplayTitle,
   computeClusterActiveMetrics,
@@ -1253,7 +1255,9 @@ export default function MarketsClient({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-200">
-                  {visibleMembers.map((member) => (
+                  {visibleMembers.map((member) => {
+                    const memberWorkflow = deriveWorkflowStateFromMarketMember(member);
+                    return (
                     <tr key={member.location_id} className="align-top text-neutral-800">
                       <td className="px-4 py-3 font-medium">
                         <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
@@ -1263,6 +1267,10 @@ export default function MarketsClient({
                           >
                             {member.name}
                           </Link>
+                          <WorkflowStateBadge
+                            state={memberWorkflow.state}
+                            title={memberWorkflow.reason ?? undefined}
+                          />
                           {memberHasActivePresence(member) ? (
                             <span
                               className="inline-flex shrink-0 rounded bg-teal-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-900"
@@ -1351,7 +1359,8 @@ export default function MarketsClient({
                         </span>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
