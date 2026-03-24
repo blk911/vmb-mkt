@@ -36,9 +36,9 @@ export default function RelatedTechList({ items, className = "" }: Props) {
 
   return (
     <ul className={`space-y-2 ${className}`}>
-      {items.map(({ row, match, entityDisplay, serviceSig }) => (
+      {items.map(({ row, match, entityDisplay, serviceSig }, idx) => (
         <li
-          key={row.live_unit_id}
+          key={`${row.live_unit_id}-${idx}`}
           className="rounded-lg border border-slate-100 bg-white/80 px-2.5 py-2 text-xs text-slate-800"
         >
           <div className="flex flex-wrap items-center gap-1.5">

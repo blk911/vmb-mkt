@@ -1433,6 +1433,7 @@ export default function LiveUnitsClient({
             </FilterField>
           </FilterGrid>
         }
+        geographyCollapsedDefault={viewMode === "rows"}
         geographyFilters={
           <FilterGrid cols="2">
             <FilterField label="Zone" width="md">
@@ -1614,7 +1615,7 @@ export default function LiveUnitsClient({
                 <div className="rounded-2xl border border-slate-200 bg-slate-50/40 p-4">
                   {salonClusters.length > 0 ? (
                     <div className="space-y-4">
-                      {salonClusters.map((cluster) => {
+                      {salonClusters.map((cluster, clusterIndex) => {
                         const anchorRow = displayRowById.get(cluster.anchorUnitId);
                         if (!anchorRow) return null;
                         const anchorEd = entityDisplayByUnitId.get(cluster.anchorUnitId);
@@ -1632,7 +1633,7 @@ export default function LiveUnitsClient({
                         }
                         return (
                           <SalonAnchorClusterCard
-                            key={cluster.anchorUnitId}
+                            key={`${cluster.anchorUnitId}-${clusterIndex}`}
                             cluster={cluster}
                             anchorRow={anchorRow}
                             anchorEntityDisplay={anchorEd}
@@ -1650,11 +1651,11 @@ export default function LiveUnitsClient({
             <div className="overflow-hidden rounded-2xl border border-slate-200">
               <div className="overflow-x-auto">
                 <table
-                  className={`${liveUnitsMode === "work" ? "min-w-[1600px]" : "min-w-[1320px]"} table-fixed divide-y divide-neutral-200 text-sm`}
+                  className={`${liveUnitsMode === "work" ? "min-w-[1540px]" : "min-w-[1320px]"} table-fixed divide-y divide-neutral-200 text-sm`}
                 >
             <thead className="sticky top-0 z-10 bg-neutral-50">
               <tr className="text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                <th className="px-3 py-2.5">
+                <th className="w-9 px-2 py-2">
                   <input
                     type="checkbox"
                     checked={allVisibleSelected}
@@ -1666,7 +1667,7 @@ export default function LiveUnitsClient({
                   />
                 </th>
                 <th
-                  className="px-3 py-2.5 whitespace-nowrap"
+                  className="min-w-[300px] w-[36%] px-2 py-2 whitespace-normal"
                   aria-sort={sortKey === "name" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
                 >
                   <button
@@ -1685,16 +1686,16 @@ export default function LiveUnitsClient({
                 </th>
                 {liveUnitsMode === "work" ? (
                   <>
-                    <th className="px-3 py-2.5 whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                    <th className="w-[64px] px-1.5 py-2 whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-neutral-500">
                       Priority
                     </th>
-                    <th className="px-3 py-2.5 whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                    <th className="w-[76px] px-1.5 py-2 whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-neutral-500">
                       Next
                     </th>
                   </>
                 ) : null}
                 <th
-                  className="px-3 py-2.5 whitespace-nowrap"
+                  className="w-[92px] max-w-[92px] px-2 py-2 whitespace-nowrap"
                   aria-sort={sortKey === "category" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
                 >
                   <button
@@ -1712,7 +1713,7 @@ export default function LiveUnitsClient({
                   </button>
                 </th>
                 <th
-                  className="px-3 py-2.5 whitespace-nowrap"
+                  className="w-[88px] max-w-[88px] px-2 py-2 whitespace-nowrap"
                   aria-sort={sortKey === "zone" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
                 >
                   <button
@@ -1730,7 +1731,7 @@ export default function LiveUnitsClient({
                   </button>
                 </th>
                 <th
-                  className="px-3 py-2.5 whitespace-nowrap"
+                  className="w-[108px] max-w-[108px] px-2 py-2 whitespace-nowrap"
                   aria-sort={sortKey === "city" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
                 >
                   <button
@@ -1748,16 +1749,16 @@ export default function LiveUnitsClient({
                   </button>
                 </th>
                 <th
-                  className="px-3 py-2.5 whitespace-nowrap"
+                  className="w-[128px] max-w-[128px] px-2 py-2 whitespace-nowrap"
                   aria-sort={sortKey === "nearby_shop_license" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
                 >
                   <button
                     type="button"
                     onClick={() => toggleColumnSort("nearby_shop_license")}
-                    className="inline-flex items-center gap-1 text-left font-semibold uppercase tracking-wide text-neutral-500 transition hover:text-neutral-800"
+                    className="inline-flex max-w-full items-center gap-1 truncate text-left font-semibold uppercase tracking-wide text-neutral-500 transition hover:text-neutral-800"
                     title="Sort by nearby shop license name (click to reverse)"
                   >
-                    Nearby Shop License
+                    Shop lic.
                     {sortKey === "nearby_shop_license" ? (
                       <span className="font-normal normal-case" aria-hidden>
                         {sortDir === "asc" ? "↑" : "↓"}
@@ -1766,16 +1767,16 @@ export default function LiveUnitsClient({
                   </button>
                 </th>
                 <th
-                  className="px-3 py-2.5 whitespace-nowrap"
+                  className="w-11 px-1 py-2 text-center whitespace-nowrap"
                   aria-sort={sortKey === "nearby_techs" ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
                 >
                   <button
                     type="button"
                     onClick={() => toggleColumnSort("nearby_techs")}
-                    className="inline-flex items-center gap-1 text-left font-semibold uppercase tracking-wide text-neutral-500 transition hover:text-neutral-800"
+                    className="inline-flex items-center justify-center gap-1 text-left font-semibold uppercase tracking-wide text-neutral-500 transition hover:text-neutral-800"
                     title="Sort by nearby tech count (click to reverse)"
                   >
-                    Nearby Techs
+                    Techs
                     {sortKey === "nearby_techs" ? (
                       <span className="font-normal normal-case" aria-hidden>
                         {sortDir === "asc" ? "↑" : "↓"}
@@ -1784,7 +1785,7 @@ export default function LiveUnitsClient({
                   </button>
                 </th>
                 <th
-                  className="px-3 py-2.5 whitespace-nowrap"
+                  className="w-[72px] px-1.5 py-2 whitespace-nowrap"
                   aria-sort={sortKey === "tuned_score" ? (sortDir === "desc" ? "descending" : "ascending") : "none"}
                 >
                   <button
@@ -1793,7 +1794,7 @@ export default function LiveUnitsClient({
                     className="inline-flex items-center gap-1 text-left font-semibold uppercase tracking-wide text-neutral-500 transition hover:text-neutral-800"
                     title="Sort by tuned score (click to reverse)"
                   >
-                    Tuned Score
+                    Score
                     {sortKey === "tuned_score" ? (
                       <span className="font-normal normal-case" aria-hidden>
                         {sortDir === "desc" ? "↓" : "↑"}
@@ -1802,16 +1803,16 @@ export default function LiveUnitsClient({
                   </button>
                 </th>
                 <th
-                  className="px-3 py-2.5 whitespace-nowrap"
+                  className="w-[100px] max-w-[100px] px-1.5 py-2 whitespace-nowrap"
                   aria-sort={sortKey === "review_status" ? (sortDir === "desc" ? "descending" : "ascending") : "none"}
                 >
                   <button
                     type="button"
                     onClick={() => toggleColumnSort("review_status")}
-                    className="inline-flex items-center gap-1 text-left font-semibold uppercase tracking-wide text-neutral-500 transition hover:text-neutral-800"
+                    className="inline-flex max-w-full items-center gap-1 truncate text-left font-semibold uppercase tracking-wide text-neutral-500 transition hover:text-neutral-800"
                     title="Sort by review status (click to reverse)"
                   >
-                    Review Status
+                    Review
                     {sortKey === "review_status" ? (
                       <span className="font-normal normal-case" aria-hidden>
                         {sortDir === "desc" ? "↓" : "↑"}
@@ -1819,12 +1820,12 @@ export default function LiveUnitsClient({
                     ) : null}
                   </button>
                 </th>
-                <th className="px-3 py-2.5 whitespace-nowrap">Actions</th>
-                <th className="px-3 py-2.5 whitespace-nowrap">Details</th>
+                <th className="w-[152px] max-w-[152px] px-1.5 py-2 whitespace-nowrap">Actions</th>
+                <th className="w-[68px] px-1.5 py-2 whitespace-nowrap">Details</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-200">
-              {displayRows.map((row) => {
+              {displayRows.map((row, rowIndex) => {
                 const rowSig = serviceSignalsByUnitId.get(row.live_unit_id)!;
                 const entityDisplay = entityDisplayByUnitId.get(row.live_unit_id)!;
                 const surfacedOps = surfacedOperatorsByUnitId.get(row.live_unit_id) ?? [];
@@ -1839,12 +1840,12 @@ export default function LiveUnitsClient({
                 const signalPopoverOpen = openSignalPopoverId === row.live_unit_id;
 
                 return (
-                  <Fragment key={row.live_unit_id}>
+                  <Fragment key={`${row.live_unit_id}-${rowIndex}`}>
                     <tr
-                      className={`min-h-[3.5rem] transition hover:bg-neutral-50 ${openEntityId === entityIdFor(row) ? "bg-sky-50" : ""}`}
+                      className={`min-h-[3.25rem] transition hover:bg-neutral-50 ${openEntityId === entityIdFor(row) ? "bg-sky-50" : ""}`}
                       onClick={() => setOpenEntityId(entityIdFor(row))}
                     >
-                      <td className="px-3 py-2 align-middle">
+                      <td className="w-9 px-2 py-1.5 align-middle">
                       <input
                         type="checkbox"
                         checked={selectedIds.includes(row.live_unit_id)}
@@ -1853,7 +1854,7 @@ export default function LiveUnitsClient({
                         aria-label={`Select ${row.name_display}`}
                       />
                     </td>
-                    <td className="w-[300px] px-3 py-2 align-middle font-medium text-neutral-900">
+                    <td className="min-w-[300px] w-[36%] px-2 py-1.5 align-middle font-medium text-neutral-900">
                       <div className="relative flex flex-wrap items-center gap-1.5">
                         <button
                           type="button"
@@ -1871,7 +1872,7 @@ export default function LiveUnitsClient({
                             event.stopPropagation();
                             setOpenEntityId(entityIdFor(row));
                           }}
-                          className="block min-w-0 max-w-[140px] flex-1 truncate text-left text-sm transition hover:text-sky-700 sm:max-w-[180px]"
+                          className="block min-w-0 flex-1 truncate text-left text-sm transition hover:text-sky-700"
                           title={row.name_display}
                         >
                           {row.name_display}
@@ -1931,14 +1932,14 @@ export default function LiveUnitsClient({
                           </div>
                         ) : null}
                       </div>
-                      <p className="mt-1 max-w-[288px] pl-5 text-[11px] leading-snug text-neutral-600 line-clamp-2">
+                      <p className="mt-1 pl-5 pr-1 text-[11px] leading-snug text-neutral-600 line-clamp-2">
                         {entityDisplay.operatorSummary}
                         {operatorAttachmentSuffix(surfacedOps.length)}
                         {entityDisplay.bookingPlatformHint ? (
                           <span className="mt-0.5 block text-teal-800">{entityDisplay.bookingPlatformHint}</span>
                         ) : null}
                       </p>
-                      <div className="mt-1 flex max-w-[288px] flex-wrap items-center gap-1 pl-5">
+                      <div className="mt-1 flex flex-wrap items-center gap-1 pl-5 pr-1">
                         <MultiServiceBadge isMultiService={rowSig.isMultiService} />
                         <ServiceSignalChips signals={rowSig.serviceSignals} />
                         <PlatformSignalBadges platformSignals={row.platformSignals} />
@@ -1948,20 +1949,27 @@ export default function LiveUnitsClient({
                     </td>
                     {liveUnitsMode === "work" ? (
                       <>
-                        <td className="px-2 py-2 align-middle whitespace-nowrap">
+                        <td className="w-[64px] px-1.5 py-1.5 align-middle whitespace-nowrap">
                           <WorkPriorityBadge priority={workState.priority} />
                         </td>
-                        <td className="px-2 py-2 align-middle whitespace-nowrap">
+                        <td className="w-[76px] px-1.5 py-1.5 align-middle whitespace-nowrap">
                           <WorkNextActionBadge action={workState.nextAction} />
                         </td>
                       </>
                     ) : null}
-                    <td className="px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{row.operational_category}</td>
-                    <td className="w-[120px] px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{getZoneName(row)}</td>
-                    <td className="w-[130px] px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">
+                    <td
+                      className="w-[92px] max-w-[92px] truncate px-2 py-1.5 align-middle text-xs text-neutral-700"
+                      title={row.operational_category}
+                    >
+                      {row.operational_category}
+                    </td>
+                    <td className="w-[88px] max-w-[88px] truncate px-2 py-1.5 align-middle text-xs text-neutral-700" title={getZoneName(row)}>
+                      {getZoneName(row)}
+                    </td>
+                    <td className="w-[108px] max-w-[108px] truncate px-2 py-1.5 align-middle text-xs text-neutral-700" title={`${row.city || ""} ${row.zip || ""}`}>
                       {(row.city || "-") + (row.zip ? ` ${row.zip}` : "")}
                     </td>
-                    <td className="w-[180px] px-3 py-2 align-middle text-neutral-700">
+                    <td className="w-[128px] max-w-[128px] px-2 py-1.5 align-middle text-neutral-700">
                       {row.shop_license_name ? (
                         <div className="truncate font-medium text-neutral-900" title={`${row.shop_license_name}${row.shop_license ? ` (${row.shop_license})` : ""}`}>
                           {row.shop_license_name}
@@ -1970,21 +1978,21 @@ export default function LiveUnitsClient({
                         "-"
                       )}
                     </td>
-                    <td className="px-3 py-2 align-middle text-neutral-700 whitespace-nowrap">{row.tech_count_nearby ?? 0}</td>
-                    <td className="px-3 py-2 align-middle whitespace-nowrap">
+                    <td className="w-11 px-1 py-1.5 text-center tabular-nums align-middle text-xs text-neutral-700">{row.tech_count_nearby ?? 0}</td>
+                    <td className="w-[72px] px-1.5 py-1.5 align-middle whitespace-nowrap">
                       <div className="flex flex-col gap-0.5">
-                        <span className={`inline-flex w-fit rounded-full px-2.5 py-1 text-xs font-semibold ${scoreBadgeClass(getEffectiveScore(row))}`}>
+                        <span className={`inline-flex w-fit rounded-full px-2 py-0.5 text-[11px] font-semibold ${scoreBadgeClass(getEffectiveScore(row))}`}>
                           {typeof row.tuned_entity_score === "number" ? row.tuned_entity_score : row.entity_score}
                         </span>
                       </div>
                     </td>
-                    <td className="px-3 py-2 align-middle whitespace-nowrap">
-                      <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${reviewBadgeClass(currentStatus)}`}>
+                    <td className="w-[100px] max-w-[100px] px-1.5 py-1.5 align-middle whitespace-nowrap">
+                      <span className={`inline-flex rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-tight ${reviewBadgeClass(currentStatus)}`}>
                         {formatReviewLabel(currentStatus)}
                       </span>
                     </td>
-                    <td className="w-[170px] px-3 py-2 align-middle">
-                      <div className="flex min-w-[180px] items-center gap-1.5">
+                    <td className="w-[152px] max-w-[152px] px-1.5 py-1.5 align-middle">
+                      <div className="flex min-w-0 items-center gap-1">
                         <select
                           value={currentReview?.review_status || ""}
                           onClick={(event) => event.stopPropagation()}
@@ -1996,7 +2004,7 @@ export default function LiveUnitsClient({
                             }
                           }}
                           disabled={isSaving}
-                          className="min-w-0 flex-1 rounded-lg border border-neutral-300 bg-white px-2 py-1 text-xs font-medium text-neutral-700 outline-none transition focus:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
+                          className="min-w-[108px] flex-1 rounded-md border border-neutral-300 bg-white px-1.5 py-1 text-xs font-medium text-neutral-700 outline-none transition focus:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
                           aria-label={`Review action for ${row.name_display}`}
                         >
                           <option value="">Set review</option>
@@ -2013,13 +2021,13 @@ export default function LiveUnitsClient({
                             void applyReviewAction([row.live_unit_id], "clear", "row");
                           }}
                           disabled={!!savingBulkAction}
-                          className="rounded-lg border border-neutral-300 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
+                          className="shrink-0 rounded-md border border-neutral-300 bg-white px-1.5 py-1 text-[11px] font-semibold text-neutral-700 transition hover:border-neutral-500 disabled:cursor-wait disabled:opacity-60"
                         >
                           Clear
                         </button>
                       </div>
                     </td>
-                    <td className="px-3 py-2 align-middle whitespace-nowrap">
+                    <td className="w-[68px] px-1.5 py-1.5 align-middle whitespace-nowrap">
                       <button
                         type="button"
                         onClick={(event) => {

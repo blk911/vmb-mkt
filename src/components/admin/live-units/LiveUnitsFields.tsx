@@ -19,7 +19,7 @@ export function FilterGrid({
     "4": "grid-cols-1 md:grid-cols-2",
   };
 
-  return <div className={cx("grid gap-3", map[cols])}>{children}</div>;
+  return <div className={cx("grid gap-2", map[cols])}>{children}</div>;
 }
 
 export function FilterField({
@@ -40,7 +40,7 @@ export function FilterField({
 
   return (
     <div className={cx("min-w-0", widthMap[width])}>
-      <label className="mb-1 block text-[11px] font-medium text-slate-500">
+      <label className="mb-0.5 block text-[11px] font-medium text-slate-500">
         {label}
       </label>
       {children}

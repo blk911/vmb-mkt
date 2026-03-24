@@ -26,6 +26,8 @@ type LiveUnitsShellProps = {
   primaryFilters?: React.ReactNode;
   categoryFilters?: React.ReactNode;
   geographyFilters?: React.ReactNode;
+  /** When true, Geography / Score starts collapsed (e.g. table Rows view — more room for results). */
+  geographyCollapsedDefault?: boolean;
   results: React.ReactNode;
 };
 
@@ -67,7 +69,7 @@ function SectionCard({
         className
       )}
     >
-      <summary className="flex cursor-pointer list-none items-center justify-between border-b border-slate-100 px-4 py-3">
+      <summary className="flex cursor-pointer list-none items-center justify-between border-b border-slate-100 px-3 py-2">
         <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
           {title}
         </h3>
@@ -76,7 +78,7 @@ function SectionCard({
           <span className="hidden group-open:inline">Close</span>
         </span>
       </summary>
-      <div className="p-4">{children}</div>
+      <div className="p-3">{children}</div>
     </details>
   );
 }
@@ -85,14 +87,14 @@ function MetricTile({ label, value, tone = "default" }: MetricCard) {
   return (
     <div
       className={cx(
-        "w-[16ch] rounded-xl border px-2.5 py-2 shadow-sm",
+        "w-[14ch] rounded-lg border px-2 py-1.5 shadow-sm",
         metricTone(tone)
       )}
     >
       <div className="text-[10px] font-semibold uppercase tracking-[0.12em] opacity-75">
         {label}
       </div>
-      <div className="mt-1 text-[22px] font-semibold leading-none tracking-tight">
+      <div className="mt-0.5 text-xl font-semibold leading-none tracking-tight">
         {value}
       </div>
     </div>
@@ -117,7 +119,7 @@ export default function LiveUnitsShell({
 }: LiveUnitsShellProps) {
   return (
     <div className="mx-auto w-full max-w-[1600px] px-4 pb-8 pt-5 md:px-6">
-      <div className="mb-5">
+      <div className="mb-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
@@ -134,14 +136,14 @@ export default function LiveUnitsShell({
         {diagnosticSlot ? <div className="mt-4">{diagnosticSlot}</div> : null}
       </div>
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(860px,1fr)_16ch]">
-        <div className={cx("space-y-4", collapseFilters && "hidden")} aria-hidden={collapseFilters}>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_15ch]">
+        <div className={cx("min-w-0 space-y-3", collapseFilters && "hidden")} aria-hidden={collapseFilters}>
           {(quickViews || bulkActions) && (
             <SectionCard title="Queue Controls">
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {quickViews ? (
                   <div>
-                    <div className="mb-2 text-xs font-medium text-slate-500">
+                    <div className="mb-1.5 text-xs font-medium text-slate-500">
                       Quick Views
                     </div>
                     <div className="flex flex-wrap gap-2">{quickViews}</div>
@@ -160,7 +162,7 @@ export default function LiveUnitsShell({
             </SectionCard>
           )}
 
-          <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-3">
+          <div className="grid grid-cols-1 items-start gap-3 xl:grid-cols-[minmax(0,1.12fr)_minmax(0,1.12fr)_minmax(0,0.82fr)]">
             {primaryFilters ? (
               <SectionCard title="Review Filters">{primaryFilters}</SectionCard>
             ) : null}
@@ -170,7 +172,9 @@ export default function LiveUnitsShell({
             ) : null}
 
             {geographyFilters ? (
-              <SectionCard title="Geography / Score">{geographyFilters}</SectionCard>
+              <SectionCard title="Geography / Score" defaultOpen={!geographyCollapsedDefault}>
+                {geographyFilters}
+              </SectionCard>
             ) : null}
           </div>
         </div>
@@ -196,7 +200,7 @@ export default function LiveUnitsShell({
         </aside>
       </div>
 
-      <div className="mt-5">
+      <div className="mt-4">
         <SectionCard title="Results">{results}</SectionCard>
       </div>
     </div>
