@@ -9,6 +9,7 @@ import type {
   ZonePotentialAnchor,
   ZoneUnresolvedCandidate,
 } from "./zone-build-ops-types";
+import { derivePotentialAnchorState, deriveUnresolvedCandidateState, derivePlatformSignalState } from "./zone-build-reason-logic";
 
 /** Runtime shape: approved JSON may include platformSignals / tech_count_nearby like Live Units UI. */
 export type ApprovedLiveUnitWithSignals = ApprovedLiveUnit & {
@@ -122,6 +123,7 @@ export function getZoneUnresolvedCandidates(
     hasInstagram: hasIg(m),
     hasBooking: hasBooking(m),
     serviceSignals: serviceSignalsFromMember(m),
+    derived: deriveUnresolvedCandidateState(m),
   }));
 }
 
@@ -155,6 +157,7 @@ export function getZonePotentialAnchors(
     techCountNearby: techNearbyProxy(m),
     hasStorefrontSignal: hasStorefrontSignal(m),
     hasBooking: hasBooking(m),
+    derived: derivePotentialAnchorState(m),
   }));
 }
 
@@ -183,17 +186,36 @@ export function getZonePlatformSignals(
   const items: ZonePlatformSignalItem[] = [];
   const seen = new Set<string>();
 
-  const push = (id: string, name: string, platform: string, isBookable: boolean) => {
+  const push = (
+    id: string,
+    name: string,
+    platform: string,
+    isBookable: boolean,
+    source: ZonePlatformSignalItem["source"]
+  ) => {
     const key = `${id}::${platform.toLowerCase()}`;
     if (seen.has(key)) return;
     seen.add(key);
-    items.push({ id, name, platform, isBookable });
+    items.push({
+      id,
+      name,
+      platform,
+      isBookable,
+      source,
+      derived: derivePlatformSignalState({ source, isBookable }),
+    });
   };
 
   for (const m of inZone(members, zoneId)) {
     const p = memberBookingPlatform(m);
     if (p) {
-      push(m.location_id, m.name, p, !!(m.booking_url?.trim() || m.path_enrichment_booking_url?.trim()));
+      push(
+        m.location_id,
+        m.name,
+        p,
+        !!(m.booking_url?.trim() || m.path_enrichment_booking_url?.trim()),
+        "member"
+      );
     }
   }
 
@@ -203,7 +225,7 @@ export function getZonePlatformSignals(
     if (!ps) continue;
     for (const [platformKey, sig] of Object.entries(ps) as [keyof PlatformSignalsRecord, { isBookable?: boolean } | undefined][]) {
       if (!sig) continue;
-      push(u.live_unit_id, u.name_display, String(platformKey), !!sig.isBookable);
+      push(u.live_unit_id, u.name_display, String(platformKey), !!sig.isBookable, "live_unit");
     }
   }
 

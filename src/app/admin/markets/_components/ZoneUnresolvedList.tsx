@@ -4,6 +4,8 @@ import Link from "next/link";
 import type { ZoneUnresolvedCandidate } from "@/lib/markets/zone-build-ops-types";
 import type { MarketsUrlState } from "@/app/admin/markets/_lib/marketsUrlState";
 import { buildMemberDetailPath, buildSalesTargetPath } from "@/app/admin/markets/_lib/marketsUrlState";
+import BuildReasonTags from "./BuildReasonTags";
+import BuildStateBadge from "./BuildStateBadge";
 
 type Props = {
   items: ZoneUnresolvedCandidate[];
@@ -20,9 +22,13 @@ export default function ZoneUnresolvedList({ items, marketsUrlState }: Props) {
       {items.map((item) => (
         <li key={item.id} className="flex flex-wrap items-start gap-2 py-2 first:pt-0 last:pb-0">
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-medium text-neutral-900" title={item.name}>
-              {item.name}
-            </p>
+            <div className="flex flex-wrap items-start gap-1.5">
+              <p className="min-w-0 flex-1 truncate text-xs font-medium text-neutral-900" title={item.name}>
+                {item.name}
+              </p>
+              <BuildStateBadge state={item.derived.workflowState} />
+            </div>
+            <BuildReasonTags tags={item.derived.reasonTags} className="mt-1" />
             {item.entityKind ? (
               <p className="mt-0.5 text-[10px] text-neutral-500">{item.entityKind}</p>
             ) : null}
@@ -42,6 +48,9 @@ export default function ZoneUnresolvedList({ items, marketsUrlState }: Props) {
               <span className="text-neutral-300">·</span>
               <span title="Booking">{item.hasBooking ? "Book" : "— Book"}</span>
             </div>
+            {item.derived.nextActionLabel ? (
+              <p className="mt-1 text-[10px] text-neutral-500">{item.derived.nextActionLabel}</p>
+            ) : null}
           </div>
           <div className="flex shrink-0 flex-col gap-1">
             <Link

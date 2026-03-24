@@ -1,6 +1,7 @@
 /**
  * Structured outputs for Build Mode operational sections (zone-scoped queues).
  */
+import type { DerivedBuildItemState } from "./zone-build-reason-types";
 
 export interface ZoneUnresolvedCandidate {
   id: string;
@@ -11,6 +12,7 @@ export interface ZoneUnresolvedCandidate {
   hasInstagram?: boolean;
   hasBooking?: boolean;
   serviceSignals?: string[];
+  derived: DerivedBuildItemState;
 }
 
 export interface ZonePotentialAnchor {
@@ -19,6 +21,7 @@ export interface ZonePotentialAnchor {
   techCountNearby?: number;
   hasStorefrontSignal?: boolean;
   hasBooking?: boolean;
+  derived: DerivedBuildItemState;
 }
 
 export interface ZonePlatformSignalItem {
@@ -26,6 +29,9 @@ export interface ZonePlatformSignalItem {
   name: string;
   platform: string;
   isBookable: boolean;
+  /** Member stitched row vs approved live unit platformSignals row. */
+  source: "member" | "live_unit";
+  derived: DerivedBuildItemState;
 }
 
 export interface ZoneBuildOpsData {
