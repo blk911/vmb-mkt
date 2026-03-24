@@ -16,6 +16,9 @@ export type LiveUnitsLoadAttempt = {
   rawRowsInFile: number;
 };
 
+/** Outcome for operator-facing trace (HTTP may be 200 OK but `rows` empty). */
+export type LiveUnitsRemoteOutcome = "ok" | "empty" | "failed" | "timeout";
+
 export type LiveUnitsRemoteAttempt = {
   kind: "http" | "firestore";
   /** Sanitized target (URL without query / collection path) */
@@ -24,6 +27,8 @@ export type LiveUnitsRemoteAttempt = {
   rowCount?: number;
   error?: string;
   httpStatus?: number;
+  /** Set for HTTP attempts — distinguishes 200+0 rows vs network/parse failure vs timeout. */
+  outcome?: LiveUnitsRemoteOutcome;
 };
 
 export type LiveUnitsLoadTrace = {

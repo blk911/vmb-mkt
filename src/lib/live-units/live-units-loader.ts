@@ -1,10 +1,14 @@
 /**
- * Loads Live Units data for server render:
- * 1) Optional HTTP JSON (`LIVE_UNITS_JSON_URL`)
- * 2) Optional Firestore document (`LIVE_UNITS_FIRESTORE_*`)
- * 3) Local JSON artifact cascade (shop_context → tuned → base), unless disabled
+ * Loads Live Units data for server render (single hydrated `rows` array for page + Queue Snapshot + all modes).
  *
- * `LIVE_UNITS_FORCE_ARTIFACT_FIRST=1` — try files before remote (local dev).
+ * Priority (unless `LIVE_UNITS_FORCE_ARTIFACT_FIRST=1`):
+ * 1. Remote JSON — `LIVE_UNITS_JSON_URL` (+ optional `LIVE_UNITS_JSON_BEARER_TOKEN`, `LIVE_UNITS_JSON_AUTH_HEADER`, `LIVE_UNITS_FETCH_TIMEOUT_MS`)
+ * 2. Firestore — `LIVE_UNITS_FIRESTORE_COLLECTION` + `LIVE_UNITS_FIRESTORE_DOC_ID`, or `LIVE_UNITS_FIRESTORE_DOC_PATH` as `collection/doc` (requires `FIREBASE_PROJECT_ID` / admin SDK)
+ * 3. Artifact cascade — `data/markets/` → shop_context → tuned → base (unless `LIVE_UNITS_DISABLE_ARTIFACT=1`)
+ *
+ * `LIVE_UNITS_FORCE_ARTIFACT_FIRST=1` — try artifacts first; if empty, continue with remote + Firestore + artifacts again.
+ *
+ * Expected JSON shape (remote or file): `{ "rows": [ ... ] }`
  */
 import "server-only";
 import { existsSync, readFileSync } from "node:fs";
@@ -218,6 +222,7 @@ export async function loadLiveUnitsWithTrace(): Promise<LoadedLiveUnitsPayload> 
       rowCount: result.rowCount,
       error: result.error,
       httpStatus: result.status,
+      outcome: result.outcome,
     });
     if (result.ok && rows.length > 0) {
       return finalize(rows, {
@@ -248,6 +253,7 @@ export async function loadLiveUnitsWithTrace(): Promise<LoadedLiveUnitsPayload> 
       ok: fs.ok,
       rowCount: fs.rows.length,
       error: fs.error,
+      outcome: !fs.ok ? "failed" : fs.rows.length > 0 ? "ok" : "empty",
     });
     if (fs.ok && fs.rows.length > 0) {
       return finalize(fs.rows, {

@@ -1,7 +1,14 @@
 /**
  * Production-oriented remote loaders for Live Units (HTTP JSON, Firestore doc).
+ *
+ * Env (HTTP):
+ * - LIVE_UNITS_JSON_URL — HTTPS JSON; body shape `{ rows: [...] }`
+ * - LIVE_UNITS_JSON_BEARER_TOKEN — optional Authorization: Bearer …
+ * - LIVE_UNITS_JSON_AUTH_HEADER — optional "Header-Name: value"
+ * - LIVE_UNITS_FETCH_TIMEOUT_MS — optional (default 30000). Fetch uses cache: no-store + AbortSignal.
  */
 import "server-only";
+import type { LiveUnitsRemoteOutcome } from "./live-units-debug-types";
 import { extractRowsArray } from "./live-units-parse";
 
 export type HttpLoadResult = {
@@ -10,6 +17,7 @@ export type HttpLoadResult = {
   rowCount: number;
   error?: string;
   sanitizedUrl: string;
+  outcome: LiveUnitsRemoteOutcome;
 };
 
 export function sanitizeUrlForTrace(url: string): string {
@@ -45,10 +53,18 @@ export async function loadRowsFromHttpJsonUrl(url: string): Promise<{
     }
   }
 
+  const timeoutMs = Math.max(
+    1000,
+    Math.min(120_000, parseInt(process.env.LIVE_UNITS_FETCH_TIMEOUT_MS || "30000", 10) || 30000)
+  );
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
     const res = await fetch(url, {
       headers,
       cache: "no-store",
+      signal: controller.signal,
     });
     const text = await res.text();
     if (!res.ok) {
@@ -60,6 +76,7 @@ export async function loadRowsFromHttpJsonUrl(url: string): Promise<{
           rowCount: 0,
           error: `HTTP ${res.status}`,
           sanitizedUrl,
+          outcome: "failed",
         },
       };
     }
@@ -75,10 +92,12 @@ export async function loadRowsFromHttpJsonUrl(url: string): Promise<{
           rowCount: 0,
           error: `JSON parse: ${msg}`,
           sanitizedUrl,
+          outcome: "failed",
         },
       };
     }
     const rows = extractRowsArray(parsed);
+    const outcome: LiveUnitsRemoteOutcome = rows.length > 0 ? "ok" : "empty";
     return {
       rows,
       result: {
@@ -86,19 +105,26 @@ export async function loadRowsFromHttpJsonUrl(url: string): Promise<{
         status: res.status,
         rowCount: rows.length,
         sanitizedUrl,
+        outcome,
       },
     };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+    const isAbort =
+      (e instanceof Error && (e.name === "AbortError" || /aborted/i.test(msg))) ||
+      msg.toLowerCase().includes("abort");
     return {
       rows: [],
       result: {
         ok: false,
         rowCount: 0,
-        error: msg,
+        error: isAbort ? `timeout after ${timeoutMs}ms` : msg,
         sanitizedUrl,
+        outcome: isAbort ? "timeout" : "failed",
       },
     };
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

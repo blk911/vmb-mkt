@@ -15,7 +15,9 @@ export function formatRemoteAttemptsSummary(trace: LiveUnitsLoadTrace): string {
     .map((a) => {
       const n = typeof a.rowCount === "number" ? `${a.rowCount}` : "?";
       const err = a.error ? ` err=${a.error}` : "";
-      return `${a.kind}:${a.label} ok=${a.ok} rows=${n}${err}`;
+      const oc = a.outcome ? ` outcome=${a.outcome}` : "";
+      const st = a.httpStatus != null ? ` http=${a.httpStatus}` : "";
+      return `${a.kind}:${a.label} ok=${a.ok} rows=${n}${st}${oc}${err}`;
     })
     .join(" · ");
 }
@@ -40,6 +42,19 @@ export function explainEmptyDataset(trace: LiveUnitsLoadTrace): string | null {
     const fs = trace.remoteAttempts.find((r) => r.kind === "firestore");
     if (fs?.error) return `Firestore source failed: ${fs.error}`;
     return "Firestore document had no rows — check LIVE_UNITS_FIRESTORE_* env and document shape `{ rows: [...] }`.";
+  }
+  if (trace.sourceMode === "none") {
+    const http = trace.remoteAttempts.find((r) => r.kind === "http");
+    if (http?.outcome === "empty" || (http?.ok && (http.rowCount ?? 0) === 0)) {
+      return "Remote JSON responded OK but `{ rows: [] }` or missing `rows`, and no artifact fallback produced rows. Set LIVE_UNITS_JSON_URL to a valid payload or use artifact files.";
+    }
+    if (http?.outcome === "timeout" || (http?.error && /timeout/i.test(http.error))) {
+      return `Remote JSON timed out (${http.error ?? "timeout"}). Increase LIVE_UNITS_FETCH_TIMEOUT_MS or check URL availability.`;
+    }
+    if (http?.error) {
+      return `Remote JSON failed: ${http.error}. No artifact fallback produced rows.`;
+    }
+    return "No remote Live Units source produced rows and no artifact fallback was available. Configure LIVE_UNITS_JSON_URL (or Firestore), or deploy data/markets/*.json, or unset LIVE_UNITS_DISABLE_ARTIFACT.";
   }
   const anyFile = trace.attempts.some((a) => a.fileExists);
   if (!anyFile) {
