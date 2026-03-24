@@ -27,11 +27,17 @@ function pickTags(tags: BuildReasonTag[], max = 4): BuildReasonTag[] {
   return out;
 }
 
-/** Salon-like density cue (aligned with zone-build-ops anchor heuristic). */
+/**
+ * Salon-like density cue — mirrors `isSalonOrMixedEntity` in `zone-build-ops-logic.ts`
+ * so `anchor_like` tags match entities that qualify for potential anchors.
+ */
 function isSalonLike(m: EnrichedBeautyZoneMember): boolean {
   const cat = (m.category || "").toLowerCase();
+  const sub = (m.subtype || "").toLowerCase();
   const cr = (m.category_raw || "").toLowerCase();
-  if (["hair", "nail", "esthe", "barber", "spa", "beauty"].includes(cat)) return true;
+  const salonLike = ["hair", "nail", "esthe", "barber", "spa", "beauty"].includes(cat);
+  if (salonLike) return true;
+  if (sub === "mixed" || cat === "mixed") return true;
   if (cr.includes("salon") || cr.includes("barber") || cr.includes("nail") || cr.includes("spa")) return true;
   return false;
 }
