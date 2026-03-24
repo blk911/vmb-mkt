@@ -252,6 +252,20 @@ function defaultSortDirForKey(key: SortKey): ColumnSortDir {
   if (key === "review_status") return "desc";
   return "asc";
 }
+
+function scoreLayerShortLabel(layer: ScoreLayerFilter): string {
+  switch (layer) {
+    case "high_confidence":
+      return "≥70";
+    case "expansion":
+      return "60–69";
+    case "all":
+      return "All scores";
+    default:
+      return String(layer);
+  }
+}
+
 const SUBTYPE_OPTIONS: Array<{ value: SubtypeFilter; label: string }> = [
   { value: "all", label: "All subtypes" },
   { value: "storefront", label: "Storefront" },
@@ -610,6 +624,17 @@ export default function LiveUnitsClient({
     }
     return m;
   }, [rows]);
+
+  /** Rows after score-layer filter only (no page filters) — “Layer” scope. */
+  const layerScopedRows = useMemo(() => {
+    const layerScoreForRow = (row: LiveUnitRow) => {
+      const ed = entityDisplayByUnitId.get(row.live_unit_id);
+      const ops = surfacedOperatorsByUnitId.get(row.live_unit_id) ?? [];
+      if (!ed) return getEffectiveScore(row);
+      return getFeedbackAdjustedScoreForLayer(row, ed, ops);
+    };
+    return rows.filter((row) => matchesScoreLayer(layerScoreForRow(row), scoreLayerFilter));
+  }, [rows, scoreLayerFilter, entityDisplayByUnitId, surfacedOperatorsByUnitId]);
 
   const filteredRows = useMemo(() => {
     const zipFilterActive = zipQuery.trim().length > 0;
@@ -1318,6 +1343,28 @@ export default function LiveUnitsClient({
           <LiveUnitsDebugStrip trace={loadTrace} hydratedRowCount={rows.length} visibleRowCount={displayRows.length} />
         }
         collapseFilters={liveUnitsMode === "work"}
+        resultsScopeSummary={
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-slate-200 bg-slate-50/90 px-3 py-2 text-[12px] text-slate-700">
+            <span className="font-semibold text-slate-900">Counts by scope</span>
+            <span title="All hydrated rows from the loaded file (before score layer and filters)">
+              <span className="text-slate-500">Dataset:</span>{" "}
+              <span className="tabular-nums font-semibold text-slate-900">{rows.length}</span>
+            </span>
+            <span title="After High Confidence / Expansion / All layer only">
+              <span className="text-slate-500">Layer ({scoreLayerShortLabel(scoreLayerFilter)}):</span>{" "}
+              <span className="tabular-nums font-semibold text-slate-900">{layerScopedRows.length}</span>
+            </span>
+            <span title="Rows currently shown in the table (layer + all active filters + work preset rules)">
+              <span className="text-slate-500">Visible:</span>{" "}
+              <span className="tabular-nums font-semibold text-slate-900">{displayRows.length}</span>
+            </span>
+          </div>
+        }
+        currentScopeSnapshot={{
+          layerLabel: scoreLayerShortLabel(scoreLayerFilter),
+          layerCount: layerScopedRows.length,
+          visibleCount: displayRows.length,
+        }}
         badges={
           <>
             <span
@@ -1750,8 +1797,8 @@ export default function LiveUnitsClient({
                 ) : (
                   <span>
                     {viewMode === "clusters"
-                      ? `${salonClusters.length} clusters · ${displayRows.length} rows in scope`
-                      : `Showing ${displayRows.length} rows`}
+                      ? `${salonClusters.length} clusters · ${displayRows.length} rows (visible scope)`
+                      : `Visible: ${displayRows.length} rows`}
                   </span>
                 )}
                 <label className="inline-flex items-center gap-2">

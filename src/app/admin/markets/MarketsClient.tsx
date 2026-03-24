@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import MarketZoneFilters from "@/components/admin/MarketZoneFilters";
-import { compareZoneIdsForDisplay, getZoneDisplayLabel, getZoneMaturity } from "@/lib/geo/target-zones";
+import { compareZoneIdsForDisplay, getZoneDisplayLabel, getZoneMaturity, normalizeZoneId } from "@/lib/geo/target-zones";
 import { ClusterEvidencePanel } from "@/components/admin/ClusterEvidencePanel";
 import { GrayResolutionBadge } from "@/components/admin/GrayResolution";
 import { PathEnrichmentBadge } from "@/components/admin/PathEnrichment";
@@ -31,6 +31,11 @@ import { deriveZoneBuildSummary } from "@/lib/markets/zone-build-logic";
 import ZoneBuildModePanel from "@/app/admin/markets/_components/ZoneBuildModePanel";
 import ZoneMaturityBadge from "@/app/admin/markets/_components/ZoneMaturityBadge";
 import { deriveZoneOpsSummaries, filterMembersByWorkPreset, getZoneOpsSummaryForId } from "@/lib/markets/zone-ops-logic";
+import type { LiveUnitRowForTrace } from "@/lib/markets/zone-population-trace-logic";
+import { buildZonePopulationTraces } from "@/lib/markets/zone-population-trace-logic";
+import ZonePopulationTracePanel from "@/app/admin/markets/_components/ZonePopulationTracePanel";
+import ZoneRepairPanel from "@/app/admin/markets/_components/ZoneRepairPanel";
+import { deriveZoneRepairResult } from "@/lib/markets/zone-repair-logic";
 import type { MarketsWorkPreset } from "@/lib/markets/zone-ops-types";
 import ZoneOpsStats from "@/app/admin/markets/_components/ZoneOpsStats";
 import ZoneWorkPacketHeader from "@/app/admin/markets/_components/ZoneWorkPacketHeader";
@@ -227,6 +232,8 @@ type Props = {
   members: EnrichedBeautyZoneMember[];
   clusters: BeautyZoneCluster[];
   approvedLiveUnits: ApprovedLiveUnit[];
+  /** Same Live Units dataset as the admin queue — for Quebec / Westminster / Lafayette diagnostics. */
+  liveUnitRowsForTrace: LiveUnitRowForTrace[];
   initialUrlState: MarketsUrlState;
 };
 
@@ -236,6 +243,7 @@ export default function MarketsClient({
   members,
   clusters,
   approvedLiveUnits,
+  liveUnitRowsForTrace,
   initialUrlState,
 }: Props) {
   const [filters, setFilters] = useState({
@@ -340,6 +348,31 @@ export default function MarketsClient({
   }, [members]);
 
   const zoneOpsSummaries = useMemo(() => deriveZoneOpsSummaries(members, clusters, zones), [members, clusters, zones]);
+
+  const zonePopulationTraces = useMemo(
+    () =>
+      buildZonePopulationTraces({
+        liveUnitRows: liveUnitRowsForTrace,
+        members,
+        approvedLiveUnits,
+        zoneSummaries: zoneOpsSummaries,
+      }),
+    [liveUnitRowsForTrace, members, approvedLiveUnits, zoneOpsSummaries]
+  );
+
+  const selectedZonePopulationTrace = useMemo(() => {
+    if (filters.zoneId === "ALL") return undefined;
+    return zonePopulationTraces.find(
+      (t) =>
+        normalizeZoneId(t.zoneId) === normalizeZoneId(filters.zoneId) ||
+        normalizeZoneId(t.zoneCanonicalId) === normalizeZoneId(filters.zoneId)
+    );
+  }, [zonePopulationTraces, filters.zoneId]);
+
+  const selectedZoneRepair = useMemo(() => {
+    if (!selectedZonePopulationTrace) return null;
+    return deriveZoneRepairResult(selectedZonePopulationTrace);
+  }, [selectedZonePopulationTrace]);
 
   const selectedZone = useMemo(
     () => (filters.zoneId === "ALL" ? undefined : zones.find((z) => z.zone_id === filters.zoneId)),
@@ -565,6 +598,10 @@ export default function MarketsClient({
         initialZoneId={filters.zoneId}
         onChange={handleZoneFiltersChange}
       />
+
+      <ZonePopulationTracePanel traces={zonePopulationTraces} selectedMarketZoneId={filters.zoneId} />
+
+      {selectedZoneRepair ? <ZoneRepairPanel repair={selectedZoneRepair} /> : null}
 
       {selectedZone && selectedZoneBuildSummary && selectedZoneMaturity != null ? (
         pageMode === "build" ? (

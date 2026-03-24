@@ -28,6 +28,18 @@ type LiveUnitsShellProps = {
   geographyFilters?: React.ReactNode;
   /** When true, Geography / Score starts collapsed (e.g. table Rows view — more room for results). */
   geographyCollapsedDefault?: boolean;
+  /** Right-rail title — metrics are full-file dataset totals, not the filtered table. */
+  queueSnapshotTitle?: string;
+  /** Short hint under the snapshot title (scope clarity). */
+  queueSnapshotHint?: string;
+  /** Current score-layer count and visible table count (optional second block in the rail). */
+  currentScopeSnapshot?: {
+    layerLabel: string;
+    layerCount: number;
+    visibleCount: number;
+  };
+  /** Shown inside the Results card above the table (e.g. Dataset / Layer / Visible). */
+  resultsScopeSummary?: React.ReactNode;
   results: React.ReactNode;
 };
 
@@ -116,6 +128,10 @@ export default function LiveUnitsShell({
   categoryFilters,
   geographyFilters,
   geographyCollapsedDefault = false,
+  queueSnapshotTitle = "Full dataset snapshot",
+  queueSnapshotHint = "Full-file review totals — not limited to the current score layer or table filters.",
+  currentScopeSnapshot,
+  resultsScopeSummary,
   results,
 }: LiveUnitsShellProps) {
   return (
@@ -186,23 +202,46 @@ export default function LiveUnitsShell({
             collapseFilters && "xl:col-span-2 xl:max-w-sm xl:justify-self-start"
           )}
         >
-          <SectionCard title="Queue Snapshot">
-            <div className="flex flex-col gap-2">
-              {metrics.map((metric) => (
-                <MetricTile
-                  key={metric.label}
-                  label={metric.label}
-                  value={metric.value}
-                  tone={metric.tone}
-                />
-              ))}
+          <SectionCard title={queueSnapshotTitle}>
+            <div className="space-y-2">
+              <p className="text-[10px] leading-snug text-slate-500">{queueSnapshotHint}</p>
+              <div className="flex flex-col gap-2">
+                {metrics.map((metric) => (
+                  <MetricTile
+                    key={metric.label}
+                    label={metric.label}
+                    value={metric.value}
+                    tone={metric.tone}
+                  />
+                ))}
+              </div>
+              {currentScopeSnapshot ? (
+                <div className="rounded-lg border border-sky-200 bg-sky-50/60 px-2 py-2">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.1em] text-sky-900">
+                    Current scope
+                  </div>
+                  <dl className="mt-1 space-y-0.5 text-[11px] text-sky-950">
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-sky-800/90">Layer ({currentScopeSnapshot.layerLabel})</dt>
+                      <dd className="tabular-nums font-semibold">{currentScopeSnapshot.layerCount}</dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-sky-800/90">Visible table</dt>
+                      <dd className="tabular-nums font-semibold">{currentScopeSnapshot.visibleCount}</dd>
+                    </div>
+                  </dl>
+                </div>
+              ) : null}
             </div>
           </SectionCard>
         </aside>
       </div>
 
       <div className="mt-4">
-        <SectionCard title="Results">{results}</SectionCard>
+        <SectionCard title="Results">
+          {resultsScopeSummary ? <div className="mb-3">{resultsScopeSummary}</div> : null}
+          {results}
+        </SectionCard>
       </div>
     </div>
   );
