@@ -1,8 +1,8 @@
 "use client";
 
 import type { ZonePlatformSignalItem } from "@/lib/markets/zone-build-ops-types";
+import WorkflowStateBadge from "@/components/admin/shared/WorkflowStateBadge";
 import BuildReasonTags from "./BuildReasonTags";
-import BuildStateBadge from "./BuildStateBadge";
 
 type Props = {
   items: ZonePlatformSignalItem[];
@@ -25,7 +25,7 @@ export default function ZonePlatformList({ items }: Props) {
               <p className="min-w-0 flex-1 truncate text-xs font-medium text-neutral-900" title={item.name}>
                 {item.name}
               </p>
-              <BuildStateBadge state={item.derived.workflowState} />
+              <WorkflowStateBadge state={item.derived.workflowState} title={item.derived.workflowReason ?? undefined} />
             </div>
             <BuildReasonTags tags={item.derived.reasonTags} className="mt-1" />
             <div className="mt-1 flex flex-wrap items-center gap-1.5">

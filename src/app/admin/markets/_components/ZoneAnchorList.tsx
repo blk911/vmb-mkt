@@ -4,8 +4,8 @@ import Link from "next/link";
 import type { ZonePotentialAnchor } from "@/lib/markets/zone-build-ops-types";
 import type { MarketsUrlState } from "@/app/admin/markets/_lib/marketsUrlState";
 import { buildMemberDetailPath, buildSalesTargetPath } from "@/app/admin/markets/_lib/marketsUrlState";
+import WorkflowStateBadge from "@/components/admin/shared/WorkflowStateBadge";
 import BuildReasonTags from "./BuildReasonTags";
-import BuildStateBadge from "./BuildStateBadge";
 
 type Props = {
   items: ZonePotentialAnchor[];
@@ -26,7 +26,7 @@ export default function ZoneAnchorList({ items, marketsUrlState }: Props) {
               <p className="min-w-0 flex-1 truncate text-xs font-medium text-neutral-900" title={item.name}>
                 {item.name}
               </p>
-              <BuildStateBadge state={item.derived.workflowState} />
+              <WorkflowStateBadge state={item.derived.workflowState} title={item.derived.workflowReason ?? undefined} />
             </div>
             <BuildReasonTags tags={item.derived.reasonTags} className="mt-1" />
             <p className="mt-1 text-[10px] text-neutral-600">

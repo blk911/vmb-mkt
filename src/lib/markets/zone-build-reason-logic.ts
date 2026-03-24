@@ -2,7 +2,12 @@
  * Deterministic reason tags + workflow labels for Build Mode rows (uses existing member/live-unit fields only).
  */
 import type { EnrichedBeautyZoneMember } from "@/lib/markets";
-import type { BuildReasonTag, BuildWorkflowState, DerivedBuildItemState } from "./zone-build-reason-types";
+import {
+  deriveWorkflowStateFromMarketMember,
+  deriveWorkflowStateFromPlatformBuildContext,
+} from "@/lib/workflow/workflow-state-logic";
+import type { WorkflowState } from "@/lib/workflow/workflow-state-types";
+import type { BuildReasonTag, DerivedBuildItemState } from "./zone-build-reason-types";
 
 const NEEDS_REVIEW_MIN = 40;
 const NEEDS_REVIEW_MAX = 69;
@@ -54,16 +59,7 @@ function hasStorefrontSignal(m: EnrichedBeautyZoneMember): boolean {
   return false;
 }
 
-function memberWorkflowState(m: EnrichedBeautyZoneMember): BuildWorkflowState {
-  if (m.is_anchor) return "promoted";
-  const grayOk = m.gray_resolution_matched === true;
-  const pathOk = m.path_enrichment_matched === true;
-  if (grayOk || pathOk) return "reviewed";
-  if (hasBooking(m) && hasIg(m)) return "bookable";
-  return "unreviewed";
-}
-
-function nextActionForUnresolved(m: EnrichedBeautyZoneMember, state: BuildWorkflowState): string | null {
+function nextActionForUnresolved(m: EnrichedBeautyZoneMember, state: WorkflowState): string | null {
   if (state === "promoted") return "In roster as anchor";
   if (state === "reviewed") return "Promote or refine";
   if (m.gray_resolution_matched === false) return "Review first";
@@ -86,15 +82,16 @@ export function deriveUnresolvedCandidateState(m: EnrichedBeautyZoneMember): Der
   if ((m.priority_score ?? 0) < 4) tags.push("low_signal");
   if (tags.length === 0) tags.push("needs_review");
 
-  const workflowState = memberWorkflowState(m);
+  const wf = deriveWorkflowStateFromMarketMember(m);
   return {
     reasonTags: pickTags(tags),
-    workflowState,
-    nextActionLabel: nextActionForUnresolved(m, workflowState),
+    workflowState: wf.state,
+    workflowReason: wf.reason,
+    nextActionLabel: nextActionForUnresolved(m, wf.state),
   };
 }
 
-function nextActionForAnchor(m: EnrichedBeautyZoneMember, state: BuildWorkflowState): string | null {
+function nextActionForAnchor(m: EnrichedBeautyZoneMember, state: WorkflowState): string | null {
   if (state === "promoted") return "Already anchor";
   if (hasBooking(m) && hasStorefrontSignal(m)) return "Confirm anchor role";
   return "Review candidate";
@@ -111,12 +108,12 @@ export function derivePotentialAnchorState(m: EnrichedBeautyZoneMember): Derived
   if (isSalonLike(m) && techNearbyProxy(m) > 1) tags.push("anchor_like");
   if (tags.length === 0) tags.push("anchor_like");
 
-  const workflowState = memberWorkflowState(m);
-
+  const wf = deriveWorkflowStateFromMarketMember(m);
   return {
     reasonTags: pickTags(tags),
-    workflowState,
-    nextActionLabel: nextActionForAnchor(m, workflowState),
+    workflowState: wf.state,
+    workflowReason: wf.reason,
+    nextActionLabel: nextActionForAnchor(m, wf.state),
   };
 }
 
@@ -133,19 +130,17 @@ export function derivePlatformSignalState(ctx: PlatformSignalContext): DerivedBu
   if (ctx.source === "live_unit") tags.push("matched_live_unit");
   if (ctx.isBookable) tags.push("bookable");
 
-  let workflowState: BuildWorkflowState = "unknown";
-  if (ctx.source === "live_unit") workflowState = "linked";
-  else if (ctx.isBookable) workflowState = "bookable";
-  else workflowState = "unreviewed";
+  const wf = deriveWorkflowStateFromPlatformBuildContext(ctx);
 
   let nextActionLabel: string | null = null;
-  if (workflowState === "linked") nextActionLabel = "Open in Live Units";
-  else if (workflowState === "bookable") nextActionLabel = "Verify booking path";
+  if (wf.state === "linked") nextActionLabel = "Open in Live Units";
+  else if (wf.state === "bookable") nextActionLabel = "Verify booking path";
   else nextActionLabel = "Enrich listing";
 
   return {
     reasonTags: pickTags(tags),
-    workflowState,
+    workflowState: wf.state,
+    workflowReason: wf.reason,
     nextActionLabel,
   };
 }

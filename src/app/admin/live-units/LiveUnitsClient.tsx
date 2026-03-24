@@ -38,6 +38,8 @@ import {
 } from "@/lib/live-units/service-signal-logic";
 import { deriveEntityDisplayStateForRow } from "@/lib/live-units/entity-display-logic";
 import { getSurfacedOperatorsForBusinessId, operatorAttachmentSuffix } from "@/lib/live-units/operator-extraction-logic";
+import WorkflowStateBadge from "@/components/admin/shared/WorkflowStateBadge";
+import { deriveWorkflowStateFromLiveUnit } from "@/lib/workflow/workflow-state-logic";
 import EntityKindBadge from "@/app/admin/live-units/_components/EntityKindBadge";
 import EntryOptionChips from "@/app/admin/live-units/_components/EntryOptionChips";
 import RelationshipHintBadge from "@/app/admin/live-units/_components/RelationshipHintBadge";
@@ -1828,6 +1830,7 @@ export default function LiveUnitsClient({
                 const surfacedOps = surfacedOperatorsByUnitId.get(row.live_unit_id) ?? [];
                 const currentReview = reviewState[row.live_unit_id];
                 const currentStatus = currentReview?.review_status || "unreviewed";
+                const workflowDerived = deriveWorkflowStateFromLiveUnit(row, currentStatus);
                 const isSaving = savingLiveUnitId === row.live_unit_id;
                 const signalStatus = signalStatusFor(row, currentReview);
                 const workState = deriveWorkStateForRow(row, currentReview?.review_status, workPresetId);
@@ -1874,6 +1877,10 @@ export default function LiveUnitsClient({
                           {row.name_display}
                         </button>
                         <EntityKindBadge label={entityDisplay.liveLabel} />
+                        <WorkflowStateBadge
+                          state={workflowDerived.state}
+                          title={workflowDerived.reason ?? undefined}
+                        />
                         {surfacedOps.length > 0 ? (
                           <span className="shrink-0 text-[10px] font-semibold text-slate-600" title="Validated providers (Tier A)">
                             Ops: {surfacedOps.length}

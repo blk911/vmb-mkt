@@ -99,8 +99,8 @@ export default function ZoneBuildModePanel({
       </div>
 
       <p className="mt-2 text-[10px] leading-snug text-neutral-500">
-        <span className="font-semibold text-neutral-600">State</span> badge = current position in stitched data ·{" "}
-        <span className="font-semibold text-neutral-600">Tags</span> = why this row appears in the section (max 4).
+        <span className="font-semibold text-neutral-600">State</span> badge = shared workflow position (Markets + Live Units,
+        same labels) · <span className="font-semibold text-neutral-600">Tags</span> = why this row appears here (max 4).
       </p>
 
       <ZoneBuildSection title="Unresolved candidates" count={opsData.unresolved.length}>
