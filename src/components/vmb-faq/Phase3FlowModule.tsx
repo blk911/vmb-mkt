@@ -19,16 +19,21 @@ const CLOSING_STEP = TOTAL_SALON_STEPS;
 const HOLD_STEP = TOTAL_SALON_STEPS + 1;
 const RESET_STEP = TOTAL_SALON_STEPS + 2;
 
+/** Extra ms per beat so connector “line” phases read less rushed on FAQ graphic 3 */
+const PHASE3_LINE_PACE_EXTRA_MS = 333;
+
 function getNextStepDelay(step: number): number {
-  if (step === RESET_STEP) return 600;
-  if (step === HOLD_STEP) return 3500;
-  if (step === CLOSING_STEP) return 800;
-  if (step % STEPS_PER_SALON === 0) return 500; // salon lights + chips
-  if (step % STEPS_PER_SALON === 1) return 550; // Co-Marketing Plan → salon
-  if (step % STEPS_PER_SALON === 2) return 220; // salon → Join VMB
-  if (step % STEPS_PER_SALON === 3) return 320; // Join VMB ↓ Activate Clients (immediate next beat)
-  if (step % STEPS_PER_SALON === 4) return 550; // Activate Clients → Co-Mkt Share
-  return 900; // hold, clear connectors
+  let base: number;
+  if (step === RESET_STEP) base = 600;
+  else if (step === HOLD_STEP) base = 3500;
+  else if (step === CLOSING_STEP) base = 800;
+  else if (step % STEPS_PER_SALON === 0) base = 500; // salon lights + chips
+  else if (step % STEPS_PER_SALON === 1) base = 550; // Co-Marketing Plan → salon
+  else if (step % STEPS_PER_SALON === 2) base = 220; // salon → Join VMB
+  else if (step % STEPS_PER_SALON === 3) base = 320; // Join VMB ↓ Activate Clients (immediate next beat)
+  else if (step % STEPS_PER_SALON === 4) base = 550; // Activate Clients → Co-Mkt Share
+  else base = 900; // hold, clear connectors
+  return base + PHASE3_LINE_PACE_EXTRA_MS;
 }
 
 export function Phase3FlowModule({ title }: Phase3FlowModuleProps) {
