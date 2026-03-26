@@ -20,7 +20,7 @@ const HOLD_STEP = TOTAL_SALON_STEPS + 1;
 const RESET_STEP = TOTAL_SALON_STEPS + 2;
 
 /** Extra ms per beat so connector “line” phases read less rushed on FAQ graphic 3 */
-const PHASE3_LINE_PACE_EXTRA_MS = 333;
+const PHASE3_LINE_PACE_EXTRA_MS = 666;
 
 function getNextStepDelay(step: number): number {
   let base: number;
