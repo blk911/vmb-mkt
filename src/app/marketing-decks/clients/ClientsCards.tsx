@@ -128,7 +128,7 @@ const CARDS: ClientCard[] = [
           ],
         },
         {
-          heading: "🔵 Priority Booking & VIP Access",
+          heading: "Priority Booking & VIP Access",
           lines: [
             "When you participate in the VMB network, you’re more than a client.",
             "You gain access to:",
@@ -141,14 +141,14 @@ const CARDS: ClientCard[] = [
           ],
         },
         {
-          heading: "🔵 Share What You Love - Earn Rewards",
+          heading: "Share What You Love - Earn Rewards",
           lines: [
             "When friends join VMB through your invitations or gifts, you can earn rewards.",
             "You’re simply sharing the salons and services you already enjoy - and getting recognized for it.",
           ],
         },
         {
-          heading: "🔵 An Open Opportunity",
+          heading: "An Open Opportunity",
           lines: [
             "Your network is unique.",
             "Friends. Family. Coworkers. Social media.",
