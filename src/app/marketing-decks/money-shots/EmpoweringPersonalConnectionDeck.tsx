@@ -156,7 +156,7 @@ function PresentationStepFrame({ stepIndex }: { stepIndex: number }) {
         </div>
       </div>
 
-      {stepIndex === 0 ? <StepOneFrame /> : <LegacyThreeColumnFrame />}
+      {stepIndex === 0 ? <StepOneFrame /> : <ThreeColumnFrame />}
     </>
   );
 }
