@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Graphic1Module } from "@/components/vmb-faq/Graphic1Module";
 import { Graphic2Module } from "@/components/vmb-faq/Graphic2Module";
+import EmpoweringPersonalConnectionDeck from "./EmpoweringPersonalConnectionDeck";
 
 const IMG = {
   card1: "/mscard1.jpg",
@@ -248,6 +249,10 @@ const CARDS: MoneyShotCard[] = [
       ],
     },
   },
+  {
+    id: "#6",
+    title: "Empowering Personal Connection",
+  },
 ];
 
 export default function MoneyShotsCards() {
@@ -277,6 +282,9 @@ export default function MoneyShotsCards() {
 
               {open ? (
                 <div className="border-t px-5 py-4">
+                  {card.id === "#6" ? (
+                    <EmpoweringPersonalConnectionDeck />
+                  ) : (
                   <div className="grid items-stretch gap-4 md:grid-cols-[minmax(0,1fr)_280px]">
                     <div className="min-h-[150px] rounded-xl border border-neutral-200 p-4">
                       {card.content ? (
@@ -378,6 +386,7 @@ export default function MoneyShotsCards() {
                       }
                     </div>
                   </div>
+                  )}
                 </div>
               ) : null}
             </article>

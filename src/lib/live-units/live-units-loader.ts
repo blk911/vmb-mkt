@@ -20,8 +20,10 @@ import type {
   LiveUnitsRemoteAttempt,
   LiveUnitsSourceMode,
 } from "./live-units-debug-types";
+import { normalizeZoneId } from "@/lib/geo/target-zones";
 import { aggregateGateDropReasons, gateLiveUnitRows } from "./live-units-parse";
 import { loadRowsFromFirestoreDocument, loadRowsFromHttpJsonUrl } from "./live-units-remote";
+import { getZoneId, type WorkModeRow } from "./work-mode-logic";
 
 type LiveUnitsFileShape = {
   rows?: unknown;
@@ -154,6 +156,98 @@ function parseFirestorePath(combined: string): { collectionId: string; documentI
   return { collectionId: s.slice(0, idx), documentId: s.slice(idx + 1) };
 }
 
+function rowCityLower(row: unknown): string {
+  if (row === null || typeof row !== "object") return "";
+  const c = (row as Record<string, unknown>).city;
+  return typeof c === "string" ? c.toLowerCase() : "";
+}
+
+/**
+ * Dev / opt-in: count gated rows whose `city` matches area substrings (Quebec corridor, Westminster, Lafayette).
+ * Set LIVE_UNITS_GEO_DEBUG=0 to silence in development. Set LIVE_UNITS_GEO_DEBUG=1 to log in production.
+ */
+function logLiveUnitsGeoCityDebug(rows: unknown[], label: string): void {
+  if (!isLiveUnitsGeoDebugEnabled()) return;
+
+  const westminster = rows.filter((r) => rowCityLower(r).includes("westminster")).length;
+  const lafayette = rows.filter((r) => rowCityLower(r).includes("lafayette")).length;
+  const quebec = rows.filter((r) => rowCityLower(r).includes("quebec")).length;
+  const southeastDenver = rows.filter((r) => {
+    const c = rowCityLower(r);
+    return c.includes("southeast") || c.includes("southeast denver");
+  }).length;
+
+  console.log(`[live-units geo] ${label} gated rows total: ${rows.length}`);
+  console.log(`[live-units geo] city includes 'westminster': ${westminster}`);
+  console.log(`[live-units geo] city includes 'lafayette': ${lafayette}`);
+  console.log(`[live-units geo] city includes 'quebec': ${quebec}`);
+  console.log(`[live-units geo] city includes 'southeast' / 'southeast denver': ${southeastDenver}`);
+  console.log(
+    `[live-units geo] hint: >0 → likely data in those city strings (if zones still empty, suspect mapping); 0 → likely ingest/coverage gap for city field`
+  );
+}
+
+function isLiveUnitsGeoDebugEnabled(): boolean {
+  return (
+    process.env.LIVE_UNITS_GEO_DEBUG === "1" ||
+    (process.env.NODE_ENV === "development" && process.env.LIVE_UNITS_GEO_DEBUG !== "0")
+  );
+}
+
+/** Read-only: same zone resolution as Markets trace (`getZoneId` → `normalizeZoneId`). */
+function liveUnitSamplePayload(row: unknown) {
+  const o = row as Record<string, unknown>;
+  const name =
+    typeof o.name_display === "string"
+      ? o.name_display
+      : typeof o.name === "string"
+        ? o.name
+        : null;
+  const city = typeof o.city === "string" ? o.city : null;
+  let address: string | null = null;
+  const rs = o.raw_snippets;
+  if (rs && typeof rs === "object") {
+    const g = (rs as Record<string, unknown>).google;
+    if (g && typeof g === "object") {
+      const a = (g as Record<string, unknown>).address;
+      if (typeof a === "string") address = a;
+    }
+  }
+  const zid = getZoneId(row as WorkModeRow);
+  const normalized =
+    zid === "NO_ZONE" ? null : normalizeZoneId(zid);
+  return {
+    name,
+    city,
+    address,
+    zone_id: zid === "NO_ZONE" ? null : zid,
+    normalized_zone_id: normalized,
+  };
+}
+
+/**
+ * When city geo counts &gt; 0 but zone trace is 0, log row samples (zone_id vs city) — assignment vs ingest.
+ * Same enablement as `logLiveUnitsGeoCityDebug`.
+ */
+function logLiveUnitsGeoSampleDebug(gatedRows: unknown[], sourceMode: string): void {
+  if (!isLiveUnitsGeoDebugEnabled()) return;
+
+  const sampleCity = (label: string, match: (r: unknown) => boolean) => {
+    const matched = gatedRows.filter(match);
+    if (matched.length === 0) return;
+    console.log(`[live-units geo sample] ${sourceMode} ${label} count=${matched.length}`);
+    console.log(matched.slice(0, 10).map((r) => liveUnitSamplePayload(r)));
+  };
+
+  sampleCity("westminster", (r) => rowCityLower(r).includes("westminster"));
+  sampleCity("lafayette", (r) => rowCityLower(r).includes("lafayette"));
+  sampleCity("quebec", (r) => rowCityLower(r).includes("quebec"));
+  sampleCity("southeast", (r) => {
+    const c = rowCityLower(r);
+    return c.includes("southeast") || c.includes("southeast denver");
+  });
+}
+
 /**
  * CHECKPOINT 1–4: remote or file → parsed array → required-field gate → (caller maps to client shape).
  */
@@ -189,6 +283,8 @@ export async function loadLiveUnitsWithTrace(): Promise<LoadedLiveUnitsPayload> 
       droppedMalformed,
       gateDropReasons,
     });
+    logLiveUnitsGeoCityDebug(gated, opts.sourceMode);
+    logLiveUnitsGeoSampleDebug(gated, opts.sourceMode);
     return { rows: gated, trace };
   };
 
