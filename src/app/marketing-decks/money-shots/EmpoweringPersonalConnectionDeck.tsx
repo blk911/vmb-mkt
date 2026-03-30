@@ -97,7 +97,7 @@ export default function EmpoweringPersonalConnectionDeck() {
         </div>
       </div>
 
-      <div className="relative min-h-[320px] overflow-hidden rounded-xl border border-neutral-100 bg-white/90 px-4 py-8 shadow-inner md:min-h-[380px] md:px-10 md:py-10">
+      <div className="relative min-h-[440px] overflow-hidden bg-white px-3 py-8 md:min-h-[560px] md:px-10 md:py-12">
         {slide.id === 1 ? (
           <SlideOneCurrentReality revealStep={revealStep} slide={slide} />
         ) : null}
@@ -141,36 +141,44 @@ function SlideOneCurrentReality({
   const showCaptions = revealStep >= 2;
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <header className="mb-8 text-center md:mb-10">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">{slide.eyebrow}</p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900 md:text-3xl">{slide.headline}</h2>
+    <div className="mx-auto max-w-6xl">
+      <header className="mb-10 text-center md:mb-12">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500 md:text-sm md:tracking-[0.14em]">
+          {slide.eyebrow}
+        </p>
+        <h2 className="mt-3 text-3xl font-semibold leading-[1.15] tracking-tight text-neutral-900 md:mt-4 md:text-4xl lg:text-[2.5rem]">
+          {slide.headline}
+        </h2>
       </header>
 
-      <div className="flex flex-col gap-8 md:flex-row md:items-stretch md:justify-center md:gap-10 lg:gap-14">
-        <figure className="flex flex-1 flex-col items-center rounded-2xl border border-neutral-200/90 bg-gradient-to-b from-neutral-50 to-white px-6 py-8 text-center shadow-sm md:py-10">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500">Salon Owner</span>
+      <div className="flex flex-col gap-14 md:flex-row md:items-start md:justify-center md:gap-16 lg:gap-24 xl:gap-28">
+        <figure className="flex min-w-0 flex-1 flex-col items-center text-center">
+          <span className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-500 md:text-sm md:tracking-[0.2em]">
+            Salon Owner
+          </span>
           <div
-            className="mt-5 flex h-36 w-full max-w-[200px] items-center justify-center rounded-xl border border-neutral-200 bg-neutral-100/80 md:h-40"
+            className="mt-8 flex min-h-[11rem] w-full max-w-[min(20rem,88vw)] items-center justify-center md:mt-10 md:min-h-[13rem] lg:min-h-[15rem] lg:max-w-[22rem]"
             aria-hidden
           >
-            <span className="text-4xl text-neutral-300">◆</span>
+            <span className="select-none text-[5.5rem] leading-none text-neutral-200 md:text-7xl lg:text-8xl">◆</span>
           </div>
-          <figcaption className="mt-4 max-w-[220px] text-xs leading-relaxed text-neutral-600">
+          <figcaption className="mt-8 max-w-[min(22rem,92vw)] text-base leading-relaxed text-neutral-600 md:mt-10 md:text-lg md:leading-snug">
             Grounded, local presence — one place in the client&apos;s wider routine.
           </figcaption>
         </figure>
 
-        <figure className="flex flex-1 flex-col items-center rounded-2xl border border-neutral-200/90 bg-gradient-to-b from-white to-neutral-50/90 px-6 py-8 text-center shadow-sm md:py-10">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500">Client</span>
+        <figure className="flex min-w-0 flex-1 flex-col items-center text-center">
+          <span className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-500 md:text-sm md:tracking-[0.2em]">
+            Client
+          </span>
           <div
-            className="mt-5 flex h-36 w-full max-w-[240px] items-center justify-center rounded-xl border border-neutral-200 bg-white md:h-40"
+            className="mt-8 flex min-h-[11rem] w-full max-w-[min(22rem,88vw)] items-center justify-center md:mt-10 md:min-h-[13rem] lg:min-h-[15rem] lg:max-w-[24rem]"
             aria-hidden
           >
-            <span className="text-4xl text-neutral-300">○</span>
+            <span className="select-none text-[5.5rem] leading-none text-neutral-200 md:text-7xl lg:text-8xl">○</span>
           </div>
           <div
-            className={`mt-4 flex max-w-[280px] flex-wrap justify-center gap-2 transition-all duration-500 ease-out ${
+            className={`mt-6 flex max-w-[min(22rem,92vw)] flex-wrap justify-center gap-2.5 transition-all duration-500 ease-out md:gap-3 ${
               showOptions ? "opacity-100 translate-y-0" : "pointer-events-none max-h-0 opacity-0 -translate-y-1 overflow-hidden"
             }`}
             aria-hidden={!showOptions}
@@ -178,27 +186,27 @@ function SlideOneCurrentReality({
             {PERSONAL_CARE_OPTIONS.map((label) => (
               <span
                 key={label}
-                className="rounded-full border border-neutral-200/90 bg-white/95 px-2.5 py-1 text-[10px] font-medium tracking-wide text-neutral-700 shadow-sm"
+                className="rounded-full bg-neutral-100/90 px-3 py-1.5 text-xs font-medium tracking-wide text-neutral-800 md:px-3.5 md:py-2 md:text-sm"
               >
                 {label}
               </span>
             ))}
           </div>
-          <figcaption className="mt-4 max-w-[240px] text-xs leading-relaxed text-neutral-600">
+          <figcaption className="mt-8 max-w-[min(22rem,92vw)] text-base leading-relaxed text-neutral-600 md:mt-10 md:text-lg md:leading-snug">
             Many choices compete for attention — not only the salon.
           </figcaption>
         </figure>
       </div>
 
       <div
-        className={`mx-auto mt-10 max-w-2xl text-center transition-all duration-500 ease-out ${
+        className={`mx-auto mt-12 max-w-3xl text-center transition-all duration-500 ease-out md:mt-16 ${
           showCaptions
             ? "opacity-100 translate-y-0"
             : "pointer-events-none max-h-0 overflow-hidden opacity-0"
         }`}
       >
-        <p className="text-base font-medium leading-snug text-neutral-900 md:text-lg">{CAPTION_PRIMARY}</p>
-        <p className="mt-3 text-sm leading-relaxed text-neutral-600 md:text-[15px]">{CAPTION_SECONDARY}</p>
+        <p className="text-lg font-medium leading-snug text-neutral-900 md:text-xl lg:text-[1.35rem]">{CAPTION_PRIMARY}</p>
+        <p className="mt-4 text-base leading-relaxed text-neutral-600 md:mt-5 md:text-[1.05rem]">{CAPTION_SECONDARY}</p>
       </div>
     </div>
   );
