@@ -5,25 +5,8 @@ import { useCallback, useMemo, useState } from "react";
 /** Slide 1 — client’s wider world (right of Client). */
 const CLIENT_WORLD_LABELS = ["Friend", "Family", "Work", "Social", "Routine", "Events"] as const;
 
-/** Slide 2 — salon-side services (left of Salon). */
-const SALON_SERVICE_LABELS = [
-  "Hair",
-  "Spa / Skin",
-  "Nails",
-  "Wax",
-  "Brows",
-  "Lashes",
-  "Massage",
-  "Mani / Pedi",
-  "Color",
-  "Extensions",
-] as const;
-
-type SlideVariant = "client_world" | "salon_services";
-
 type SlideDef = {
   id: number;
-  variant: SlideVariant;
   eyebrow: string;
   headline: string;
   /** Small label in the diagram area (story beat). */
@@ -34,10 +17,10 @@ type SlideDef = {
   maxRevealStep: number;
 };
 
+/** Single active slide — Slide 2 (salon services) will be added in a future pass. */
 const SLIDES: SlideDef[] = [
   {
     id: 1,
-    variant: "client_world",
     eyebrow: "Current Reality",
     headline: "A salon owner serves a client. The relationship is linear — the next move belongs to the client.",
     slideTag: "Slide 1 · Linear relationship",
@@ -45,19 +28,6 @@ const SLIDES: SlideDef[] = [
     clientSubtext: "chooses where to go",
     footer:
       "The salon may serve the client, but the client’s next move belongs to a wider personal world outside the salon.",
-    maxRevealStep: 2,
-  },
-  {
-    id: 2,
-    variant: "salon_services",
-    eyebrow: "Same relationship, different lens",
-    headline:
-      "The client stays in focus. On the salon side, many service options appear — yet the salon is still only one path among the client’s choices.",
-    slideTag: "Slide 2 · Salon is just an option",
-    salonSubtext: "offers service",
-    clientSubtext: "static decision maker",
-    footer:
-      "The salon may offer many services, but it is still one option competing for the client’s attention and next action.",
     maxRevealStep: 2,
   },
 ];
@@ -142,7 +112,7 @@ export default function EmpoweringPersonalConnectionDeck() {
         <p className="text-center text-[11px] text-neutral-500 md:flex-1">
           {nextDisabled
             ? "End of this sequence — more slides coming later."
-            : "Next advances each build step, then the next slide."}
+            : "Next advances each build step."}
         </p>
         <button
           type="button"
@@ -176,34 +146,16 @@ function RelationshipSlideCanvas({ slide, revealStep }: { slide: SlideDef; revea
         </h2>
       </header>
 
-      <div className="flex flex-col items-stretch gap-8 lg:flex-row lg:items-center lg:justify-center lg:gap-6 xl:gap-10">
-        {slide.variant === "salon_services" ? (
-          <SatelliteCluster
-            align="left"
-            labels={SALON_SERVICE_LABELS}
-            visible={showSatellites}
-            anchor="salon"
-          />
-        ) : (
-          <div className="hidden min-w-0 shrink-0 lg:block lg:w-[min(2rem,4vw)]" aria-hidden />
-        )}
+      <div className="flex flex-col items-stretch gap-8 lg:flex-row lg:items-center lg:justify-center lg:gap-0">
+        <div className="hidden min-w-0 shrink-0 lg:block lg:w-[min(1rem,3vw)]" aria-hidden />
 
-        <div className="flex min-w-0 flex-col items-center justify-center gap-5 md:gap-6 lg:flex-row lg:gap-2 xl:gap-4">
+        <div className="flex min-w-0 shrink-0 flex-col items-center justify-center gap-5 md:gap-6 lg:flex-row lg:gap-2 xl:gap-4">
           <SubjectNode roleLabel="Salon" title="Salon Owner" subtext={slide.salonSubtext} />
           <RelationshipConnector emphasized={emphasizePath} />
           <SubjectNode roleLabel="Client" title="Client" subtext={slide.clientSubtext} />
         </div>
 
-        {slide.variant === "client_world" ? (
-          <SatelliteCluster
-            align="right"
-            labels={CLIENT_WORLD_LABELS}
-            visible={showSatellites}
-            anchor="client"
-          />
-        ) : (
-          <div className="hidden min-w-0 shrink-0 lg:block lg:w-[min(2rem,4vw)]" aria-hidden />
-        )}
+        <ClientWorldCluster visible={showSatellites} />
       </div>
 
       <div
@@ -259,45 +211,28 @@ function RelationshipConnector({ emphasized }: { emphasized: boolean }) {
   );
 }
 
-function SatelliteCluster({
-  align,
-  labels,
-  visible,
-  anchor,
-}: {
-  align: "left" | "right";
-  labels: readonly string[];
-  visible: boolean;
-  anchor: "salon" | "client";
-}) {
-  const slideFrom = align === "left" ? "-translate-x-1 opacity-0" : "translate-x-1 opacity-0";
-
+/**
+ * Secondary cluster — smaller, lighter, offset from Client; does not share flex-grow with the main axis.
+ */
+function ClientWorldCluster({ visible }: { visible: boolean }) {
   return (
-    <div
-      className={`flex w-full min-w-0 flex-1 flex-col justify-center lg:max-w-[13.5rem] xl:max-w-[15rem] ${
-        align === "left" ? "lg:items-end" : "lg:items-start"
-      }`}
-    >
+    <div className="mt-6 flex w-full shrink-0 flex-col justify-center self-center sm:pl-2 lg:mt-0 lg:ml-12 lg:w-auto lg:max-w-[9.5rem] xl:ml-16 xl:max-w-[10rem]">
       <div
-        className={`w-full transition-all duration-500 ease-out ${
-          visible ? "translate-x-0 opacity-100" : `pointer-events-none max-h-0 overflow-hidden ${slideFrom}`
+        className={`transition-all duration-500 ease-out ${
+          visible ? "translate-x-0 opacity-100" : "pointer-events-none max-h-0 translate-x-1 overflow-hidden opacity-0"
         }`}
         aria-hidden={!visible}
       >
-        <p className="mb-2 text-[9px] font-medium uppercase tracking-wider text-neutral-400">
-          {anchor === "salon" ? "Salon-side options" : "Client’s world"}
+        <p className="mb-1.5 text-[8px] font-medium uppercase tracking-[0.12em] text-neutral-400 md:text-[9px]">
+          Client’s world
         </p>
-        <ul
-          className={`space-y-1.5 ${
-            align === "left"
-              ? "border-r border-neutral-200/80 pr-3 text-right md:pr-4"
-              : "border-l border-neutral-200/80 pl-3 md:pl-4"
-          }`}
-        >
-          {labels.map((label) => (
+        <ul className="space-y-2 border-l border-neutral-200/50 pl-2.5 md:space-y-2.5 md:pl-3">
+          {CLIENT_WORLD_LABELS.map((label, i) => (
             <li
               key={label}
-              className="rounded-md border border-neutral-200/70 bg-neutral-50 px-2.5 py-1 text-left text-[11px] font-medium text-neutral-800 md:text-xs"
+              className={`max-w-[8.5rem] rounded-md border border-neutral-200/40 bg-transparent px-1.5 py-0.5 text-[9px] font-normal leading-tight text-neutral-500 md:max-w-[9rem] md:text-[10px] ${
+                i % 2 === 1 ? "ml-1.5 md:ml-2" : ""
+              }`}
             >
               {label}
             </li>
