@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 
 /**
  * Presentation #6 — Empowering Personal Connection (SALONs money-shots).
- * Step 1: Client card above DTC map (vertical stack, not layered); balanced vertical gaps; map ~600px, ~50%; personal care right; no network column; “chooses…” one step larger than Step 2.
+ * Step 1: Client card above DTC map (vertical stack, not layered); balanced vertical gaps; map ~600px full color; personal care right; no network column; “chooses…” one step larger than Step 2.
  * Step 2: three-column layout (Client card + personal care left + client world right).
  */
 
@@ -54,7 +54,7 @@ const STEP1_MAP_SRC = "/empowering-personal-connection-dtc-map.png";
 const STEP1_MAP_W = 600;
 const STEP1_MAP_H = Math.round((563 * STEP1_MAP_W) / 866);
 
-/** Step 1 — Client card then map in document order (no overlay); map ~50% opacity; personal care column on the right. */
+/** Step 1 — Client card then map in document order (no overlay); map full color; personal care column on the right. */
 function StepOneFrame() {
   return (
     <div className="relative w-full min-w-0 overflow-x-auto overflow-y-visible bg-white px-2 py-8 md:px-6 md:py-12">
@@ -72,7 +72,7 @@ function StepOneFrame() {
               alt=""
               width={STEP1_MAP_W}
               height={STEP1_MAP_H}
-              className="h-auto w-[600px] max-w-[min(100%,600px)] -translate-x-8 opacity-50 select-none md:-translate-x-12"
+              className="h-auto w-[600px] max-w-[min(100%,600px)] -translate-x-8 select-none md:-translate-x-12"
             />
           </div>
         </div>
