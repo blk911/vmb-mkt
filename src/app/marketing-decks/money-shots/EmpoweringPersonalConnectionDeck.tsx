@@ -153,7 +153,8 @@ export default function EmpoweringPersonalConnectionDeck() {
 function RelationshipSlideCanvas({ slide, revealStep }: { slide: SlideDef; revealStep: number }) {
   const isLinear = slide.kind === "linear";
   const emphasizePath = revealStep >= 1;
-  const showSatellites = slide.kind === "client_world" && revealStep >= 2;
+  /** On Slide 2, cluster is part of the slide (not gated on step 2). Entering at revealStep 0 must still show it — see handleNext reset. */
+  const showClientWorldCluster = slide.kind === "client_world";
   const showFooter = slide.kind === "client_world" && revealStep >= 2 && Boolean(slide.footer);
 
   return (
@@ -181,7 +182,7 @@ function RelationshipSlideCanvas({ slide, revealStep }: { slide: SlideDef; revea
         {isLinear ? (
           <div className="hidden w-full max-w-[9.5rem] shrink-0 lg:block lg:min-h-0" aria-hidden />
         ) : (
-          <ClientWorldCluster visible={showSatellites} />
+          <ClientWorldCluster visible={showClientWorldCluster} />
         )}
       </div>
 
