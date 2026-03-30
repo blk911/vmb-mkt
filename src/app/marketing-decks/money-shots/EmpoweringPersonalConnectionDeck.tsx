@@ -5,7 +5,7 @@ import { useCallback, useState } from "react";
 /**
  * Presentation #6 — Empowering Personal Connection (SALONs money-shots).
  * Step 1: Client card above DTC map (vertical stack, not layered); balanced vertical gaps; map ~600px full color; personal care right; no network column; “chooses…” one step larger than Step 2.
- * Step 2: three-column layout (Client card + personal care left + client world right).
+ * Step 2: three-column layout; center card from STEP_CENTER_CARDS[1] (distinct from Step 1). Add STEP_CENTER_CARDS[n] for step n+1.
  */
 
 const PERSONAL_CARE_OPTIONS = [
@@ -38,6 +38,55 @@ const STEP_TAGLINES = [
   "Loyal clients are your marketing engine — unlock revenue in your client book",
 ] as const;
 
+/** Per-step center “button” card: Step 1 vs Step 2+ can differ; extend this array when adding steps. */
+type CenterCardConfig = {
+  kicker?: string;
+  title: string;
+  subtitle: string;
+  subtitleSize: "prominent" | "compact";
+};
+
+const STEP_CENTER_CARDS: CenterCardConfig[] = [
+  {
+    title: "Client",
+    subtitle: "chooses where to go",
+    subtitleSize: "prominent",
+  },
+  {
+    kicker: "CLIENT",
+    title: "Client",
+    subtitle: "chooses where to go",
+    subtitleSize: "compact",
+  },
+];
+
+function getStepCenterCard(stepIndex: number): CenterCardConfig {
+  if (stepIndex >= 0 && stepIndex < STEP_CENTER_CARDS.length) {
+    return STEP_CENTER_CARDS[stepIndex];
+  }
+  return STEP_CENTER_CARDS[STEP_CENTER_CARDS.length - 1]!;
+}
+
+function CenterCard({ config }: { config: CenterCardConfig }) {
+  const subtitleClassName =
+    config.subtitleSize === "prominent"
+      ? "mt-2 text-base leading-snug text-neutral-400 md:text-lg"
+      : "mt-2 text-sm leading-snug text-neutral-400";
+  return (
+    <div className="rounded-2xl bg-neutral-800 px-10 py-7 shadow-md md:px-12 md:py-8">
+      {config.kicker ? (
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">{config.kicker}</p>
+      ) : null}
+      <p
+        className={`text-2xl font-semibold leading-tight tracking-tight text-white md:text-[1.65rem] ${config.kicker ? "mt-2" : ""}`}
+      >
+        {config.title}
+      </p>
+      <p className={subtitleClassName}>{config.subtitle}</p>
+    </div>
+  );
+}
+
 function PersonalCareStack({ align }: { align: "left" | "right" }) {
   const justify = align === "right" ? "items-end md:items-end" : "items-start md:items-start";
   return (
@@ -66,9 +115,8 @@ function StepOneFrame() {
       <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col items-stretch gap-10 md:flex-row md:items-center md:gap-12 lg:gap-16 xl:gap-20">
         <div className="flex w-full min-w-0 flex-1 flex-col items-center gap-8 py-2 md:gap-10 md:py-4">
           <div className="w-full px-2 text-center">
-            <div className="mx-auto inline-block rounded-2xl bg-neutral-800 px-10 py-7 shadow-md md:px-12 md:py-8">
-              <p className="text-2xl font-semibold leading-tight tracking-tight text-white md:text-[1.65rem]">Client</p>
-              <p className="mt-2 text-base leading-snug text-neutral-400 md:text-lg">chooses where to go</p>
+            <div className="mx-auto inline-block">
+              <CenterCard config={getStepCenterCard(0)} />
             </div>
           </div>
           <div className="flex w-full justify-center px-2" aria-hidden>
@@ -95,13 +143,7 @@ function LegacyThreeColumnFrame() {
         <PersonalCareStack align="left" />
 
         <div className="flex min-w-0 shrink-0 flex-col items-center justify-self-center text-center md:-translate-y-2">
-          <div className="rounded-2xl bg-neutral-800 px-10 py-7 shadow-md md:px-12 md:py-8">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">CLIENT</p>
-            <p className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-white md:text-[1.65rem]">
-              Client
-            </p>
-            <p className="mt-2 text-sm leading-snug text-neutral-400">chooses where to go</p>
-          </div>
+          <CenterCard config={getStepCenterCard(1)} />
         </div>
 
         <aside className="flex min-w-0 flex-col items-start gap-2.5 justify-self-stretch md:justify-self-start">
