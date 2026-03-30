@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 
 /**
  * Presentation #6 — Empowering Personal Connection (SALONs money-shots).
- * Step 1: Client card center (no duplicate “CLIENT” label); personal care right; no network column; “chooses…” one step larger than Step 2.
+ * Step 1: Client card (no duplicate “CLIENT” label); DTC map 600px centered between card and personal care; no network column; “chooses…” one step larger than Step 2.
  * Step 2: three-column layout (Client card + personal care left + client world right).
  */
 
@@ -50,31 +50,35 @@ function PersonalCareStack({ align }: { align: "left" | "right" }) {
 }
 
 const STEP1_MAP_SRC = "/empowering-personal-connection-dtc-map.png";
+/** Native asset 866×563; width 600px keeps proportion. */
+const STEP1_MAP_W = 600;
+const STEP1_MAP_H = Math.round((563 * STEP1_MAP_W) / 866);
 
-/** Step 1 — same dark Client card as Step 2 but without the small uppercase “CLIENT” line; “chooses…” one size larger than Step 2’s text-sm. DTC map at 450px wide, ~50% opacity behind content. */
+/** Step 1 — same dark Client card as Step 2 but without the small uppercase “CLIENT” line; “chooses…” one size larger than Step 2’s text-sm. Map 600px wide, ~50% opacity, centered in the space between the client column and personal care. */
 function StepOneFrame() {
   return (
     <div className="relative w-full min-w-0 overflow-x-auto overflow-y-visible bg-white px-2 py-8 md:px-6 md:py-12">
-      <div
-        className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center"
-        aria-hidden
-      >
-        <img
-          src={STEP1_MAP_SRC}
-          alt=""
-          width={450}
-          height={293}
-          className="h-auto w-[450px] max-w-[min(100%,450px)] opacity-50 select-none"
-        />
-      </div>
-      <div className="relative z-10 mx-auto flex w-full min-w-0 max-w-5xl flex-col items-stretch gap-10 md:flex-row md:items-center md:justify-between md:gap-12 lg:gap-16 xl:gap-20">
-        <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-2 text-center md:min-h-[12rem] md:items-center md:px-6">
+      <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col items-stretch gap-10 md:flex-row md:items-center md:gap-6 lg:gap-8 xl:gap-10">
+        <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-2 text-center md:min-h-[12rem] md:items-end md:justify-center md:px-3 md:pr-2">
           <div className="rounded-2xl bg-neutral-800 px-10 py-7 shadow-md md:px-12 md:py-8">
             <p className="text-2xl font-semibold leading-tight tracking-tight text-white md:text-[1.65rem]">Client</p>
             <p className="mt-2 text-base leading-snug text-neutral-400 md:text-lg">chooses where to go</p>
           </div>
         </div>
-        <PersonalCareStack align="right" />
+
+        <div className="flex min-w-0 shrink-0 justify-center" aria-hidden>
+          <img
+            src={STEP1_MAP_SRC}
+            alt=""
+            width={STEP1_MAP_W}
+            height={STEP1_MAP_H}
+            className="h-auto w-[600px] max-w-full opacity-50 select-none"
+          />
+        </div>
+
+        <div className="flex min-w-0 flex-1 flex-col items-center md:items-end md:justify-center md:pl-2">
+          <PersonalCareStack align="right" />
+        </div>
       </div>
     </div>
   );
