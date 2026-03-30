@@ -35,7 +35,8 @@ const SLIDES: SlideDef[] = [
     salonSubtext: "offers service",
     clientSubtext: "chooses where to go",
     footer: null,
-    maxRevealStep: 1,
+    /** Single build step so one Next advances to Slide 2 (was 2 steps and first Next only advanced reveal, not slide). */
+    maxRevealStep: 0,
   },
   {
     id: 2,
@@ -152,7 +153,8 @@ export default function EmpoweringPersonalConnectionDeck() {
 
 function RelationshipSlideCanvas({ slide, revealStep }: { slide: SlideDef; revealStep: number }) {
   const isLinear = slide.kind === "linear";
-  const emphasizePath = revealStep >= 1;
+  /** Linear slide: one frame with emphasized path (no separate reveal step). Client slide: emphasize from step 1. */
+  const emphasizePath = slide.kind === "linear" ? true : revealStep >= 1;
   /** On Slide 2, cluster is part of the slide (not gated on step 2). Entering at revealStep 0 must still show it — see handleNext reset. */
   const showClientWorldCluster = slide.kind === "client_world";
   const showFooter = slide.kind === "client_world" && revealStep >= 2 && Boolean(slide.footer);
