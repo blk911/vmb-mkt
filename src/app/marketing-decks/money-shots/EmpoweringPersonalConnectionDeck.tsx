@@ -5,7 +5,7 @@ import { useCallback, useState } from "react";
 /**
  * Presentation #6 — Empowering Personal Connection (SALONs money-shots).
  * Step 1: Client card above DTC map (vertical stack, not layered); balanced vertical gaps; map ~600px full color; personal care right; no network column.
- * Step 2: three-column layout; same Client center card (STANDARD_CENTER_CARD) as Step 1; personal care left; client world right.
+ * Step 2–3: three-column layout (same frame for now; Step 3 duplicates Step 2 for customization); Client center card; personal care left; client world right.
  */
 
 const PERSONAL_CARE_OPTIONS = [
@@ -31,10 +31,12 @@ const CLIENT_WORLD_OPTIONS = [
   "Events",
 ] as const;
 
-const TOTAL_STEPS = 2;
+const TOTAL_STEPS = 3;
 
 const STEP_TAGLINES = [
   "Clients have options. Loyalty—without connection—is fragile.",
+  "Loyal clients are your marketing engine — unlock revenue in your client book",
+  /** Placeholder: duplicate Step 2 until customized */
   "Loyal clients are your marketing engine — unlock revenue in your client book",
 ] as const;
 
@@ -114,8 +116,8 @@ function StepOneFrame() {
   );
 }
 
-/** Step 2 — legacy: Client center, personal care left, client world right. */
-function LegacyThreeColumnFrame() {
+/** Steps 2 & 3 — Client center, personal care left, client world right (Step 3 starts as duplicate of Step 2). */
+function ThreeColumnFrame() {
   return (
     <div className="relative w-full min-w-0 overflow-x-auto overflow-y-visible bg-white px-2 py-8 md:px-6 md:py-12">
       <div className="mx-auto grid w-full min-w-0 max-w-5xl grid-cols-1 items-center gap-y-10 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-x-8 md:gap-y-0 lg:gap-x-12 xl:gap-x-20">
@@ -187,7 +189,7 @@ export default function EmpoweringPersonalConnectionDeck() {
           Back
         </button>
         <p className="text-center text-[11px] text-neutral-500 sm:px-2">
-          {atLast ? "End of sequence — edit Step 2 or add more steps later." : "Next advances the story"}
+          {atLast ? "End of sequence — edit Step 3 or add more steps later." : "Next advances the story"}
         </p>
         <button
           type="button"
