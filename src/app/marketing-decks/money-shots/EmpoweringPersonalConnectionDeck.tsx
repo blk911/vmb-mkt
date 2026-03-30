@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 
 /**
  * Presentation #6 — Empowering Personal Connection (SALONs money-shots).
- * Step 1: Client card stacked over DTC map (same column); balanced vertical spacing; map ~600px, ~50%; personal care right; no network column; “chooses…” one step larger than Step 2.
+ * Step 1: Client card above DTC map (vertical stack, not layered); balanced vertical gaps; map ~600px, ~50%; personal care right; no network column; “chooses…” one step larger than Step 2.
  * Step 2: three-column layout (Client card + personal care left + client world right).
  */
 
@@ -54,17 +54,19 @@ const STEP1_MAP_SRC = "/empowering-personal-connection-dtc-map.png";
 const STEP1_MAP_W = 600;
 const STEP1_MAP_H = Math.round((563 * STEP1_MAP_W) / 866);
 
-/** Step 1 — Client card layered over map in one column; map ~50% opacity; personal care column on the right. */
+/** Step 1 — Client card then map in document order (no overlay); map ~50% opacity; personal care column on the right. */
 function StepOneFrame() {
   return (
     <div className="relative w-full min-w-0 overflow-x-auto overflow-y-visible bg-white px-2 py-8 md:px-6 md:py-12">
       <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col items-stretch gap-10 md:flex-row md:items-center md:gap-12 lg:gap-16 xl:gap-20">
-        {/* Map + Client: stacked (card over map), symmetric vertical rhythm */}
-        <div className="relative flex min-h-[22rem] w-full min-w-0 flex-1 flex-col items-center justify-center py-10 md:min-h-[24rem] md:py-12">
-          <div
-            className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center px-2"
-            aria-hidden
-          >
+        <div className="flex w-full min-w-0 flex-1 flex-col items-center gap-8 py-2 md:gap-10 md:py-4">
+          <div className="w-full px-2 text-center">
+            <div className="mx-auto inline-block rounded-2xl bg-neutral-800 px-10 py-7 shadow-md md:px-12 md:py-8">
+              <p className="text-2xl font-semibold leading-tight tracking-tight text-white md:text-[1.65rem]">Client</p>
+              <p className="mt-2 text-base leading-snug text-neutral-400 md:text-lg">chooses where to go</p>
+            </div>
+          </div>
+          <div className="flex w-full justify-center px-2" aria-hidden>
             <img
               src={STEP1_MAP_SRC}
               alt=""
@@ -72,12 +74,6 @@ function StepOneFrame() {
               height={STEP1_MAP_H}
               className="h-auto w-[600px] max-w-[min(100%,600px)] -translate-x-8 opacity-50 select-none md:-translate-x-12"
             />
-          </div>
-          <div className="relative z-10 flex w-full flex-col items-center justify-center px-2 text-center">
-            <div className="rounded-2xl bg-neutral-800 px-10 py-7 shadow-md md:px-12 md:py-8">
-              <p className="text-2xl font-semibold leading-tight tracking-tight text-white md:text-[1.65rem]">Client</p>
-              <p className="mt-2 text-base leading-snug text-neutral-400 md:text-lg">chooses where to go</p>
-            </div>
           </div>
         </div>
         <PersonalCareStack align="right" />
