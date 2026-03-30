@@ -2,37 +2,65 @@
 
 import { useCallback, useMemo, useState } from "react";
 
-const PERSONAL_CARE_OPTIONS = [
+/** Slide 1 — client’s wider world (right of Client). */
+const CLIENT_WORLD_LABELS = ["Friend", "Family", "Work", "Social", "Routine", "Events"] as const;
+
+/** Slide 2 — salon-side services (left of Salon). */
+const SALON_SERVICE_LABELS = [
   "Hair",
-  "Brows",
-  "Lips",
-  "Lashes",
+  "Spa / Skin",
   "Nails",
   "Wax",
-  "Mani / Pedi",
+  "Brows",
+  "Lashes",
   "Massage",
+  "Mani / Pedi",
+  "Color",
+  "Extensions",
 ] as const;
+
+type SlideVariant = "client_world" | "salon_services";
 
 type SlideDef = {
   id: number;
+  variant: SlideVariant;
   eyebrow: string;
   headline: string;
+  /** Small label in the diagram area (story beat). */
+  slideTag: string;
+  salonSubtext: string;
+  clientSubtext: string;
+  footer: string;
   maxRevealStep: number;
 };
 
 const SLIDES: SlideDef[] = [
   {
     id: 1,
+    variant: "client_world",
     eyebrow: "Current Reality",
-    headline: "Today, the salon is often just one option.",
+    headline: "A salon owner serves a client. The relationship is linear — the next move belongs to the client.",
+    slideTag: "Slide 1 · Linear relationship",
+    salonSubtext: "offers service",
+    clientSubtext: "chooses where to go",
+    footer:
+      "The salon may serve the client, but the client’s next move belongs to a wider personal world outside the salon.",
+    maxRevealStep: 2,
+  },
+  {
+    id: 2,
+    variant: "salon_services",
+    eyebrow: "Same relationship, different lens",
+    headline:
+      "The client stays in focus. On the salon side, many service options appear — yet the salon is still only one path among the client’s choices.",
+    slideTag: "Slide 2 · Salon is just an option",
+    salonSubtext: "offers service",
+    clientSubtext: "static decision maker",
+    footer:
+      "The salon may offer many services, but it is still one option competing for the client’s attention and next action.",
     maxRevealStep: 2,
   },
 ];
-
-const CAPTION_PRIMARY =
-  "The salon is only one option in a client's broader personal-care world.";
-const CAPTION_SECONDARY =
-  "Without a network layer, the relationship remains passive, fragile, and easily interrupted.";
 
 export default function EmpoweringPersonalConnectionDeck() {
   const [slideIndex, setSlideIndex] = useState(0);
@@ -70,8 +98,8 @@ export default function EmpoweringPersonalConnectionDeck() {
   }, [slide.maxRevealStep]);
 
   const atStart = slideIndex === 0 && revealStep === 0;
-  const atEndReveal = revealStep >= slide.maxRevealStep;
   const atLastSlide = slideIndex >= totalSlides - 1;
+  const atEndReveal = revealStep >= slide.maxRevealStep;
   const nextDisabled = atEndReveal && atLastSlide;
 
   return (
@@ -97,10 +125,8 @@ export default function EmpoweringPersonalConnectionDeck() {
         </div>
       </div>
 
-      <div className="relative min-h-[440px] overflow-hidden bg-white px-3 py-8 md:min-h-[560px] md:px-10 md:py-12">
-        {slide.id === 1 ? (
-          <SlideOneCurrentReality revealStep={revealStep} slide={slide} />
-        ) : null}
+      <div className="relative min-h-[420px] overflow-hidden bg-white px-3 py-6 md:min-h-[520px] md:px-8 md:py-10">
+        <RelationshipSlideCanvas slide={slide} revealStep={revealStep} />
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200/80 pt-5">
@@ -114,7 +140,9 @@ export default function EmpoweringPersonalConnectionDeck() {
           Back
         </button>
         <p className="text-center text-[11px] text-neutral-500 md:flex-1">
-          {nextDisabled ? "End of presentation — more slides coming soon." : "Next advances each reveal, then future slides."}
+          {nextDisabled
+            ? "End of this sequence — more slides coming later."
+            : "Next advances each build step, then the next slide."}
         </p>
         <button
           type="button"
@@ -130,83 +158,151 @@ export default function EmpoweringPersonalConnectionDeck() {
   );
 }
 
-function SlideOneCurrentReality({
-  revealStep,
-  slide,
-}: {
-  revealStep: number;
-  slide: SlideDef;
-}) {
-  const showOptions = revealStep >= 1;
-  const showCaptions = revealStep >= 2;
+function RelationshipSlideCanvas({ slide, revealStep }: { slide: SlideDef; revealStep: number }) {
+  const emphasizePath = revealStep >= 1;
+  const showSatellites = revealStep >= 2;
+  const showFooter = revealStep >= 2;
 
   return (
-    <div className="mx-auto max-w-6xl">
-      <header className="mb-10 text-center md:mb-12">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500 md:text-sm md:tracking-[0.14em]">
-          {slide.eyebrow}
-        </p>
-        <h2 className="mt-3 text-3xl font-semibold leading-[1.15] tracking-tight text-neutral-900 md:mt-4 md:text-4xl lg:text-[2.5rem]">
+    <div className="mx-auto max-w-5xl">
+      <p className="absolute right-4 top-4 max-w-[11rem] text-right text-[10px] font-medium uppercase tracking-wide text-neutral-400 md:right-8 md:max-w-none md:text-[11px]">
+        {slide.slideTag}
+      </p>
+
+      <header className="mb-8 pr-24 text-left md:mb-10 md:pr-32">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500 md:text-sm">{slide.eyebrow}</p>
+        <h2 className="mt-2 text-xl font-semibold leading-snug tracking-tight text-neutral-900 md:text-2xl lg:text-[1.65rem]">
           {slide.headline}
         </h2>
       </header>
 
-      <div className="flex flex-col gap-14 md:flex-row md:items-start md:justify-center md:gap-16 lg:gap-24 xl:gap-28">
-        <figure className="flex min-w-0 flex-1 flex-col items-center text-center">
-          <span className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-500 md:text-sm md:tracking-[0.2em]">
-            Salon Owner
-          </span>
-          <div
-            className="mt-8 flex min-h-[11rem] w-full max-w-[min(20rem,88vw)] items-center justify-center md:mt-10 md:min-h-[13rem] lg:min-h-[15rem] lg:max-w-[22rem]"
-            aria-hidden
-          >
-            <span className="select-none text-[5.5rem] leading-none text-neutral-200 md:text-7xl lg:text-8xl">◆</span>
-          </div>
-          <figcaption className="mt-8 max-w-[min(22rem,92vw)] text-base leading-relaxed text-neutral-600 md:mt-10 md:text-lg md:leading-snug">
-            Grounded, local presence — one place in the client&apos;s wider routine.
-          </figcaption>
-        </figure>
+      <div className="flex flex-col items-stretch gap-8 lg:flex-row lg:items-center lg:justify-center lg:gap-6 xl:gap-10">
+        {slide.variant === "salon_services" ? (
+          <SatelliteCluster
+            align="left"
+            labels={SALON_SERVICE_LABELS}
+            visible={showSatellites}
+            anchor="salon"
+          />
+        ) : (
+          <div className="hidden min-w-0 shrink-0 lg:block lg:w-[min(2rem,4vw)]" aria-hidden />
+        )}
 
-        <figure className="flex min-w-0 flex-1 flex-col items-center text-center">
-          <span className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-500 md:text-sm md:tracking-[0.2em]">
-            Client
-          </span>
-          <div
-            className="mt-8 flex min-h-[11rem] w-full max-w-[min(22rem,88vw)] items-center justify-center md:mt-10 md:min-h-[13rem] lg:min-h-[15rem] lg:max-w-[24rem]"
-            aria-hidden
-          >
-            <span className="select-none text-[5.5rem] leading-none text-neutral-200 md:text-7xl lg:text-8xl">○</span>
-          </div>
-          <div
-            className={`mt-6 flex max-w-[min(22rem,92vw)] flex-wrap justify-center gap-2.5 transition-all duration-500 ease-out md:gap-3 ${
-              showOptions ? "opacity-100 translate-y-0" : "pointer-events-none max-h-0 opacity-0 -translate-y-1 overflow-hidden"
-            }`}
-            aria-hidden={!showOptions}
-          >
-            {PERSONAL_CARE_OPTIONS.map((label) => (
-              <span
-                key={label}
-                className="rounded-full bg-neutral-100/90 px-3 py-1.5 text-xs font-medium tracking-wide text-neutral-800 md:px-3.5 md:py-2 md:text-sm"
-              >
-                {label}
-              </span>
-            ))}
-          </div>
-          <figcaption className="mt-8 max-w-[min(22rem,92vw)] text-base leading-relaxed text-neutral-600 md:mt-10 md:text-lg md:leading-snug">
-            Many choices compete for attention — not only the salon.
-          </figcaption>
-        </figure>
+        <div className="flex min-w-0 flex-col items-center justify-center gap-5 md:gap-6 lg:flex-row lg:gap-2 xl:gap-4">
+          <SubjectNode roleLabel="Salon" title="Salon Owner" subtext={slide.salonSubtext} />
+          <RelationshipConnector emphasized={emphasizePath} />
+          <SubjectNode roleLabel="Client" title="Client" subtext={slide.clientSubtext} />
+        </div>
+
+        {slide.variant === "client_world" ? (
+          <SatelliteCluster
+            align="right"
+            labels={CLIENT_WORLD_LABELS}
+            visible={showSatellites}
+            anchor="client"
+          />
+        ) : (
+          <div className="hidden min-w-0 shrink-0 lg:block lg:w-[min(2rem,4vw)]" aria-hidden />
+        )}
       </div>
 
       <div
-        className={`mx-auto mt-12 max-w-3xl text-center transition-all duration-500 ease-out md:mt-16 ${
-          showCaptions
-            ? "opacity-100 translate-y-0"
-            : "pointer-events-none max-h-0 overflow-hidden opacity-0"
+        className={`mx-auto mt-10 max-w-3xl text-center transition-all duration-500 ease-out md:mt-12 ${
+          showFooter ? "opacity-100 translate-y-0" : "pointer-events-none max-h-0 overflow-hidden opacity-0"
         }`}
       >
-        <p className="text-lg font-medium leading-snug text-neutral-900 md:text-xl lg:text-[1.35rem]">{CAPTION_PRIMARY}</p>
-        <p className="mt-4 text-base leading-relaxed text-neutral-600 md:mt-5 md:text-[1.05rem]">{CAPTION_SECONDARY}</p>
+        <p className="text-sm font-medium leading-relaxed text-neutral-800 md:text-base">{slide.footer}</p>
+      </div>
+    </div>
+  );
+}
+
+function SubjectNode({
+  roleLabel,
+  title,
+  subtext,
+}: {
+  roleLabel: string;
+  title: string;
+  subtext: string;
+}) {
+  return (
+    <div className="w-full max-w-[200px] shrink-0 rounded-xl bg-neutral-800 px-4 py-4 text-center shadow-md md:max-w-[220px] md:px-5 md:py-4">
+      <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-neutral-400">{roleLabel}</p>
+      <p className="mt-2 text-base font-semibold leading-tight text-white md:text-lg">{title}</p>
+      <p className="mt-1.5 text-[11px] leading-snug text-neutral-400 md:text-xs">{subtext}</p>
+    </div>
+  );
+}
+
+function RelationshipConnector({ emphasized }: { emphasized: boolean }) {
+  return (
+    <div
+      className="flex shrink-0 items-center justify-center px-1 py-3 lg:px-2 lg:py-0"
+      aria-hidden
+    >
+      <div className="flex items-center">
+        <div
+          className={`h-px origin-center rounded-full transition-all duration-300 md:w-14 lg:w-20 ${
+            emphasized ? "w-12 bg-neutral-900" : "w-10 bg-neutral-400"
+          }`}
+        />
+        <span
+          className={`inline-block -translate-x-px text-lg leading-none transition-all duration-300 md:text-xl ${
+            emphasized ? "scale-110 text-neutral-900" : "text-neutral-500"
+          }`}
+        >
+          →
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function SatelliteCluster({
+  align,
+  labels,
+  visible,
+  anchor,
+}: {
+  align: "left" | "right";
+  labels: readonly string[];
+  visible: boolean;
+  anchor: "salon" | "client";
+}) {
+  const slideFrom = align === "left" ? "-translate-x-1 opacity-0" : "translate-x-1 opacity-0";
+
+  return (
+    <div
+      className={`flex w-full min-w-0 flex-1 flex-col justify-center lg:max-w-[13.5rem] xl:max-w-[15rem] ${
+        align === "left" ? "lg:items-end" : "lg:items-start"
+      }`}
+    >
+      <div
+        className={`w-full transition-all duration-500 ease-out ${
+          visible ? "translate-x-0 opacity-100" : `pointer-events-none max-h-0 overflow-hidden ${slideFrom}`
+        }`}
+        aria-hidden={!visible}
+      >
+        <p className="mb-2 text-[9px] font-medium uppercase tracking-wider text-neutral-400">
+          {anchor === "salon" ? "Salon-side options" : "Client’s world"}
+        </p>
+        <ul
+          className={`space-y-1.5 ${
+            align === "left"
+              ? "border-r border-neutral-200/80 pr-3 text-right md:pr-4"
+              : "border-l border-neutral-200/80 pl-3 md:pl-4"
+          }`}
+        >
+          {labels.map((label) => (
+            <li
+              key={label}
+              className="rounded-md border border-neutral-200/70 bg-neutral-50 px-2.5 py-1 text-left text-[11px] font-medium text-neutral-800 md:text-xs"
+            >
+              {label}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
