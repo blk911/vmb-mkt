@@ -2,28 +2,48 @@
 
 import { useCallback, useMemo, useState } from "react";
 
-/** Slide 1 — client’s wider world (right of Client). */
+/** Slide 2 — client’s wider world (right of Client). */
 const CLIENT_WORLD_LABELS = ["Friend", "Family", "Work", "Social", "Routine", "Events"] as const;
+
+type SlideKind = "linear" | "client_world";
 
 type SlideDef = {
   id: number;
+  kind: SlideKind;
   eyebrow: string;
   headline: string;
   /** Small label in the diagram area (story beat). */
   slideTag: string;
   salonSubtext: string;
   clientSubtext: string;
-  footer: string;
+  /** Shown on final reveal step for this slide (Slide 1 has no footer). */
+  footer: string | null;
   maxRevealStep: number;
 };
 
-/** Single active slide — Slide 2 (salon services) will be added in a future pass. */
+/**
+ * Slide 1 = linear Salon → Client baseline + emphasis only.
+ * Slide 2 = same base + client-world cluster (reserved Slide 3 = salon services — not in array yet).
+ */
 const SLIDES: SlideDef[] = [
   {
     id: 1,
+    kind: "linear",
     eyebrow: "Current Reality",
     headline: "A salon owner serves a client. The relationship is linear — the next move belongs to the client.",
     slideTag: "Slide 1 · Linear relationship",
+    salonSubtext: "offers service",
+    clientSubtext: "chooses where to go",
+    footer: null,
+    maxRevealStep: 1,
+  },
+  {
+    id: 2,
+    kind: "client_world",
+    eyebrow: "Current Reality",
+    headline:
+      "The same Salon → Client line — now the client’s wider world comes into view: friend, family, work, and life beyond the visit.",
+    slideTag: "Slide 2 · Client’s world",
     salonSubtext: "offers service",
     clientSubtext: "chooses where to go",
     footer:
@@ -112,7 +132,9 @@ export default function EmpoweringPersonalConnectionDeck() {
         <p className="text-center text-[11px] text-neutral-500 md:flex-1">
           {nextDisabled
             ? "End of this sequence — more slides coming later."
-            : "Next advances each build step."}
+            : atEndReveal && !atLastSlide
+              ? "Next goes to the next slide."
+              : "Next advances each build step."}
         </p>
         <button
           type="button"
@@ -129,9 +151,10 @@ export default function EmpoweringPersonalConnectionDeck() {
 }
 
 function RelationshipSlideCanvas({ slide, revealStep }: { slide: SlideDef; revealStep: number }) {
+  const isLinear = slide.kind === "linear";
   const emphasizePath = revealStep >= 1;
-  const showSatellites = revealStep >= 2;
-  const showFooter = revealStep >= 2;
+  const showSatellites = slide.kind === "client_world" && revealStep >= 2;
+  const showFooter = slide.kind === "client_world" && revealStep >= 2 && Boolean(slide.footer);
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -155,16 +178,22 @@ function RelationshipSlideCanvas({ slide, revealStep }: { slide: SlideDef; revea
           <SubjectNode roleLabel="Client" title="Client" subtext={slide.clientSubtext} />
         </div>
 
-        <ClientWorldCluster visible={showSatellites} />
+        {isLinear ? (
+          <div className="hidden w-full max-w-[9.5rem] shrink-0 lg:block lg:min-h-0" aria-hidden />
+        ) : (
+          <ClientWorldCluster visible={showSatellites} />
+        )}
       </div>
 
-      <div
-        className={`mx-auto mt-10 max-w-3xl text-center transition-all duration-500 ease-out md:mt-12 ${
-          showFooter ? "opacity-100 translate-y-0" : "pointer-events-none max-h-0 overflow-hidden opacity-0"
-        }`}
-      >
-        <p className="text-sm font-medium leading-relaxed text-neutral-800 md:text-base">{slide.footer}</p>
-      </div>
+      {slide.footer ? (
+        <div
+          className={`mx-auto mt-10 max-w-3xl text-center transition-all duration-500 ease-out md:mt-12 ${
+            showFooter ? "opacity-100 translate-y-0" : "pointer-events-none max-h-0 overflow-hidden opacity-0"
+          }`}
+        >
+          <p className="text-sm font-medium leading-relaxed text-neutral-800 md:text-base">{slide.footer}</p>
+        </div>
+      ) : null}
     </div>
   );
 }
