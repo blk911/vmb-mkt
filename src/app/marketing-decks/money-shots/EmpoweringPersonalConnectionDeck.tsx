@@ -33,6 +33,11 @@ const CLIENT_WORLD_OPTIONS = [
 
 const TOTAL_STEPS = 2;
 
+const STEP_TAGLINES = [
+  "Clients have options. Loyalty—without connection—is fragile.",
+  "Loyal clients are the marketing engine — unlock revenue in your client book",
+] as const;
+
 function PersonalCareStack({ align }: { align: "left" | "right" }) {
   const justify = align === "right" ? "items-end md:items-end" : "items-start md:items-start";
   return (
@@ -123,7 +128,7 @@ function PresentationStepFrame({ stepIndex }: { stepIndex: number }) {
             Step {stepIndex + 1} of {TOTAL_STEPS}
           </p>
           <p className="font-sans text-[18px] font-semibold uppercase leading-tight tracking-tight text-neutral-900">
-            Clients have options. Loyalty—without connection—is fragile.
+            {STEP_TAGLINES[stepIndex]}
           </p>
         </div>
       </div>
