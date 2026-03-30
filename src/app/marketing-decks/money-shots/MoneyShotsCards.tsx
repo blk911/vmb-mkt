@@ -266,7 +266,10 @@ export default function MoneyShotsCards() {
         {CARDS.map((card, idx) => {
           const open = openIdx === idx;
           return (
-            <article key={card.id} className="overflow-hidden rounded-2xl border bg-white shadow-sm">
+            <article
+              key={card.id}
+              className={`rounded-2xl border bg-white shadow-sm ${card.id === "#6" ? "overflow-x-visible overflow-y-visible" : "overflow-hidden"}`}
+            >
               <button
                 type="button"
                 onClick={() => setOpenIdx((prev) => (prev === idx ? null : idx))}
@@ -281,7 +284,7 @@ export default function MoneyShotsCards() {
               </button>
 
               {open ? (
-                <div className="border-t px-5 py-4">
+                <div className={`border-t px-5 py-4 ${card.id === "#6" ? "min-w-0 overflow-x-auto" : ""}`}>
                   {card.id === "#6" ? (
                     <EmpoweringPersonalConnectionDeck />
                   ) : (
