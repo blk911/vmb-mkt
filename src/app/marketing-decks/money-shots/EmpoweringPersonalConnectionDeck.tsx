@@ -18,7 +18,15 @@ const PERSONAL_CARE_OPTIONS = [
   "Mani / Pedi",
 ] as const;
 
-const CLIENT_WORLD_OPTIONS = ["Friend", "Family", "Work", "Social", "Routine", "Events"] as const;
+const CLIENT_WORLD_OPTIONS = [
+  "Friend",
+  "Family",
+  "Co-worker",
+  "Instagram",
+  "TikTok",
+  "Routine",
+  "Events",
+] as const;
 
 export default function EmpoweringPersonalConnectionDeck() {
   return (
