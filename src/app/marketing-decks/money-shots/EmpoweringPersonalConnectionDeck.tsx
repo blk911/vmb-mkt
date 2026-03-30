@@ -117,12 +117,12 @@ function LegacyThreeColumnFrame() {
 function PresentationStepFrame({ stepIndex }: { stepIndex: number }) {
   return (
     <>
-      <div className="mb-6 flex flex-col gap-1 border-b border-neutral-200/80 pb-5 md:flex-row md:items-end md:justify-between">
-        <div>
+      <div className="mb-6 border-b border-neutral-200/80 pb-5 text-center">
+        <div className="mx-auto w-full max-w-3xl">
           <p className="mb-1 text-[11px] font-medium tabular-nums text-neutral-500">
             Step {stepIndex + 1} of {TOTAL_STEPS}
           </p>
-          <p className="max-w-3xl font-sans text-[18px] font-semibold uppercase leading-tight tracking-tight text-neutral-900">
+          <p className="font-sans text-[18px] font-semibold uppercase leading-tight tracking-tight text-neutral-900">
             Clients have options. Loyalty—without connection—is fragile.
           </p>
         </div>
