@@ -33,8 +33,8 @@ export default function EmpoweringPersonalConnectionDeck() {
     <div className="w-full min-w-0 rounded-2xl border border-neutral-200/90 bg-gradient-to-b from-white to-neutral-50/80 p-6 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12)] md:p-8">
       <div className="mb-6 flex flex-col gap-1 border-b border-neutral-200/80 pb-5 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
-            Empowering Personal Connection
+          <p className="max-w-3xl text-[10px] font-semibold uppercase leading-snug tracking-[0.2em] text-neutral-500">
+            Clients have options. Loyalty—without connection—is fragile.
           </p>
         </div>
       </div>
