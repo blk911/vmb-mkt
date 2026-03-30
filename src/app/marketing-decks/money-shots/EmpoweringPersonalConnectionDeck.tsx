@@ -49,11 +49,25 @@ function PersonalCareStack({ align }: { align: "left" | "right" }) {
   );
 }
 
-/** Step 1 — same dark Client card as Step 2 but without the small uppercase “CLIENT” line; “chooses…” one size larger than Step 2’s text-sm. */
+const STEP1_MAP_SRC = "/empowering-personal-connection-dtc-map.png";
+
+/** Step 1 — same dark Client card as Step 2 but without the small uppercase “CLIENT” line; “chooses…” one size larger than Step 2’s text-sm. DTC map at 450px wide, ~50% opacity behind content. */
 function StepOneFrame() {
   return (
     <div className="relative w-full min-w-0 overflow-x-auto overflow-y-visible bg-white px-2 py-8 md:px-6 md:py-12">
-      <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col items-stretch gap-10 md:flex-row md:items-center md:justify-between md:gap-12 lg:gap-16 xl:gap-20">
+      <div
+        className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center"
+        aria-hidden
+      >
+        <img
+          src={STEP1_MAP_SRC}
+          alt=""
+          width={450}
+          height={293}
+          className="h-auto w-[450px] max-w-[min(100%,450px)] opacity-50 select-none"
+        />
+      </div>
+      <div className="relative z-10 mx-auto flex w-full min-w-0 max-w-5xl flex-col items-stretch gap-10 md:flex-row md:items-center md:justify-between md:gap-12 lg:gap-16 xl:gap-20">
         <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-2 text-center md:min-h-[12rem] md:items-center md:px-6">
           <div className="rounded-2xl bg-neutral-800 px-10 py-7 shadow-md md:px-12 md:py-8">
             <p className="text-2xl font-semibold leading-tight tracking-tight text-white md:text-[1.65rem]">Client</p>
