@@ -35,7 +35,7 @@ const TOTAL_STEPS = 2;
 
 const STEP_TAGLINES = [
   "Clients have options. Loyalty—without connection—is fragile.",
-  "Loyal clients are the marketing engine — unlock revenue in your client book",
+  "Loyal clients are your marketing engine — unlock revenue in your client book",
 ] as const;
 
 function PersonalCareStack({ align }: { align: "left" | "right" }) {
