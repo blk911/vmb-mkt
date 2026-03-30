@@ -4,7 +4,8 @@ import { useCallback, useState } from "react";
 
 /**
  * Presentation #6 — Empowering Personal Connection (SALONs money-shots).
- * Step 1–2: same layout for now (duplicate); customize Step 2 later.
+ * Step 1: personal care on right; no client card; no network column; larger “chooses…”
+ * Step 2: prior three-column layout (Client + both stacks) for now.
  */
 
 const PERSONAL_CARE_OPTIONS = [
@@ -32,7 +33,70 @@ const CLIENT_WORLD_OPTIONS = [
 
 const TOTAL_STEPS = 2;
 
-/** Duplicate of Step 1 layout — branch on `stepIndex` later for Step 2 edits. */
+function PersonalCareStack({ align }: { align: "left" | "right" }) {
+  const justify = align === "right" ? "items-end md:items-end" : "items-start md:items-start";
+  return (
+    <aside className={`flex min-w-0 flex-col gap-2.5 justify-self-stretch ${justify}`}>
+      {PERSONAL_CARE_OPTIONS.map((label) => (
+        <span
+          key={label}
+          className="block w-full max-w-[13rem] rounded-full border border-neutral-200/90 bg-neutral-50/95 px-4 py-2.5 text-center text-base font-medium leading-snug text-neutral-700 shadow-sm"
+        >
+          {label}
+        </span>
+      ))}
+    </aside>
+  );
+}
+
+/** Step 1 — personal care on right; no Client card; no network list; “chooses…” only, one step larger than former text-sm. */
+function StepOneFrame() {
+  return (
+    <div className="relative w-full min-w-0 overflow-x-auto overflow-y-visible bg-white px-2 py-8 md:px-6 md:py-12">
+      <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col items-stretch gap-10 md:flex-row md:items-center md:justify-between md:gap-12 lg:gap-16 xl:gap-20">
+        <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-2 text-center md:min-h-[12rem] md:items-center md:px-6">
+          <p className="max-w-md text-lg font-medium leading-snug text-neutral-800 md:text-xl">
+            chooses where to go
+          </p>
+        </div>
+        <PersonalCareStack align="right" />
+      </div>
+    </div>
+  );
+}
+
+/** Step 2 — legacy: Client center, personal care left, client world right. */
+function LegacyThreeColumnFrame() {
+  return (
+    <div className="relative w-full min-w-0 overflow-x-auto overflow-y-visible bg-white px-2 py-8 md:px-6 md:py-12">
+      <div className="mx-auto grid w-full min-w-0 max-w-5xl grid-cols-1 items-center gap-y-10 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-x-8 md:gap-y-0 lg:gap-x-12 xl:gap-x-20">
+        <PersonalCareStack align="left" />
+
+        <div className="flex min-w-0 shrink-0 flex-col items-center justify-self-center text-center md:-translate-y-2">
+          <div className="rounded-2xl bg-neutral-800 px-10 py-7 shadow-md md:px-12 md:py-8">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">CLIENT</p>
+            <p className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-white md:text-[1.65rem]">
+              Client
+            </p>
+            <p className="mt-2 text-sm leading-snug text-neutral-400">chooses where to go</p>
+          </div>
+        </div>
+
+        <aside className="flex min-w-0 flex-col items-start gap-2.5 justify-self-stretch md:justify-self-start">
+          {CLIENT_WORLD_OPTIONS.map((label) => (
+            <span
+              key={label}
+              className="block w-full max-w-[13rem] rounded-full border border-neutral-200/90 bg-neutral-50/95 px-4 py-2.5 text-center text-base font-medium leading-snug text-neutral-700 shadow-sm"
+            >
+              {label}
+            </span>
+          ))}
+        </aside>
+      </div>
+    </div>
+  );
+}
+
 function PresentationStepFrame({ stepIndex }: { stepIndex: number }) {
   return (
     <>
@@ -47,41 +111,7 @@ function PresentationStepFrame({ stepIndex }: { stepIndex: number }) {
         </div>
       </div>
 
-      <div className="relative w-full min-w-0 overflow-x-auto overflow-y-visible bg-white px-2 py-8 md:px-6 md:py-12">
-        <div className="mx-auto grid w-full min-w-0 max-w-5xl grid-cols-1 items-center gap-y-10 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-x-8 md:gap-y-0 lg:gap-x-12 xl:gap-x-20">
-          <aside className="flex min-w-0 flex-col items-end gap-2.5 justify-self-stretch md:justify-self-end">
-            {PERSONAL_CARE_OPTIONS.map((label) => (
-              <span
-                key={label}
-                className="block w-full max-w-[13rem] rounded-full border border-neutral-200/90 bg-neutral-50/95 px-4 py-2.5 text-center text-base font-medium leading-snug text-neutral-700 shadow-sm"
-              >
-                {label}
-              </span>
-            ))}
-          </aside>
-
-          <div className="flex min-w-0 shrink-0 flex-col items-center justify-self-center text-center md:-translate-y-2">
-            <div className="rounded-2xl bg-neutral-800 px-10 py-7 shadow-md md:px-12 md:py-8">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">CLIENT</p>
-              <p className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-white md:text-[1.65rem]">
-                Client
-              </p>
-              <p className="mt-2 text-sm leading-snug text-neutral-400">chooses where to go</p>
-            </div>
-          </div>
-
-          <aside className="flex min-w-0 flex-col items-start gap-2.5 justify-self-stretch md:justify-self-start">
-            {CLIENT_WORLD_OPTIONS.map((label) => (
-              <span
-                key={label}
-                className="block w-full max-w-[13rem] rounded-full border border-neutral-200/90 bg-neutral-50/95 px-4 py-2.5 text-center text-base font-medium leading-snug text-neutral-700 shadow-sm"
-              >
-                {label}
-              </span>
-            ))}
-          </aside>
-        </div>
-      </div>
+      {stepIndex === 0 ? <StepOneFrame /> : <LegacyThreeColumnFrame />}
     </>
   );
 }
