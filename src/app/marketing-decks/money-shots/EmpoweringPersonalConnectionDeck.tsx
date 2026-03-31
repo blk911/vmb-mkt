@@ -37,8 +37,7 @@ const TOTAL_STEPS = 3;
 const STEP_TAGLINES = [
   "Clients have options. Loyalty—without connection—is fragile.",
   "Loyal clients are your marketing engine — unlock revenue in your client book",
-  /** Placeholder: duplicate Step 2 until customized */
-  "Loyal clients are your marketing engine — unlock revenue in your client book",
+  "Clients loyalty is revenue -- Incentives unlock YOUR hidden revenue",
 ] as const;
 
 /** Step 1 Client card is the standard for all steps in this deck. */
