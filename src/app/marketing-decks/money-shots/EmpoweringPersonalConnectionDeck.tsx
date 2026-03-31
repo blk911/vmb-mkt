@@ -212,6 +212,11 @@ function StepFourFrame() {
           </div>
 
           <div className="w-full max-w-[13rem] rounded-2xl border border-neutral-200/90 bg-neutral-50/95 px-5 py-4 text-center shadow-sm">
+            <p className="text-base font-semibold leading-snug text-neutral-800">Deb Dazzles</p>
+            <p className="mt-0.5 text-xs font-medium text-neutral-500">VMB Nail Salon</p>
+          </div>
+
+          <div className="w-full max-w-[13rem] rounded-2xl border border-neutral-200/90 bg-neutral-50/95 px-5 py-4 text-center shadow-sm">
             <p className="text-base font-semibold leading-snug text-neutral-800">Rose Petals</p>
             <p className="mt-0.5 text-xs font-medium text-neutral-500">VMB Spa</p>
           </div>
