@@ -5,7 +5,8 @@ import { useCallback, useState } from "react";
 /**
  * Presentation #6 — Empowering Personal Connection (SALONs money-shots).
  * Step 1: Client card above DTC map (vertical stack, not layered); balanced vertical gaps; map ~600px full color; personal care right; no network column.
- * Step 2–3: three-column layout (same frame for now; Step 3 duplicates Step 2 for customization); Client center card; personal care left; client world right.
+ * Step 2: three-column layout; Client center; personal care left; client world right (symmetric outer margins).
+ * Step 3: NAILS only (left, aligned with Client); Client center; FRIENDS + INSTA on the right of Client.
  */
 
 const PERSONAL_CARE_OPTIONS = [
@@ -52,6 +53,9 @@ const STANDARD_CENTER_CARD: CenterCardConfig = {
   subtitle: "chooses where to go",
 };
 
+const pillClassName =
+  "block w-full max-w-[13rem] rounded-full border border-neutral-200/90 bg-neutral-50/95 px-4 py-2.5 text-center text-base font-medium leading-snug text-neutral-700 shadow-sm";
+
 function CenterCard({ config }: { config: CenterCardConfig }) {
   return (
     <div className="rounded-2xl bg-neutral-800 px-10 py-7 shadow-md md:px-12 md:py-8">
@@ -73,10 +77,7 @@ function PersonalCareStack({ align }: { align: "left" | "right" }) {
   return (
     <aside className={`flex min-w-0 flex-col gap-2.5 justify-self-stretch ${justify}`}>
       {PERSONAL_CARE_OPTIONS.map((label) => (
-        <span
-          key={label}
-          className="block w-full max-w-[13rem] rounded-full border border-neutral-200/90 bg-neutral-50/95 px-4 py-2.5 text-center text-base font-medium leading-snug text-neutral-700 shadow-sm"
-        >
+        <span key={label} className={pillClassName}>
           {label}
         </span>
       ))}
@@ -116,10 +117,10 @@ function StepOneFrame() {
   );
 }
 
-/** Steps 2 & 3 — Client center, personal care left, client world right (Step 3 starts as duplicate of Step 2). */
+/** Step 2 — Client center, personal care left, client world right; outer L/R padding matched via symmetric grid and right column aligned to the outer edge. */
 function ThreeColumnFrame() {
   return (
-    <div className="relative w-full min-w-0 overflow-x-auto overflow-y-visible bg-white px-2 py-8 md:px-6 md:py-12">
+    <div className="relative w-full min-w-0 overflow-x-auto overflow-y-visible bg-white px-4 py-8 md:px-6 md:py-12">
       <div className="mx-auto grid w-full min-w-0 max-w-5xl grid-cols-1 items-center gap-y-10 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-x-8 md:gap-y-0 lg:gap-x-12 xl:gap-x-20">
         <PersonalCareStack align="left" />
 
@@ -127,12 +128,37 @@ function ThreeColumnFrame() {
           <CenterCard config={STANDARD_CENTER_CARD} />
         </div>
 
-        <aside className="flex min-w-0 flex-col items-start gap-2.5 justify-self-stretch md:justify-self-start">
+        <aside className="flex w-full min-w-0 flex-col items-center gap-2.5 justify-self-stretch md:items-end">
           {CLIENT_WORLD_OPTIONS.map((label) => (
-            <span
-              key={label}
-              className="block w-full max-w-[13rem] rounded-full border border-neutral-200/90 bg-neutral-50/95 px-4 py-2.5 text-center text-base font-medium leading-snug text-neutral-700 shadow-sm"
-            >
+            <span key={label} className={pillClassName}>
+              {label}
+            </span>
+          ))}
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+const STEP3_SALON_LABEL = "NAILS";
+const STEP3_NET_LABELS = ["FRIENDS", "INSTA"] as const;
+
+/** Step 3 — one salon pill (NAILS) left of Client, vertically aligned; FRIENDS + INSTA right of Client; symmetric horizontal padding. */
+function StepThreeFrame() {
+  return (
+    <div className="relative w-full min-w-0 overflow-x-auto overflow-y-visible bg-white px-4 py-8 md:px-6 md:py-12">
+      <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col items-center gap-10 md:flex-row md:items-center md:justify-between md:gap-6 lg:gap-8">
+        <aside className="flex w-full min-w-0 flex-1 flex-col items-center md:min-h-0 md:flex-[1_1_0%] md:items-center md:justify-end">
+          <span className={`${pillClassName} font-semibold uppercase tracking-wide`}>{STEP3_SALON_LABEL}</span>
+        </aside>
+
+        <div className="flex shrink-0 flex-col items-center text-center">
+          <CenterCard config={STANDARD_CENTER_CARD} />
+        </div>
+
+        <aside className="flex w-full min-w-0 flex-1 flex-col items-center gap-2.5 md:flex-[1_1_0%] md:items-start md:justify-center md:pl-1">
+          {STEP3_NET_LABELS.map((label) => (
+            <span key={label} className={`${pillClassName} font-semibold uppercase tracking-wide`}>
               {label}
             </span>
           ))}
@@ -156,7 +182,7 @@ function PresentationStepFrame({ stepIndex }: { stepIndex: number }) {
         </div>
       </div>
 
-      {stepIndex === 0 ? <StepOneFrame /> : <ThreeColumnFrame />}
+      {stepIndex === 0 ? <StepOneFrame /> : stepIndex === 1 ? <ThreeColumnFrame /> : <StepThreeFrame />}
     </>
   );
 }
