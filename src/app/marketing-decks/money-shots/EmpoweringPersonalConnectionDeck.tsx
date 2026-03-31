@@ -151,7 +151,6 @@ function StepThreeFrame() {
   return (
     <div className="relative w-full min-w-0 overflow-x-auto overflow-y-visible bg-white px-4 py-8 md:px-6 md:py-12">
       <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col items-center gap-10 md:flex-row md:items-center md:justify-between md:gap-6 lg:gap-8">
-
         {/* Left — salon contact card */}
         <aside className="flex w-full min-w-0 flex-1 flex-col items-center md:flex-[1_1_0%] md:items-end md:justify-center md:pr-2">
           <div className="rounded-2xl border border-neutral-200/90 bg-neutral-50/95 px-5 py-4 text-center shadow-sm">
