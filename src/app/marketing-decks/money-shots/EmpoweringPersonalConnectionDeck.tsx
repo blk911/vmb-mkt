@@ -145,12 +145,13 @@ const STEP3_CENTER_CARD: CenterCardConfig = {
 };
 
 const STEP3_FRIENDS_SUBS = ["KPI Sisters", "Workouts", "Travel Group"] as const;
+const STEP3_INSTA_STATS = ["411 posts", "497K followers", "1,672 following"] as const;
 
 /** Step 3 — "Deb Dazzles / VMB Nail Salon" left; Client / VMB Co-Mkt Team center; Friends group + Instagram stats right. */
 function StepThreeFrame() {
   return (
     <div className="relative w-full min-w-0 overflow-x-auto overflow-y-visible bg-white px-4 py-8 md:px-6 md:py-12">
-      <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col items-center gap-10 md:flex-row md:items-center md:justify-between md:gap-6 lg:gap-8">
+      <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col items-center gap-10 md:flex-row md:items-center md:justify-between md:gap-10 lg:gap-12">
         {/* Left — salon contact card */}
         <aside className="flex w-full min-w-0 flex-1 flex-col items-center md:flex-[1_1_0%] md:items-end md:justify-center md:pr-2">
           <div className="rounded-2xl border border-neutral-200/90 bg-neutral-50/95 px-5 py-4 text-center shadow-sm">
@@ -160,31 +161,33 @@ function StepThreeFrame() {
         </aside>
 
         {/* Center — Client card with Step 3 subtitle */}
-        <div className="flex shrink-0 flex-col items-center text-center">
+        <div className="flex shrink-0 flex-col items-center px-2 text-center md:px-4">
           <CenterCard config={STEP3_CENTER_CARD} />
         </div>
 
         {/* Right — Friends group + Instagram stats */}
         <aside className="flex w-full min-w-0 flex-1 flex-col items-center gap-3 md:flex-[1_1_0%] md:items-start md:justify-center md:pl-1">
-          {/* Friends group with sub-list */}
-          <div className="w-full max-w-[13rem]">
-            <span className={pillClassName}>Friends</span>
-            <div className="mt-1.5 flex flex-col gap-1 pl-3">
-              {STEP3_FRIENDS_SUBS.map((sub) => (
-                <span key={sub} className="text-xs font-medium text-neutral-500 leading-snug">
-                  · {sub}
-                </span>
-              ))}
-            </div>
+          {/* Friends group card */}
+          <div className="w-full max-w-[13rem] rounded-2xl border border-neutral-200/90 bg-neutral-50/95 px-4 py-3 shadow-sm text-center">
+            <p className="text-sm font-semibold text-neutral-700">Friends</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-neutral-500">
+              {STEP3_FRIENDS_SUBS[0]}
+              <br />
+              {STEP3_FRIENDS_SUBS[1]}
+              <br />
+              {STEP3_FRIENDS_SUBS[2]}
+            </p>
           </div>
 
-          {/* Instagram stats */}
+          {/* Instagram card */}
           <div className="w-full max-w-[13rem] rounded-2xl border border-neutral-200/90 bg-neutral-50/95 px-4 py-3 shadow-sm text-center">
             <p className="text-sm font-semibold text-neutral-700">Instagram</p>
             <p className="mt-1 text-[11px] leading-relaxed text-neutral-500">
-              411 posts<br />
-              497K followers<br />
-              1,672 following
+              {STEP3_INSTA_STATS[0]}
+              <br />
+              {STEP3_INSTA_STATS[1]}
+              <br />
+              {STEP3_INSTA_STATS[2]}
             </p>
           </div>
         </aside>
