@@ -7,7 +7,7 @@ import { useCallback, useState } from "react";
  * Step 1: Client card above DTC map (vertical stack, not layered); balanced vertical gaps; map ~600px full color; personal care right; no network column.
  * Step 2: three-column layout; Client center; personal care left; client world right (symmetric outer margins).
  * Step 3: "Deb Dazzles / VMB Nail Salon" card left; Client / "VMB Co-Mkt Team" center; Friends group + Instagram stats right.
- * Step 4: keep Deb Dazzles left; move a smaller Client card to the right column, stacked above Friends + Instagram.
+ * Step 4: left stack of salon cards; right stack with VMB Client over Friends + Instagram.
  */
 
 const PERSONAL_CARE_OPTIONS = [
@@ -199,20 +199,30 @@ function StepThreeFrame() {
   );
 }
 
-/** Step 4 — Deb Dazzles stays left; right stack is Client (small) over Friends and Instagram cards. */
+/** Step 4 — left salon stack; right stack is VMB Client (small) over Friends and Instagram cards. */
 function StepFourFrame() {
   return (
     <div className="relative w-full min-w-0 overflow-x-auto overflow-y-visible bg-white px-4 py-8 md:px-6 md:py-12">
       <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col items-center gap-10 md:flex-row md:items-center md:justify-between md:gap-10 lg:gap-12">
-        {/* Left — salon contact card (unchanged) */}
-        <aside className="flex w-full min-w-0 flex-1 flex-col items-center md:flex-[1_1_0%] md:items-end md:justify-center md:pr-2">
-          <div className="rounded-2xl border border-neutral-200/90 bg-neutral-50/95 px-5 py-4 text-center shadow-sm">
-            <p className="text-base font-semibold leading-snug text-neutral-800">Deb Dazzles</p>
-            <p className="mt-0.5 text-xs font-medium text-neutral-500">VMB Nail Salon</p>
+        {/* Left — salon stack */}
+        <aside className="flex w-full min-w-0 flex-1 flex-col items-center gap-3 md:flex-[1_1_0%] md:items-end md:justify-center md:pr-2">
+          <div className="w-full max-w-[13rem] rounded-2xl bg-neutral-800 px-4 py-3 text-center shadow-md">
+            <p className="text-3xl font-semibold leading-tight tracking-tight text-white">VMB Salons</p>
+            <p className="mt-1 text-sm leading-relaxed text-neutral-300">VMB Salon Networks</p>
+          </div>
+
+          <div className="w-full max-w-[13rem] rounded-2xl border border-neutral-200/90 bg-neutral-50/95 px-5 py-4 text-center shadow-sm">
+            <p className="text-base font-semibold leading-snug text-neutral-800">Rose Petals</p>
+            <p className="mt-0.5 text-xs font-medium text-neutral-500">VMB Spa</p>
+          </div>
+
+          <div className="w-full max-w-[13rem] rounded-2xl border border-neutral-200/90 bg-neutral-50/95 px-5 py-4 text-center shadow-sm">
+            <p className="text-base font-semibold leading-snug text-neutral-800">Blown Away</p>
+            <p className="mt-0.5 text-xs font-medium text-neutral-500">VMB Hair Salon</p>
           </div>
         </aside>
 
-        {/* Spacer keeps Deb Dazzles position while stack moves right */}
+        {/* Spacer keeps left stack position while right stack stays far right */}
         <div className="hidden md:block md:flex-[1_1_0%]" />
 
         {/* Right — small Client card stacked over Friends + Instagram */}
