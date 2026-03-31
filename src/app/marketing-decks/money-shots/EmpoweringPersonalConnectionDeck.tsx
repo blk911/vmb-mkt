@@ -6,7 +6,7 @@ import { useCallback, useState } from "react";
  * Presentation #6 — Empowering Personal Connection (SALONs money-shots).
  * Step 1: Client card above DTC map (vertical stack, not layered); balanced vertical gaps; map ~600px full color; personal care right; no network column.
  * Step 2: three-column layout; Client center; personal care left; client world right (symmetric outer margins).
- * Step 3: NAILS only (left, aligned with Client); Client center; FRIENDS + INSTA on the right of Client.
+ * Step 3: NAILS left; center Deb Dazzles / VMB Nail Salon / VMB Co-Mkt Team; FRIENDS + sub-list; INSTA + stats.
  */
 
 const PERSONAL_CARE_OPTIONS = [
@@ -44,12 +44,20 @@ const STEP_TAGLINES = [
 type CenterCardConfig = {
   kicker?: string;
   title: string;
+  /** Optional line between title and main subtitle (e.g. Step 3 sub note). */
+  subNote?: string;
   subtitle: string;
 };
 
 const STANDARD_CENTER_CARD: CenterCardConfig = {
   title: "Client",
   subtitle: "chooses where to go",
+};
+
+const STEP3_CENTER_CARD: CenterCardConfig = {
+  title: "Deb Dazzles",
+  subNote: "VMB Nail Salon",
+  subtitle: "VMB Co-Mkt Team",
 };
 
 const pillClassName =
@@ -66,6 +74,9 @@ function CenterCard({ config }: { config: CenterCardConfig }) {
       >
         {config.title}
       </p>
+      {config.subNote ? (
+        <p className="mt-1.5 text-sm leading-snug text-neutral-400">{config.subNote}</p>
+      ) : null}
       <p className="mt-2 text-base leading-snug text-neutral-400 md:text-lg">{config.subtitle}</p>
     </div>
   );
@@ -140,9 +151,10 @@ function ThreeColumnFrame() {
 }
 
 const STEP3_SALON_LABEL = "NAILS";
-const STEP3_NET_LABELS = ["FRIENDS", "INSTA"] as const;
+const STEP3_FRIENDS_SUBLIST = ["KPI Sisters", "Workouts", "Travel Group"] as const;
+const STEP3_INSTA_STATS = "411 posts, 497K followers, 1,672 following";
 
-/** Step 3 — one salon pill (NAILS) left of Client, vertically aligned; FRIENDS + INSTA right of Client; symmetric horizontal padding. */
+/** Step 3 — NAILS left; Deb Dazzles center card; FRIENDS + sub-list; INSTA + follower stats. */
 function StepThreeFrame() {
   return (
     <div className="relative w-full min-w-0 overflow-x-auto overflow-y-visible bg-white px-4 py-8 md:px-6 md:py-12">
@@ -152,15 +164,22 @@ function StepThreeFrame() {
         </aside>
 
         <div className="flex shrink-0 flex-col items-center text-center">
-          <CenterCard config={STANDARD_CENTER_CARD} />
+          <CenterCard config={STEP3_CENTER_CARD} />
         </div>
 
-        <aside className="flex w-full min-w-0 flex-1 flex-col items-center gap-2.5 md:flex-[1_1_0%] md:items-start md:justify-center md:pl-1">
-          {STEP3_NET_LABELS.map((label) => (
-            <span key={label} className={`${pillClassName} font-semibold uppercase tracking-wide`}>
-              {label}
-            </span>
-          ))}
+        <aside className="flex w-full min-w-0 flex-1 flex-col items-center gap-4 md:flex-[1_1_0%] md:items-start md:justify-center md:pl-1">
+          <div className="flex w-full max-w-[15rem] flex-col items-stretch gap-2">
+            <span className={`${pillClassName} font-semibold uppercase tracking-wide`}>FRIENDS</span>
+            <ul className="flex flex-col gap-1.5 border-l-2 border-neutral-200 pl-3 text-left text-sm leading-snug text-neutral-600">
+              {STEP3_FRIENDS_SUBLIST.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex w-full max-w-[15rem] flex-col items-stretch gap-2">
+            <span className={`${pillClassName} font-semibold uppercase tracking-wide`}>INSTA</span>
+            <p className="text-left text-xs leading-relaxed text-neutral-600">{STEP3_INSTA_STATS}</p>
+          </div>
         </aside>
       </div>
     </div>
