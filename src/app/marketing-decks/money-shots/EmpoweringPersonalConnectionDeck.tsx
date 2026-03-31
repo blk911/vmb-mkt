@@ -218,7 +218,7 @@ function StepFourFrame() {
         {/* Right — small Client card stacked over Friends + Instagram */}
         <aside className="flex w-full min-w-0 flex-1 flex-col items-center gap-3 md:flex-[1_1_0%] md:items-start md:justify-center md:pl-1">
           <div className="w-full max-w-[13rem] rounded-2xl bg-neutral-800 px-4 py-3 text-center shadow-md">
-            <p className="text-4xl font-semibold leading-tight tracking-tight text-white">Client</p>
+            <p className="text-3xl font-semibold leading-tight tracking-tight text-white">VMB Client</p>
             <p className="mt-1 text-sm leading-relaxed text-neutral-300">VMB Co-Mkt Team</p>
           </div>
 
