@@ -7,6 +7,7 @@ import { useCallback, useState } from "react";
  * Step 1: Client card above DTC map (vertical stack, not layered); balanced vertical gaps; map ~600px full color; personal care right; no network column.
  * Step 2: three-column layout; Client center; personal care left; client world right (symmetric outer margins).
  * Step 3: "Deb Dazzles / VMB Nail Salon" card left; Client / "VMB Co-Mkt Team" center; Friends group + Instagram stats right.
+ * Step 4: duplicate of Step 3 (ready for next round of edits).
  */
 
 const PERSONAL_CARE_OPTIONS = [
@@ -32,11 +33,12 @@ const CLIENT_WORLD_OPTIONS = [
   "Events",
 ] as const;
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 4;
 
 const STEP_TAGLINES = [
   "Clients have options. Loyalty—without connection—is fragile.",
   "Loyal clients are your marketing engine — unlock revenue in your client book",
+  "Clients loyalty = Success -- VMB Incentives unlock YOUR hidden revenue",
   "Clients loyalty = Success -- VMB Incentives unlock YOUR hidden revenue",
 ] as const;
 
@@ -197,6 +199,11 @@ function StepThreeFrame() {
   );
 }
 
+/** Step 4 — duplicate of Step 3 for upcoming edits. */
+function StepFourFrame() {
+  return <StepThreeFrame />;
+}
+
 function PresentationStepFrame({ stepIndex }: { stepIndex: number }) {
   return (
     <>
@@ -211,7 +218,15 @@ function PresentationStepFrame({ stepIndex }: { stepIndex: number }) {
         </div>
       </div>
 
-      {stepIndex === 0 ? <StepOneFrame /> : stepIndex === 1 ? <ThreeColumnFrame /> : <StepThreeFrame />}
+      {stepIndex === 0 ? (
+        <StepOneFrame />
+      ) : stepIndex === 1 ? (
+        <ThreeColumnFrame />
+      ) : stepIndex === 2 ? (
+        <StepThreeFrame />
+      ) : (
+        <StepFourFrame />
+      )}
     </>
   );
 }
@@ -244,7 +259,7 @@ export default function EmpoweringPersonalConnectionDeck() {
           Back
         </button>
         <p className="text-center text-[11px] text-neutral-500 sm:px-2">
-          {atLast ? "End of sequence — edit Step 3 or add more steps later." : "Next advances the story"}
+          {atLast ? "End of sequence — edit Step 4 or add more steps later." : "Next advances the story"}
         </p>
         <button
           type="button"
