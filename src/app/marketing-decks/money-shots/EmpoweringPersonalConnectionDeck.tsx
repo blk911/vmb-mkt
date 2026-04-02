@@ -343,17 +343,22 @@ function ClosingValueSlide({ config }: { config: ClosingValueSlideConfig }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
-          {config.benefits.map((item) => (
-            <article
+        <ol className="space-y-2">
+          {config.benefits.map((item, idx) => (
+            <li
               key={item.title}
-              className="min-h-[120px] rounded-xl border border-neutral-200/90 bg-neutral-50/95 px-5 py-4 shadow-sm"
+              className="flex items-start gap-3 rounded-xl border border-neutral-200/90 bg-neutral-50/95 px-4 py-3 shadow-sm"
             >
-              <h4 className="text-base font-semibold leading-snug text-neutral-900">{item.title}</h4>
-              <p className="mt-1.5 text-sm leading-relaxed text-neutral-700">{item.body}</p>
-            </article>
+              <span className="inline-flex h-6 min-w-6 items-center justify-center text-base leading-none">
+                {`${idx + 1}\uFE0F\u20E3`}
+              </span>
+              <div>
+                <h4 className="text-base font-semibold leading-snug text-neutral-900">{item.title}</h4>
+                <p className="mt-1 text-sm leading-relaxed text-neutral-700">{item.body}</p>
+              </div>
+            </li>
           ))}
-        </div>
+        </ol>
 
         {config.footnote ? (
           <p className="text-center text-[11px] text-neutral-500">{config.footnote}</p>
