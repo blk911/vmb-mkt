@@ -33,12 +33,13 @@ const CLIENT_WORLD_OPTIONS = [
   "Events",
 ] as const;
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 const STEP_TAGLINES = [
   "Clients have options. Loyalty—without connection—is fragile.",
   "THE CLIENT IS THE HUB — SERVICES FLOW IN, INFLUENCE FLOWS OUT",
   "VMB TURNS CLIENT LOYALTY INTO A REVENUE NETWORK",
+  "ACTIVATE YOUR CLIENT NETWORK — OWN THE RELATIONSHIP, OWN THE GROWTH",
   "ACTIVATE YOUR CLIENT NETWORK — OWN THE RELATIONSHIP, OWN THE GROWTH",
 ] as const;
 
@@ -46,6 +47,7 @@ const STEP_COMMENTS = [
   "Without a system to engage and reward clients, loyalty is temporary — and every appointment is at risk of moving elsewhere.",
   "Clients are not just buyers. They are the connection point between services, salons, technicians, and future bookings.",
   "Clients already share, recommend, and influence — VMB captures and rewards that behavior, turning natural connections into consistent, trackable growth.",
+  "When you focus on where your business actually comes from — your clients — loyalty compounds, referrals scale, and revenue follows.",
   "When you focus on where your business actually comes from — your clients — loyalty compounds, referrals scale, and revenue follows.",
 ] as const;
 
@@ -276,6 +278,11 @@ function StepFourFrame() {
   );
 }
 
+/** Step 5 — duplicate of Step 4 for upcoming edits. */
+function StepFiveFrame() {
+  return <StepFourFrame />;
+}
+
 function PresentationStepFrame({ stepIndex }: { stepIndex: number }) {
   return (
     <>
@@ -296,8 +303,10 @@ function PresentationStepFrame({ stepIndex }: { stepIndex: number }) {
         <ThreeColumnFrame />
       ) : stepIndex === 2 ? (
         <StepThreeFrame />
-      ) : (
+      ) : stepIndex === 3 ? (
         <StepFourFrame />
+      ) : (
+        <StepFiveFrame />
       )}
     </>
   );
@@ -335,7 +344,7 @@ export default function EmpoweringPersonalConnectionDeck() {
           Back
         </button>
         <p className="text-center text-[11px] text-neutral-500 sm:px-2">
-          {atLast ? "End of sequence — edit Step 4 or add more steps later." : "Next advances the story"}
+          {atLast ? "End of sequence — edit Step 5 or add more steps later." : "Next advances the story"}
         </p>
         <button
           type="button"
