@@ -33,14 +33,16 @@ const CLIENT_WORLD_OPTIONS = [
   "Events",
 ] as const;
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 7;
 
 const STEP_TAGLINES = [
   "Clients have options. Loyalty—without connection—is fragile.",
   "THE CLIENT IS THE HUB — SERVICES FLOW IN, INFLUENCE FLOWS OUT",
   "VMB TURNS CLIENT LOYALTY INTO A REVENUE NETWORK",
   "ACTIVATE YOUR CLIENT NETWORK — OWN THE RELATIONSHIP, OWN THE GROWTH",
-  "ACTIVATE YOUR CLIENT NETWORK — OWN THE RELATIONSHIP, OWN THE GROWTH",
+  "WHY VMB SALONS WIN — IMMEDIATE REVENUE, ZERO FRICTION",
+  "WHY CLIENTS STAY — MORE VALUE, MORE ACCESS, MORE REASONS TO RETURN",
+  "ACTIVATE THE NETWORK — OWN THE RELATIONSHIP, OWN THE GROWTH",
 ] as const;
 
 const STEP_COMMENTS = [
@@ -49,6 +51,8 @@ const STEP_COMMENTS = [
   "Clients already share, recommend, and influence — VMB captures and rewards that behavior, turning natural connections into consistent, trackable growth.",
   "When you focus on where your business actually comes from — your clients — loyalty compounds, referrals scale, and revenue follows.",
   "When you focus on where your business actually comes from — your clients — loyalty compounds, referrals scale, and revenue follows.",
+  "Clients already share, recommend, and influence every day — VMB rewards that natural behavior with more value, better access, and stronger long-term relationships.",
+  "The industry already runs on client connection. VMB simply makes it visible, valuable, and scalable.",
 ] as const;
 
 /** Step-specific center cards for Steps 1 and 2. */
@@ -163,6 +167,93 @@ const STEP3_CENTER_CARD: CenterCardConfig = {
 const STEP3_FRIENDS_SUBS = ["KPI Sisters", "Workouts", "Travel Group"] as const;
 const STEP3_INSTA_STATS = ["411 posts", "497K followers", "1,672 following"] as const;
 
+type ClosingBenefitItem = {
+  title: string;
+  body: string;
+};
+
+type ClosingValueSlideConfig = {
+  centerTitle: string;
+  centerSubtitle: string;
+  leftTitle: string;
+  leftLines: string[];
+  rightTitle: string;
+  rightLines: string[];
+  benefits: ClosingBenefitItem[];
+  footnote?: string;
+};
+
+const STEP5_SALON_CLOSE: ClosingValueSlideConfig = {
+  centerTitle: "VMB Salons",
+  centerSubtitle: "Revenue + network growth",
+  leftTitle: "Immediate",
+  leftLines: ["Existing clients", "Prepaid bookings", "Faster cash flow"],
+  rightTitle: "Compounding",
+  rightLines: ["Co-marketing network", "Cross-salon reach", "Recurring revenue"],
+  benefits: [
+    {
+      title: "Immediate Revenue",
+      body: "Earn from the clients you already serve — without waiting to build a new audience.",
+    },
+    {
+      title: "Prepaid = Fewer Cancellations",
+      body: "Lock in appointments earlier and reduce revenue loss from no-shows and last-minute changes.",
+    },
+    {
+      title: "Easy Client Registration",
+      body: "Simple onboarding removes friction and gets clients into your revenue network fast.",
+    },
+    {
+      title: "Free Co-Marketing",
+      body: "VMB helps turn natural client sharing and recommendations into active promotion.",
+    },
+    {
+      title: "Salon Network Effects",
+      body: "Build relationships with friend/family salon owners and grow through trusted cross-pollination.",
+    },
+    {
+      title: "Recurring Revenue Stream",
+      body: "Stronger client connection creates repeatable, compounding revenue over time.",
+    },
+  ],
+  footnote: "* $25/year license verification required for licensed techs/salons.",
+};
+
+const STEP6_CLIENT_CLOSE: ClosingValueSlideConfig = {
+  centerTitle: "VMB Client",
+  centerSubtitle: "Connected beauty network",
+  leftTitle: "Access",
+  leftLines: ["Trusted salons", "More services", "Easier discovery"],
+  rightTitle: "Benefits",
+  rightLines: ["Perks", "Sharing value", "Long-term rewards"],
+  benefits: [
+    {
+      title: "Trusted Network Access",
+      body: "Discover salons and services inside a network built around trusted relationships.",
+    },
+    {
+      title: "More Service Options",
+      body: "Move across nails, hair, brows, spa, massage, and more with less friction.",
+    },
+    {
+      title: "Better Discovery",
+      body: "Find new providers through real-world recommendations already happening among friends and followers.",
+    },
+    {
+      title: "Perks + Incentives",
+      body: "Participation in the network gives clients more reasons to stay engaged over time.",
+    },
+    {
+      title: "Sharing Has Value",
+      body: "What clients already do naturally — recommend, mention, bring others — now has real benefit.",
+    },
+    {
+      title: "Long-Term Convenience",
+      body: "VMB helps clients build a stronger personal care network that gets more useful with time.",
+    },
+  ],
+};
+
 /** Step 3 — "Deb Dazzles / VMB Nail Salon" left; Client / VMB Co-Mkt Team center; Friends group + Instagram stats right. */
 function StepThreeFrame() {
   return (
@@ -208,6 +299,55 @@ function StepThreeFrame() {
           </div>
         </aside>
 
+      </div>
+    </div>
+  );
+}
+
+function ClosingValueSlide({ config }: { config: ClosingValueSlideConfig }) {
+  return (
+    <div className="relative w-full min-w-0 overflow-x-auto overflow-y-visible bg-white px-4 py-8 md:px-6 md:py-12">
+      <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col gap-6 md:gap-7">
+        <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-6 lg:gap-8">
+          <div className="rounded-2xl border border-neutral-200/90 bg-neutral-50/95 px-5 py-4 text-center shadow-sm">
+            <p className="text-sm font-semibold tracking-wide text-neutral-800">{config.leftTitle}</p>
+            <div className="mt-2 space-y-1 text-sm leading-snug text-neutral-600">
+              {config.leftLines.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-neutral-800 px-8 py-6 text-center shadow-md md:min-w-[20rem]">
+            <p className="text-3xl font-semibold leading-tight tracking-tight text-white">{config.centerTitle}</p>
+            <p className="mt-2 text-base leading-snug text-neutral-300">{config.centerSubtitle}</p>
+          </div>
+
+          <div className="rounded-2xl border border-neutral-200/90 bg-neutral-50/95 px-5 py-4 text-center shadow-sm">
+            <p className="text-sm font-semibold tracking-wide text-neutral-800">{config.rightTitle}</p>
+            <div className="mt-2 space-y-1 text-sm leading-snug text-neutral-600">
+              {config.rightLines.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {config.benefits.map((item) => (
+            <article
+              key={item.title}
+              className="min-h-[120px] rounded-xl border border-neutral-200/90 bg-neutral-50/95 px-5 py-4 shadow-sm"
+            >
+              <h4 className="text-base font-semibold leading-snug text-neutral-900">{item.title}</h4>
+              <p className="mt-1.5 text-sm leading-relaxed text-neutral-700">{item.body}</p>
+            </article>
+          ))}
+        </div>
+
+        {config.footnote ? (
+          <p className="text-center text-[11px] text-neutral-500">{config.footnote}</p>
+        ) : null}
       </div>
     </div>
   );
@@ -278,8 +418,18 @@ function StepFourFrame() {
   );
 }
 
-/** Step 5 — duplicate of Step 4 for upcoming edits. */
+/** Step 5 of 7 — Salon close. */
 function StepFiveFrame() {
+  return <ClosingValueSlide config={STEP5_SALON_CLOSE} />;
+}
+
+/** Step 6 of 7 — Client close. */
+function StepSixFrame() {
+  return <ClosingValueSlide config={STEP6_CLIENT_CLOSE} />;
+}
+
+/** Step 7 of 7 — final activation close (prior final slide shifted here). */
+function StepSevenFrame() {
   return <StepFourFrame />;
 }
 
@@ -305,8 +455,12 @@ function PresentationStepFrame({ stepIndex }: { stepIndex: number }) {
         <StepThreeFrame />
       ) : stepIndex === 3 ? (
         <StepFourFrame />
-      ) : (
+      ) : stepIndex === 4 ? (
         <StepFiveFrame />
+      ) : stepIndex === 5 ? (
+        <StepSixFrame />
+      ) : (
+        <StepSevenFrame />
       )}
     </>
   );
@@ -344,7 +498,7 @@ export default function EmpoweringPersonalConnectionDeck() {
           Back
         </button>
         <p className="text-center text-[11px] text-neutral-500 sm:px-2">
-          {atLast ? "End of sequence — edit Step 5 or add more steps later." : "Next advances the story"}
+          {atLast ? "End of sequence — edit Step 7 or add more steps later." : "Next advances the story"}
         </p>
         <button
           type="button"
