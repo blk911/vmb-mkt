@@ -52,7 +52,17 @@ const STEP_COMMENTS = [
   "When you focus on where your business actually comes from — your clients — loyalty compounds, referrals scale, and revenue follows.",
   "When you focus on where your business actually comes from — your clients — loyalty compounds, referrals scale, and revenue follows.",
   "Clients already share, recommend, and influence every day — VMB rewards that natural behavior with more value, better access, and stronger long-term relationships.",
-  "The industry already runs on client connection. VMB simply makes it visible, valuable, and scalable.",
+  "Your clients already drive your business. VMB simply puts you in control of it.",
+] as const;
+
+const STEP_COMMENT_MICRO = [
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "No cost to join. No risk to start. Immediate upside.",
 ] as const;
 
 /** Step-specific center cards for Steps 1 and 2. */
@@ -430,7 +440,42 @@ function StepSixFrame() {
 
 /** Step 7 of 7 — final activation close (prior final slide shifted here). */
 function StepSevenFrame() {
-  return <StepFourFrame />;
+  return (
+    <div className="relative w-full min-w-0 overflow-x-auto overflow-y-visible bg-white px-4 py-8 md:px-6 md:py-12">
+      <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col gap-6">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+          <div className="flex min-h-[68px] items-center justify-center rounded-2xl bg-neutral-800 px-6 py-4 text-center shadow-md">
+            <p className="text-base font-semibold tracking-tight text-white md:text-lg">VMB SALON NETWORK</p>
+          </div>
+          <div className="flex min-h-[68px] items-center justify-center rounded-2xl bg-neutral-800 px-6 py-4 text-center shadow-md">
+            <p className="text-base font-semibold tracking-tight text-white md:text-lg">VMB CO-MKT TEAM</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-10">
+          <section className="rounded-xl border border-neutral-200/90 bg-neutral-50/95 px-5 py-4 shadow-sm">
+            <h3 className="text-sm font-semibold tracking-wide text-neutral-900">FOR SALONS</h3>
+            <div className="mt-3 space-y-2 text-base leading-7 text-neutral-700">
+              <p>Immediate revenue from your clients</p>
+              <p>No cancellations with prepaid bookings</p>
+              <p>Free co-marketing growth</p>
+              <p>Build a compounding network</p>
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-neutral-200/90 bg-neutral-50/95 px-5 py-4 shadow-sm">
+            <h3 className="text-sm font-semibold tracking-wide text-neutral-900">FOR CLIENTS</h3>
+            <div className="mt-3 space-y-2 text-base leading-7 text-neutral-700">
+              <p>Access to a trusted salon network</p>
+              <p>Discover services through real connections</p>
+              <p>More value from every appointment</p>
+              <p>Share and benefit</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function PresentationStepFrame({ stepIndex }: { stepIndex: number }) {
@@ -484,7 +529,12 @@ export default function EmpoweringPersonalConnectionDeck() {
       <PresentationStepFrame stepIndex={step} />
 
       <div className="mt-4 rounded-xl border border-neutral-200/80 bg-white/80 px-4 py-3 text-center font-sans text-[18px] font-semibold leading-tight tracking-tight text-neutral-900 md:px-5">
-        {STEP_COMMENTS[step]}
+        <p>{STEP_COMMENTS[step]}</p>
+        {STEP_COMMENT_MICRO[step] ? (
+          <p className="mt-1.5 text-sm font-medium leading-relaxed tracking-normal text-neutral-500">
+            {STEP_COMMENT_MICRO[step]}
+          </p>
+        ) : null}
       </div>
 
       <div className="mt-6 grid w-full grid-cols-1 items-center gap-3 border-t border-neutral-200/80 pt-5 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
