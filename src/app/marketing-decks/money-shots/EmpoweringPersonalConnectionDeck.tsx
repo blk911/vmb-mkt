@@ -313,7 +313,7 @@ export default function EmpoweringPersonalConnectionDeck() {
     <div className="w-full min-w-0 rounded-2xl border border-neutral-200/90 bg-gradient-to-b from-white to-neutral-50/80 p-6 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12)] md:p-8">
       <PresentationStepFrame stepIndex={step} />
 
-      <div className="mt-4 rounded-xl border border-neutral-200/80 bg-white/80 px-4 py-3 text-center text-sm leading-relaxed text-neutral-700 md:px-5">
+      <div className="mt-4 rounded-xl border border-neutral-200/80 bg-white/80 px-4 py-3 text-center font-sans text-[18px] font-semibold leading-tight tracking-tight text-neutral-900 md:px-5">
         Clients are not just buyers. They are the connection point between services, salons, technicians, and future
         bookings.
       </div>
