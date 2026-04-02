@@ -37,21 +37,26 @@ const TOTAL_STEPS = 4;
 
 const STEP_TAGLINES = [
   "Clients have options. Loyalty—without connection—is fragile.",
-  "Loyal clients are your marketing engine — unlock revenue in your client book",
+  "THE CLIENT IS THE HUB — SERVICES FLOW IN, INFLUENCE FLOWS OUT",
   "Clients loyalty = Success -- VMB Incentives unlock YOUR hidden revenue",
   "Clients loyalty = Success -- VMB Incentives unlock YOUR hidden revenue",
 ] as const;
 
-/** Step 1 Client card is the standard for all steps in this deck. */
+/** Step-specific center cards for Steps 1 and 2. */
 type CenterCardConfig = {
   kicker?: string;
   title: string;
   subtitle: string;
 };
 
-const STANDARD_CENTER_CARD: CenterCardConfig = {
-  title: "Client",
-  subtitle: "chooses where to go",
+const STEP1_CENTER_CARD: CenterCardConfig = {
+  title: "Clients",
+  subtitle: "Choose salons and techs",
+};
+
+const STEP2_CENTER_CARD: CenterCardConfig = {
+  title: "Clients",
+  subtitle: "The Industry Hub",
 };
 
 const pillClassName =
@@ -99,7 +104,7 @@ function StepOneFrame() {
         <div className="flex w-full min-w-0 flex-1 flex-col items-center gap-8 py-2 md:gap-10 md:py-4">
           <div className="w-full px-2 text-center">
             <div className="mx-auto inline-block">
-              <CenterCard config={STANDARD_CENTER_CARD} />
+              <CenterCard config={STEP1_CENTER_CARD} />
             </div>
           </div>
           <div className="flex w-full justify-center px-2" aria-hidden>
@@ -126,7 +131,7 @@ function ThreeColumnFrame() {
         <PersonalCareStack align="left" />
 
         <div className="flex min-w-0 shrink-0 flex-col items-center justify-self-center text-center md:-translate-y-2">
-          <CenterCard config={STANDARD_CENTER_CARD} />
+          <CenterCard config={STEP2_CENTER_CARD} />
         </div>
 
         <aside className="flex w-full min-w-0 flex-col items-center gap-2.5 justify-self-stretch md:items-end">
@@ -307,6 +312,11 @@ export default function EmpoweringPersonalConnectionDeck() {
   return (
     <div className="w-full min-w-0 rounded-2xl border border-neutral-200/90 bg-gradient-to-b from-white to-neutral-50/80 p-6 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12)] md:p-8">
       <PresentationStepFrame stepIndex={step} />
+
+      <div className="mt-4 rounded-xl border border-neutral-200/80 bg-white/80 px-4 py-3 text-center text-sm leading-relaxed text-neutral-700 md:px-5">
+        Clients are not just buyers. They are the connection point between services, salons, technicians, and future
+        bookings.
+      </div>
 
       <div className="mt-6 grid w-full grid-cols-1 items-center gap-3 border-t border-neutral-200/80 pt-5 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
         <button
