@@ -38,8 +38,15 @@ const TOTAL_STEPS = 4;
 const STEP_TAGLINES = [
   "Clients have options. Loyalty—without connection—is fragile.",
   "THE CLIENT IS THE HUB — SERVICES FLOW IN, INFLUENCE FLOWS OUT",
-  "Clients loyalty = Success -- VMB Incentives unlock YOUR hidden revenue",
-  "Clients loyalty = Success -- VMB Incentives unlock YOUR hidden revenue",
+  "VMB TURNS CLIENT LOYALTY INTO A REVENUE NETWORK",
+  "ACTIVATE YOUR CLIENT NETWORK — OWN THE RELATIONSHIP, OWN THE GROWTH",
+] as const;
+
+const STEP_COMMENTS = [
+  "Without a system to engage and reward clients, loyalty is temporary — and every appointment is at risk of moving elsewhere.",
+  "Clients are not just buyers. They are the connection point between services, salons, technicians, and future bookings.",
+  "Clients already share, recommend, and influence — VMB captures and rewards that behavior, turning natural connections into consistent, trackable growth.",
+  "When you focus on where your business actually comes from — your clients — loyalty compounds, referrals scale, and revenue follows.",
 ] as const;
 
 /** Step-specific center cards for Steps 1 and 2. */
@@ -314,8 +321,7 @@ export default function EmpoweringPersonalConnectionDeck() {
       <PresentationStepFrame stepIndex={step} />
 
       <div className="mt-4 rounded-xl border border-neutral-200/80 bg-white/80 px-4 py-3 text-center font-sans text-[18px] font-semibold leading-tight tracking-tight text-neutral-900 md:px-5">
-        Clients are not just buyers. They are the connection point between services, salons, technicians, and future
-        bookings.
+        {STEP_COMMENTS[step]}
       </div>
 
       <div className="mt-6 grid w-full grid-cols-1 items-center gap-3 border-t border-neutral-200/80 pt-5 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
