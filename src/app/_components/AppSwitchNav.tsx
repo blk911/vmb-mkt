@@ -15,8 +15,7 @@ type AppLink = {
 const MARKETING_LINK: AppLink = {
   id: "marketing",
   label: "VMB SALONS",
-  href: "https://vmbsalons.com",
-  external: true,
+  href: "/marketing-decks",
 };
 const REQUEST_ACCESS_LINK: AppLink = { id: "request_access", label: "REQUEST ACCESS", href: "/access/request" };
 const LOGIN_LINK: AppLink = { id: "login", label: "LOGIN", href: "/auth/login" };
