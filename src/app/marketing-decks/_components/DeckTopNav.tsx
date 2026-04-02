@@ -33,13 +33,6 @@ export default function DeckTopNav({ active }: { active: TabKey }) {
         </Link>
         <span className="text-neutral-300">:</span>
         <Link
-          href="/marketing-decks"
-          className="text-sm font-semibold text-neutral-900 hover:text-neutral-700"
-        >
-          VMB Salons
-        </Link>
-        <span className="text-neutral-300">:</span>
-        <Link
           href="https://venmebaby.com"
           target="_blank"
           rel="noreferrer"
