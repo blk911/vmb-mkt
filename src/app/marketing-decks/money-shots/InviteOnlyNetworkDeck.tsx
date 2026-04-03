@@ -7,6 +7,7 @@ type StepContent = {
   subhead: string;
   anchor?: string;
   comment: string;
+  microComment?: string;
 };
 
 const TOTAL_STEPS = 5;
@@ -26,11 +27,11 @@ const STEPS: StepContent[] = [
     comment: "Put your clients’ networks to work for you.",
   },
   {
-    headline: "What’s missing?",
-    subhead: "There is no client network in personal care.",
-    anchor: "The industry has services — but no network.",
-    comment:
-      "The market has providers and demand, but no shared relationship layer to convert connection into recurring value.",
+    headline: "Your clients are already networked.",
+    subhead: "They share, refer, and influence constantly — but it doesn’t flow through you.",
+    anchor: "The network is active — you’re just not connected to it.",
+    comment: "VMB opens the door.",
+    microComment: "Tap into the network your clients already live in.",
   },
   {
     headline: "Enter VMB Network.",
@@ -153,33 +154,68 @@ function Slide7B() {
 
 function Slide7C() {
   const bullets = [
-    "No shared relationship graph",
-    "No real referral visibility",
-    "No client-to-client expansion engine",
-    "No monetized connection layer across services",
+    "Clients talk, share, and recommend within trusted circles",
+    "Decisions are influenced long before a booking happens",
+    "Services are discovered through friends, not platforms",
+    "That network drives behavior — but you don’t see or capture it",
   ] as const;
   return (
     <div className="relative w-full min-w-0 bg-white px-4 py-8 md:px-6 md:py-12">
-      <div className="mx-auto grid w-full max-w-5xl grid-cols-1 items-center gap-8 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-        <div className="relative min-h-[220px] rounded-2xl border border-dashed border-neutral-300 bg-neutral-50/60 p-5">
-          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.16em] text-neutral-400">Missing Layer</p>
-          <div className="absolute left-[20%] top-[32%] h-16 w-16 rounded-full border border-neutral-300/70" />
-          <div className="absolute left-[44%] top-[22%] h-14 w-14 rounded-full border border-neutral-300/70" />
-          <div className="absolute left-[62%] top-[44%] h-12 w-12 rounded-full border border-neutral-300/70" />
-          <div className="absolute left-[34%] top-[55%] h-14 w-14 rounded-full border border-neutral-300/70" />
-          <div className="absolute left-[26%] top-[44%] h-[1px] w-28 border-t border-dashed border-neutral-300/70" />
-          <div className="absolute left-[41%] top-[38%] h-[1px] w-24 rotate-[22deg] border-t border-dashed border-neutral-300/70" />
-          <div className="absolute left-[39%] top-[56%] h-[1px] w-24 -rotate-[18deg] border-t border-dashed border-neutral-300/70" />
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+        <div className="relative min-h-[290px] rounded-2xl border border-neutral-200/90 bg-neutral-50/70 p-5 shadow-sm">
+          {/* Dense active client network */}
+          <div className="absolute left-[12%] top-[24%] rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 shadow-sm">
+            Client A
+          </div>
+          <div className="absolute left-[24%] top-[16%] rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 shadow-sm">
+            Client B
+          </div>
+          <div className="absolute left-[33%] top-[27%] rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 shadow-sm">
+            Client C
+          </div>
+          <div className="absolute left-[18%] top-[44%] rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 shadow-sm">
+            Client D
+          </div>
+          <div className="absolute left-[31%] top-[50%] rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 shadow-sm">
+            Client E
+          </div>
+          <div className="absolute left-[46%] top-[36%] rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 shadow-sm">
+            Client F
+          </div>
+          <div className="absolute left-[42%] top-[18%] rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 shadow-sm">
+            Client G
+          </div>
+
+          {/* Strong client-to-client links only */}
+          <div className="pointer-events-none absolute left-[19%] top-[24%] h-px w-24 rotate-[10deg] border-t border-neutral-500/80" />
+          <div className="pointer-events-none absolute left-[25%] top-[34%] h-px w-20 rotate-[40deg] border-t border-neutral-500/80" />
+          <div className="pointer-events-none absolute left-[26%] top-[48%] h-px w-20 rotate-[6deg] border-t border-neutral-500/80" />
+          <div className="pointer-events-none absolute left-[34%] top-[41%] h-px w-16 -rotate-[12deg] border-t border-neutral-500/80" />
+          <div className="pointer-events-none absolute left-[38%] top-[28%] h-px w-16 rotate-[25deg] border-t border-neutral-500/80" />
+          <div className="pointer-events-none absolute left-[28%] top-[22%] h-px w-16 -rotate-[8deg] border-t border-neutral-500/80" />
+
+          {/* Salon shown outside the network */}
+          <div className="absolute right-[7%] top-[43%] rounded-2xl border border-neutral-300 bg-white px-5 py-3 text-center shadow-sm">
+            <p className="text-sm font-semibold text-neutral-900">Your Salon</p>
+            <p className="mt-0.5 text-[11px] text-neutral-500">Outside the flow</p>
+          </div>
+          <div className="pointer-events-none absolute right-[26%] top-[50%] h-px w-20 border-t border-dashed border-neutral-300/90" />
         </div>
-        <div className="space-y-2">
+
+        <div className="space-y-3">
           {bullets.map((item) => (
-            <p key={item} className="rounded-xl border border-neutral-200/90 bg-neutral-50/95 px-4 py-3 text-sm font-medium text-neutral-700 shadow-sm">
-              {item}
-            </p>
+            <div key={item} className="flex items-start gap-2.5">
+              <span className="mt-1 inline-flex h-4 w-4 shrink-0 rounded-full bg-blue-600" aria-hidden />
+              <p className="max-w-[46rem] text-base font-medium leading-snug text-neutral-700">{item}</p>
+            </div>
           ))}
         </div>
       </div>
-      <p className="mt-6 text-center text-lg font-semibold tracking-tight text-neutral-900">The industry has services — but no network.</p>
+      <p className="mt-6 text-center text-lg font-semibold tracking-tight text-neutral-900 underline decoration-2 underline-offset-2">
+        The network is active — you’re just not connected to it.
+      </p>
+      <p className="mt-2 text-center text-sm font-medium text-neutral-500">VMB opens the door.</p>
+      <p className="mt-1 text-center text-xs font-medium text-neutral-400">Tap into the network your clients already live in.</p>
     </div>
   );
 }
