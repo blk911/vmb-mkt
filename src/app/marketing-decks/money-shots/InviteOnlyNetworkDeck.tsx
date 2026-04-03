@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import ClientNetworkVisual from "@/components/marketing/ClientNetworkVisual";
 
 type StepContent = {
   headline: string;
@@ -162,45 +163,7 @@ function Slide7C() {
   return (
     <div className="relative w-full min-w-0 bg-white px-4 py-8 md:px-6 md:py-12">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-        <div className="relative min-h-[290px] rounded-2xl border border-neutral-200/90 bg-neutral-50/70 p-5 shadow-sm">
-          {/* Dense active client network */}
-          <div className="absolute left-[12%] top-[24%] rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 shadow-sm">
-            Client A
-          </div>
-          <div className="absolute left-[24%] top-[16%] rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 shadow-sm">
-            Client B
-          </div>
-          <div className="absolute left-[33%] top-[27%] rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 shadow-sm">
-            Client C
-          </div>
-          <div className="absolute left-[18%] top-[44%] rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 shadow-sm">
-            Client D
-          </div>
-          <div className="absolute left-[31%] top-[50%] rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 shadow-sm">
-            Client E
-          </div>
-          <div className="absolute left-[46%] top-[36%] rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 shadow-sm">
-            Client F
-          </div>
-          <div className="absolute left-[42%] top-[18%] rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-semibold text-neutral-700 shadow-sm">
-            Client G
-          </div>
-
-          {/* Strong client-to-client links only */}
-          <div className="pointer-events-none absolute left-[19%] top-[24%] h-px w-24 rotate-[10deg] border-t border-neutral-500/80" />
-          <div className="pointer-events-none absolute left-[25%] top-[34%] h-px w-20 rotate-[40deg] border-t border-neutral-500/80" />
-          <div className="pointer-events-none absolute left-[26%] top-[48%] h-px w-20 rotate-[6deg] border-t border-neutral-500/80" />
-          <div className="pointer-events-none absolute left-[34%] top-[41%] h-px w-16 -rotate-[12deg] border-t border-neutral-500/80" />
-          <div className="pointer-events-none absolute left-[38%] top-[28%] h-px w-16 rotate-[25deg] border-t border-neutral-500/80" />
-          <div className="pointer-events-none absolute left-[28%] top-[22%] h-px w-16 -rotate-[8deg] border-t border-neutral-500/80" />
-
-          {/* Salon shown outside the network */}
-          <div className="absolute right-[7%] top-[43%] rounded-2xl border border-neutral-300 bg-white px-5 py-3 text-center shadow-sm">
-            <p className="text-sm font-semibold text-neutral-900">Your Salon</p>
-            <p className="mt-0.5 text-[11px] text-neutral-500">Outside the flow</p>
-          </div>
-          <div className="pointer-events-none absolute right-[26%] top-[50%] h-px w-20 border-t border-dashed border-neutral-300/90" />
-        </div>
+        <ClientNetworkVisual />
 
         <div className="space-y-3">
           {bullets.map((item) => (
