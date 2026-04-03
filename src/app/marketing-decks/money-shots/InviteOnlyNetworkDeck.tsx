@@ -246,19 +246,25 @@ function Slide7E() {
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
           <section className="rounded-xl border border-neutral-200/90 bg-neutral-50/95 px-5 py-4 shadow-sm">
-            <h4 className="text-sm font-semibold uppercase tracking-wide text-neutral-900">For salons</h4>
+            <h4 className="text-base font-semibold uppercase tracking-wide text-neutral-900">For salons</h4>
             <ul className="mt-3 space-y-1.5 text-sm text-neutral-700">
               {salonBullets.map((item) => (
-                <li key={item}>{item}</li>
+                <li key={item} className="flex items-start gap-2">
+                  <span className="mt-1 inline-flex h-3.5 w-3.5 shrink-0 rounded-full bg-blue-600" aria-hidden />
+                  <span>{item}</span>
+                </li>
               ))}
             </ul>
             <p className="mt-3 text-[11px] text-neutral-500">* $25 annual license verification / monitoring required</p>
           </section>
           <section className="rounded-xl border border-neutral-200/90 bg-neutral-50/95 px-5 py-4 shadow-sm">
-            <h4 className="text-sm font-semibold uppercase tracking-wide text-neutral-900">For clients</h4>
+            <h4 className="text-base font-semibold uppercase tracking-wide text-neutral-900">For clients</h4>
             <ul className="mt-3 space-y-1.5 text-sm text-neutral-700">
               {clientBullets.map((item) => (
-                <li key={item}>{item}</li>
+                <li key={item} className="flex items-start gap-2">
+                  <span className="mt-1 inline-flex h-3.5 w-3.5 shrink-0 rounded-full bg-blue-600" aria-hidden />
+                  <span>{item}</span>
+                </li>
               ))}
             </ul>
           </section>
