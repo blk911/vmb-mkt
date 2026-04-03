@@ -208,11 +208,12 @@ function Slide7D() {
           <div className="pointer-events-none absolute left-[51%] top-[36%] h-px w-20 border-t border-neutral-400" />
           <div className="pointer-events-none absolute left-[50%] top-[58%] h-px w-24 rotate-[12deg] border-t border-neutral-400" />
         </div>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {bullets.map((item) => (
-            <p key={item} className="rounded-xl border border-neutral-200/90 bg-neutral-50/95 px-4 py-3 text-sm font-medium text-neutral-700 shadow-sm">
-              {item}
-            </p>
+            <div key={item} className="flex items-start gap-2.5">
+              <span className="mt-1 inline-flex h-4 w-4 shrink-0 rounded-full bg-blue-600" aria-hidden />
+              <p className="max-w-[36rem] text-base font-medium leading-snug text-neutral-700">{item}</p>
+            </div>
           ))}
         </div>
       </div>
