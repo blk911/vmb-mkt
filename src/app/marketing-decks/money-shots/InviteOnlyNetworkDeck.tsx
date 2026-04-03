@@ -13,11 +13,10 @@ const TOTAL_STEPS = 5;
 
 const STEPS: StepContent[] = [
   {
-    headline: "You’re working in isolation.",
-    subhead: "Every salon operates alone — but your clients don’t.",
+    headline: "YOUR BUSINESS IS INDEPENDENT. YOUR CLIENTS ARE NETWORKED.",
+    subhead: "Salons operate as standalone businesses — but clients move through a connected world of services.",
     anchor: "You don’t have a network. You have traffic.",
-    comment:
-      "Salons work hard to drive demand, but without a relationship network, that demand keeps drifting away.",
+    comment: "You create demand — but you don’t keep it.",
   },
   {
     headline: "The system is broken.",
@@ -65,16 +64,22 @@ function HeaderBlock({ step }: { step: number }) {
 }
 
 function Slide7A() {
+  const rightBullets = [
+    "Clients don’t stay in one place — they move across services",
+    "Referrals happen — but you don’t capture them",
+    "You don’t see where your clients go next",
+    "Growth resets every time they leave",
+  ] as const;
   return (
-    <div className="relative w-full min-w-0 bg-white px-4 py-8 md:px-6 md:py-12">
-      <div className="mx-auto grid w-full max-w-5xl grid-cols-1 items-center gap-10 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:gap-12">
+    <div className="relative w-full min-w-0 bg-white px-4 py-6 md:px-6 md:py-10">
+      <div className="mx-auto grid w-full max-w-5xl grid-cols-1 items-start gap-8 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:gap-10">
         <div className="flex justify-center md:justify-end">
           <div className="w-full max-w-[17rem] rounded-2xl border border-neutral-200/90 bg-neutral-50/95 px-5 py-5 text-center shadow-sm">
             <p className="text-xl font-semibold text-neutral-900">Your Salon</p>
-            <p className="mt-1 text-sm text-neutral-500">Strong brand. Isolated growth.</p>
+            <p className="mt-1 text-sm text-neutral-500">Strong brand. No network leverage.</p>
           </div>
         </div>
-        <div className="relative">
+        <div className="relative flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
             {SERVICE_PILLS.map((pill) => (
               <span
@@ -83,6 +88,13 @@ function Slide7A() {
               >
                 {pill}
               </span>
+            ))}
+          </div>
+          <div className="space-y-2 rounded-xl border border-neutral-200/90 bg-neutral-50/95 px-4 py-4 shadow-sm">
+            {rightBullets.map((item) => (
+              <p key={item} className="text-sm font-medium leading-snug text-neutral-700">
+                - {item}
+              </p>
             ))}
           </div>
           <div className="pointer-events-none absolute -left-6 top-1/2 hidden h-px w-10 -translate-y-1/2 border-t border-dashed border-neutral-300 md:block" />
@@ -293,7 +305,7 @@ export default function InviteOnlyNetworkDeck() {
         >
           Back
         </button>
-        <p className="text-center text-[11px] text-neutral-500 sm:px-2">{atLast ? "End of sequence" : "Next advances the story"}</p>
+        <div className="sm:px-2" />
         <button
           type="button"
           disabled={atLast}
