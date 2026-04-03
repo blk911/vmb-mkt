@@ -15,8 +15,8 @@ const STEPS: StepContent[] = [
   {
     headline: "YOUR BUSINESS IS INDEPENDENT. YOUR CLIENTS ARE NETWORKED.",
     subhead: "Salons operate as standalone businesses — but clients move through a connected world of services.",
-    anchor: "You don’t have a network. You have traffic.",
-    comment: "You create demand — but you don’t keep it.",
+    anchor: "You don’t have a network. Add a network for brand and client leverage.",
+    comment: "You have demand — VMB creates the network effect.",
   },
   {
     headline: "The system is broken.",
@@ -45,8 +45,6 @@ const STEPS: StepContent[] = [
     comment: "Join. Activate. Grow your client network.",
   },
 ];
-
-const SERVICE_PILLS = ["nails", "hair", "brows", "lashes", "lips", "wax", "massage", "mani / pedi"] as const;
 
 function HeaderBlock({ step }: { step: number }) {
   const data = STEPS[step];
@@ -79,28 +77,21 @@ function Slide7A() {
             <p className="mt-1 text-sm text-neutral-500">Strong brand. No network leverage.</p>
           </div>
         </div>
-        <div className="relative flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-            {SERVICE_PILLS.map((pill) => (
-              <span
-                key={pill}
-                className="rounded-full border border-neutral-200/90 bg-neutral-50/95 px-3 py-2 text-center text-sm font-medium text-neutral-700 shadow-sm"
-              >
-                {pill}
-              </span>
-            ))}
-          </div>
-          <div className="space-y-2 rounded-xl border border-neutral-200/90 bg-neutral-50/95 px-4 py-4 shadow-sm">
+        <div className="relative flex flex-col gap-2 pt-1 md:pt-0">
+          <ul className="space-y-3">
             {rightBullets.map((item) => (
-              <p key={item} className="text-sm font-medium leading-snug text-neutral-700">
-                - {item}
-              </p>
+              <li key={item} className="flex items-start gap-2.5">
+                <span className="mt-1 inline-flex h-4 w-4 shrink-0 rounded-full bg-blue-600" aria-hidden />
+                <span className="text-base font-medium leading-snug text-neutral-700">{item}</span>
+              </li>
             ))}
-          </div>
+          </ul>
           <div className="pointer-events-none absolute -left-6 top-1/2 hidden h-px w-10 -translate-y-1/2 border-t border-dashed border-neutral-300 md:block" />
         </div>
       </div>
-      <p className="mt-7 text-center text-lg font-semibold tracking-tight text-neutral-900">You don’t have a network. You have traffic.</p>
+      <p className="mt-7 text-center text-lg font-semibold tracking-tight text-neutral-900 underline decoration-2 underline-offset-2">
+        You don’t have a network. Add a network for brand and client leverage.
+      </p>
     </div>
   );
 }
