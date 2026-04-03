@@ -19,11 +19,11 @@ const STEPS: StepContent[] = [
     comment: "You have demand — VMB creates the network effect.",
   },
   {
-    headline: "The system is broken.",
-    subhead: "Everything you use today is transactional. Nothing builds relationships.",
-    anchor: "You’re renting your business every day.",
-    comment:
-      "Social, booking, and reviews all help in pieces — but none of them create a connected growth engine.",
+    headline: "You’ve built strong relationships — now turn your clients’ networks into revenue.",
+    subhead:
+      "Your clients are connected — to friends, services, and providers — but that network isn’t generating for your business.",
+    anchor: "You have the relationships. Now build the network.",
+    comment: "Put your clients’ networks to work for you.",
   },
   {
     headline: "What’s missing?",
@@ -97,39 +97,56 @@ function Slide7A() {
 }
 
 function Slide7B() {
-  const buckets = useMemo(
+  const bullets = useMemo(
     () => [
-      {
-        title: "Social",
-        lines: ["Instagram gives attention, not loyalty"],
-      },
-      {
-        title: "Booking",
-        lines: ["Booking apps schedule time, not growth"],
-      },
-      {
-        title: "Review Platforms",
-        lines: ["Reviews build static reputation, not recurring client flow"],
-      },
+      "Your clients move within trusted circles and shared services",
+      "Referrals happen — but they don’t flow back to you",
+      "Clients connect across providers — without your involvement",
+      "The network exists — but it doesn’t generate for your business",
     ],
     [],
   );
   return (
-    <div className="relative w-full min-w-0 bg-white px-4 py-8 md:px-6 md:py-12">
-      <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-4 md:grid-cols-3">
-        {buckets.map((bucket) => (
-          <article key={bucket.title} className="rounded-2xl border border-neutral-200/90 bg-neutral-50/95 px-5 py-5 text-center shadow-sm">
-            <h4 className="text-base font-semibold text-neutral-900">{bucket.title}</h4>
-            <div className="mt-2 space-y-2 text-sm text-neutral-600">
-              {bucket.lines.map((line) => (
-                <p key={line}>{line}</p>
-              ))}
+    <div className="relative w-full min-w-0 bg-white px-4 py-6 md:px-6 md:py-10">
+      <div className="mx-auto grid w-full max-w-5xl grid-cols-1 items-start gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-10">
+        <div className="relative min-h-[260px] rounded-2xl border border-neutral-200/90 bg-neutral-50/95 p-5 shadow-sm">
+          <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-neutral-800 px-6 py-4 text-center shadow-md">
+            <p className="text-lg font-semibold text-white">Your Salon</p>
+            <p className="mt-1 text-xs text-neutral-300">Strong relationships</p>
+          </div>
+
+          <div className="absolute left-[16%] top-[20%] rounded-full border border-neutral-200/90 bg-white px-3 py-1 text-xs font-medium text-neutral-700 shadow-sm">
+            Client A
+          </div>
+          <div className="absolute right-[14%] top-[22%] rounded-full border border-neutral-200/90 bg-white px-3 py-1 text-xs font-medium text-neutral-700 shadow-sm">
+            Client B
+          </div>
+          <div className="absolute left-[18%] bottom-[18%] rounded-full border border-neutral-200/90 bg-white px-3 py-1 text-xs font-medium text-neutral-700 shadow-sm">
+            Client C
+          </div>
+          <div className="absolute right-[16%] bottom-[20%] rounded-full border border-neutral-200/90 bg-white px-3 py-1 text-xs font-medium text-neutral-700 shadow-sm">
+            Client D
+          </div>
+
+          <div className="pointer-events-none absolute left-[30%] top-[32%] h-px w-24 rotate-[20deg] border-t border-neutral-400/80" />
+          <div className="pointer-events-none absolute right-[30%] top-[33%] h-px w-24 -rotate-[20deg] border-t border-neutral-400/80" />
+          <div className="pointer-events-none absolute left-[30%] bottom-[33%] h-px w-24 -rotate-[20deg] border-t border-neutral-400/80" />
+          <div className="pointer-events-none absolute right-[30%] bottom-[34%] h-px w-24 rotate-[20deg] border-t border-neutral-400/80" />
+        </div>
+
+        <div className="space-y-3">
+          {bullets.map((item) => (
+            <div key={item} className="flex items-start gap-2.5">
+              <span className="mt-1 inline-flex h-4 w-4 shrink-0 rounded-full bg-blue-600" aria-hidden />
+              <p className="max-w-[36rem] text-base font-medium leading-snug text-neutral-700">{item}</p>
             </div>
-          </article>
-        ))}
+          ))}
+        </div>
       </div>
-      <p className="mt-3 text-center text-sm text-neutral-600">Discounts create dependency, not real retention.</p>
-      <p className="mt-6 text-center text-lg font-semibold tracking-tight text-neutral-900">You’re renting your business every day.</p>
+      <p className="mt-7 text-center text-lg font-semibold tracking-tight text-neutral-900 underline decoration-2 underline-offset-2">
+        You have the relationships. Now build the network.
+      </p>
+      <p className="mt-2 text-center text-sm font-medium text-neutral-500">Put your clients’ networks to work for you.</p>
     </div>
   );
 }
