@@ -124,18 +124,6 @@ export default function ZoneBuildModePanel({
           Continue survey (work packet)
         </button>
         <Link
-          href="/admin/markets/unknown-resolver"
-          className="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow-sm transition hover:bg-neutral-50"
-        >
-          Unknown resolver
-        </Link>
-        <Link
-          href="/admin/markets/outreach-queue"
-          className="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow-sm transition hover:bg-neutral-50"
-        >
-          Outreach queue
-        </Link>
-        <Link
           href="/admin/live-units"
           className="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow-sm transition hover:bg-neutral-50"
         >

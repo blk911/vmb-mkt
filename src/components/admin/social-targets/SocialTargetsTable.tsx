@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -559,18 +558,6 @@ export default function SocialTargetsTable({
               {resetBusy ? "Resetting…" : "Reset to seed data"}
             </button>
           ) : null}
-          <Link
-            href="/admin/markets"
-            className="rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-50"
-          >
-            Markets
-          </Link>
-          <Link
-            href="/admin/vmb"
-            className="rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-50"
-          >
-            VMB Admin
-          </Link>
         </div>
       </div>
 

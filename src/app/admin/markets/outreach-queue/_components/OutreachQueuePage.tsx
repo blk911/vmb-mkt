@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { TARGET_ZONES } from "@/lib/geo/target-zones";
 import type { BestContactMethod, ContactConfidence, OutreachStatus, ResolverZoneFilterId } from "@/lib/unknown-resolver/resolver-types";
@@ -144,20 +143,6 @@ export default function OutreachQueuePage() {
           <p className="mt-1 max-w-2xl text-sm text-neutral-600">
             Nails vertical — promoted leads from Unknown Resolver. Log touches, follow-ups, and enrichment (session-persisted).
           </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/admin/markets/unknown-resolver"
-            className="rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-50"
-          >
-            ← Unknown resolver
-          </Link>
-          <Link
-            href="/admin/markets"
-            className="rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-50"
-          >
-            Markets
-          </Link>
         </div>
       </div>
 

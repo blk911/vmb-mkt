@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { getSessionUserFromCookies, type SessionUser } from "@/lib/auth/access";
 import "./globals.css";
 import AppSwitchNav from "./_components/AppSwitchNav";
+import MarketsSectionNavHost from "./_components/MarketsSectionNavHost";
 import ProtectedSessionClient from "./_components/ProtectedSessionClient";
 import SiteFooter from "./_components/SiteFooter";
 
@@ -49,6 +50,7 @@ export default async function RootLayout({
       >
         <div className="flex min-h-screen flex-col">
           <AppSwitchNav sessionUser={sessionUser} />
+          <MarketsSectionNavHost sessionUser={sessionUser} />
           <ProtectedSessionClient />
           <main className="flex min-h-0 flex-1 flex-col">{children}</main>
           <SiteFooter />

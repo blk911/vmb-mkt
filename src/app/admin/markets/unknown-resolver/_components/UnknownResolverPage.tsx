@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { buildResolverQueries } from "@/lib/unknown-resolver/resolver-query-generator";
 import { mergeStoredScoreBreakdown, scoreResolverRecord } from "@/lib/unknown-resolver/resolver-score";
@@ -105,20 +104,6 @@ export default function UnknownResolverPage() {
           <p className="mt-1 max-w-2xl text-sm text-neutral-600">
             Review unresolved nail businesses and solo tech opportunities (yes / review / no). Summary stat cards use the full queue (not filters). Scores hydrate after first load.
           </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/admin/markets/outreach-queue"
-            className="rounded-full border border-sky-300 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-900 hover:bg-sky-100"
-          >
-            Outreach queue →
-          </Link>
-          <Link
-            href="/admin/markets"
-            className="rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-50"
-          >
-            ← Back to Markets
-          </Link>
         </div>
       </div>
 

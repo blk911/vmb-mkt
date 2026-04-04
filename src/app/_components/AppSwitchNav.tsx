@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback } from "react";
+import { isMarketsGlobalNavActive } from "@/lib/admin/markets-section-nav";
 import { canShowNavItem, type SessionUser } from "@/lib/auth/access";
 
 type AppLink = {
@@ -10,24 +11,29 @@ type AppLink = {
   label: string;
   href: string;
   external?: boolean;
+  /** Override default pathname-prefix active check */
+  isActive?: (pathname: string) => boolean;
 };
 
 const MARKETING_LINK: AppLink = {
   id: "marketing",
   label: "VMB SALONS",
-  href: "https://vmbsalons.com",
-  external: true,
+  href: "/marketing-decks",
 };
 const REQUEST_ACCESS_LINK: AppLink = { id: "request_access", label: "REQUEST ACCESS", href: "/access/request" };
 const LOGIN_LINK: AppLink = { id: "login", label: "LOGIN", href: "/auth/login" };
-const MARKETS_LINK: AppLink = { id: "markets", label: "MARKETS", href: "/admin/markets" };
+const MARKETS_LINK: AppLink = {
+  id: "markets",
+  label: "MARKETS",
+  href: "/admin/markets",
+  isActive: isMarketsGlobalNavActive,
+};
 const LIVE_UNITS_LINK: AppLink = { id: "liveunits", label: "LIVE UNITS", href: "/admin/live-units" };
 const DATASTORE_LINK: AppLink = { id: "datastore", label: "DATA STORE", href: "/dashboard/targets" };
-const SOCIAL_TARGETS_LINK: AppLink = { id: "socialtargets", label: "SOCIAL TARGETS", href: "/admin/social-targets" };
 const TEAM_LINK: AppLink = { id: "team", label: "TEAM", href: "/team" };
-const ADMIN_LINK: AppLink = { id: "admin", label: "ADMIN", href: "/admin" };
+const ADMIN_LINK: AppLink = { id: "admin", label: "ADMIN", href: "/admin/vmb" };
 
-function isActive(href: string, pathname: string): boolean {
+function defaultIsActive(href: string, pathname: string): boolean {
   const targetPath = href;
   if (targetPath === "/") return pathname === "/";
   return pathname === targetPath || pathname.startsWith(targetPath + "/");
@@ -47,7 +53,6 @@ export default function AppSwitchNav({ sessionUser }: Props) {
     MARKETS_LINK,
     LIVE_UNITS_LINK,
     DATASTORE_LINK,
-    SOCIAL_TARGETS_LINK,
     TEAM_LINK,
     ADMIN_LINK,
   ].filter((link) => canShowNavItem(link.id, sessionUser));
@@ -92,7 +97,7 @@ export default function AppSwitchNav({ sessionUser }: Props) {
             </span>
           ) : null}
           {links.map((link) => {
-            const active = link.external ? false : isActive(link.href, pathname);
+            const active = link.external ? false : link.isActive ? link.isActive(pathname) : defaultIsActive(link.href, pathname);
             const style = {
               display: "inline-flex",
               alignItems: "center",
@@ -156,4 +161,3 @@ export default function AppSwitchNav({ sessionUser }: Props) {
     </div>
   );
 }
-
