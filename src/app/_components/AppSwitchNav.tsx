@@ -23,6 +23,7 @@ const LOGIN_LINK: AppLink = { id: "login", label: "LOGIN", href: "/auth/login" }
 const MARKETS_LINK: AppLink = { id: "markets", label: "MARKETS", href: "/admin/markets" };
 const LIVE_UNITS_LINK: AppLink = { id: "liveunits", label: "LIVE UNITS", href: "/admin/live-units" };
 const DATASTORE_LINK: AppLink = { id: "datastore", label: "DATA STORE", href: "/dashboard/targets" };
+const SOCIAL_TARGETS_LINK: AppLink = { id: "socialtargets", label: "SOCIAL TARGETS", href: "/admin/social-targets" };
 const TEAM_LINK: AppLink = { id: "team", label: "TEAM", href: "/team" };
 const ADMIN_LINK: AppLink = { id: "admin", label: "ADMIN", href: "/admin" };
 
@@ -46,6 +47,7 @@ export default function AppSwitchNav({ sessionUser }: Props) {
     MARKETS_LINK,
     LIVE_UNITS_LINK,
     DATASTORE_LINK,
+    SOCIAL_TARGETS_LINK,
     TEAM_LINK,
     ADMIN_LINK,
   ].filter((link) => canShowNavItem(link.id, sessionUser));
