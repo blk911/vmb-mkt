@@ -38,9 +38,29 @@ function LoginForm() {
         body: JSON.stringify({ user, pass, next: nextPath }),
         cache: "no-store",
       });
-      const body = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; next?: string };
+
+      const raw = await res.text();
+      let body: { ok?: boolean; error?: string; next?: string } = {};
+      try {
+        if (raw) body = JSON.parse(raw) as typeof body;
+      } catch {
+        /* HTML/plain error page or truncated response */
+      }
+
       if (!res.ok || !body.ok) {
-        setError(body.error === "invalid_credentials" ? "Invalid username or password." : "Login failed.");
+        if (body.error === "invalid_credentials") {
+          setError("Invalid username or password.");
+        } else if (body.error === "auth_not_configured" || res.status === 503) {
+          setError(
+            "Sign-in is not configured or unavailable (HTTP 503). This app does not use a database for login: set MKT_ADMIN_USER, MKT_ADMIN_PASS, and MKT_ADMIN_SESSION_SECRET in .env.local, ensure MKT_AUTH_USERS_JSON is not an empty list, then restart `next dev`."
+          );
+        } else if (body.error === "invalid_json") {
+          setError("Invalid request. Try again.");
+        } else {
+          setError(
+            `Login failed${body.error ? ` (${body.error})` : res.status ? ` (HTTP ${res.status})` : ""}.`
+          );
+        }
         return;
       }
       router.replace(body.next || nextPath);

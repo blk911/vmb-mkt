@@ -24,26 +24,32 @@ function normalizeRole(role: string): ConfiguredAuthRole {
   return "member";
 }
 
-export function getConfiguredAuthUsers(): ConfiguredAuthUser[] {
+function usersFromAuthJson(): ConfiguredAuthUser[] | null {
   const json = String(process.env.MKT_AUTH_USERS_JSON || "").trim();
-  if (json) {
-    try {
-      const parsed = JSON.parse(json) as Array<{
-        username?: string;
-        password?: string;
-        role?: string;
-      }>;
-      return parsed
-        .map((entry) => ({
-          username: String(entry?.username || "").trim(),
-          password: String(entry?.password || ""),
-          role: normalizeRole(String(entry?.role || "member").trim().toLowerCase()),
-        }))
-        .filter((entry) => entry.username && entry.password);
-    } catch {
-      return [];
-    }
+  if (!json) return null;
+  try {
+    const parsed = JSON.parse(json) as Array<{
+      username?: string;
+      password?: string;
+      role?: string;
+    }>;
+    const users = parsed
+      .map((entry) => ({
+        username: String(entry?.username || "").trim(),
+        password: String(entry?.password || ""),
+        role: normalizeRole(String(entry?.role || "member").trim().toLowerCase()),
+      }))
+      .filter((entry) => entry.username && entry.password);
+    return users.length > 0 ? users : null;
+  } catch {
+    return null;
   }
+}
+
+/** Users for login: JSON list if non-empty; otherwise legacy MKT_ADMIN_USER / MKT_ADMIN_PASS. */
+export function getConfiguredAuthUsers(): ConfiguredAuthUser[] {
+  const fromJson = usersFromAuthJson();
+  if (fromJson) return fromJson;
 
   const adminUser = getAdminUser();
   const adminPass = getAdminPass();
@@ -54,5 +60,6 @@ export function getConfiguredAuthUsers(): ConfiguredAuthUser[] {
 export function getConfiguredAuthUser(username: string) {
   const normalized = String(username || "").trim();
   if (!normalized) return null;
-  return getConfiguredAuthUsers().find((entry) => entry.username === normalized) || null;
+  const lower = normalized.toLowerCase();
+  return getConfiguredAuthUsers().find((entry) => entry.username.toLowerCase() === lower) || null;
 }

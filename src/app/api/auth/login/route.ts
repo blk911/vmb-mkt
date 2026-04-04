@@ -32,6 +32,7 @@ function safeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
+/** 503 + auth_not_configured = missing env users or MKT_ADMIN_SESSION_SECRET (no DB involved). */
 export async function POST(req: Request) {
   const users = getConfiguredAuthUsers();
   const sessionSecret = getSessionSecret();
@@ -54,8 +55,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "invalid_credentials" }, { status: 401 });
   }
 
-  const role = resolveRoleForUser(user);
-  const token = await createSessionToken(user, role, sessionSecret);
+  const canonicalUser = configuredUser.username;
+  const role = resolveRoleForUser(canonicalUser);
+  const token = await createSessionToken(canonicalUser, role, sessionSecret);
   const target =
     role === "external" && nextPath && nextPath !== "/" ? "/" : nextPath || defaultNextPathForRole(role);
   const res = NextResponse.json({ ok: true, next: target, role });
