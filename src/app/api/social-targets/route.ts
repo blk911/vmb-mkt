@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
 import { assertSocialTargetsApiAccess } from "@/lib/social-targets/social-targets-api-access";
 import { getMergedSocialTargets, saveMergedSocialTargetsAsRuntime } from "@/lib/social-targets/social-targets-store";
-import type { SocialTarget, SocialTargetStatus } from "@/types/social-target";
+import type {
+  ActivitySignal,
+  ProfileHealth,
+  SocialTarget,
+  SocialTargetBooking,
+  SocialTargetStatus,
+} from "@/types/social-target";
 
-const STATUSES: SocialTargetStatus[] = ["new", "contacted", "qualified", "paused"];
+const STATUSES: SocialTargetStatus[] = ["new", "contacted", "qualified", "paused", "responded", "live"];
+const PROFILE_HEALTH: ProfileHealth[] = ["active", "not_found", "renamed_or_moved", "stale", "private", "unknown"];
+const ACTIVITY: ActivitySignal[] = ["hot", "warm", "cold", "unknown"];
+const BOOKINGS: SocialTargetBooking[] = ["dm", "link", "phone"];
 
 function isNonEmptyString(v: unknown): v is string {
   return typeof v === "string" && v.trim().length > 0;
@@ -29,6 +38,25 @@ function normalizeTarget(raw: unknown): SocialTarget | null {
   };
   if (typeof o.businessName === "string") row.businessName = o.businessName;
   if (typeof o.notes === "string") row.notes = o.notes;
+  if (typeof o.booking === "string" && BOOKINGS.includes(o.booking as SocialTargetBooking)) {
+    row.booking = o.booking as SocialTargetBooking;
+  }
+  if (typeof o.followers === "number" && Number.isFinite(o.followers) && o.followers >= 0) {
+    row.followers = Math.floor(o.followers);
+  }
+  if (typeof o.profileHealth === "string" && PROFILE_HEALTH.includes(o.profileHealth as ProfileHealth)) {
+    row.profileHealth = o.profileHealth as ProfileHealth;
+  }
+  if (typeof o.lastVerifiedAt === "string") row.lastVerifiedAt = o.lastVerifiedAt;
+  if (typeof o.verificationNote === "string") row.verificationNote = o.verificationNote;
+  if (typeof o.activitySignal === "string" && ACTIVITY.includes(o.activitySignal as ActivitySignal)) {
+    row.activitySignal = o.activitySignal as ActivitySignal;
+  }
+  if (typeof o.priorityScore === "number" && Number.isFinite(o.priorityScore)) {
+    row.priorityScore = Math.max(0, Math.min(100, Math.round(o.priorityScore)));
+  }
+  if (o.priorityScoreManual === true) row.priorityScoreManual = true;
+  if (typeof o.outreachAngle === "string") row.outreachAngle = o.outreachAngle;
   return row;
 }
 

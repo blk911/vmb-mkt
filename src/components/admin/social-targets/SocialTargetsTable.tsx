@@ -4,11 +4,23 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  computePriorityScore,
   computeReferralCounts,
+  getActivityRank,
+  getEffectivePriorityScore,
+  getProfileHealthRank,
   getTopReferredHandles,
+  isReadyToAttack,
   upsertReferralEdge,
 } from "@/lib/social-targets/target-utils";
-import type { ReferralCategory, ReferralEdge, SocialTarget, SocialTargetStatus } from "@/types/social-target";
+import type {
+  ActivitySignal,
+  ProfileHealth,
+  ReferralCategory,
+  ReferralEdge,
+  SocialTarget,
+  SocialTargetStatus,
+} from "@/types/social-target";
 
 type Props = {
   initialTargets: SocialTarget[];
@@ -18,7 +30,32 @@ type Props = {
 
 const REFERRAL_CATEGORIES: ReferralCategory[] = ["nails", "hair", "lashes", "brows", "spa", "other"];
 
-const STATUS_OPTIONS: SocialTargetStatus[] = ["new", "contacted", "qualified", "paused"];
+const STATUS_OPTIONS: SocialTargetStatus[] = ["new", "contacted", "qualified", "paused", "responded", "live"];
+
+const PROFILE_HEALTH_EDIT: ProfileHealth[] = [
+  "active",
+  "not_found",
+  "renamed_or_moved",
+  "stale",
+  "private",
+  "unknown",
+];
+
+const ACTIVITY_EDIT: ActivitySignal[] = ["hot", "warm", "cold", "unknown"];
+
+const PROFILE_HEALTH_FILTER: Array<"all" | ProfileHealth> = [
+  "all",
+  "active",
+  "stale",
+  "private",
+  "renamed_or_moved",
+  "not_found",
+  "unknown",
+];
+
+const ACTIVITY_FILTER: Array<"all" | ActivitySignal> = ["all", "hot", "warm", "cold", "unknown"];
+
+const MIN_PRIORITY_FILTER: Array<"all" | 50 | 70 | 80> = ["all", 50, 70, 80];
 
 const EMPTY_REFERRAL_DRAFT: { toHandle: string; referredCategory: ReferralCategory; note: string } = {
   toHandle: "",
@@ -28,6 +65,10 @@ const EMPTY_REFERRAL_DRAFT: { toHandle: string; referredCategory: ReferralCatego
 
 function stripAt(h: string): string {
   return h.replace(/^@/, "").trim();
+}
+
+function igProfileUrl(handle: string): string {
+  return `https://www.instagram.com/${encodeURIComponent(stripAt(handle))}/`;
 }
 
 function handleMatchesTarget(targets: SocialTarget[], rawHandle: string): SocialTarget | undefined {
@@ -45,16 +86,65 @@ function referralCategoryToTargetCategory(cat: ReferralCategory): string {
   return cat;
 }
 
+function hasHotTag(t: SocialTarget): boolean {
+  return Boolean(t.tags?.some((tag) => tag.toUpperCase() === "HOT"));
+}
+
+function matchesProfileHealthFilter(t: SocialTarget, f: (typeof PROFILE_HEALTH_FILTER)[number]): boolean {
+  if (f === "all") return true;
+  if (f === "unknown") return !t.profileHealth || t.profileHealth === "unknown";
+  return t.profileHealth === f;
+}
+
+function matchesActivityFilter(t: SocialTarget, f: (typeof ACTIVITY_FILTER)[number]): boolean {
+  if (f === "all") return true;
+  if (f === "unknown") return !t.activitySignal || t.activitySignal === "unknown";
+  return t.activitySignal === f;
+}
+
+function formatVerifiedAt(iso?: string): string {
+  if (!iso) return "—";
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso.slice(0, 10);
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  } catch {
+    return "—";
+  }
+}
+
 function toApiTarget(t: SocialTarget): SocialTarget {
-  return {
+  const row: SocialTarget = {
     id: t.id,
     handle: stripAt(t.handle),
     zone: t.zone,
     category: t.category,
     status: t.status ?? "new",
     tags: t.tags ?? [],
-    ...(t.businessName !== undefined && t.businessName !== "" ? { businessName: t.businessName } : {}),
-    ...(t.notes !== undefined && t.notes !== "" ? { notes: t.notes } : {}),
+  };
+  if (t.businessName) row.businessName = t.businessName;
+  if (t.notes) row.notes = t.notes;
+  if (t.booking) row.booking = t.booking;
+  if (typeof t.followers === "number") row.followers = t.followers;
+  if (t.profileHealth) row.profileHealth = t.profileHealth;
+  if (t.lastVerifiedAt) row.lastVerifiedAt = t.lastVerifiedAt;
+  if (t.verificationNote) row.verificationNote = t.verificationNote;
+  if (t.activitySignal) row.activitySignal = t.activitySignal;
+  if (typeof t.priorityScore === "number") row.priorityScore = t.priorityScore;
+  if (t.priorityScoreManual === true) row.priorityScoreManual = true;
+  if (t.outreachAngle) row.outreachAngle = t.outreachAngle;
+  return row;
+}
+
+function afterHealthOrActivityChange(t: SocialTarget, patch: Partial<SocialTarget>): SocialTarget {
+  const next = { ...t, ...patch };
+  if (t.priorityScoreManual === true && patch.priorityScoreManual !== false) {
+    return next;
+  }
+  return {
+    ...next,
+    priorityScore: computePriorityScore(next),
+    priorityScoreManual: false,
   };
 }
 
@@ -81,17 +171,33 @@ export default function SocialTargetsTable({
     setBaseTargets(initialTargets);
     setReferralEdges(initialReferralEdges);
   }, [serverSnapshotKey, initialTargets, initialReferralEdges]);
+
   const [search, setSearch] = useState("");
   const [zoneFilter, setZoneFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | SocialTargetStatus>("all");
+  const [profileHealthFilter, setProfileHealthFilter] = useState<(typeof PROFILE_HEALTH_FILTER)[number]>("all");
+  const [activityFilter, setActivityFilter] = useState<(typeof ACTIVITY_FILTER)[number]>("all");
+  const [minPriority, setMinPriority] = useState<(typeof MIN_PRIORITY_FILTER)[number]>("all");
+  const [readyToAttackOnly, setReadyToAttackOnly] = useState(false);
+  const [hideDeadProfiles, setHideDeadProfiles] = useState(false);
+  const [hotTagOnly, setHotTagOnly] = useState(false);
   const [referralHubsOnly, setReferralHubsOnly] = useState(false);
-  const [sortBy, setSortBy] = useState<"name" | "zone" | "referredByCount">("name");
+  const [sortBy, setSortBy] = useState<
+    "name" | "zone" | "referredByCount" | "priorityScore" | "activitySignal" | "profileHealth"
+  >("priorityScore");
   const [sortDesc, setSortDesc] = useState(true);
   const [rowDrafts, setRowDrafts] = useState<
     Record<string, { toHandle: string; referredCategory: ReferralCategory; note: string }>
   >({});
 
-  const targets = useMemo(() => computeReferralCounts(baseTargets, referralEdges), [baseTargets, referralEdges]);
+  const targets = useMemo(() => {
+    const withRef = computeReferralCounts(baseTargets, referralEdges);
+    return withRef.map((t) => ({
+      ...t,
+      priorityScore: getEffectivePriorityScore(t),
+    }));
+  }, [baseTargets, referralEdges]);
 
   const persistTargetsList = useCallback(async (next: SocialTarget[]) => {
     setSaveError(null);
@@ -152,6 +258,39 @@ export default function SocialTargetsTable({
     return [...z].sort();
   }, [baseTargets]);
 
+  const categories = useMemo(() => {
+    const c = new Set<string>();
+    for (const t of baseTargets) c.add(t.category);
+    return [...c].sort();
+  }, [baseTargets]);
+
+  const operatorKpis = useMemo(() => {
+    const total = baseTargets.length;
+    const activeProfiles = baseTargets.filter((t) => t.profileHealth === "active").length;
+    const ready = baseTargets.filter(isReadyToAttack).length;
+    const deadBroken = baseTargets.filter(
+      (t) => t.profileHealth === "not_found" || t.profileHealth === "renamed_or_moved"
+    ).length;
+    const liveProviders = baseTargets.filter((t) => t.status === "live").length;
+    return { total, activeProfiles, ready, deadBroken, liveProviders };
+  }, [baseTargets]);
+
+  const topReadyTargets = useMemo(() => {
+    return baseTargets
+      .filter(isReadyToAttack)
+      .map((t) => ({
+        t,
+        score: getEffectivePriorityScore(t),
+        followers: t.followers ?? 0,
+      }))
+      .sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        return b.followers - a.followers;
+      })
+      .slice(0, 10)
+      .map((x) => x.t);
+  }, [baseTargets]);
+
   const topReferred = useMemo(() => getTopReferredHandles(referralEdges).slice(0, 5), [referralEdges]);
 
   const referralSummary = useMemo(() => {
@@ -178,12 +317,35 @@ export default function SocialTargetsTable({
       });
     }
     if (zoneFilter !== "all") list = list.filter((t) => t.zone === zoneFilter);
+    if (categoryFilter !== "all") list = list.filter((t) => t.category === categoryFilter);
     if (statusFilter !== "all") list = list.filter((t) => (t.status ?? "new") === statusFilter);
+    list = list.filter((t) => matchesProfileHealthFilter(t, profileHealthFilter));
+    list = list.filter((t) => matchesActivityFilter(t, activityFilter));
+    if (minPriority !== "all") {
+      list = list.filter((t) => (t.priorityScore ?? 0) >= minPriority);
+    }
+    if (readyToAttackOnly) list = list.filter(isReadyToAttack);
+    if (hideDeadProfiles) {
+      list = list.filter((t) => t.profileHealth !== "not_found" && t.profileHealth !== "renamed_or_moved");
+    }
+    if (hotTagOnly) list = list.filter(hasHotTag);
     if (referralHubsOnly) list = list.filter((t) => t.isReferralHub);
 
     const dir = sortDesc ? -1 : 1;
     list.sort((a, b) => {
-      if (sortBy === "referredByCount") {
+      if (sortBy === "priorityScore") {
+        const va = a.priorityScore ?? 0;
+        const vb = b.priorityScore ?? 0;
+        if (va !== vb) return (vb - va) * (sortDesc ? 1 : -1);
+      } else if (sortBy === "activitySignal") {
+        const ra = getActivityRank(a.activitySignal);
+        const rb = getActivityRank(b.activitySignal);
+        if (ra !== rb) return (rb - ra) * (sortDesc ? 1 : -1);
+      } else if (sortBy === "profileHealth") {
+        const ra = getProfileHealthRank(a.profileHealth);
+        const rb = getProfileHealthRank(b.profileHealth);
+        if (ra !== rb) return (rb - ra) * (sortDesc ? 1 : -1);
+      } else if (sortBy === "referredByCount") {
         const va = a.referredByCount ?? 0;
         const vb = b.referredByCount ?? 0;
         if (va !== vb) return (vb - va) * (sortDesc ? 1 : -1);
@@ -198,7 +360,22 @@ export default function SocialTargetsTable({
     });
 
     return list;
-  }, [targets, search, zoneFilter, statusFilter, referralHubsOnly, sortBy, sortDesc]);
+  }, [
+    targets,
+    search,
+    zoneFilter,
+    categoryFilter,
+    statusFilter,
+    profileHealthFilter,
+    activityFilter,
+    minPriority,
+    readyToAttackOnly,
+    hideDeadProfiles,
+    hotTagOnly,
+    referralHubsOnly,
+    sortBy,
+    sortDesc,
+  ]);
 
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds((prev) => {
@@ -233,7 +410,47 @@ export default function SocialTargetsTable({
   const setStatus = useCallback(
     (id: string, status: SocialTargetStatus) => {
       setBaseTargets((prev) => {
-        const next = prev.map((t) => (t.id === id ? { ...t, status } : t));
+        const next = prev.map((t) => {
+          if (t.id !== id) return t;
+          const patched = { ...t, status };
+          if (t.priorityScoreManual === true) return patched;
+          return {
+            ...patched,
+            priorityScore: computePriorityScore(patched),
+            priorityScoreManual: false,
+          };
+        });
+        void persistTargetsList(next);
+        return next;
+      });
+    },
+    [persistTargetsList]
+  );
+
+  const onProfileHealthChange = useCallback(
+    (id: string, health: ProfileHealth) => {
+      setBaseTargets((prev) => {
+        const next = prev.map((t) => {
+          if (t.id !== id) return t;
+          return afterHealthOrActivityChange(t, {
+            profileHealth: health,
+            lastVerifiedAt: new Date().toISOString(),
+          });
+        });
+        void persistTargetsList(next);
+        return next;
+      });
+    },
+    [persistTargetsList]
+  );
+
+  const onActivitySignalChange = useCallback(
+    (id: string, signal: ActivitySignal) => {
+      setBaseTargets((prev) => {
+        const next = prev.map((t) => {
+          if (t.id !== id) return t;
+          return afterHealthOrActivityChange(t, { activitySignal: signal });
+        });
         void persistTargetsList(next);
         return next;
       });
@@ -295,6 +512,19 @@ export default function SocialTargetsTable({
         category: cat,
         tags: ["REFERRAL_DISCOVERED"],
         status: "new",
+        profileHealth: "unknown",
+        activitySignal: "unknown",
+        priorityScoreManual: false,
+        priorityScore: computePriorityScore({
+          id,
+          handle: stripAt(node.toHandle),
+          zone: "park-meadows",
+          category: cat,
+          tags: ["REFERRAL_DISCOVERED"],
+          status: "new",
+          profileHealth: "unknown",
+          activitySignal: "unknown",
+        }),
       };
       const next = [...prev, row];
       void persistTargetsList(next);
@@ -314,9 +544,8 @@ export default function SocialTargetsTable({
           <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">GTM · Internal</p>
           <h1 className="text-xl font-semibold text-neutral-900">Social targets</h1>
           <p className="mt-1 max-w-2xl text-sm text-neutral-600">
-            Park Meadows / DTC cluster — targets, referral edges, and emerging trust signals. Edits persist to{" "}
-            <code className="rounded bg-neutral-100 px-1 text-[11px]">runtime-data/*.generated.json</code> (merged with
-            seed JSON).
+            Park Meadows / DTC — verification, priority, referrals. Edits persist to{" "}
+            <code className="rounded bg-neutral-100 px-1 text-[11px]">runtime-data/*.generated.json</code>.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -348,6 +577,29 @@ export default function SocialTargetsTable({
       {saveError ? (
         <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900">{saveError}</div>
       ) : null}
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="rounded-xl border border-slate-200 bg-slate-50/90 px-3 py-2 shadow-sm">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-600">Total targets</p>
+          <p className="text-2xl font-bold tabular-nums text-slate-950">{operatorKpis.total}</p>
+        </div>
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50/90 px-3 py-2 shadow-sm">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-800">Active profiles</p>
+          <p className="text-2xl font-bold tabular-nums text-emerald-950">{operatorKpis.activeProfiles}</p>
+        </div>
+        <div className="rounded-xl border border-rose-200 bg-rose-50/90 px-3 py-2 shadow-sm">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-rose-900">Ready to attack</p>
+          <p className="text-2xl font-bold tabular-nums text-rose-950">{operatorKpis.ready}</p>
+        </div>
+        <div className="rounded-xl border border-neutral-300 bg-neutral-100/90 px-3 py-2 shadow-sm">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-600">Dead / broken</p>
+          <p className="text-2xl font-bold tabular-nums text-neutral-900">{operatorKpis.deadBroken}</p>
+        </div>
+        <div className="rounded-xl border border-sky-200 bg-sky-50/90 px-3 py-2 shadow-sm">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-sky-900">Live providers</p>
+          <p className="text-2xl font-bold tabular-nums text-sky-950">{operatorKpis.liveProviders}</p>
+        </div>
+      </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-sm">
@@ -394,6 +646,47 @@ export default function SocialTargetsTable({
             )}
           </p>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-rose-200 bg-rose-50/40 p-4">
+        <h2 className="text-[11px] font-bold uppercase tracking-wide text-rose-900">Top ready targets</h2>
+        <p className="mt-1 text-xs text-neutral-600">Active + warm/hot + status new — sorted by score, then followers.</p>
+        {topReadyTargets.length === 0 ? (
+          <p className="mt-2 text-sm text-neutral-500">No rows match Ready to Attack criteria.</p>
+        ) : (
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {topReadyTargets.map((t) => (
+              <li
+                key={t.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-rose-100 bg-white px-3 py-2 text-xs"
+              >
+                <div>
+                  <a
+                    href={igProfileUrl(t.handle)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-semibold text-rose-900 underline-offset-2 hover:underline"
+                  >
+                    @{stripAt(t.handle)}
+                  </a>
+                  <span className="ml-2 text-neutral-500">{t.category}</span>
+                  <span className="ml-2 font-bold tabular-nums text-neutral-800">{getEffectivePriorityScore(t)}</span>
+                  {t.outreachAngle ? (
+                    <p className="mt-1 max-w-md text-[11px] text-neutral-600">{t.outreachAngle}</p>
+                  ) : null}
+                </div>
+                <a
+                  href={igProfileUrl(t.handle)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="shrink-0 rounded-full border border-rose-200 bg-rose-50 px-2 py-1 text-[10px] font-bold uppercase text-rose-900 hover:bg-rose-100"
+                >
+                  Open IG
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="rounded-xl border border-neutral-200 bg-neutral-50/80 p-4">
@@ -466,6 +759,21 @@ export default function SocialTargetsTable({
           </select>
         </label>
         <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          Category
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="mt-0.5 block max-w-[10rem] rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
+          >
+            <option value="all">All</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
           Status
           <select
             value={statusFilter}
@@ -480,6 +788,77 @@ export default function SocialTargetsTable({
             ))}
           </select>
         </label>
+        <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          Profile health
+          <select
+            value={profileHealthFilter}
+            onChange={(e) => setProfileHealthFilter(e.target.value as (typeof PROFILE_HEALTH_FILTER)[number])}
+            className="mt-0.5 block max-w-[11rem] rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
+          >
+            {PROFILE_HEALTH_FILTER.map((f) => (
+              <option key={f} value={f}>
+                {f === "all" ? "All" : f.replace(/_/g, " ")}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          Activity
+          <select
+            value={activityFilter}
+            onChange={(e) => setActivityFilter(e.target.value as (typeof ACTIVITY_FILTER)[number])}
+            className="mt-0.5 block rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
+          >
+            {ACTIVITY_FILTER.map((f) => (
+              <option key={f} value={f}>
+                {f === "all" ? "All" : f}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          Min priority
+          <select
+            value={minPriority === "all" ? "all" : String(minPriority)}
+            onChange={(e) => {
+              const v = e.target.value;
+              setMinPriority(v === "all" ? "all" : (Number(v) as 50 | 70 | 80));
+            }}
+            className="mt-0.5 block rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
+          >
+            <option value="all">All</option>
+            <option value="50">50+</option>
+            <option value="70">70+</option>
+            <option value="80">80+</option>
+          </select>
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+          <input
+            type="checkbox"
+            checked={readyToAttackOnly}
+            onChange={(e) => setReadyToAttackOnly(e.target.checked)}
+            className="rounded border-neutral-300"
+          />
+          Ready to attack only
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+          <input
+            type="checkbox"
+            checked={hideDeadProfiles}
+            onChange={(e) => setHideDeadProfiles(e.target.checked)}
+            className="rounded border-neutral-300"
+          />
+          Hide dead profiles
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+          <input
+            type="checkbox"
+            checked={hotTagOnly}
+            onChange={(e) => setHotTagOnly(e.target.checked)}
+            className="rounded border-neutral-300"
+          />
+          HOT tag only
+        </label>
         <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
           <input
             type="checkbox"
@@ -493,12 +872,25 @@ export default function SocialTargetsTable({
           Sort
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as "name" | "zone" | "referredByCount")}
-            className="mt-0.5 block rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
+            onChange={(e) =>
+              setSortBy(
+                e.target.value as
+                  | "name"
+                  | "zone"
+                  | "referredByCount"
+                  | "priorityScore"
+                  | "activitySignal"
+                  | "profileHealth"
+              )
+            }
+            className="mt-0.5 block max-w-[11rem] rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
           >
+            <option value="priorityScore">Priority score</option>
+            <option value="activitySignal">Activity</option>
+            <option value="profileHealth">Profile health</option>
             <option value="name">Handle</option>
             <option value="zone">Zone</option>
-            <option value="referredByCount">Referred by (strength)</option>
+            <option value="referredByCount">Referred by</option>
           </select>
         </label>
         <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
@@ -536,23 +928,24 @@ export default function SocialTargetsTable({
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
-        <table className="w-full min-w-[1180px] border-collapse text-left text-xs">
+        <table className="w-full min-w-[1400px] border-collapse text-left text-xs">
           <thead>
             <tr className="border-b border-neutral-200 bg-neutral-50 text-[10px] font-bold uppercase tracking-wide text-neutral-500">
               <th className="w-10 px-2 py-2">Sel</th>
-              <th className="px-2 py-2">Target</th>
+              <th className="min-w-[200px] px-2 py-2">Target & signals</th>
+              <th className="min-w-[160px] px-2 py-2">Verify & rank</th>
               <th className="px-2 py-2">Zone</th>
               <th className="px-2 py-2">Category</th>
               <th className="px-2 py-2">Status</th>
-              <th className="min-w-[140px] px-2 py-2">Notes</th>
-              <th className="px-2 py-2">Referral signal</th>
-              <th className="min-w-[280px] px-2 py-2">Add referral</th>
+              <th className="min-w-[120px] px-2 py-2">Notes</th>
+              <th className="px-2 py-2">Referral</th>
+              <th className="min-w-[240px] px-2 py-2">Add referral</th>
             </tr>
           </thead>
           <tbody className="text-neutral-800">
             {filteredSorted.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-3 py-8 text-center text-sm text-neutral-500">
+                <td colSpan={9} className="px-3 py-8 text-center text-sm text-neutral-500">
                   No targets match filters.
                 </td>
               </tr>
@@ -561,6 +954,9 @@ export default function SocialTargetsTable({
                 const draft = getDraft(t.id);
                 const outgoing = t.referralCount ?? 0;
                 const incoming = t.referredByCount ?? 0;
+                const score = t.priorityScore ?? 0;
+                const ready = isReadyToAttack(t);
+                const baseRow = baseTargets.find((b) => b.id === t.id) ?? t;
                 return (
                   <tr key={t.id} className="border-b border-neutral-100 align-top">
                     <td className="px-2 py-2">
@@ -572,8 +968,38 @@ export default function SocialTargetsTable({
                       />
                     </td>
                     <td className="px-2 py-2">
-                      <div className="font-semibold text-neutral-900">@{stripAt(t.handle)}</div>
+                      <div className="flex flex-wrap items-center gap-1">
+                        <div className="font-semibold text-neutral-900">@{stripAt(t.handle)}</div>
+                        {ready ? (
+                          <span className="rounded-full bg-rose-600 px-2 py-0.5 text-[9px] font-black uppercase text-white">
+                            Ready
+                          </span>
+                        ) : null}
+                        {score >= 80 ? (
+                          <span className="rounded-full bg-amber-200 px-1.5 py-0.5 text-[9px] font-bold text-amber-950">
+                            80+
+                          </span>
+                        ) : null}
+                      </div>
                       {t.businessName ? <div className="text-[11px] text-neutral-600">{t.businessName}</div> : null}
+                      <div className="mt-1 space-y-0.5 text-[10px] text-neutral-600">
+                        <div>
+                          Health: <span className="font-semibold text-neutral-800">{t.profileHealth ?? "—"}</span>
+                        </div>
+                        <div>
+                          Activity: <span className="font-semibold text-neutral-800">{t.activitySignal ?? "—"}</span>
+                        </div>
+                        <div>
+                          Score: <span className="font-bold tabular-nums text-neutral-900">{score}</span>
+                          {baseRow.priorityScoreManual ? (
+                            <span className="ml-1 text-[9px] text-neutral-500">(manual)</span>
+                          ) : null}
+                        </div>
+                        {t.outreachAngle ? (
+                          <div className="text-[10px] text-neutral-700">Angle: {t.outreachAngle}</div>
+                        ) : null}
+                        <div>Verified: {formatVerifiedAt(t.lastVerifiedAt)}</div>
+                      </div>
                       {t.tags?.length ? (
                         <div className="mt-1 flex flex-wrap gap-1">
                           {t.tags.map((tag) => (
@@ -586,6 +1012,112 @@ export default function SocialTargetsTable({
                           ))}
                         </div>
                       ) : null}
+                    </td>
+                    <td className="px-2 py-2">
+                      <div className="flex max-w-[200px] flex-col gap-1.5">
+                        <select
+                          value={baseRow.profileHealth ?? "unknown"}
+                          onChange={(e) => onProfileHealthChange(t.id, e.target.value as ProfileHealth)}
+                          className="rounded border border-neutral-300 bg-white px-1 py-1 text-[10px]"
+                        >
+                          {PROFILE_HEALTH_EDIT.map((h) => (
+                            <option key={h} value={h}>
+                              {h.replace(/_/g, " ")}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          value={baseRow.activitySignal ?? "unknown"}
+                          onChange={(e) => onActivitySignalChange(t.id, e.target.value as ActivitySignal)}
+                          className="rounded border border-neutral-300 bg-white px-1 py-1 text-[10px]"
+                        >
+                          {ACTIVITY_EDIT.map((a) => (
+                            <option key={a} value={a}>
+                              {a}
+                            </option>
+                          ))}
+                        </select>
+                        <label className="text-[9px] font-semibold text-neutral-500">
+                          Priority (0–100)
+                          <input
+                            type="number"
+                            min={0}
+                            max={100}
+                            defaultValue={baseRow.priorityScore ?? score}
+                            key={`${t.id}-prio-${baseRow.priorityScore}-${baseRow.priorityScoreManual}`}
+                            onBlur={(e) => {
+                              const n = Number(e.target.value);
+                              if (!Number.isFinite(n)) return;
+                              const clamped = Math.max(0, Math.min(100, Math.round(n)));
+                              setBaseTargets((p) => {
+                                const next = p.map((x) =>
+                                  x.id === t.id
+                                    ? { ...x, priorityScore: clamped, priorityScoreManual: true }
+                                    : x
+                                );
+                                void persistTargetsList(next);
+                                return next;
+                              });
+                            }}
+                            className="mt-0.5 w-full rounded border border-neutral-300 bg-white px-1 py-0.5 text-[10px] tabular-nums"
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setBaseTargets((p) => {
+                              const next = p.map((x) => {
+                                if (x.id !== t.id) return x;
+                                const u = { ...x, priorityScoreManual: false as const };
+                                return { ...u, priorityScore: computePriorityScore(u) };
+                              });
+                              void persistTargetsList(next);
+                              return next;
+                            });
+                          }}
+                          className="text-left text-[9px] font-semibold text-indigo-700 underline"
+                        >
+                          Use auto score
+                        </button>
+                        <textarea
+                          key={`${t.id}-vnote-${baseRow.verificationNote ?? ""}`}
+                          defaultValue={baseRow.verificationNote ?? ""}
+                          rows={2}
+                          placeholder="Verification note"
+                          onBlur={(e) => {
+                            const v = e.target.value.trim();
+                            const prev = (baseRow.verificationNote ?? "").trim();
+                            if (v === prev) return;
+                            setBaseTargets((p) => {
+                              const next = p.map((x) =>
+                                x.id === t.id ? { ...x, ...(v ? { verificationNote: v } : { verificationNote: undefined }) } : x
+                              );
+                              void persistTargetsList(next);
+                              return next;
+                            });
+                          }}
+                          className="w-full rounded border border-neutral-300 bg-white px-1 py-0.5 text-[10px]"
+                        />
+                        <textarea
+                          key={`${t.id}-angle-${baseRow.outreachAngle ?? ""}`}
+                          defaultValue={baseRow.outreachAngle ?? ""}
+                          rows={2}
+                          placeholder="Outreach angle"
+                          onBlur={(e) => {
+                            const v = e.target.value.trim();
+                            const prev = (baseRow.outreachAngle ?? "").trim();
+                            if (v === prev) return;
+                            setBaseTargets((p) => {
+                              const next = p.map((x) =>
+                                x.id === t.id ? { ...x, ...(v ? { outreachAngle: v } : { outreachAngle: undefined }) } : x
+                              );
+                              void persistTargetsList(next);
+                              return next;
+                            });
+                          }}
+                          className="w-full rounded border border-neutral-300 bg-white px-1 py-0.5 text-[10px]"
+                        />
+                      </div>
                     </td>
                     <td className="px-2 py-2 text-neutral-700">{t.zone}</td>
                     <td className="px-2 py-2 text-neutral-700">{t.category}</td>
@@ -604,12 +1136,12 @@ export default function SocialTargetsTable({
                     </td>
                     <td className="px-2 py-2">
                       <textarea
-                        key={`${t.id}-notes-${t.notes ?? ""}`}
-                        defaultValue={t.notes ?? ""}
+                        key={`${t.id}-notes-${baseRow.notes ?? ""}`}
+                        defaultValue={baseRow.notes ?? ""}
                         rows={2}
                         onBlur={(e) => {
                           const v = e.target.value.trim();
-                          const prev = (t.notes ?? "").trim();
+                          const prev = (baseRow.notes ?? "").trim();
                           if (v === prev) return;
                           setBaseTargets((p) => {
                             const next = p.map((x) =>
@@ -620,7 +1152,7 @@ export default function SocialTargetsTable({
                           });
                         }}
                         placeholder="Operator notes"
-                        className="w-full min-w-[8rem] rounded border border-neutral-300 bg-white px-2 py-1 text-[11px] text-neutral-800"
+                        className="w-full min-w-[6rem] rounded border border-neutral-300 bg-white px-2 py-1 text-[11px] text-neutral-800"
                       />
                     </td>
                     <td className="px-2 py-2">
@@ -664,7 +1196,7 @@ export default function SocialTargetsTable({
                             value={draft.note}
                             onChange={(e) => setDraftField(t.id, { note: e.target.value })}
                             placeholder="Note"
-                            className="min-w-[8rem] flex-1 rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
+                            className="min-w-[6rem] flex-1 rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
                           />
                         </div>
                         <button

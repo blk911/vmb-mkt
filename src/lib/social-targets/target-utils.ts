@@ -1,4 +1,4 @@
-import type { ReferralEdge, SocialTarget } from "@/types/social-target";
+import type { ActivitySignal, ProfileHealth, ReferralEdge, SocialTarget } from "@/types/social-target";
 
 export function computeReferralCounts(targets: SocialTarget[], edges: ReferralEdge[]): SocialTarget[] {
   const outgoing = new Map<string, number>();
@@ -89,4 +89,109 @@ export function getTopReferredHandles(edges: ReferralEdge[]) {
   }
 
   return [...counts.values()].sort((a, b) => b.timesSeen - a.timesSeen);
+}
+
+export function getActivityRank(signal?: ActivitySignal): number {
+  switch (signal) {
+    case "hot":
+      return 4;
+    case "warm":
+      return 3;
+    case "cold":
+      return 2;
+    default:
+      return 1;
+  }
+}
+
+export function getProfileHealthRank(health?: ProfileHealth): number {
+  switch (health) {
+    case "active":
+      return 5;
+    case "private":
+      return 4;
+    case "stale":
+      return 3;
+    case "renamed_or_moved":
+      return 2;
+    case "not_found":
+      return 1;
+    default:
+      return 0;
+  }
+}
+
+export function computePriorityScore(target: SocialTarget): number {
+  if (target.profileHealth === "not_found") return 0;
+
+  let score = 0;
+
+  if (target.tags?.some((tag) => tag.toUpperCase() === "HOT")) score += 25;
+  if (target.booking === "dm") score += 10;
+  if (target.booking === "link") score += 8;
+  if (target.booking === "phone") score += 6;
+
+  if ((target.followers ?? 0) >= 5000) score += 15;
+  else if ((target.followers ?? 0) >= 2000) score += 10;
+  else if ((target.followers ?? 0) >= 800) score += 6;
+  else if ((target.followers ?? 0) >= 300) score += 3;
+
+  switch (target.activitySignal) {
+    case "hot":
+      score += 25;
+      break;
+    case "warm":
+      score += 15;
+      break;
+    case "cold":
+      score += 5;
+      break;
+  }
+
+  switch (target.profileHealth) {
+    case "active":
+      score += 20;
+      break;
+    case "private":
+      score += 8;
+      break;
+    case "stale":
+      score -= 10;
+      break;
+    case "renamed_or_moved":
+      score -= 20;
+      break;
+    case "not_found":
+      score -= 100;
+      break;
+  }
+
+  if (target.status === "contacted") score -= 5;
+  if (target.status === "responded") score += 8;
+  if (target.status === "live") score -= 20;
+
+  return Math.max(0, Math.min(100, score));
+}
+
+/** Effective score for display, sort, and filters — respects manual operator override. */
+export function getEffectivePriorityScore(target: SocialTarget): number {
+  if (target.priorityScoreManual === true && typeof target.priorityScore === "number") {
+    return Math.max(0, Math.min(100, target.priorityScore));
+  }
+  return computePriorityScore(target);
+}
+
+export function withComputedPriorityScore(targets: SocialTarget[]): SocialTarget[] {
+  return targets.map((target) => ({
+    ...target,
+    priorityScore: getEffectivePriorityScore(target),
+  }));
+}
+
+export function isReadyToAttack(target: SocialTarget): boolean {
+  return (
+    target.profileHealth === "active" &&
+    (target.activitySignal === "hot" || target.activitySignal === "warm") &&
+    target.status === "new"
+  );
 }

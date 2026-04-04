@@ -2,15 +2,18 @@ import SocialTargetsTable from "@/components/admin/social-targets/SocialTargetsT
 import { loadReferralEdges } from "@/lib/social-targets/loadReferralEdges";
 import { loadSocialTargets } from "@/lib/social-targets/loadSocialTargets";
 import { isSocialTargetsDevBypass } from "@/lib/social-targets/social-targets-api-access";
+import { computeReferralCounts, withComputedPriorityScore } from "@/lib/social-targets/target-utils";
 
 export default async function AdminSocialTargetsPage() {
-  const [targets, referralEdges] = await Promise.all([loadSocialTargets(), loadReferralEdges()]);
+  const [mergedTargets, referralEdges] = await Promise.all([loadSocialTargets(), loadReferralEdges()]);
+  const withReferrals = computeReferralCounts(mergedTargets, referralEdges);
+  const initialTargets = withComputedPriorityScore(withReferrals);
   const showDevReset = isSocialTargetsDevBypass();
 
   return (
     <div className="min-h-0 flex-1">
       <SocialTargetsTable
-        initialTargets={targets}
+        initialTargets={initialTargets}
         initialReferralEdges={referralEdges}
         showDevReset={showDevReset}
       />
