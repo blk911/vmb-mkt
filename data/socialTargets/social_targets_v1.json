@@ -1,0 +1,47 @@
+[
+  {
+    "id": "littlebeenail",
+    "handle": "littlebeenail_studio",
+    "businessName": "Little Bee Nail Studio",
+    "zone": "park-meadows",
+    "category": "nails",
+    "tags": ["GTM", "DTC"],
+    "status": "new"
+  },
+  {
+    "id": "lavogue",
+    "handle": "lavogue.nails.lash",
+    "businessName": "La Vogue Nails & Lash",
+    "zone": "park-meadows",
+    "category": "nails",
+    "tags": ["GTM"],
+    "status": "contacted"
+  },
+  {
+    "id": "polishedpm",
+    "handle": "polished_parkmeadows",
+    "businessName": "Polished Park Meadows",
+    "zone": "park-meadows",
+    "category": "nails",
+    "tags": [],
+    "status": "new"
+  },
+  {
+    "id": "hairbymarissadtc",
+    "handle": "hairbymarissadtc",
+    "businessName": "Hair by Marissa DTC",
+    "zone": "dtc",
+    "category": "hair",
+    "tags": ["HUB_CANDIDATE"],
+    "status": "qualified"
+  },
+  {
+    "id": "lashloftdtc",
+    "handle": "lashloft.dtc",
+    "businessName": "Lash Loft DTC",
+    "zone": "dtc",
+    "category": "lashes",
+    "tags": [],
+    "status": "new"
+  }
+]

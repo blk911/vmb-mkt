@@ -1,0 +1,72 @@
+[
+  {
+    "id": "edge-1",
+    "fromTargetId": "littlebeenail",
+    "fromHandle": "littlebeenail_studio",
+    "toHandle": "hairbymarissadtc",
+    "toTargetId": "hairbymarissadtc",
+    "referredCategory": "hair",
+    "confidence": "single",
+    "timesSeen": 1,
+    "note": "Asked for favorite hair referral near Park Meadows.",
+    "createdAt": "2026-04-04T12:00:00.000Z"
+  },
+  {
+    "id": "edge-2",
+    "fromTargetId": "lavogue",
+    "fromHandle": "lavogue.nails.lash",
+    "toHandle": "hairbymarissadtc",
+    "toTargetId": "hairbymarissadtc",
+    "referredCategory": "hair",
+    "confidence": "multi",
+    "timesSeen": 2,
+    "note": "Repeated mention from another nail provider.",
+    "createdAt": "2026-04-04T12:05:00.000Z"
+  },
+  {
+    "id": "edge-3",
+    "fromTargetId": "polishedpm",
+    "fromHandle": "polished_parkmeadows",
+    "toHandle": "hairbymarissadtc",
+    "toTargetId": "hairbymarissadtc",
+    "referredCategory": "hair",
+    "confidence": "single",
+    "timesSeen": 1,
+    "note": "Client asked who does color near the mall.",
+    "createdAt": "2026-04-04T12:10:00.000Z"
+  },
+  {
+    "id": "edge-4",
+    "fromTargetId": "littlebeenail",
+    "fromHandle": "littlebeenail_studio",
+    "toHandle": "browsby_jordan_dtc",
+    "referredCategory": "brows",
+    "confidence": "single",
+    "timesSeen": 1,
+    "note": "External brow artist — not in targets yet.",
+    "createdAt": "2026-04-04T12:15:00.000Z"
+  },
+  {
+    "id": "edge-5",
+    "fromTargetId": "lavogue",
+    "fromHandle": "lavogue.nails.lash",
+    "toHandle": "dtc_spa_collective",
+    "referredCategory": "spa",
+    "confidence": "multi",
+    "timesSeen": 2,
+    "note": "Massage and facial referral; mentioned twice in thread.",
+    "createdAt": "2026-04-04T12:20:00.000Z"
+  },
+  {
+    "id": "edge-6",
+    "fromTargetId": "lashloftdtc",
+    "fromHandle": "lashloft.dtc",
+    "toHandle": "hairbymarissadtc",
+    "toTargetId": "hairbymarissadtc",
+    "referredCategory": "hair",
+    "confidence": "single",
+    "timesSeen": 1,
+    "note": "Cross-service shout in stories.",
+    "createdAt": "2026-04-04T12:25:00.000Z"
+  }
+]
