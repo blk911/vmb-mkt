@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   computeReferralCounts,
   getTopReferredHandles,
@@ -12,6 +13,7 @@ import type { ReferralCategory, ReferralEdge, SocialTarget, SocialTargetStatus }
 type Props = {
   initialTargets: SocialTarget[];
   initialReferralEdges: ReferralEdge[];
+  showDevReset?: boolean;
 };
 
 const REFERRAL_CATEGORIES: ReferralCategory[] = ["nails", "hair", "lashes", "brows", "spa", "other"];
@@ -43,10 +45,42 @@ function referralCategoryToTargetCategory(cat: ReferralCategory): string {
   return cat;
 }
 
-export default function SocialTargetsTable({ initialTargets, initialReferralEdges }: Props) {
+function toApiTarget(t: SocialTarget): SocialTarget {
+  return {
+    id: t.id,
+    handle: stripAt(t.handle),
+    zone: t.zone,
+    category: t.category,
+    status: t.status ?? "new",
+    tags: t.tags ?? [],
+    ...(t.businessName !== undefined && t.businessName !== "" ? { businessName: t.businessName } : {}),
+    ...(t.notes !== undefined && t.notes !== "" ? { notes: t.notes } : {}),
+  };
+}
+
+export default function SocialTargetsTable({
+  initialTargets,
+  initialReferralEdges,
+  showDevReset = false,
+}: Props) {
+  const router = useRouter();
   const [baseTargets, setBaseTargets] = useState<SocialTarget[]>(initialTargets);
   const [referralEdges, setReferralEdges] = useState<ReferralEdge[]>(initialReferralEdges);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [resetBusy, setResetBusy] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+
+  const serverSnapshotKey = useMemo(
+    () => JSON.stringify({ targets: initialTargets, edges: initialReferralEdges }),
+    [initialTargets, initialReferralEdges]
+  );
+  const lastServerKey = useRef<string | null>(null);
+  useEffect(() => {
+    if (lastServerKey.current === serverSnapshotKey) return;
+    lastServerKey.current = serverSnapshotKey;
+    setBaseTargets(initialTargets);
+    setReferralEdges(initialReferralEdges);
+  }, [serverSnapshotKey, initialTargets, initialReferralEdges]);
   const [search, setSearch] = useState("");
   const [zoneFilter, setZoneFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | SocialTargetStatus>("all");
@@ -58,6 +92,59 @@ export default function SocialTargetsTable({ initialTargets, initialReferralEdge
   >({});
 
   const targets = useMemo(() => computeReferralCounts(baseTargets, referralEdges), [baseTargets, referralEdges]);
+
+  const persistTargetsList = useCallback(async (next: SocialTarget[]) => {
+    setSaveError(null);
+    try {
+      const res = await fetch("/api/social-targets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targets: next.map(toApiTarget) }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!res.ok || data.ok !== true) {
+        setSaveError(data.error || `Targets save failed (${res.status})`);
+      }
+    } catch {
+      setSaveError("Targets save failed (network)");
+    }
+  }, []);
+
+  const persistEdgesList = useCallback(async (next: ReferralEdge[]) => {
+    setSaveError(null);
+    try {
+      const res = await fetch("/api/social-targets/referral-edges", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ edges: next }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!res.ok || data.ok !== true) {
+        setSaveError(data.error || `Referral edges save failed (${res.status})`);
+      }
+    } catch {
+      setSaveError("Referral edges save failed (network)");
+    }
+  }, []);
+
+  const onResetToSeed = useCallback(async () => {
+    if (!showDevReset) return;
+    setResetBusy(true);
+    setSaveError(null);
+    try {
+      const res = await fetch("/api/social-targets/reset", { method: "POST" });
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!res.ok || data.ok !== true) {
+        setSaveError(data.error || `Reset failed (${res.status})`);
+        return;
+      }
+      router.refresh();
+    } catch {
+      setSaveError("Reset failed (network)");
+    } finally {
+      setResetBusy(false);
+    }
+  }, [router, showDevReset]);
 
   const zones = useMemo(() => {
     const z = new Set<string>();
@@ -143,9 +230,16 @@ export default function SocialTargetsTable({ initialTargets, initialReferralEdge
     }
   }, [filteredSorted, selectedIds]);
 
-  const setStatus = useCallback((id: string, status: SocialTargetStatus) => {
-    setBaseTargets((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
-  }, []);
+  const setStatus = useCallback(
+    (id: string, status: SocialTargetStatus) => {
+      setBaseTargets((prev) => {
+        const next = prev.map((t) => (t.id === id ? { ...t, status } : t));
+        void persistTargetsList(next);
+        return next;
+      });
+    },
+    [persistTargetsList]
+  );
 
   const getDraft = useCallback(
     (id: string) =>
@@ -178,30 +272,35 @@ export default function SocialTargetsTable({ initialTargets, initialReferralEdge
         toTargetId: match?.id,
       });
       setReferralEdges(next);
+      void persistEdgesList(next);
       setRowDrafts((prev) => ({
         ...prev,
         [from.id]: { toHandle: "", referredCategory: d.referredCategory, note: "" },
       }));
     },
-    [baseTargets, getDraft, referralEdges]
+    [baseTargets, getDraft, persistEdgesList, referralEdges]
   );
 
   const promoteNodeToTarget = useCallback((node: { toHandle: string; category: string }) => {
-    const existing = handleMatchesTarget(baseTargets, node.toHandle);
-    if (existing) return;
-    const id = promoteIdForHandle(node.toHandle);
-    if (baseTargets.some((t) => t.id === id)) return;
-    const cat = referralCategoryToTargetCategory(node.category as ReferralCategory);
-    const row: SocialTarget = {
-      id,
-      handle: stripAt(node.toHandle),
-      zone: "park-meadows",
-      category: cat,
-      tags: ["REFERRAL_DISCOVERED"],
-      status: "new",
-    };
-    setBaseTargets((prev) => [...prev, row]);
-  }, [baseTargets]);
+    setBaseTargets((prev) => {
+      const existing = handleMatchesTarget(prev, node.toHandle);
+      if (existing) return prev;
+      const id = promoteIdForHandle(node.toHandle);
+      if (prev.some((t) => t.id === id)) return prev;
+      const cat = referralCategoryToTargetCategory(node.category as ReferralCategory);
+      const row: SocialTarget = {
+        id,
+        handle: stripAt(node.toHandle),
+        zone: "park-meadows",
+        category: cat,
+        tags: ["REFERRAL_DISCOVERED"],
+        status: "new",
+      };
+      const next = [...prev, row];
+      void persistTargetsList(next);
+      return next;
+    });
+  }, [persistTargetsList]);
 
   const isKnownReferredNode = useCallback(
     (handle: string) => Boolean(handleMatchesTarget(baseTargets, handle)),
@@ -215,10 +314,22 @@ export default function SocialTargetsTable({ initialTargets, initialReferralEdge
           <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">GTM · Internal</p>
           <h1 className="text-xl font-semibold text-neutral-900">Social targets</h1>
           <p className="mt-1 max-w-2xl text-sm text-neutral-600">
-            Park Meadows / DTC cluster — targets, referral edges, and emerging trust signals (local JSON + session state).
+            Park Meadows / DTC cluster — targets, referral edges, and emerging trust signals. Edits persist to{" "}
+            <code className="rounded bg-neutral-100 px-1 text-[11px]">runtime-data/*.generated.json</code> (merged with
+            seed JSON).
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {showDevReset ? (
+            <button
+              type="button"
+              disabled={resetBusy}
+              onClick={() => void onResetToSeed()}
+              className="rounded-full border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-900 hover:bg-red-100 disabled:opacity-50"
+            >
+              {resetBusy ? "Resetting…" : "Reset to seed data"}
+            </button>
+          ) : null}
           <Link
             href="/admin/markets"
             className="rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-50"
@@ -233,6 +344,10 @@ export default function SocialTargetsTable({ initialTargets, initialReferralEdge
           </Link>
         </div>
       </div>
+
+      {saveError ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900">{saveError}</div>
+      ) : null}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-sm">
@@ -421,7 +536,7 @@ export default function SocialTargetsTable({ initialTargets, initialReferralEdge
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
-        <table className="w-full min-w-[1024px] border-collapse text-left text-xs">
+        <table className="w-full min-w-[1180px] border-collapse text-left text-xs">
           <thead>
             <tr className="border-b border-neutral-200 bg-neutral-50 text-[10px] font-bold uppercase tracking-wide text-neutral-500">
               <th className="w-10 px-2 py-2">Sel</th>
@@ -429,6 +544,7 @@ export default function SocialTargetsTable({ initialTargets, initialReferralEdge
               <th className="px-2 py-2">Zone</th>
               <th className="px-2 py-2">Category</th>
               <th className="px-2 py-2">Status</th>
+              <th className="min-w-[140px] px-2 py-2">Notes</th>
               <th className="px-2 py-2">Referral signal</th>
               <th className="min-w-[280px] px-2 py-2">Add referral</th>
             </tr>
@@ -436,7 +552,7 @@ export default function SocialTargetsTable({ initialTargets, initialReferralEdge
           <tbody className="text-neutral-800">
             {filteredSorted.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-sm text-neutral-500">
+                <td colSpan={8} className="px-3 py-8 text-center text-sm text-neutral-500">
                   No targets match filters.
                 </td>
               </tr>
@@ -485,6 +601,27 @@ export default function SocialTargetsTable({ initialTargets, initialReferralEdge
                           </option>
                         ))}
                       </select>
+                    </td>
+                    <td className="px-2 py-2">
+                      <textarea
+                        key={`${t.id}-notes-${t.notes ?? ""}`}
+                        defaultValue={t.notes ?? ""}
+                        rows={2}
+                        onBlur={(e) => {
+                          const v = e.target.value.trim();
+                          const prev = (t.notes ?? "").trim();
+                          if (v === prev) return;
+                          setBaseTargets((p) => {
+                            const next = p.map((x) =>
+                              x.id === t.id ? { ...x, ...(v ? { notes: v } : { notes: undefined }) } : x
+                            );
+                            void persistTargetsList(next);
+                            return next;
+                          });
+                        }}
+                        placeholder="Operator notes"
+                        className="w-full min-w-[8rem] rounded border border-neutral-300 bg-white px-2 py-1 text-[11px] text-neutral-800"
+                      />
                     </td>
                     <td className="px-2 py-2">
                       <div className="space-y-0.5 text-[11px] text-neutral-700">

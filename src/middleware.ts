@@ -45,6 +45,17 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  /** Dev-only: social targets JSON APIs without admin cookie (see social-targets-api-access). */
+  if (
+    process.env.NODE_ENV !== "production" &&
+    process.env.VMB_DEV_BYPASS_SOCIAL_TARGETS === "true" &&
+    (pathname === "/api/social-targets" ||
+      pathname === "/api/social-targets/referral-edges" ||
+      pathname === "/api/social-targets/reset")
+  ) {
+    return NextResponse.next();
+  }
+
   const sessionSecret = getSessionSecret();
   if (!sessionSecret) {
     return new NextResponse("Admin session auth is not configured.", { status: 503 });
