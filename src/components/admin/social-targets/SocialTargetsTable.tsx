@@ -41,11 +41,12 @@ import {
   getEffectivePriorityScore,
   getProfileHealthRank,
   getTopReferredHandles,
-  isReadyToAttack,
   upsertReferralEdge,
 } from "@/lib/social-targets/target-utils";
 import {
+  getVerificationState,
   getVerificationStatus,
+  isLiveVerified,
   shouldHideTargetBecauseDead,
   shouldShowTargetInPrimaryView,
   shouldShowTargetInReviewView,
@@ -58,6 +59,7 @@ import type {
   ReferralEdge,
   SocialTarget,
   SocialTargetStatus,
+  VerificationState,
   SocialVerificationStatus,
   SocialVisibilityState,
 } from "@/types/social-target";
@@ -98,6 +100,16 @@ const PROFILE_HEALTH_FILTER: Array<"all" | ProfileHealth> = [
 const ACTIVITY_FILTER: Array<"all" | ActivitySignal> = ["all", "hot", "warm", "cold", "unknown"];
 
 const MIN_PRIORITY_FILTER: Array<"all" | 50 | 70 | 80> = ["all", 50, 70, 80];
+const VERIFICATION_STATE_FILTER: Array<"all" | VerificationState> = [
+  "all",
+  "live_verified",
+  "unverified",
+  "matched",
+  "discovered",
+  "dead",
+  "rejected",
+];
+const CANDIDATE_TYPE_FILTER = ["all", "operator", "booking_operator", "aggregator", "directory", "ambiguous"] as const;
 
 const EMPTY_REFERRAL_DRAFT: { toHandle: string; referredCategory: ReferralCategory; note: string } = {
   toHandle: "",
@@ -379,6 +391,19 @@ function hasNonExcludedProspect(t: SocialTarget): boolean {
   return (t.addressExpansion?.candidates ?? []).some((candidate) => candidate.prospect?.tier !== "exclude");
 }
 
+function matchesVerificationStateFilter(t: SocialTarget, filter: "all" | VerificationState): boolean {
+  if (filter === "all") return true;
+  return getVerificationState(t) === filter;
+}
+
+function matchesCandidateTypeFilter(
+  t: SocialTarget,
+  filter: (typeof CANDIDATE_TYPE_FILTER)[number]
+): boolean {
+  if (filter === "all") return true;
+  return (t.addressExpansion?.candidates ?? []).some((candidate) => candidate.prospect?.type === filter);
+}
+
 function formatVerifiedAt(iso?: string): string {
   if (!iso) return "—";
   try {
@@ -446,6 +471,7 @@ function toApiTarget(t: SocialTarget): SocialTarget {
   if (n.platforms && Object.keys(n.platforms).length > 0) row.platforms = { ...n.platforms };
   if (typeof n.confidenceScore === "number") row.confidenceScore = n.confidenceScore;
   if (n.resolutionStatus) row.resolutionStatus = n.resolutionStatus;
+  if (n.verificationState) row.verificationState = n.verificationState;
   if (n.runId) row.runId = n.runId;
   if (n.runType) row.runType = n.runType;
   if (n.sourceVersion) row.sourceVersion = n.sourceVersion;
@@ -517,6 +543,8 @@ export default function SocialTargetsTable({
   const [statusFilter, setStatusFilter] = useState<"all" | SocialTargetStatus>("all");
   const [profileHealthFilter, setProfileHealthFilter] = useState<(typeof PROFILE_HEALTH_FILTER)[number]>("all");
   const [activityFilter, setActivityFilter] = useState<(typeof ACTIVITY_FILTER)[number]>("all");
+  const [verificationStateFilter, setVerificationStateFilter] = useState<(typeof VERIFICATION_STATE_FILTER)[number]>("all");
+  const [candidateTypeFilter, setCandidateTypeFilter] = useState<(typeof CANDIDATE_TYPE_FILTER)[number]>("all");
   const [minPriority, setMinPriority] = useState<(typeof MIN_PRIORITY_FILTER)[number]>("all");
   const [readyToAttackOnly, setReadyToAttackOnly] = useState(false);
   const [hideDeadProfiles, setHideDeadProfiles] = useState(true);
@@ -533,6 +561,9 @@ export default function SocialTargetsTable({
   const [hasInstagramOnly, setHasInstagramOnly] = useState(false);
   const [hasTikTokOnly, setHasTikTokOnly] = useState(false);
   const [hasLinktreeOnly, setHasLinktreeOnly] = useState(false);
+  const [liveVerifiedOnly, setLiveVerifiedOnly] = useState(false);
+  const [deadOnly, setDeadOnly] = useState(false);
+  const [unverifiedOnly, setUnverifiedOnly] = useState(false);
   const [unknownOnly, setUnknownOnly] = useState(false);
   const [multiSignalOnly, setMultiSignalOnly] = useState(false);
   const [multiTenantOnly, setMultiTenantOnly] = useState(false);
@@ -542,7 +573,7 @@ export default function SocialTargetsTable({
   const [aggregatorTypeFilter, setAggregatorTypeFilter] = useState<string>("all");
   const [hotProspectOnly, setHotProspectOnly] = useState(false);
   const [warmPlusOnly, setWarmPlusOnly] = useState(false);
-  const [excludeHidden, setExcludeHidden] = useState(true);
+  const [excludeHidden, setExcludeHidden] = useState(false);
   const [sortBy, setSortBy] = useState<
     | "operatorRank"
     | "name"
@@ -652,12 +683,10 @@ export default function SocialTargetsTable({
 
   const operatorKpis = useMemo(() => {
     const total = baseTargets.length;
-    const activeProfiles = baseTargets.filter((t) => t.profileHealth === "active").length;
-    const ready = baseTargets.filter(isReadyToAttack).length;
-    const deadBroken = baseTargets.filter(
-      (t) => t.profileHealth === "not_found" || t.profileHealth === "renamed_or_moved"
-    ).length;
-    const liveProviders = baseTargets.filter((t) => t.status === "live").length;
+    const activeProfiles = baseTargets.filter(isLiveVerified).length;
+    const ready = baseTargets.filter((t) => isLiveVerified(t) && shouldShowTargetInPrimaryView(t)).length;
+    const deadBroken = baseTargets.filter((t) => getVerificationState(t) === "dead").length;
+    const liveProviders = baseTargets.filter(isLiveVerified).length;
     const primaryQueue = baseTargets.filter(shouldShowTargetInPrimaryView).length;
     const reviewQueue = baseTargets.filter(shouldShowTargetInReviewView).length;
     return { total, activeProfiles, ready, deadBroken, liveProviders, primaryQueue, reviewQueue };
@@ -666,7 +695,7 @@ export default function SocialTargetsTable({
   const topReadyTargets = useMemo(() => {
     return targets
       .filter((t) => {
-        if (!isReadyToAttack(t)) return false;
+        if (!isLiveVerified(t)) return false;
         if (viewMode === "primary" && !shouldShowTargetInPrimaryView(t)) return false;
         return true;
       })
@@ -713,10 +742,12 @@ export default function SocialTargetsTable({
     if (statusFilter !== "all") list = list.filter((t) => (t.status ?? "new") === statusFilter);
     list = list.filter((t) => matchesProfileHealthFilter(t, profileHealthFilter));
     list = list.filter((t) => matchesActivityFilter(t, activityFilter));
+    list = list.filter((t) => matchesVerificationStateFilter(t, verificationStateFilter));
+    list = list.filter((t) => matchesCandidateTypeFilter(t, candidateTypeFilter));
     if (minPriority !== "all") {
       list = list.filter((t) => (t.priorityScore ?? 0) >= minPriority);
     }
-    if (readyToAttackOnly) list = list.filter(isReadyToAttack);
+    if (readyToAttackOnly) list = list.filter(isLiveVerified);
     if (hideDeadProfiles) {
       list = list.filter((t) => !shouldHideTargetBecauseDead(t));
     }
@@ -725,6 +756,14 @@ export default function SocialTargetsTable({
     if (hasInstagramOnly) list = list.filter((t) => hasEvidencePlatform(t, "instagram"));
     if (hasTikTokOnly) list = list.filter((t) => hasEvidencePlatform(t, "tiktok"));
     if (hasLinktreeOnly) list = list.filter((t) => hasEvidencePlatform(t, "linktree"));
+    if (liveVerifiedOnly) list = list.filter((t) => getVerificationState(t) === "live_verified");
+    if (deadOnly) list = list.filter((t) => getVerificationState(t) === "dead");
+    if (unverifiedOnly) {
+      list = list.filter((t) => {
+        const state = getVerificationState(t);
+        return state === "unverified" || state === "matched" || state === "discovered";
+      });
+    }
     if (unknownOnly) list = list.filter(hasUnknownResolution);
     if (multiSignalOnly) list = list.filter(hasMultiSignal);
     if (multiTenantOnly) list = list.filter(isLikelyMultiTenantTarget);
@@ -791,6 +830,8 @@ export default function SocialTargetsTable({
     statusFilter,
     profileHealthFilter,
     activityFilter,
+    verificationStateFilter,
+    candidateTypeFilter,
     minPriority,
     readyToAttackOnly,
     hideDeadProfiles,
@@ -799,6 +840,9 @@ export default function SocialTargetsTable({
     hasInstagramOnly,
     hasTikTokOnly,
     hasLinktreeOnly,
+    liveVerifiedOnly,
+    deadOnly,
+    unverifiedOnly,
     unknownOnly,
     multiSignalOnly,
     multiTenantOnly,
@@ -811,6 +855,95 @@ export default function SocialTargetsTable({
     excludeHidden,
     sortBy,
     sortDesc,
+  ]);
+
+  const pipelineCounts = useMemo(() => {
+    const loadedRows = targets.length;
+    let stage = [...viewScopedTargets];
+    const afterViewFilter = stage.length;
+    if (zoneFilter !== "all") stage = stage.filter((t) => t.zone === zoneFilter);
+    if (categoryFilter !== "all") stage = stage.filter((t) => t.category === categoryFilter);
+    if (statusFilter !== "all") stage = stage.filter((t) => (t.status ?? "new") === statusFilter);
+    stage = stage.filter((t) => matchesProfileHealthFilter(t, profileHealthFilter));
+    stage = stage.filter((t) => matchesActivityFilter(t, activityFilter));
+    const afterZoneCategoryStatusActivity = stage.length;
+    stage = stage.filter((t) => matchesVerificationStateFilter(t, verificationStateFilter));
+    stage = stage.filter((t) => matchesCandidateTypeFilter(t, candidateTypeFilter));
+    if (minPriority !== "all") stage = stage.filter((t) => (t.priorityScore ?? 0) >= minPriority);
+    if (readyToAttackOnly) stage = stage.filter(isLiveVerified);
+    if (hideDeadProfiles) stage = stage.filter((t) => !shouldHideTargetBecauseDead(t));
+    if (hotTagOnly) stage = stage.filter(hasHotTag);
+    if (referralHubsOnly) stage = stage.filter((t) => t.isReferralHub);
+    if (hasInstagramOnly) stage = stage.filter((t) => hasEvidencePlatform(t, "instagram"));
+    if (hasTikTokOnly) stage = stage.filter((t) => hasEvidencePlatform(t, "tiktok"));
+    if (hasLinktreeOnly) stage = stage.filter((t) => hasEvidencePlatform(t, "linktree"));
+    if (liveVerifiedOnly) stage = stage.filter((t) => getVerificationState(t) === "live_verified");
+    if (deadOnly) stage = stage.filter((t) => getVerificationState(t) === "dead");
+    if (unverifiedOnly) stage = stage.filter((t) => {
+      const state = getVerificationState(t);
+      return state === "unverified" || state === "matched" || state === "discovered";
+    });
+    if (unknownOnly) stage = stage.filter(hasUnknownResolution);
+    if (multiSignalOnly) stage = stage.filter(hasMultiSignal);
+    if (multiTenantOnly) stage = stage.filter(isLikelyMultiTenantTarget);
+    if (bookingEvidenceOnly) stage = stage.filter(hasBookingPlatformEvidence);
+    if (addressExpansionOnly) stage = stage.filter(hasAddressExpansionCandidates);
+    if (highAddressDensityOnly) stage = stage.filter(hasHighAddressDensity);
+    stage = stage.filter((t) => matchesAggregatorType(t, aggregatorTypeFilter));
+    if (hotProspectOnly) stage = stage.filter(hasHotProspect);
+    if (warmPlusOnly) stage = stage.filter(hasWarmOrBetterProspect);
+    if (excludeHidden) stage = stage.filter(hasNonExcludedProspect);
+    const afterVerificationFilters = stage.length;
+    const q = search.trim().toLowerCase();
+    if (q) {
+      stage = stage.filter((t) => {
+        const h = stripAt(t.handle).toLowerCase();
+        const n = (t.businessName ?? "").toLowerCase();
+        return h.includes(q) || n.includes(q);
+      });
+    }
+    const afterSearch = stage.length;
+    return {
+      loadedRows,
+      afterViewFilter,
+      afterZoneCategoryStatusActivity,
+      afterVerificationFilters,
+      afterSearch,
+      finalRenderedRows: filteredSorted.length,
+    };
+  }, [
+    targets,
+    viewScopedTargets,
+    zoneFilter,
+    categoryFilter,
+    statusFilter,
+    profileHealthFilter,
+    activityFilter,
+    verificationStateFilter,
+    candidateTypeFilter,
+    minPriority,
+    readyToAttackOnly,
+    hideDeadProfiles,
+    hotTagOnly,
+    referralHubsOnly,
+    hasInstagramOnly,
+    hasTikTokOnly,
+    hasLinktreeOnly,
+    liveVerifiedOnly,
+    deadOnly,
+    unverifiedOnly,
+    unknownOnly,
+    multiSignalOnly,
+    multiTenantOnly,
+    bookingEvidenceOnly,
+    addressExpansionOnly,
+    highAddressDensityOnly,
+    aggregatorTypeFilter,
+    hotProspectOnly,
+    warmPlusOnly,
+    excludeHidden,
+    search,
+    filteredSorted.length,
   ]);
 
   const toggleSelect = useCallback((id: string) => {
@@ -1476,11 +1609,11 @@ export default function SocialTargetsTable({
           </div>
         ) : null}
         <div className="rounded-lg border border-emerald-200 bg-emerald-50/90 px-2.5 py-1.5 shadow-sm">
-          <p className="text-[9px] font-bold uppercase tracking-wide text-emerald-800">Active profiles</p>
+          <p className="text-[9px] font-bold uppercase tracking-wide text-emerald-800">Active (live verified)</p>
           <p className="text-lg font-bold tabular-nums text-emerald-950">{operatorKpis.activeProfiles}</p>
         </div>
         <div className="rounded-lg border border-rose-200 bg-rose-50/90 px-2.5 py-1.5 shadow-sm">
-          <p className="text-[9px] font-bold uppercase tracking-wide text-rose-900">Ready</p>
+          <p className="text-[9px] font-bold uppercase tracking-wide text-rose-900">Ready (live verified)</p>
           <p className="text-lg font-bold tabular-nums text-rose-950">{operatorKpis.ready}</p>
         </div>
         {operatorKpis.deadBroken > 0 ? (
@@ -1491,7 +1624,7 @@ export default function SocialTargetsTable({
         ) : null}
         {operatorKpis.liveProviders > 0 ? (
           <div className="rounded-lg border border-sky-200 bg-sky-50/90 px-2.5 py-1.5 shadow-sm">
-            <p className="text-[9px] font-bold uppercase tracking-wide text-sky-900">Live providers</p>
+            <p className="text-[9px] font-bold uppercase tracking-wide text-sky-900">Live verified</p>
             <p className="text-lg font-bold tabular-nums text-sky-950">{operatorKpis.liveProviders}</p>
           </div>
         ) : null}
@@ -1704,6 +1837,34 @@ export default function SocialTargetsTable({
           </select>
         </label>
         <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          Verification
+          <select
+            value={verificationStateFilter}
+            onChange={(e) => setVerificationStateFilter(e.target.value as (typeof VERIFICATION_STATE_FILTER)[number])}
+            className="mt-0.5 block rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
+          >
+            {VERIFICATION_STATE_FILTER.map((v) => (
+              <option key={v} value={v}>
+                {v === "all" ? "All" : v.replace(/_/g, " ")}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          Candidate type
+          <select
+            value={candidateTypeFilter}
+            onChange={(e) => setCandidateTypeFilter(e.target.value as (typeof CANDIDATE_TYPE_FILTER)[number])}
+            className="mt-0.5 block rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
+          >
+            {CANDIDATE_TYPE_FILTER.map((v) => (
+              <option key={v} value={v}>
+                {v === "all" ? "All" : v.replace(/_/g, " ")}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
           Sort
           <select
             value={sortBy}
@@ -1847,6 +2008,33 @@ export default function SocialTargetsTable({
               className="rounded border-neutral-300"
             />
             Has Linktree evidence
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={liveVerifiedOnly}
+              onChange={(e) => setLiveVerifiedOnly(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            Live verified only
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={deadOnly}
+              onChange={(e) => setDeadOnly(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            Dead only
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={unverifiedOnly}
+              onChange={(e) => setUnverifiedOnly(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            Unverified only
           </label>
           <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
             <input
@@ -2055,6 +2243,14 @@ export default function SocialTargetsTable({
         </div>
       </details>
 
+      {process.env.NODE_ENV !== "production" ? (
+        <div className="rounded-lg border border-dashed border-neutral-300 bg-neutral-50 px-2.5 py-1.5 text-[10px] text-neutral-700">
+          Pipeline: loaded {pipelineCounts.loadedRows} · view {pipelineCounts.afterViewFilter} · zone/cat/status/activity{" "}
+          {pipelineCounts.afterZoneCategoryStatusActivity} · verification/prospect {pipelineCounts.afterVerificationFilters} · search{" "}
+          {pipelineCounts.afterSearch} · render {pipelineCounts.finalRenderedRows}
+        </div>
+      ) : null}
+
       <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
         <table className="w-full border-collapse text-left text-xs">
           <thead>
@@ -2076,8 +2272,9 @@ export default function SocialTargetsTable({
                 const outgoing = t.referralCount ?? 0;
                 const incoming = t.referredByCount ?? 0;
                 const score = t.priorityScore ?? 0;
-                const ready = isReadyToAttack(t);
                 const baseRow = baseTargets.find((b) => b.id === t.id) ?? t;
+                const verificationState = getVerificationState(baseRow);
+                const ready = verificationState === "live_verified";
                 const rowEnsured = ensureSocialCandidates(baseRow);
                 const rowCandidates = rowEnsured.socialCandidates ?? [];
                 const featured = getPrimaryCandidate(rowEnsured);
@@ -2138,6 +2335,23 @@ export default function SocialTargetsTable({
                               }`}
                             >
                               {ready ? "READY" : state.replace(/_/g, " ")}
+                            </span>
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                                verificationState === "live_verified"
+                                  ? "bg-emerald-100 text-emerald-900"
+                                  : verificationState === "dead"
+                                    ? "bg-rose-100 text-rose-900"
+                                    : verificationState === "rejected"
+                                      ? "bg-neutral-300 text-neutral-800"
+                                      : verificationState === "matched"
+                                        ? "bg-sky-100 text-sky-900"
+                                        : verificationState === "unverified"
+                                          ? "bg-amber-100 text-amber-900"
+                                          : "bg-neutral-100 text-neutral-700"
+                              }`}
+                            >
+                              {verificationState.replace(/_/g, " ")}
                             </span>
                             {confirmedNoSocial ? (
                               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-950">

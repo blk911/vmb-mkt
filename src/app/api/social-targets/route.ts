@@ -16,6 +16,7 @@ import type {
   SocialTarget,
   SocialTargetBooking,
   SocialTargetStatus,
+  VerificationState,
 } from "@/types/social-target";
 
 const STATUSES: SocialTargetStatus[] = ["new", "contacted", "qualified", "paused", "responded", "live"];
@@ -41,6 +42,7 @@ const EVIDENCE_TYPES: SocialEvidenceType[] = [
 const EVIDENCE_PLATFORMS: SocialEvidencePlatform[] = ["instagram", "tiktok", "linktree", "website"];
 const EVIDENCE_CONFIDENCE = ["high", "medium", "low"] as const;
 const RESOLUTION_STATUS: SocialResolutionStatus[] = ["resolved", "partial", "unknown", "conflict"];
+const VERIFICATION_STATE: VerificationState[] = ["discovered", "matched", "unverified", "live_verified", "dead", "rejected"];
 const RUN_TYPE = ["validation", "scale", "adhoc", "expansion_test"] as const;
 const DOMAIN_TYPES = ["booking_platform", "directory", "aggregator_site", "social_platform", "website", "other"] as const;
 const AGGREGATOR_TYPES = ["sola", "phenix", "salons_by_jc", "mysalon_suite", "image_studios", "spectra", "other"] as const;
@@ -263,6 +265,9 @@ function normalizeTarget(raw: unknown): SocialTarget | null {
   }
   if (typeof o.resolutionStatus === "string" && RESOLUTION_STATUS.includes(o.resolutionStatus as SocialResolutionStatus)) {
     row.resolutionStatus = o.resolutionStatus as SocialResolutionStatus;
+  }
+  if (typeof o.verificationState === "string" && VERIFICATION_STATE.includes(o.verificationState as VerificationState)) {
+    row.verificationState = o.verificationState as VerificationState;
   }
   if (typeof o.runId === "string" && o.runId.trim()) row.runId = o.runId.trim();
   if (typeof o.runType === "string" && RUN_TYPE.includes(o.runType as (typeof RUN_TYPE)[number])) {

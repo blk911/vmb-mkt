@@ -100,6 +100,14 @@ export type SocialEvidenceItem = {
 
 export type SocialResolutionStatus = "resolved" | "partial" | "unknown" | "conflict";
 
+export type VerificationState =
+  | "discovered"
+  | "matched"
+  | "unverified"
+  | "live_verified"
+  | "dead"
+  | "rejected";
+
 export type AddressExpansionQueryCategory =
   | "address_suites"
   | "address_stylist"
@@ -231,6 +239,7 @@ export type SocialTarget = {
   };
   confidenceScore?: number;
   resolutionStatus?: SocialResolutionStatus;
+  verificationState?: VerificationState;
   runId?: string;
   runType?: "validation" | "scale" | "adhoc" | "expansion_test";
   sourceVersion?: string;

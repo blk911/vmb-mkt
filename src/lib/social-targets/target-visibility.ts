@@ -1,13 +1,13 @@
 import { ensureSocialCandidates, getPrimaryCandidate } from "@/lib/social-targets/social-candidate-logic";
 import { getFeaturedValidationIntegrity } from "@/lib/social-targets/featured-validation-integrity";
-import { isConfirmedRealNoSocial, isPrimaryLowConfidenceOnly } from "@/lib/social-targets/operator-rank";
+import { isConfirmedRealNoSocial } from "@/lib/social-targets/operator-rank";
+import { getVerificationState } from "@/lib/social-targets/verification-state";
 import type {
   SocialTarget,
   SocialResolveStatus,
   SocialVerificationStatus,
+  VerificationState,
 } from "@/types/social-target";
-
-const CANDIDATE_CONFIDENCE_MIN = 50;
 
 function primaryRow(t: SocialTarget) {
   return getPrimaryCandidate(ensureSocialCandidates(t));
@@ -48,7 +48,6 @@ export function shouldShowTargetInPrimaryView(t: SocialTarget): boolean {
   const p = primaryRow(t);
   if (p?.visibilityState === "review" || t.socialProfile?.visibilityState === "review") return false;
   if (isConfirmedRealNoSocial(t)) return true;
-  if (isPrimaryLowConfidenceOnly(t)) return false;
   return true;
 }
 
@@ -60,19 +59,22 @@ export function shouldShowTargetInReviewView(t: SocialTarget): boolean {
   return !shouldShowTargetInPrimaryView(t) || explicitReview;
 }
 
+export function isLiveVerified(t: SocialTarget): boolean {
+  return getVerificationState(t) === "live_verified";
+}
+
+export function isDeadOrRejectedState(t: SocialTarget): boolean {
+  const state = getVerificationState(t);
+  return state === "dead" || state === "rejected";
+}
+
+export function isUnverifiedState(t: SocialTarget): boolean {
+  const state: VerificationState = getVerificationState(t);
+  return state === "unverified" || state === "matched" || state === "discovered";
+}
+
 /** Worth surfacing in “attack now” style KPIs (verified-enough + live resolve). */
 export function isTargetActionable(t: SocialTarget): boolean {
   if (shouldHideTargetBecauseDead(t)) return false;
-  const integrity = getFeaturedValidationIntegrity(t);
-  if (integrity.displayResolveState !== "live") return false;
-  const vs = integrity.displayVerificationState === "verify_needed" ? "candidate" : integrity.displayVerificationState;
-  if (vs === "rejected") return false;
-  if (vs === "manual_verified" || vs === "auto_verified") return true;
-  if (vs === "candidate") {
-    const p = primaryRow(t);
-    const mc = p?.overallConfidenceScore ?? t.socialProfile?.matchConfidence;
-    if (mc == null) return true;
-    return mc >= CANDIDATE_CONFIDENCE_MIN;
-  }
-  return false;
+  return getVerificationState(t) === "live_verified";
 }

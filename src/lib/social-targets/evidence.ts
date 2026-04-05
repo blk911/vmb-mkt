@@ -1,5 +1,6 @@
 import { extractDomain, normalizePhone } from "@/lib/social-targets/source-adapters/shared";
 import { detectPlatformFromUrl, extractHandle } from "@/lib/social-targets/social-normalization";
+import { deriveVerificationState } from "@/lib/social-targets/verification-state";
 import type {
   AddressExpansionAggregatorType,
   SocialEvidenceConfidence,
@@ -473,12 +474,20 @@ export function normalizeSocialTargetRecord(target: SocialTarget): SocialTarget 
       : computeConfidenceScore({ evidence: mergedEvidence });
   const resolutionStatus =
     target.resolutionStatus ?? deriveResolutionStatus({ evidence: mergedEvidence, confidenceScore });
+  const verificationState = deriveVerificationState({
+    ...target,
+    evidence: mergedEvidence,
+    platforms,
+    confidenceScore,
+    resolutionStatus,
+  });
   return {
     ...target,
     evidence: mergedEvidence,
     platforms,
     confidenceScore,
     resolutionStatus,
+    verificationState,
     ...(safeAddressExpansion ? { addressExpansion: safeAddressExpansion } : {}),
   };
 }
