@@ -1,0 +1,153 @@
+{
+  "sampledIds": [
+    "hairbymarissadtc",
+    "studio_serenity_spa",
+    "lashloftdtc",
+    "browarchdtc",
+    "littlebeenail",
+    "polishedpm",
+    "threading_corner_pm",
+    "nailsbyk_parkmeadows",
+    "lavogue",
+    "manipedi_express_dtc"
+  ],
+  "before": {
+    "total": 13,
+    "liveVerified": 8,
+    "topReadyCount": 8
+  },
+  "after": {
+    "total": 13,
+    "liveVerified": 11,
+    "topReadyCount": 11
+  },
+  "summary": {
+    "live_correct": 10,
+    "dead": 0,
+    "wrong_business": 0,
+    "ambiguous": 0,
+    "no_primary_url": 0
+  },
+  "auditedRows": [
+    {
+      "id": "littlebeenail",
+      "handle": "@littlebeenail_studio",
+      "name": "Little Bee Nail Studio",
+      "candidateType": "n/a",
+      "primaryUrlChecked": "https://www.instagram.com/littlebeenail_studio/",
+      "confidenceScore": 0,
+      "priorVerificationState": "live_verified",
+      "auditResult": "live_correct",
+      "resultingVerificationState": "live_verified",
+      "note": "Featured profile resolves and matches anchor expectations. Handle found in final path/body."
+    },
+    {
+      "id": "lavogue",
+      "handle": "@lavogue.nails.lash",
+      "name": "La Vogue Nails & Lash",
+      "candidateType": "n/a",
+      "primaryUrlChecked": "https://www.instagram.com/lavogue.nails.lash/",
+      "confidenceScore": 0,
+      "priorVerificationState": "live_verified",
+      "auditResult": "live_correct",
+      "resultingVerificationState": "live_verified",
+      "note": "Featured profile resolves and matches anchor expectations. Handle found in final path/body."
+    },
+    {
+      "id": "polishedpm",
+      "handle": "@polished_parkmeadows",
+      "name": "Polished Park Meadows",
+      "candidateType": "n/a",
+      "primaryUrlChecked": "https://www.instagram.com/polished_parkmeadows/",
+      "confidenceScore": 0,
+      "priorVerificationState": "matched",
+      "auditResult": "live_correct",
+      "resultingVerificationState": "live_verified",
+      "note": "Featured profile resolves and matches anchor expectations. Handle found in final path/body."
+    },
+    {
+      "id": "hairbymarissadtc",
+      "handle": "@hairbymarissadtc",
+      "name": "Hair by Marissa DTC",
+      "candidateType": "n/a",
+      "primaryUrlChecked": "https://www.instagram.com/hairbymarissadtc/",
+      "confidenceScore": 99,
+      "priorVerificationState": "live_verified",
+      "auditResult": "live_correct",
+      "resultingVerificationState": "live_verified",
+      "note": "Featured profile resolves and matches anchor expectations. Handle found in final path/body."
+    },
+    {
+      "id": "lashloftdtc",
+      "handle": "@lashloft.dtc",
+      "name": "Lash Loft DTC",
+      "candidateType": "n/a",
+      "primaryUrlChecked": "https://www.instagram.com/lashloft.dtc/",
+      "confidenceScore": 0,
+      "priorVerificationState": "live_verified",
+      "auditResult": "live_correct",
+      "resultingVerificationState": "live_verified",
+      "note": "Featured profile resolves and matches anchor expectations. Handle found in final path/body."
+    },
+    {
+      "id": "browarchdtc",
+      "handle": "@browarch.dtc",
+      "name": "Brow Arch DTC",
+      "candidateType": "n/a",
+      "primaryUrlChecked": "https://www.instagram.com/browarch.dtc/",
+      "confidenceScore": 0,
+      "priorVerificationState": "live_verified",
+      "auditResult": "live_correct",
+      "resultingVerificationState": "live_verified",
+      "note": "Featured profile resolves and matches anchor expectations. Handle found in final path/body."
+    },
+    {
+      "id": "nailsbyk_parkmeadows",
+      "handle": "@nailsbyk_pm",
+      "name": "Nails by K",
+      "candidateType": "n/a",
+      "primaryUrlChecked": "https://www.instagram.com/nailsbyk_pm/",
+      "confidenceScore": 0,
+      "priorVerificationState": "matched",
+      "auditResult": "live_correct",
+      "resultingVerificationState": "live_verified",
+      "note": "Featured profile resolves and matches anchor expectations. Handle found in final path/body."
+    },
+    {
+      "id": "manipedi_express_dtc",
+      "handle": "@manipediexpressdtc",
+      "name": "Mani Pedi Express DTC",
+      "candidateType": "n/a",
+      "primaryUrlChecked": "https://www.instagram.com/manipediexpressdtc/",
+      "confidenceScore": 0,
+      "priorVerificationState": "live_verified",
+      "auditResult": "live_correct",
+      "resultingVerificationState": "live_verified",
+      "note": "Featured profile resolves and matches anchor expectations. Handle found in final path/body."
+    },
+    {
+      "id": "threading_corner_pm",
+      "handle": "@threadingcornerpm",
+      "name": "Threading Corner",
+      "candidateType": "n/a",
+      "primaryUrlChecked": "https://www.instagram.com/threadingcornerpm/",
+      "confidenceScore": 0,
+      "priorVerificationState": "matched",
+      "auditResult": "live_correct",
+      "resultingVerificationState": "live_verified",
+      "note": "Featured profile resolves and matches anchor expectations. Handle found in final path/body."
+    },
+    {
+      "id": "studio_serenity_spa",
+      "handle": "@studioserenity_spa",
+      "name": "Studio Serenity Spa",
+      "candidateType": "n/a",
+      "primaryUrlChecked": "https://www.instagram.com/studioserenity_spa/",
+      "confidenceScore": 0,
+      "priorVerificationState": "live_verified",
+      "auditResult": "live_correct",
+      "resultingVerificationState": "live_verified",
+      "note": "Featured profile resolves and matches anchor expectations. Handle found in final path/body."
+    }
+  ]
+}

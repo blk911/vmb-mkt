@@ -20,7 +20,8 @@
     "markets:shop-index": "ts-node ./scripts/build_dora_shop_index.v1.ts",
     "markets:shop-anchor-map": "ts-node ./scripts/build_shop_anchor_map.v1.ts",
     "markets:live-unit-shop-context": "ts-node ./scripts/build_live_unit_shop_context.v1.ts",
-    "social-targets:address-expansion:test": "ts-node --compiler-options \"{\\\"module\\\":\\\"commonjs\\\"}\" ./scripts/run_address_expansion_test.ts"
+    "social-targets:address-expansion:test": "ts-node --compiler-options \"{\\\"module\\\":\\\"commonjs\\\"}\" ./scripts/run_address_expansion_test.ts",
+    "social-targets:verification-audit:sample": "ts-node --compiler-options \"{\\\"module\\\":\\\"commonjs\\\"}\" ./scripts/run_verification_audit_sample.ts"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
