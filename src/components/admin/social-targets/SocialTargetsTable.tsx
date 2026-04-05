@@ -13,7 +13,15 @@ import {
   normalizeSocialTarget,
   patchSocialProfile,
 } from "@/lib/social-targets/normalization";
+import {
+  compareTargetsByOperatorRank,
+  computeOperatorDisplayRank,
+  featuredWeakerThanBestAlternate,
+  getPrimaryOperationalState,
+  pickBestFeaturedCandidateId,
+} from "@/lib/social-targets/operator-rank";
 import { confidenceTier } from "@/lib/social-targets/social-scoring";
+import { SocialTargetEvidence } from "@/components/admin/social-targets/SocialTargetEvidence";
 import {
   SOCIAL_VERIFICATION_STATUSES,
   SOCIAL_VISIBILITY_STATES,
@@ -332,8 +340,16 @@ export default function SocialTargetsTable({
   const [hotTagOnly, setHotTagOnly] = useState(false);
   const [referralHubsOnly, setReferralHubsOnly] = useState(false);
   const [sortBy, setSortBy] = useState<
-    "name" | "zone" | "referredByCount" | "priorityScore" | "activitySignal" | "profileHealth"
-  >("priorityScore");
+    | "operatorRank"
+    | "name"
+    | "zone"
+    | "referredByCount"
+    | "priorityScore"
+    | "activitySignal"
+    | "profileHealth"
+  >("operatorRank");
+  const [bulkBusy, setBulkBusy] = useState<string | null>(null);
+  const [bulkSummary, setBulkSummary] = useState<string | null>(null);
   const [sortDesc, setSortDesc] = useState(true);
   const [rowDrafts, setRowDrafts] = useState<
     Record<string, { toHandle: string; referredCategory: ReferralCategory; note: string }>
@@ -425,7 +441,9 @@ export default function SocialTargetsTable({
       (t) => t.profileHealth === "not_found" || t.profileHealth === "renamed_or_moved"
     ).length;
     const liveProviders = baseTargets.filter((t) => t.status === "live").length;
-    return { total, activeProfiles, ready, deadBroken, liveProviders };
+    const primaryQueue = baseTargets.filter(shouldShowTargetInPrimaryView).length;
+    const reviewQueue = baseTargets.filter(shouldShowTargetInReviewView).length;
+    return { total, activeProfiles, ready, deadBroken, liveProviders, primaryQueue, reviewQueue };
   }, [baseTargets]);
 
   const topReadyTargets = useMemo(() => {
@@ -435,17 +453,9 @@ export default function SocialTargetsTable({
         if (viewMode === "primary" && !shouldShowTargetInPrimaryView(t)) return false;
         return true;
       })
-      .map((t) => ({
-        t,
-        score: getEffectivePriorityScore(t),
-        followers: t.followers ?? 0,
-      }))
-      .sort((a, b) => {
-        if (b.score !== a.score) return b.score - a.score;
-        return b.followers - a.followers;
-      })
+      .sort((a, b) => compareTargetsByOperatorRank(a, b, true))
       .slice(0, 10)
-      .map((x) => x.t);
+      .map((x) => x);
   }, [targets, viewMode]);
 
   const topReferred = useMemo(() => {
@@ -498,7 +508,9 @@ export default function SocialTargetsTable({
 
     const dir = sortDesc ? -1 : 1;
     list.sort((a, b) => {
-      if (sortBy === "priorityScore") {
+      if (sortBy === "operatorRank") {
+        return compareTargetsByOperatorRank(a, b, sortDesc);
+      } else if (sortBy === "priorityScore") {
         const va = a.priorityScore ?? 0;
         const vb = b.priorityScore ?? 0;
         if (va !== vb) return (vb - va) * (sortDesc ? 1 : -1);
@@ -571,6 +583,78 @@ export default function SocialTargetsTable({
       /* ignore */
     }
   }, [filteredSorted, selectedIds]);
+
+  const selectedTargets = useMemo(
+    () => filteredSorted.filter((t) => selectedIds.has(t.id)),
+    [filteredSorted, selectedIds]
+  );
+
+  const runBulkVerify = useCallback(
+    async (ids: string[], opts?: { allCandidates?: boolean; label?: string }) => {
+      const cleanIds = [...new Set(ids.filter(Boolean))];
+      if (!cleanIds.length) return;
+      const label = opts?.label ?? "Verify";
+      setBulkBusy(label);
+      setBulkSummary(null);
+      setSaveError(null);
+      try {
+        const res = await fetch("/api/social-targets/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            targetIds: cleanIds,
+            ...(opts?.allCandidates ? { allCandidates: true } : {}),
+          }),
+        });
+        const data = (await res.json().catch(() => ({}))) as {
+          ok?: boolean;
+          error?: string;
+          verified?: number;
+        };
+        if (!res.ok || data.ok !== true) {
+          setSaveError(data.error || `${label} failed (${res.status})`);
+          return;
+        }
+        setBulkSummary(`${label} complete: ${data.verified ?? 0} candidate checks`);
+        router.refresh();
+      } catch {
+        setSaveError(`${label} failed (network)`);
+      } finally {
+        setBulkBusy(null);
+      }
+    },
+    [router]
+  );
+
+  const applyBulkOperationalState = useCallback(
+    (patch: Partial<NonNullable<SocialTarget["socialProfile"]>>, summary: string) => {
+      if (selectedTargets.length === 0) return;
+      const ids = new Set(selectedTargets.map((t) => t.id));
+      setBaseTargets((prev) => {
+        const next = prev.map((x) => (ids.has(x.id) ? patchSocialProfile(x, patch) : x));
+        void persistTargetsList(next);
+        return next;
+      });
+      setBulkSummary(summary);
+    },
+    [persistTargetsList, selectedTargets]
+  );
+
+  const bulkPromoteBestFeatured = useCallback(() => {
+    if (selectedTargets.length === 0) return;
+    const ids = new Set(selectedTargets.map((t) => t.id));
+    setBaseTargets((prev) => {
+      const next = prev.map((x) => {
+        if (!ids.has(x.id)) return x;
+        const bestId = pickBestFeaturedCandidateId(x);
+        if (!bestId) return x;
+        return normalizeSocialTarget(setPrimaryCandidateId(ensureSocialCandidates(x), bestId));
+      });
+      void persistTargetsList(next);
+      return next;
+    });
+    setBulkSummary("Promoted best featured candidate for selected rows");
+  }, [persistTargetsList, selectedTargets]);
 
   const setStatus = useCallback(
     (id: string, status: SocialTargetStatus) => {
@@ -793,6 +877,9 @@ export default function SocialTargetsTable({
       {saveError ? (
         <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900">{saveError}</div>
       ) : null}
+      {bulkSummary ? (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">{bulkSummary}</div>
+      ) : null}
 
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-sm">
         <span className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">View</span>
@@ -821,9 +908,15 @@ export default function SocialTargetsTable({
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <div className="rounded-xl border border-slate-200 bg-slate-50/90 px-3 py-2 shadow-sm">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-600">Total targets</p>
-          <p className="text-2xl font-bold tabular-nums text-slate-950">{operatorKpis.total}</p>
+          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-600">Primary queue</p>
+          <p className="text-2xl font-bold tabular-nums text-slate-950">{operatorKpis.primaryQueue}</p>
         </div>
+        {operatorKpis.reviewQueue > 0 ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50/90 px-3 py-2 shadow-sm">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-amber-900">Review queue</p>
+            <p className="text-2xl font-bold tabular-nums text-amber-950">{operatorKpis.reviewQueue}</p>
+          </div>
+        ) : null}
         <div className="rounded-xl border border-emerald-200 bg-emerald-50/90 px-3 py-2 shadow-sm">
           <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-800">Active profiles</p>
           <p className="text-2xl font-bold tabular-nums text-emerald-950">{operatorKpis.activeProfiles}</p>
@@ -895,11 +988,11 @@ export default function SocialTargetsTable({
         </div>
       ) : null}
 
-      {topReadyTargets.length > 0 ? (
+      {viewMode === "primary" && topReadyTargets.length > 0 ? (
         <div className="rounded-xl border border-rose-200 bg-rose-50/40 p-4">
           <h2 className="text-[11px] font-bold uppercase tracking-wide text-rose-900">Top ready targets</h2>
           <p className="mt-1 text-xs text-neutral-600">
-            Verified-enough + live resolve + warm/hot + status new — sorted by score, then followers.
+            Verified/live rows with operator rank preference: trust, validity, confidence, then activity.
           </p>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
             {topReadyTargets.map((t) => (
@@ -909,7 +1002,7 @@ export default function SocialTargetsTable({
               >
                 <div>
                   <TargetHandleLink t={t}>
-                    @{stripAt(t.handle)}
+                    @{displayHandleForTarget(t)}
                   </TargetHandleLink>
                   <span className="ml-2 text-neutral-500">{t.category}</span>
                   <span className="ml-2 font-bold tabular-nums text-neutral-800">{getEffectivePriorityScore(t)}</span>
@@ -1051,6 +1144,7 @@ export default function SocialTargetsTable({
             onChange={(e) =>
               setSortBy(
                 e.target.value as
+                  | "operatorRank"
                   | "name"
                   | "zone"
                   | "referredByCount"
@@ -1061,6 +1155,7 @@ export default function SocialTargetsTable({
             }
             className="mt-0.5 block max-w-[11rem] rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
           >
+            <option value="operatorRank">Operator rank</option>
             <option value="priorityScore">Priority score</option>
             <option value="activitySignal">Activity</option>
             <option value="profileHealth">Profile health</option>
@@ -1173,6 +1268,64 @@ export default function SocialTargetsTable({
             >
               Copy selected @handles
             </button>
+            <button
+              type="button"
+              disabled={selectedTargets.length === 0 || bulkBusy !== null}
+              onClick={() => void runBulkVerify(selectedTargets.map((t) => t.id), { label: "Verify selected" })}
+              className="rounded-full border border-sky-300 bg-sky-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-sky-900 hover:bg-sky-100 disabled:opacity-50"
+            >
+              {bulkBusy === "Verify selected" ? "Verifying..." : "Verify selected"}
+            </button>
+            <button
+              type="button"
+              disabled={filteredSorted.length === 0 || bulkBusy !== null}
+              onClick={() => void runBulkVerify(filteredSorted.map((t) => t.id), { label: "Verify visible" })}
+              className="rounded-full border border-sky-300 bg-sky-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-sky-900 hover:bg-sky-100 disabled:opacity-50"
+            >
+              {bulkBusy === "Verify visible" ? "Verifying..." : "Verify visible"}
+            </button>
+            <button
+              type="button"
+              disabled={selectedTargets.length === 0 || bulkBusy !== null}
+              onClick={() =>
+                void runBulkVerify(selectedTargets.map((t) => t.id), {
+                  label: "Verify selected (all candidates)",
+                  allCandidates: true,
+                })
+              }
+              className="rounded-full border border-sky-400 bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-sky-900 hover:bg-sky-50 disabled:opacity-50"
+            >
+              {bulkBusy === "Verify selected (all candidates)" ? "Verifying..." : "Verify selected all"}
+            </button>
+            <button
+              type="button"
+              disabled={selectedTargets.length === 0}
+              onClick={() =>
+                applyBulkOperationalState(
+                  { verificationStatus: "candidate", visibilityState: "review" },
+                  "Sent selected rows to review"
+                )
+              }
+              className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-amber-950 hover:bg-amber-100 disabled:opacity-50"
+            >
+              Send selected to review
+            </button>
+            <button
+              type="button"
+              disabled={selectedTargets.length === 0}
+              onClick={() => applyBulkOperationalState({ visibilityState: "hide" }, "Hidden selected rows")}
+              className="rounded-full border border-rose-300 bg-rose-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-rose-900 hover:bg-rose-100 disabled:opacity-50"
+            >
+              Hide selected
+            </button>
+            <button
+              type="button"
+              disabled={selectedTargets.length === 0}
+              onClick={bulkPromoteBestFeatured}
+              className="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-emerald-900 hover:bg-emerald-100 disabled:opacity-50"
+            >
+              Promote best featured
+            </button>
           </div>
         </div>
       </details>
@@ -1211,6 +1364,10 @@ export default function SocialTargetsTable({
                 const rowCandidates = rowEnsured.socialCandidates ?? [];
                 const featured = getPrimaryCandidate(rowEnsured);
                 const primarySelectValue = baseRow.primaryCandidateId ?? rowCandidates[0]?.id ?? "";
+                const alternateCount = featured ? Math.max(0, rowCandidates.length - 1) : rowCandidates.length;
+                const state = getPrimaryOperationalState(baseRow);
+                const rank = computeOperatorDisplayRank(baseRow);
+                const betterAlt = featuredWeakerThanBestAlternate(baseRow);
                 return (
                   <tr key={t.id} className="border-b border-neutral-100 align-top">
                     <td className="px-2 py-2">
@@ -1226,6 +1383,16 @@ export default function SocialTargetsTable({
                         <TargetHandleLink t={t}>
                           <span className="font-semibold">@{displayHandleForTarget(t)}</span>
                         </TargetHandleLink>
+                        {alternateCount > 0 ? (
+                          <span className="rounded-full bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold uppercase text-indigo-900">
+                            +{alternateCount} alt
+                          </span>
+                        ) : null}
+                        {betterAlt ? (
+                          <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-950">
+                            stronger alt exists
+                          </span>
+                        ) : null}
                         {ready ? (
                           <span className="rounded-full bg-rose-600 px-2 py-0.5 text-[9px] font-black uppercase text-white">
                             Ready
@@ -1240,6 +1407,13 @@ export default function SocialTargetsTable({
                       <TrustBadges t={t} />
                       {t.businessName ? <div className="text-[11px] text-neutral-600">{t.businessName}</div> : null}
                       <div className="mt-1 space-y-0.5 text-[10px] text-neutral-600">
+                        <div>
+                          Queue:{" "}
+                          <span className="font-semibold text-neutral-800">{state.replace(/_/g, " ")}</span>
+                          <span className="ml-2 text-neutral-500">
+                            v{rank.verificationRank} r{rank.resolveRank} t{rank.tierRank}
+                          </span>
+                        </div>
                         <div>
                           Health: <span className="font-semibold text-neutral-800">{t.profileHealth ?? "—"}</span>
                         </div>
@@ -1257,6 +1431,7 @@ export default function SocialTargetsTable({
                         ) : null}
                         <div>Verified: {formatVerifiedAt(t.lastVerifiedAt)}</div>
                       </div>
+                      <SocialTargetEvidence target={baseRow} />
                       {t.tags?.length ? (
                         <div className="mt-1 flex flex-wrap gap-1">
                           {t.tags.map((tag) => (
@@ -1272,28 +1447,32 @@ export default function SocialTargetsTable({
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex max-w-[200px] flex-col gap-1.5">
-                        <select
-                          value={baseRow.profileHealth ?? "unknown"}
-                          onChange={(e) => onProfileHealthChange(t.id, e.target.value as ProfileHealth)}
-                          className="rounded border border-neutral-300 bg-white px-1 py-1 text-[10px]"
-                        >
-                          {PROFILE_HEALTH_EDIT.map((h) => (
-                            <option key={h} value={h}>
-                              {h.replace(/_/g, " ")}
-                            </option>
-                          ))}
-                        </select>
-                        <select
-                          value={baseRow.activitySignal ?? "unknown"}
-                          onChange={(e) => onActivitySignalChange(t.id, e.target.value as ActivitySignal)}
-                          className="rounded border border-neutral-300 bg-white px-1 py-1 text-[10px]"
-                        >
-                          {ACTIVITY_EDIT.map((a) => (
-                            <option key={a} value={a}>
-                              {a}
-                            </option>
-                          ))}
-                        </select>
+                        {viewMode === "review" ? (
+                          <>
+                            <select
+                              value={baseRow.profileHealth ?? "unknown"}
+                              onChange={(e) => onProfileHealthChange(t.id, e.target.value as ProfileHealth)}
+                              className="rounded border border-neutral-300 bg-white px-1 py-1 text-[10px]"
+                            >
+                              {PROFILE_HEALTH_EDIT.map((h) => (
+                                <option key={h} value={h}>
+                                  {h.replace(/_/g, " ")}
+                                </option>
+                              ))}
+                            </select>
+                            <select
+                              value={baseRow.activitySignal ?? "unknown"}
+                              onChange={(e) => onActivitySignalChange(t.id, e.target.value as ActivitySignal)}
+                              className="rounded border border-neutral-300 bg-white px-1 py-1 text-[10px]"
+                            >
+                              {ACTIVITY_EDIT.map((a) => (
+                                <option key={a} value={a}>
+                                  {a}
+                                </option>
+                              ))}
+                            </select>
+                          </>
+                        ) : null}
                         <label className="text-[9px] font-semibold text-neutral-500">
                           Trust / visibility
                           <select
@@ -1360,6 +1539,27 @@ export default function SocialTargetsTable({
                             </select>
                           </label>
                         ) : null}
+                        {betterAlt ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const bestId = pickBestFeaturedCandidateId(baseRow);
+                              if (!bestId) return;
+                              setBaseTargets((prev) => {
+                                const next = prev.map((x) =>
+                                  x.id === t.id
+                                    ? normalizeSocialTarget(setPrimaryCandidateId(ensureSocialCandidates(x), bestId))
+                                    : x
+                                );
+                                void persistTargetsList(next);
+                                return next;
+                              });
+                            }}
+                            className="text-left text-[9px] font-semibold text-indigo-700 underline"
+                          >
+                            Promote stronger alternate
+                          </button>
+                        ) : null}
                         {featured?.id ? (
                           <div className="flex flex-wrap gap-1">
                             <button
@@ -1369,7 +1569,7 @@ export default function SocialTargetsTable({
                               }
                               className="rounded border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-[8px] font-bold uppercase text-emerald-900 hover:bg-emerald-100"
                             >
-                              Verify cand.
+                              Verify
                             </button>
                             <button
                               type="button"
@@ -1383,14 +1583,14 @@ export default function SocialTargetsTable({
                               onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { visibilityState: "hide" })}
                               className="rounded border border-rose-300 bg-rose-50 px-1.5 py-0.5 text-[8px] font-bold uppercase text-rose-900 hover:bg-rose-100"
                             >
-                              Hide cand.
+                              Hide
                             </button>
                             <button
                               type="button"
                               onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { visibilityState: "review" })}
                               className="rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[8px] font-bold uppercase text-amber-950 hover:bg-amber-100"
                             >
-                              Review
+                              Send to review
                             </button>
                           </div>
                         ) : null}
@@ -1400,50 +1600,54 @@ export default function SocialTargetsTable({
                           onClick={() => void runHeadVerify(t)}
                           className="rounded border border-sky-300 bg-sky-50 px-2 py-1 text-[9px] font-bold uppercase text-sky-900 hover:bg-sky-100 disabled:opacity-50"
                         >
-                          {verifyBusyId === t.id ? "Checking…" : "Check link"}
+                          {verifyBusyId === t.id ? "Verifying..." : "Verify link"}
                         </button>
-                        <label className="text-[9px] font-semibold text-neutral-500">
-                          Priority (0–100)
-                          <input
-                            type="number"
-                            min={0}
-                            max={100}
-                            defaultValue={baseRow.priorityScore ?? score}
-                            key={`${t.id}-prio-${baseRow.priorityScore}-${baseRow.priorityScoreManual}`}
-                            onBlur={(e) => {
-                              const n = Number(e.target.value);
-                              if (!Number.isFinite(n)) return;
-                              const clamped = Math.max(0, Math.min(100, Math.round(n)));
-                              setBaseTargets((p) => {
-                                const next = p.map((x) =>
-                                  x.id === t.id
-                                    ? { ...x, priorityScore: clamped, priorityScoreManual: true }
-                                    : x
-                                );
-                                void persistTargetsList(next);
-                                return next;
-                              });
-                            }}
-                            className="mt-0.5 w-full rounded border border-neutral-300 bg-white px-1 py-0.5 text-[10px] tabular-nums"
-                          />
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setBaseTargets((p) => {
-                              const next = p.map((x) => {
-                                if (x.id !== t.id) return x;
-                                const u = { ...x, priorityScoreManual: false as const };
-                                return { ...u, priorityScore: computePriorityScore(u) };
-                              });
-                              void persistTargetsList(next);
-                              return next;
-                            });
-                          }}
-                          className="text-left text-[9px] font-semibold text-indigo-700 underline"
-                        >
-                          Use auto score
-                        </button>
+                        {viewMode === "review" ? (
+                          <>
+                            <label className="text-[9px] font-semibold text-neutral-500">
+                              Priority (0–100)
+                              <input
+                                type="number"
+                                min={0}
+                                max={100}
+                                defaultValue={baseRow.priorityScore ?? score}
+                                key={`${t.id}-prio-${baseRow.priorityScore}-${baseRow.priorityScoreManual}`}
+                                onBlur={(e) => {
+                                  const n = Number(e.target.value);
+                                  if (!Number.isFinite(n)) return;
+                                  const clamped = Math.max(0, Math.min(100, Math.round(n)));
+                                  setBaseTargets((p) => {
+                                    const next = p.map((x) =>
+                                      x.id === t.id
+                                        ? { ...x, priorityScore: clamped, priorityScoreManual: true }
+                                        : x
+                                    );
+                                    void persistTargetsList(next);
+                                    return next;
+                                  });
+                                }}
+                                className="mt-0.5 w-full rounded border border-neutral-300 bg-white px-1 py-0.5 text-[10px] tabular-nums"
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setBaseTargets((p) => {
+                                  const next = p.map((x) => {
+                                    if (x.id !== t.id) return x;
+                                    const u = { ...x, priorityScoreManual: false as const };
+                                    return { ...u, priorityScore: computePriorityScore(u) };
+                                  });
+                                  void persistTargetsList(next);
+                                  return next;
+                                });
+                              }}
+                              className="text-left text-[9px] font-semibold text-indigo-700 underline"
+                            >
+                              Use auto score
+                            </button>
+                          </>
+                        ) : null}
                         <textarea
                           key={`${t.id}-vnote-${baseRow.verificationNote ?? ""}`}
                           defaultValue={baseRow.verificationNote ?? ""}

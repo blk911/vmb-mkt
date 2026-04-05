@@ -1,0 +1,45 @@
+"use client";
+
+import { useState } from "react";
+import {
+  buildEvidenceDetailLine,
+  buildEvidenceHeadline,
+  buildEvidenceTail,
+  legacyHealthHint,
+} from "@/lib/social-targets/operator-evidence";
+import type { SocialTarget } from "@/types/social-target";
+
+type Props = { target: SocialTarget };
+
+/** Compact reasoning for trust/rank; expandable for evidence strings. */
+export function SocialTargetEvidence({ target }: Props) {
+  const [open, setOpen] = useState(false);
+  const head = buildEvidenceHeadline(target);
+  const detail = buildEvidenceDetailLine(target);
+  const tail = buildEvidenceTail(target);
+  const hint = legacyHealthHint(target);
+  const extra = [...(hint ? [hint] : []), ...tail];
+
+  return (
+    <div className="mt-1 max-w-[280px] text-[10px] leading-snug text-neutral-600">
+      <p className="text-neutral-700">{head}</p>
+      {detail ? <p className="mt-0.5 text-neutral-500">{detail}</p> : null}
+      {extra.length > 0 ? (
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="mt-0.5 text-[9px] font-semibold text-sky-800 underline-offset-2 hover:underline"
+        >
+          {open ? "Hide notes" : "Why? + notes"}
+        </button>
+      ) : null}
+      {open && extra.length > 0 ? (
+        <ul className="mt-1 list-inside list-disc space-y-0.5 text-[9px] text-neutral-500">
+          {extra.map((line, i) => (
+            <li key={i}>{line}</li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}

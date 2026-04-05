@@ -1,4 +1,5 @@
 import { ensureSocialCandidates, getPrimaryCandidate } from "@/lib/social-targets/social-candidate-logic";
+import { isPrimaryLowConfidenceOnly } from "@/lib/social-targets/operator-rank";
 import { mapProfileHealthToResolveStatus } from "@/lib/social-targets/normalization";
 import type {
   SocialTarget,
@@ -37,18 +38,23 @@ export function shouldHideTargetBecauseDead(t: SocialTarget): boolean {
 }
 
 /**
- * Primary operator list: exclude dead/rejected/hidden and rows explicitly in review-only bucket.
+ * Primary operator list: actionable queue — no dead/rejected/hidden, no explicit review bucket,
+ * and not “suppress-tier only” (all candidates &lt; 50 with no verified candidate).
  */
 export function shouldShowTargetInPrimaryView(t: SocialTarget): boolean {
   if (shouldHideTargetBecauseDead(t)) return false;
   const p = primaryRow(t);
   if (p?.visibilityState === "review" || t.socialProfile?.visibilityState === "review") return false;
+  if (isPrimaryLowConfidenceOnly(t)) return false;
   return true;
 }
 
-/** Review queue: everything not suitable for default primary, plus explicit review flag. */
+/** Review queue: primary rejects + explicit review visibility (even if otherwise strong). */
 export function shouldShowTargetInReviewView(t: SocialTarget): boolean {
-  return !shouldShowTargetInPrimaryView(t) || t.socialProfile?.visibilityState === "review";
+  const p = primaryRow(t);
+  const explicitReview =
+    p?.visibilityState === "review" || t.socialProfile?.visibilityState === "review";
+  return !shouldShowTargetInPrimaryView(t) || explicitReview;
 }
 
 /** Worth surfacing in “attack now” style KPIs (verified-enough + live resolve). */
