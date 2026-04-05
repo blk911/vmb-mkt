@@ -1,0 +1,1443 @@
+{
+  "category": "nails",
+  "geoLabels": [
+    "DTC",
+    "Greenwood Village",
+    "Denver",
+    "Centennial",
+    "Cherry Creek",
+    "Lone Tree",
+    "Englewood"
+  ],
+  "queryCount": 30,
+  "generatedAt": "2026-04-05T23:02:44.875Z",
+  "queries": [
+    {
+      "query": "site:instagram.com \"nails\" \"DTC\"",
+      "family": "instagram_operator",
+      "targetPlatform": "instagram",
+      "geoLabel": "DTC",
+      "serviceHint": "nails"
+    },
+    {
+      "query": "site:glossgenius.com nails DTC",
+      "family": "booking_operator",
+      "targetPlatform": "glossgenius",
+      "geoLabel": "DTC",
+      "serviceHint": "nails"
+    },
+    {
+      "query": "site:vagaro.com nails DTC",
+      "family": "booking_operator",
+      "targetPlatform": "vagaro",
+      "geoLabel": "DTC",
+      "serviceHint": "nails"
+    },
+    {
+      "query": "site:styleseat.com nails DTC",
+      "family": "booking_operator",
+      "targetPlatform": "styleseat",
+      "geoLabel": "DTC",
+      "serviceHint": "nails"
+    },
+    {
+      "query": "site:booksy.com nails DTC",
+      "family": "booking_operator",
+      "targetPlatform": "booksy",
+      "geoLabel": "DTC",
+      "serviceHint": "nails"
+    },
+    {
+      "query": "site:fresha.com nails DTC",
+      "family": "booking_operator",
+      "targetPlatform": "fresha",
+      "geoLabel": "DTC",
+      "serviceHint": "nails"
+    },
+    {
+      "query": "site:square.site nails DTC",
+      "family": "booking_operator",
+      "targetPlatform": "square",
+      "geoLabel": "DTC",
+      "serviceHint": "nails"
+    },
+    {
+      "query": "site:glossgenius.com nail tech DTC",
+      "family": "booking_operator",
+      "targetPlatform": "glossgenius",
+      "geoLabel": "DTC",
+      "serviceHint": "nail tech"
+    },
+    {
+      "query": "site:vagaro.com nail tech DTC",
+      "family": "booking_operator",
+      "targetPlatform": "vagaro",
+      "geoLabel": "DTC",
+      "serviceHint": "nail tech"
+    },
+    {
+      "query": "site:styleseat.com nail tech DTC",
+      "family": "booking_operator",
+      "targetPlatform": "styleseat",
+      "geoLabel": "DTC",
+      "serviceHint": "nail tech"
+    },
+    {
+      "query": "site:booksy.com nail tech DTC",
+      "family": "booking_operator",
+      "targetPlatform": "booksy",
+      "geoLabel": "DTC",
+      "serviceHint": "nail tech"
+    },
+    {
+      "query": "site:fresha.com nail tech DTC",
+      "family": "booking_operator",
+      "targetPlatform": "fresha",
+      "geoLabel": "DTC",
+      "serviceHint": "nail tech"
+    },
+    {
+      "query": "site:square.site nail tech DTC",
+      "family": "booking_operator",
+      "targetPlatform": "square",
+      "geoLabel": "DTC",
+      "serviceHint": "nail tech"
+    },
+    {
+      "query": "Sola nails DTC",
+      "family": "suite_feeder",
+      "targetPlatform": "suite_directory",
+      "geoLabel": "DTC",
+      "serviceHint": "nails"
+    },
+    {
+      "query": "Phenix nails DTC",
+      "family": "suite_feeder",
+      "targetPlatform": "suite_directory",
+      "geoLabel": "DTC",
+      "serviceHint": "nails"
+    },
+    {
+      "query": "salon suites nail tech DTC",
+      "family": "suite_feeder",
+      "targetPlatform": "suite_directory",
+      "geoLabel": "DTC",
+      "serviceHint": "nail tech"
+    },
+    {
+      "query": "Yelp nail tech DTC",
+      "family": "yelp_feeder",
+      "targetPlatform": "yelp",
+      "geoLabel": "DTC",
+      "serviceHint": "nail tech"
+    },
+    {
+      "query": "Yelp nail salon DTC",
+      "family": "yelp_feeder",
+      "targetPlatform": "yelp",
+      "geoLabel": "DTC",
+      "serviceHint": "nail salon"
+    },
+    {
+      "query": "site:instagram.com \"nails\" \"Greenwood Village\"",
+      "family": "instagram_operator",
+      "targetPlatform": "instagram",
+      "geoLabel": "Greenwood Village",
+      "serviceHint": "nails"
+    },
+    {
+      "query": "site:glossgenius.com nails Greenwood Village",
+      "family": "booking_operator",
+      "targetPlatform": "glossgenius",
+      "geoLabel": "Greenwood Village",
+      "serviceHint": "nails"
+    },
+    {
+      "query": "site:vagaro.com nails Greenwood Village",
+      "family": "booking_operator",
+      "targetPlatform": "vagaro",
+      "geoLabel": "Greenwood Village",
+      "serviceHint": "nails"
+    },
+    {
+      "query": "site:styleseat.com nails Greenwood Village",
+      "family": "booking_operator",
+      "targetPlatform": "styleseat",
+      "geoLabel": "Greenwood Village",
+      "serviceHint": "nails"
+    },
+    {
+      "query": "site:booksy.com nails Greenwood Village",
+      "family": "booking_operator",
+      "targetPlatform": "booksy",
+      "geoLabel": "Greenwood Village",
+      "serviceHint": "nails"
+    },
+    {
+      "query": "site:fresha.com nails Greenwood Village",
+      "family": "booking_operator",
+      "targetPlatform": "fresha",
+      "geoLabel": "Greenwood Village",
+      "serviceHint": "nails"
+    },
+    {
+      "query": "site:square.site nails Greenwood Village",
+      "family": "booking_operator",
+      "targetPlatform": "square",
+      "geoLabel": "Greenwood Village",
+      "serviceHint": "nails"
+    },
+    {
+      "query": "site:glossgenius.com nail tech Greenwood Village",
+      "family": "booking_operator",
+      "targetPlatform": "glossgenius",
+      "geoLabel": "Greenwood Village",
+      "serviceHint": "nail tech"
+    },
+    {
+      "query": "site:vagaro.com nail tech Greenwood Village",
+      "family": "booking_operator",
+      "targetPlatform": "vagaro",
+      "geoLabel": "Greenwood Village",
+      "serviceHint": "nail tech"
+    },
+    {
+      "query": "site:styleseat.com nail tech Greenwood Village",
+      "family": "booking_operator",
+      "targetPlatform": "styleseat",
+      "geoLabel": "Greenwood Village",
+      "serviceHint": "nail tech"
+    },
+    {
+      "query": "site:booksy.com nail tech Greenwood Village",
+      "family": "booking_operator",
+      "targetPlatform": "booksy",
+      "geoLabel": "Greenwood Village",
+      "serviceHint": "nail tech"
+    },
+    {
+      "query": "site:fresha.com nail tech Greenwood Village",
+      "family": "booking_operator",
+      "targetPlatform": "fresha",
+      "geoLabel": "Greenwood Village",
+      "serviceHint": "nail tech"
+    }
+  ],
+  "resultSet": [
+    {
+      "query": {
+        "query": "site:instagram.com \"nails\" \"DTC\"",
+        "family": "instagram_operator",
+        "targetPlatform": "instagram",
+        "geoLabel": "DTC",
+        "serviceHint": "nails"
+      },
+      "results": [
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/jjnailsspa.centennial/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/rsrc.php/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/data/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "Paris Nails 15",
+          "url": "https://www.instagram.com/parisnails15_/",
+          "snippet": "next to Starbucks, 8000 E Belleview Ave B20, Greenwood Village, CO 80111, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:glossgenius.com nails DTC",
+        "family": "booking_operator",
+        "targetPlatform": "glossgenius",
+        "geoLabel": "DTC",
+        "serviceHint": "nails"
+      },
+      "results": [
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/jjnailsspa.centennial/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/rsrc.php/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/data/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "Paris Nails 15",
+          "url": "https://www.instagram.com/parisnails15_/",
+          "snippet": "next to Starbucks, 8000 E Belleview Ave B20, Greenwood Village, CO 80111, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:vagaro.com nails DTC",
+        "family": "booking_operator",
+        "targetPlatform": "vagaro",
+        "geoLabel": "DTC",
+        "serviceHint": "nails"
+      },
+      "results": [
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/jjnailsspa.centennial/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/rsrc.php/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/data/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "Paris Nails 15",
+          "url": "https://www.instagram.com/parisnails15_/",
+          "snippet": "next to Starbucks, 8000 E Belleview Ave B20, Greenwood Village, CO 80111, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:styleseat.com nails DTC",
+        "family": "booking_operator",
+        "targetPlatform": "styleseat",
+        "geoLabel": "DTC",
+        "serviceHint": "nails"
+      },
+      "results": [
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/jjnailsspa.centennial/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/rsrc.php/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/data/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "Paris Nails 15",
+          "url": "https://www.instagram.com/parisnails15_/",
+          "snippet": "next to Starbucks, 8000 E Belleview Ave B20, Greenwood Village, CO 80111, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:booksy.com nails DTC",
+        "family": "booking_operator",
+        "targetPlatform": "booksy",
+        "geoLabel": "DTC",
+        "serviceHint": "nails"
+      },
+      "results": [
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/jjnailsspa.centennial/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/rsrc.php/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/data/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "Paris Nails 15",
+          "url": "https://www.instagram.com/parisnails15_/",
+          "snippet": "next to Starbucks, 8000 E Belleview Ave B20, Greenwood Village, CO 80111, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:fresha.com nails DTC",
+        "family": "booking_operator",
+        "targetPlatform": "fresha",
+        "geoLabel": "DTC",
+        "serviceHint": "nails"
+      },
+      "results": [
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/jjnailsspa.centennial/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/rsrc.php/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/data/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "Paris Nails 15",
+          "url": "https://www.instagram.com/parisnails15_/",
+          "snippet": "next to Starbucks, 8000 E Belleview Ave B20, Greenwood Village, CO 80111, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:square.site nails DTC",
+        "family": "booking_operator",
+        "targetPlatform": "square",
+        "geoLabel": "DTC",
+        "serviceHint": "nails"
+      },
+      "results": [
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/jjnailsspa.centennial/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/rsrc.php/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/data/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "Paris Nails 15",
+          "url": "https://www.instagram.com/parisnails15_/",
+          "snippet": "next to Starbucks, 8000 E Belleview Ave B20, Greenwood Village, CO 80111, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:glossgenius.com nail tech DTC",
+        "family": "booking_operator",
+        "targetPlatform": "glossgenius",
+        "geoLabel": "DTC",
+        "serviceHint": "nail tech"
+      },
+      "results": [
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "I Capelli Salon",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "5123 S Yosemite St, Greenwood Village, CO 80111, USA"
+        },
+        {
+          "title": "Pearl Nail Bar",
+          "url": "https://www.instagram.com/firstsight.design/",
+          "snippet": "4955 S Ulster St #105, Denver, CO 80237, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:vagaro.com nail tech DTC",
+        "family": "booking_operator",
+        "targetPlatform": "vagaro",
+        "geoLabel": "DTC",
+        "serviceHint": "nail tech"
+      },
+      "results": [
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "I Capelli Salon",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "5123 S Yosemite St, Greenwood Village, CO 80111, USA"
+        },
+        {
+          "title": "Pearl Nail Bar",
+          "url": "https://www.instagram.com/firstsight.design/",
+          "snippet": "4955 S Ulster St #105, Denver, CO 80237, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:styleseat.com nail tech DTC",
+        "family": "booking_operator",
+        "targetPlatform": "styleseat",
+        "geoLabel": "DTC",
+        "serviceHint": "nail tech"
+      },
+      "results": [
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "I Capelli Salon",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "5123 S Yosemite St, Greenwood Village, CO 80111, USA"
+        },
+        {
+          "title": "Pearl Nail Bar",
+          "url": "https://www.instagram.com/firstsight.design/",
+          "snippet": "4955 S Ulster St #105, Denver, CO 80237, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:booksy.com nail tech DTC",
+        "family": "booking_operator",
+        "targetPlatform": "booksy",
+        "geoLabel": "DTC",
+        "serviceHint": "nail tech"
+      },
+      "results": [
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "I Capelli Salon",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "5123 S Yosemite St, Greenwood Village, CO 80111, USA"
+        },
+        {
+          "title": "Pearl Nail Bar",
+          "url": "https://www.instagram.com/firstsight.design/",
+          "snippet": "4955 S Ulster St #105, Denver, CO 80237, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:fresha.com nail tech DTC",
+        "family": "booking_operator",
+        "targetPlatform": "fresha",
+        "geoLabel": "DTC",
+        "serviceHint": "nail tech"
+      },
+      "results": [
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "I Capelli Salon",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "5123 S Yosemite St, Greenwood Village, CO 80111, USA"
+        },
+        {
+          "title": "Pearl Nail Bar",
+          "url": "https://www.instagram.com/firstsight.design/",
+          "snippet": "4955 S Ulster St #105, Denver, CO 80237, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:square.site nail tech DTC",
+        "family": "booking_operator",
+        "targetPlatform": "square",
+        "geoLabel": "DTC",
+        "serviceHint": "nail tech"
+      },
+      "results": [
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "I Capelli Salon",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "5123 S Yosemite St, Greenwood Village, CO 80111, USA"
+        },
+        {
+          "title": "Pearl Nail Bar",
+          "url": "https://www.instagram.com/firstsight.design/",
+          "snippet": "4955 S Ulster St #105, Denver, CO 80237, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "Sola nails DTC",
+        "family": "suite_feeder",
+        "targetPlatform": "suite_directory",
+        "geoLabel": "DTC",
+        "serviceHint": "nails"
+      },
+      "results": [
+        {
+          "title": "Solar Nails",
+          "url": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+          "snippet": "9625 E Arapahoe Rd # J, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Sola Salons",
+          "url": "https://www.instagram.com/soladenver/",
+          "snippet": "6001 S Willow Dr, Greenwood Village, CO 80111, USA"
+        },
+        {
+          "title": "Sola Salons",
+          "url": "https://www.instagram.com/solasalons/",
+          "snippet": "6001 S Willow Dr, Greenwood Village, CO 80111, USA"
+        },
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Pearl Nail Bar",
+          "url": "https://www.instagram.com/firstsight.design/",
+          "snippet": "4955 S Ulster St #105, Denver, CO 80237, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "Phenix nails DTC",
+        "family": "suite_feeder",
+        "targetPlatform": "suite_directory",
+        "geoLabel": "DTC",
+        "serviceHint": "nails"
+      },
+      "results": [
+        {
+          "title": "Phenix Salon Suites - Tamarac",
+          "url": "https://www.instagram.com/phenixsalonsuitesdenvermetro/",
+          "snippet": "3333 S Tamarac Dr A, Denver, CO 80231, USA"
+        },
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Phenix Salon Suites",
+          "url": "https://www.instagram.com/phenixsalonsuitesus/",
+          "snippet": "1240 S Hover St #400, Longmont, CO 80501, USA"
+        },
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Phenix Salon Suites - Parker",
+          "url": "https://www.instagram.com/hairbymaribelosal/",
+          "snippet": "11055 S Parker Rd, Parker, CO 80134, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "salon suites nail tech DTC",
+        "family": "suite_feeder",
+        "targetPlatform": "suite_directory",
+        "geoLabel": "DTC",
+        "serviceHint": "nail tech"
+      },
+      "results": [
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "BluSky Salon Suites",
+          "url": "https://www.instagram.com/bluskysalonsuites/",
+          "snippet": "4395 Ledge Rock Dr, Johnstown, CO 80534, USA"
+        },
+        {
+          "title": "I Capelli Salon",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "5123 S Yosemite St, Greenwood Village, CO 80111, USA"
+        },
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Sola Salons",
+          "url": "https://www.instagram.com/soladenver/",
+          "snippet": "6001 S Willow Dr, Greenwood Village, CO 80111, USA"
+        },
+        {
+          "title": "Sola Salons",
+          "url": "https://www.instagram.com/solasalons/",
+          "snippet": "6001 S Willow Dr, Greenwood Village, CO 80111, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "Yelp nail tech DTC",
+        "family": "yelp_feeder",
+        "targetPlatform": "yelp",
+        "geoLabel": "DTC",
+        "serviceHint": "nail tech"
+      },
+      "results": [
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "Yelp nail salon DTC",
+        "family": "yelp_feeder",
+        "targetPlatform": "yelp",
+        "geoLabel": "DTC",
+        "serviceHint": "nail salon"
+      },
+      "results": [
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "D’OR Nails Bar and Lashes",
+          "url": "https://www.instagram.com/dornailsbarandlashes/",
+          "snippet": "4365 Ledge Rock Dr suite 130, Johnstown, CO 80534, USA"
+        },
+        {
+          "title": "D’OR Nails Bar and Lashes",
+          "url": "https://yelp.com/biz/d-or-nails-bar-and-lashes-johnstown",
+          "snippet": "4365 Ledge Rock Dr suite 130, Johnstown, CO 80534, USA"
+        },
+        {
+          "title": "Purluxe Beauty Bar DTC",
+          "url": "https://www.instagram.com/purluxebeautybar/",
+          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/jjnailsspa.centennial/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        },
+        {
+          "title": "J&J NAILS SPA",
+          "url": "https://www.instagram.com/rsrc.php/",
+          "snippet": "6631 S Peoria St #160, Centennial, CO 80111, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:instagram.com \"nails\" \"Greenwood Village\"",
+        "family": "instagram_operator",
+        "targetPlatform": "instagram",
+        "geoLabel": "Greenwood Village",
+        "serviceHint": "nails"
+      },
+      "results": [
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/nailscentennial/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Anthony Vincé Nail Spa, Cherry Hills",
+          "url": "https://www.instagram.com/avnailspa/",
+          "snippet": "5900 S University Blvd, Greenwood Village, CO 80121, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:glossgenius.com nails Greenwood Village",
+        "family": "booking_operator",
+        "targetPlatform": "glossgenius",
+        "geoLabel": "Greenwood Village",
+        "serviceHint": "nails"
+      },
+      "results": [
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/nailscentennial/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Anthony Vincé Nail Spa, Cherry Hills",
+          "url": "https://www.instagram.com/avnailspa/",
+          "snippet": "5900 S University Blvd, Greenwood Village, CO 80121, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:vagaro.com nails Greenwood Village",
+        "family": "booking_operator",
+        "targetPlatform": "vagaro",
+        "geoLabel": "Greenwood Village",
+        "serviceHint": "nails"
+      },
+      "results": [
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/nailscentennial/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Anthony Vincé Nail Spa, Cherry Hills",
+          "url": "https://www.instagram.com/avnailspa/",
+          "snippet": "5900 S University Blvd, Greenwood Village, CO 80121, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:styleseat.com nails Greenwood Village",
+        "family": "booking_operator",
+        "targetPlatform": "styleseat",
+        "geoLabel": "Greenwood Village",
+        "serviceHint": "nails"
+      },
+      "results": [
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/nailscentennial/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Anthony Vincé Nail Spa, Cherry Hills",
+          "url": "https://www.instagram.com/avnailspa/",
+          "snippet": "5900 S University Blvd, Greenwood Village, CO 80121, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:booksy.com nails Greenwood Village",
+        "family": "booking_operator",
+        "targetPlatform": "booksy",
+        "geoLabel": "Greenwood Village",
+        "serviceHint": "nails"
+      },
+      "results": [
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/nailscentennial/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Anthony Vincé Nail Spa, Cherry Hills",
+          "url": "https://www.instagram.com/avnailspa/",
+          "snippet": "5900 S University Blvd, Greenwood Village, CO 80121, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:fresha.com nails Greenwood Village",
+        "family": "booking_operator",
+        "targetPlatform": "fresha",
+        "geoLabel": "Greenwood Village",
+        "serviceHint": "nails"
+      },
+      "results": [
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/nailscentennial/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Anthony Vincé Nail Spa, Cherry Hills",
+          "url": "https://www.instagram.com/avnailspa/",
+          "snippet": "5900 S University Blvd, Greenwood Village, CO 80121, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:square.site nails Greenwood Village",
+        "family": "booking_operator",
+        "targetPlatform": "square",
+        "geoLabel": "Greenwood Village",
+        "serviceHint": "nails"
+      },
+      "results": [
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/nailscentennial/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "The Nest Nail Spa DTC",
+          "url": "https://www.instagram.com/thenestnailspa/",
+          "snippet": "4950 S Newport St, Denver, CO 80237, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Anthony Vincé Nail Spa, Cherry Hills",
+          "url": "https://www.instagram.com/avnailspa/",
+          "snippet": "5900 S University Blvd, Greenwood Village, CO 80121, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:glossgenius.com nail tech Greenwood Village",
+        "family": "booking_operator",
+        "targetPlatform": "glossgenius",
+        "geoLabel": "Greenwood Village",
+        "serviceHint": "nail tech"
+      },
+      "results": [
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/nailscentennial/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Anthony Vincé Nail Spa, Cherry Hills",
+          "url": "https://www.instagram.com/avnailspa/",
+          "snippet": "5900 S University Blvd, Greenwood Village, CO 80121, USA"
+        },
+        {
+          "title": "Solar Nails",
+          "url": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+          "snippet": "9625 E Arapahoe Rd # J, Greenwood Village, CO 80112, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:vagaro.com nail tech Greenwood Village",
+        "family": "booking_operator",
+        "targetPlatform": "vagaro",
+        "geoLabel": "Greenwood Village",
+        "serviceHint": "nail tech"
+      },
+      "results": [
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/nailscentennial/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Anthony Vincé Nail Spa, Cherry Hills",
+          "url": "https://www.instagram.com/avnailspa/",
+          "snippet": "5900 S University Blvd, Greenwood Village, CO 80121, USA"
+        },
+        {
+          "title": "Solar Nails",
+          "url": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+          "snippet": "9625 E Arapahoe Rd # J, Greenwood Village, CO 80112, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:styleseat.com nail tech Greenwood Village",
+        "family": "booking_operator",
+        "targetPlatform": "styleseat",
+        "geoLabel": "Greenwood Village",
+        "serviceHint": "nail tech"
+      },
+      "results": [
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/nailscentennial/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Anthony Vincé Nail Spa, Cherry Hills",
+          "url": "https://www.instagram.com/avnailspa/",
+          "snippet": "5900 S University Blvd, Greenwood Village, CO 80121, USA"
+        },
+        {
+          "title": "Solar Nails",
+          "url": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+          "snippet": "9625 E Arapahoe Rd # J, Greenwood Village, CO 80112, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:booksy.com nail tech Greenwood Village",
+        "family": "booking_operator",
+        "targetPlatform": "booksy",
+        "geoLabel": "Greenwood Village",
+        "serviceHint": "nail tech"
+      },
+      "results": [
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/nailscentennial/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Anthony Vincé Nail Spa, Cherry Hills",
+          "url": "https://www.instagram.com/avnailspa/",
+          "snippet": "5900 S University Blvd, Greenwood Village, CO 80121, USA"
+        },
+        {
+          "title": "Solar Nails",
+          "url": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+          "snippet": "9625 E Arapahoe Rd # J, Greenwood Village, CO 80112, USA"
+        }
+      ]
+    },
+    {
+      "query": {
+        "query": "site:fresha.com nail tech Greenwood Village",
+        "family": "booking_operator",
+        "targetPlatform": "fresha",
+        "geoLabel": "Greenwood Village",
+        "serviceHint": "nail tech"
+      },
+      "results": [
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.instagram.com/avnailbargv/",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "AV Nail Bar (formerly B&T Nails)",
+          "url": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+          "snippet": "8575 E Arapahoe Rd E, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/nailscentennial/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Centennial Nails",
+          "url": "https://www.instagram.com/wix/",
+          "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
+        },
+        {
+          "title": "Anthony Vincé Nail Spa, Cherry Hills",
+          "url": "https://www.instagram.com/avnailspa/",
+          "snippet": "5900 S University Blvd, Greenwood Village, CO 80121, USA"
+        },
+        {
+          "title": "Solar Nails",
+          "url": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+          "snippet": "9625 E Arapahoe Rd # J, Greenwood Village, CO 80112, USA"
+        }
+      ]
+    }
+  ]
+}
