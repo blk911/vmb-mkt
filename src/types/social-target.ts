@@ -6,10 +6,22 @@ export type ActivitySignal = "hot" | "warm" | "cold" | "unknown";
 
 export type SocialTargetBooking = "dm" | "link" | "phone";
 
-/** Optional structured social identity + verification (v2). Legacy `profileHealth` / `handle` still supported. */
-export type SocialProfilePlatform = "instagram" | "tiktok" | "website" | "linktree" | "unknown";
+/** Platforms for social candidates (v3). */
+export type SocialPlatform = "instagram" | "tiktok" | "linktree" | "website" | "booking" | "unknown";
+
+/** @deprecated Use SocialPlatform — kept for older `socialProfile` fields. */
+export type SocialProfilePlatform = SocialPlatform;
 
 export type SocialDiscoverySource = "seed" | "maps" | "website_scrape" | "heuristic" | "manual" | "referral";
+
+export type SocialCandidateDiscoverySource =
+  | "seed"
+  | "maps"
+  | "website_scrape"
+  | "bio_link"
+  | "heuristic"
+  | "referral"
+  | "manual";
 
 export type SocialResolveStatus = "live" | "dead" | "redirect" | "blocked" | "unknown";
 
@@ -18,6 +30,28 @@ export type SocialActivityStatus = "recent" | "stale" | "unknown";
 export type SocialVerificationStatus = "manual_verified" | "auto_verified" | "candidate" | "rejected";
 
 export type SocialVisibilityState = "show" | "review" | "hide";
+
+/** One discoverable social identity attached to a target (v3). */
+export type SocialCandidate = {
+  id: string;
+  platform: SocialPlatform;
+  url?: string;
+  handle?: string;
+  discoverySource: SocialCandidateDiscoverySource;
+  resolveStatus: SocialResolveStatus;
+  activityStatus: SocialActivityStatus;
+  verificationStatus: SocialVerificationStatus;
+  businessMatchScore: number;
+  geoMatchScore: number;
+  categoryMatchScore: number;
+  activityScore: number;
+  overallConfidenceScore: number;
+  lastCheckedAt?: string | null;
+  lastVerifiedAt?: string | null;
+  notes?: string;
+  evidence?: string[];
+  visibilityState?: SocialVisibilityState;
+};
 
 export type SocialTargetSocialProfile = {
   platform?: SocialProfilePlatform;
@@ -47,7 +81,6 @@ export type SocialTarget = {
   referralCount?: number;
   referredByCount?: number;
   isReferralHub?: boolean;
-  /** DM / link-in-bio / phone CTA — used in priority scoring */
   booking?: SocialTargetBooking;
   followers?: number;
   profileHealth?: ProfileHealth;
@@ -55,11 +88,14 @@ export type SocialTarget = {
   verificationNote?: string;
   activitySignal?: ActivitySignal;
   priorityScore?: number;
-  /** When true, `priorityScore` is operator-set; health/activity edits auto-recompute when false/undefined */
   priorityScoreManual?: boolean;
   outreachAngle?: string;
-  /** Structured verification / platform metadata (optional; merged with legacy fields when absent). */
+  /** Legacy single-profile bag; synced from primary candidate when possible. */
   socialProfile?: SocialTargetSocialProfile;
+  /** v3: multiple social identities per target. */
+  socialCandidates?: SocialCandidate[];
+  /** v3: operator-selected featured candidate; if unset, derived automatically. */
+  primaryCandidateId?: string;
 };
 
 export type ReferralCategory = "nails" | "hair" | "lashes" | "brows" | "spa" | "other";

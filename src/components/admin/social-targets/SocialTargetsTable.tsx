@@ -4,10 +4,16 @@ import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ensureSocialCandidates,
+  getPrimaryCandidate,
+  setPrimaryCandidateId,
+} from "@/lib/social-targets/social-candidate-logic";
+import {
   mapProfileHealthToResolveStatus,
   normalizeSocialTarget,
   patchSocialProfile,
 } from "@/lib/social-targets/normalization";
+import { confidenceTier } from "@/lib/social-targets/social-scoring";
 import {
   SOCIAL_VERIFICATION_STATUSES,
   SOCIAL_VISIBILITY_STATES,
@@ -34,7 +40,6 @@ import type {
   ProfileHealth,
   ReferralCategory,
   ReferralEdge,
-  SocialResolveStatus,
   SocialTarget,
   SocialTargetStatus,
   SocialVerificationStatus,
@@ -91,18 +96,69 @@ function igProfileUrl(handle: string): string {
 }
 
 function profileUrlForTarget(t: SocialTarget): string {
-  const u = t.socialProfile?.url?.trim();
+  const primary = getPrimaryCandidate(ensureSocialCandidates(t));
+  const u = primary?.url?.trim() ?? t.socialProfile?.url?.trim();
   if (u) return u;
-  if (t.socialProfile?.platform === "tiktok") {
-    return `https://www.tiktok.com/@${encodeURIComponent(stripAt(t.handle))}`;
+  const plat = primary?.platform ?? t.socialProfile?.platform;
+  const h = stripAt(primary?.handle ?? t.handle);
+  if (plat === "tiktok") {
+    return `https://www.tiktok.com/@${encodeURIComponent(h)}`;
   }
-  return igProfileUrl(t.handle);
+  if (plat === "linktree" && h) {
+    return `https://linktr.ee/${encodeURIComponent(h)}`;
+  }
+  return igProfileUrl(h);
+}
+
+function displayHandleForTarget(t: SocialTarget): string {
+  const primary = getPrimaryCandidate(ensureSocialCandidates(t));
+  return stripAt(primary?.handle ?? t.handle);
+}
+
+function platformShortLabel(p: string): string {
+  switch (p) {
+    case "instagram":
+      return "IG";
+    case "tiktok":
+      return "TT";
+    case "linktree":
+      return "LT";
+    case "website":
+      return "Web";
+    case "booking":
+      return "Book";
+    default:
+      return "?";
+  }
+}
+
+function tierShortLabel(tier: ReturnType<typeof confidenceTier>): string {
+  switch (tier) {
+    case "high":
+      return "High conf.";
+    case "usable":
+      return "Usable";
+    case "review":
+      return "Review";
+    case "suppress":
+      return "Low conf.";
+  }
 }
 
 function TrustBadges({ t }: { t: SocialTarget }) {
+  const primary = getPrimaryCandidate(ensureSocialCandidates(t));
   const rs = getResolveStatus(t);
   const vs = getVerificationStatus(t);
-  const act = t.socialProfile?.activityStatus ?? "unknown";
+  const act = primary?.activityStatus ?? t.socialProfile?.activityStatus ?? "unknown";
+  const tier = primary ? confidenceTier(primary.overallConfidenceScore) : "review";
+  const tierCls =
+    tier === "high"
+      ? "bg-emerald-50 text-emerald-950 ring-1 ring-emerald-200"
+      : tier === "usable"
+        ? "bg-sky-50 text-sky-950 ring-1 ring-sky-200"
+        : tier === "review"
+          ? "bg-amber-50 text-amber-950 ring-1 ring-amber-200"
+          : "bg-neutral-200 text-neutral-800";
   const rsCls =
     rs === "live"
       ? "bg-emerald-100 text-emerald-900"
@@ -121,6 +177,12 @@ function TrustBadges({ t }: { t: SocialTarget }) {
     act === "recent" ? "bg-lime-100 text-lime-950" : act === "stale" ? "bg-orange-100 text-orange-950" : "bg-neutral-50 text-neutral-600";
   return (
     <div className="mt-1 flex flex-wrap gap-1">
+      {primary ? (
+        <span className="rounded-full bg-neutral-800 px-1.5 py-0.5 text-[9px] font-black uppercase text-white">
+          {platformShortLabel(primary.platform)}
+        </span>
+      ) : null}
+      <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${tierCls}`}>{tierShortLabel(tier)}</span>
       <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${rsCls}`}>{rs}</span>
       <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${vsCls}`}>
         {vs.replace(/_/g, " ")}
@@ -190,28 +252,33 @@ function formatVerifiedAt(iso?: string): string {
 }
 
 function toApiTarget(t: SocialTarget): SocialTarget {
+  const n = normalizeSocialTarget({ ...t, handle: stripAt(t.handle) });
   const row: SocialTarget = {
-    id: t.id,
-    handle: stripAt(t.handle),
-    zone: t.zone,
-    category: t.category,
-    status: t.status ?? "new",
-    tags: t.tags ?? [],
+    id: n.id,
+    handle: stripAt(n.handle),
+    zone: n.zone,
+    category: n.category,
+    status: n.status ?? "new",
+    tags: n.tags ?? [],
   };
-  if (t.businessName) row.businessName = t.businessName;
-  if (t.notes) row.notes = t.notes;
-  if (t.booking) row.booking = t.booking;
-  if (typeof t.followers === "number") row.followers = t.followers;
-  if (t.profileHealth) row.profileHealth = t.profileHealth;
-  if (t.lastVerifiedAt) row.lastVerifiedAt = t.lastVerifiedAt;
-  if (t.verificationNote) row.verificationNote = t.verificationNote;
-  if (t.activitySignal) row.activitySignal = t.activitySignal;
-  if (typeof t.priorityScore === "number") row.priorityScore = t.priorityScore;
-  if (t.priorityScoreManual === true) row.priorityScoreManual = true;
-  if (t.outreachAngle) row.outreachAngle = t.outreachAngle;
-  if (t.socialProfile && Object.keys(t.socialProfile).length > 0) {
-    row.socialProfile = { ...t.socialProfile };
+  if (n.businessName) row.businessName = n.businessName;
+  if (n.notes) row.notes = n.notes;
+  if (n.booking) row.booking = n.booking;
+  if (typeof n.followers === "number") row.followers = n.followers;
+  if (n.profileHealth) row.profileHealth = n.profileHealth;
+  if (n.lastVerifiedAt) row.lastVerifiedAt = n.lastVerifiedAt;
+  if (n.verificationNote) row.verificationNote = n.verificationNote;
+  if (n.activitySignal) row.activitySignal = n.activitySignal;
+  if (typeof n.priorityScore === "number") row.priorityScore = n.priorityScore;
+  if (n.priorityScoreManual === true) row.priorityScoreManual = true;
+  if (n.outreachAngle) row.outreachAngle = n.outreachAngle;
+  if (n.socialProfile && Object.keys(n.socialProfile).length > 0) {
+    row.socialProfile = { ...n.socialProfile };
   }
+  if (n.socialCandidates?.length) {
+    row.socialCandidates = n.socialCandidates.map((c) => ({ ...c }));
+  }
+  if (n.primaryCandidateId) row.primaryCandidateId = n.primaryCandidateId;
   return row;
 }
 
@@ -556,44 +623,53 @@ export default function SocialTargetsTable({
 
   const runHeadVerify = useCallback(
     async (t: SocialTarget) => {
-      const url = profileUrlForTarget(t);
+      const primary = getPrimaryCandidate(ensureSocialCandidates(t));
       setVerifyBusyId(t.id);
       setSaveError(null);
       try {
-        const res = await fetch("/api/social-targets/verify-profile", {
+        const res = await fetch("/api/social-targets/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url }),
+          body: JSON.stringify({
+            targetId: t.id,
+            ...(primary?.id ? { candidateId: primary.id } : {}),
+          }),
         });
-        const data = (await res.json().catch(() => ({}))) as {
-          ok?: boolean;
-          error?: string;
-          resolveStatus?: string;
-          checkedAt?: string;
-        };
-        if (!res.ok || data.ok !== true || !data.resolveStatus || !data.checkedAt) {
+        const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+        if (!res.ok || data.ok !== true) {
           setSaveError(data.error || `Verify failed (${res.status})`);
           return;
         }
-        setBaseTargets((prev) => {
-          const next = prev.map((x) =>
-            x.id === t.id
-              ? patchSocialProfile(x, {
-                  resolveStatus: data.resolveStatus as SocialResolveStatus,
-                  lastCheckedAt: data.checkedAt,
-                })
-              : x
-          );
-          void persistTargetsList(next);
-          return next;
-        });
+        router.refresh();
       } catch {
         setSaveError("Verify failed (network)");
       } finally {
         setVerifyBusyId(null);
       }
     },
-    [persistTargetsList]
+    [router]
+  );
+
+  const postPrimaryCandidatePatch = useCallback(
+    async (targetId: string, candidateId: string, patch: Record<string, unknown>) => {
+      setSaveError(null);
+      try {
+        const res = await fetch(`/api/social-targets/${encodeURIComponent(targetId)}/candidate/${encodeURIComponent(candidateId)}/status`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(patch),
+        });
+        const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+        if (!res.ok || data.ok !== true) {
+          setSaveError(data.error || `Update failed (${res.status})`);
+          return;
+        }
+        router.refresh();
+      } catch {
+        setSaveError("Update failed (network)");
+      }
+    },
+    [router]
   );
 
   const onActivitySignalChange = useCallback(
@@ -1131,6 +1207,10 @@ export default function SocialTargetsTable({
                 const score = t.priorityScore ?? 0;
                 const ready = isReadyToAttack(t);
                 const baseRow = baseTargets.find((b) => b.id === t.id) ?? t;
+                const rowEnsured = ensureSocialCandidates(baseRow);
+                const rowCandidates = rowEnsured.socialCandidates ?? [];
+                const featured = getPrimaryCandidate(rowEnsured);
+                const primarySelectValue = baseRow.primaryCandidateId ?? rowCandidates[0]?.id ?? "";
                 return (
                   <tr key={t.id} className="border-b border-neutral-100 align-top">
                     <td className="px-2 py-2">
@@ -1144,7 +1224,7 @@ export default function SocialTargetsTable({
                     <td className="px-2 py-2">
                       <div className="flex flex-wrap items-center gap-1">
                         <TargetHandleLink t={t}>
-                          <span className="font-semibold">@{stripAt(t.handle)}</span>
+                          <span className="font-semibold">@{displayHandleForTarget(t)}</span>
                         </TargetHandleLink>
                         {ready ? (
                           <span className="rounded-full bg-rose-600 px-2 py-0.5 text-[9px] font-black uppercase text-white">
@@ -1250,6 +1330,70 @@ export default function SocialTargetsTable({
                             ))}
                           </select>
                         </label>
+                        {rowCandidates.length > 1 ? (
+                          <label className="text-[9px] font-semibold text-neutral-500">
+                            Featured profile
+                            <select
+                              value={primarySelectValue}
+                              onChange={(e) => {
+                                const v = e.target.value;
+                                setBaseTargets((prev) => {
+                                  const next = prev.map((x) =>
+                                    x.id === t.id
+                                      ? normalizeSocialTarget(setPrimaryCandidateId(ensureSocialCandidates(x), v))
+                                      : x
+                                  );
+                                  void persistTargetsList(next);
+                                  return next;
+                                });
+                              }}
+                              className="mt-0.5 block w-full rounded border border-neutral-300 bg-white px-1 py-1 text-[10px]"
+                            >
+                              {rowCandidates.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                  {platformShortLabel(c.platform)}{" "}
+                                  {c.handle ? `@${stripAt(c.handle)}` : (c.url ?? "—").slice(0, 32)}
+                                  {" · "}
+                                  {c.overallConfidenceScore}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        ) : null}
+                        {featured?.id ? (
+                          <div className="flex flex-wrap gap-1">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                void postPrimaryCandidatePatch(t.id, featured.id, { verificationStatus: "manual_verified" })
+                              }
+                              className="rounded border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-[8px] font-bold uppercase text-emerald-900 hover:bg-emerald-100"
+                            >
+                              Verify cand.
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { verificationStatus: "rejected" })}
+                              className="rounded border border-neutral-400 bg-neutral-100 px-1.5 py-0.5 text-[8px] font-bold uppercase text-neutral-800 hover:bg-neutral-200"
+                            >
+                              Reject
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { visibilityState: "hide" })}
+                              className="rounded border border-rose-300 bg-rose-50 px-1.5 py-0.5 text-[8px] font-bold uppercase text-rose-900 hover:bg-rose-100"
+                            >
+                              Hide cand.
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { visibilityState: "review" })}
+                              className="rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[8px] font-bold uppercase text-amber-950 hover:bg-amber-100"
+                            >
+                              Review
+                            </button>
+                          </div>
+                        ) : null}
                         <button
                           type="button"
                           disabled={verifyBusyId === t.id}

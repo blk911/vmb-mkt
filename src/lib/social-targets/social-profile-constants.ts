@@ -1,18 +1,30 @@
 import type {
   SocialActivityStatus,
+  SocialCandidateDiscoverySource,
   SocialDiscoverySource,
-  SocialProfilePlatform,
+  SocialPlatform,
   SocialResolveStatus,
   SocialVerificationStatus,
   SocialVisibilityState,
 } from "@/types/social-target";
 
-export const SOCIAL_PLATFORMS: SocialProfilePlatform[] = [
+export const SOCIAL_PLATFORMS: SocialPlatform[] = [
   "instagram",
   "tiktok",
-  "website",
   "linktree",
+  "website",
+  "booking",
   "unknown",
+];
+
+export const SOCIAL_CANDIDATE_DISCOVERY_SOURCES: SocialCandidateDiscoverySource[] = [
+  "seed",
+  "maps",
+  "website_scrape",
+  "bio_link",
+  "heuristic",
+  "referral",
+  "manual",
 ];
 
 export const SOCIAL_DISCOVERY_SOURCES: SocialDiscoverySource[] = [

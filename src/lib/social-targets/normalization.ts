@@ -1,10 +1,8 @@
-import type {
-  ProfileHealth,
-  SocialProfilePlatform,
-  SocialResolveStatus,
-  SocialTarget,
-  SocialTargetSocialProfile,
-} from "@/types/social-target";
+import {
+  ensureSocialCandidates,
+  getPrimaryCandidate,
+  mergeSocialProfileIntoPrimaryCandidate,
+} from "@/lib/social-targets/social-candidate-logic";
 import {
   SOCIAL_PLATFORMS,
   SOCIAL_DISCOVERY_SOURCES,
@@ -13,6 +11,13 @@ import {
   SOCIAL_VERIFICATION_STATUSES,
   SOCIAL_VISIBILITY_STATES,
 } from "@/lib/social-targets/social-profile-constants";
+import type {
+  ProfileHealth,
+  SocialPlatform,
+  SocialResolveStatus,
+  SocialTarget,
+  SocialTargetSocialProfile,
+} from "@/types/social-target";
 
 function clampInt(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, Math.round(n)));
@@ -74,7 +79,7 @@ export function mapProfileHealthToResolveStatus(health?: ProfileHealth): SocialR
 }
 
 /** Infer platform from handle/URL when unset (non-SSR heuristic). */
-export function inferPlatformFromTarget(t: SocialTarget): SocialProfilePlatform {
+export function inferPlatformFromTarget(t: SocialTarget): SocialPlatform {
   const url = t.socialProfile?.url?.toLowerCase() ?? "";
   if (url.includes("tiktok.com")) return "tiktok";
   if (url.includes("linktr.ee") || url.includes("linktree")) return "linktree";
@@ -84,43 +89,34 @@ export function inferPlatformFromTarget(t: SocialTarget): SocialProfilePlatform 
 }
 
 /**
- * Ensure `socialProfile` exists with safe defaults derived from legacy fields.
- * Does not remove legacy keys — loaders merge for UI + visibility helpers.
+ * Ensure candidates exist, merge legacy `socialProfile` edits into primary, sync root `handle` + `socialProfile` from primary.
  */
 export function normalizeSocialTarget(t: SocialTarget): SocialTarget {
-  const platform = t.socialProfile?.platform ?? inferPlatformFromTarget(t);
-  const handle = t.socialProfile?.handle?.replace(/^@/, "").trim() || t.handle.replace(/^@/, "").trim();
-  const resolveFromExplicit = t.socialProfile?.resolveStatus;
-  const resolveStatus = resolveFromExplicit ?? mapProfileHealthToResolveStatus(t.profileHealth);
-
-  let verificationStatus = t.socialProfile?.verificationStatus;
-  if (!verificationStatus) {
-    if (t.profileHealth === "active" && t.lastVerifiedAt) verificationStatus = "auto_verified";
-    else verificationStatus = "candidate";
+  let base = ensureSocialCandidates(t);
+  if (t.socialProfile) {
+    base = mergeSocialProfileIntoPrimaryCandidate({ ...base, socialProfile: t.socialProfile });
   }
+  const primary = getPrimaryCandidate(base);
+  if (!primary) return base;
 
-  let activityStatus = t.socialProfile?.activityStatus;
-  if (!activityStatus) {
-    if (t.profileHealth === "stale") activityStatus = "stale";
-    else if (t.activitySignal === "hot" || t.activitySignal === "warm") activityStatus = "recent";
-    else activityStatus = "unknown";
-  }
-
+  const handle = (primary.handle ?? base.handle).replace(/^@/, "").trim();
   const socialProfile: SocialTargetSocialProfile = {
-    ...t.socialProfile,
-    platform,
-    handle,
-    resolveStatus,
-    verificationStatus,
-    activityStatus,
-    lastVerifiedAt: t.socialProfile?.lastVerifiedAt ?? t.lastVerifiedAt ?? null,
+    ...base.socialProfile,
+    platform: primary.platform,
+    handle: primary.handle ?? handle,
+    url: primary.url,
+    resolveStatus: primary.resolveStatus,
+    activityStatus: primary.activityStatus,
+    verificationStatus: primary.verificationStatus,
+    visibilityState: primary.visibilityState,
+    matchConfidence: primary.overallConfidenceScore,
+    geoConfidence: primary.geoMatchScore,
+    categoryConfidence: primary.categoryMatchScore,
+    lastCheckedAt: primary.lastCheckedAt ?? null,
+    lastVerifiedAt: primary.lastVerifiedAt ?? null,
   };
 
-  if (!t.socialProfile?.url && platform === "instagram") {
-    socialProfile.url = `https://www.instagram.com/${encodeURIComponent(handle)}/`;
-  }
-
-  return { ...t, socialProfile };
+  return { ...base, handle, socialProfile };
 }
 
 /** Apply partial `socialProfile` updates and re-run normalization for derived fields. */

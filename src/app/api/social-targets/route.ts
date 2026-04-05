@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
-import { parseSocialProfile } from "@/lib/social-targets/normalization";
+import { parseSocialCandidate } from "@/lib/social-targets/social-candidate-logic";
+import { normalizeSocialTarget, parseSocialProfile } from "@/lib/social-targets/normalization";
 import { assertSocialTargetsApiAccess } from "@/lib/social-targets/social-targets-api-access";
 import { getMergedSocialTargets, saveMergedSocialTargetsAsRuntime } from "@/lib/social-targets/social-targets-store";
 import type {
   ActivitySignal,
   ProfileHealth,
+  SocialCandidate,
   SocialTarget,
   SocialTargetBooking,
   SocialTargetStatus,
@@ -62,14 +64,25 @@ function normalizeTarget(raw: unknown): SocialTarget | null {
     const sp = parseSocialProfile(o.socialProfile);
     if (sp) row.socialProfile = sp;
   }
-  return row;
+  if (Array.isArray(o.socialCandidates)) {
+    const parsed: SocialCandidate[] = [];
+    for (const item of o.socialCandidates) {
+      const c = parseSocialCandidate(item);
+      if (c) parsed.push(c);
+    }
+    if (parsed.length) row.socialCandidates = parsed;
+  }
+  if (typeof o.primaryCandidateId === "string" && o.primaryCandidateId.trim()) {
+    row.primaryCandidateId = o.primaryCandidateId.trim();
+  }
+  return normalizeSocialTarget(row);
 }
 
 export async function GET(req: Request) {
   const denied = await assertSocialTargetsApiAccess(req);
   if (denied) return denied;
   try {
-    const targets = await getMergedSocialTargets();
+    const targets = (await getMergedSocialTargets()).map(normalizeSocialTarget);
     return NextResponse.json({ ok: true as const, targets });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "server error";
