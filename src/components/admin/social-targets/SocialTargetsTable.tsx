@@ -320,6 +320,24 @@ function formatVerifiedAt(iso?: string): string {
   }
 }
 
+function formatCheckedAgo(iso?: string | null): string {
+  if (!iso) return "not checked";
+  try {
+    const t = new Date(iso).getTime();
+    if (!Number.isFinite(t)) return "unknown";
+    const diff = Date.now() - t;
+    if (diff < 0) return "just now";
+    const mins = Math.floor(diff / (60 * 1000));
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days}d ago`;
+  } catch {
+    return "unknown";
+  }
+}
+
 function toApiTarget(t: SocialTarget): SocialTarget {
   const n = normalizeSocialTarget({ ...t, handle: stripAt(t.handle) });
   const row: SocialTarget = {
@@ -1615,6 +1633,14 @@ export default function SocialTargetsTable({
                 const betterAlt = featuredWeakerThanBestAlternate(baseRow);
                 const featuredIntegrity = getFeaturedValidationIntegrity(baseRow);
                 const confirmedNoSocial = isConfirmedRealNoSocial(baseRow);
+                const featuredCandidate = featuredIntegrity.displayCandidate;
+                const featuredCheckedAgo = formatCheckedAgo(featuredCandidate?.lastCheckedAt ?? featuredCandidate?.lastVerifiedAt ?? null);
+                const featuredReason =
+                  featuredIntegrity.featuredCandidateId && featuredCandidate?.id !== featuredIntegrity.featuredCandidateId
+                    ? "fallback to best valid featured candidate"
+                    : featuredCandidate?.id === featuredIntegrity.featuredCandidateId
+                      ? "operator-selected featured candidate"
+                      : "best valid featured candidate";
                 const recommendedAngle =
                   t.outreachAngle ||
                   (featuredIntegrity.needsRecheck
@@ -1637,7 +1663,7 @@ export default function SocialTargetsTable({
                       />
                     </td>
                     <td className="px-2 py-2">
-                      <div className="grid gap-4 lg:grid-cols-[minmax(340px,1.15fr)_minmax(420px,0.85fr)]">
+                      <div className="grid gap-4 lg:grid-cols-[minmax(320px,1.1fr)_minmax(240px,0.7fr)_minmax(260px,0.8fr)]">
                         <div className="min-w-0 space-y-2">
                           <div className="flex flex-wrap items-center gap-2">
                             <TargetHandleLink t={t}>
@@ -1729,183 +1755,200 @@ export default function SocialTargetsTable({
                           </div>
                         </div>
 
-                        <div className="min-w-0 space-y-3">
-                          <div className="grid gap-2 sm:grid-cols-2">
-                            <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-                              Trust / visibility
-                              <select
-                                value={getVerificationStatus(baseRow)}
-                                onChange={(e) =>
-                                  applySocialProfilePatch(t.id, {
-                                    verificationStatus: e.target.value as SocialVerificationStatus,
-                                  })
-                                }
-                                className="mt-1 block w-full rounded border border-neutral-300 bg-white px-2 py-1.5 text-[11px]"
-                              >
-                                {SOCIAL_VERIFICATION_STATUSES.map((v) => (
-                                  <option key={v} value={v}>
-                                    {v.replace(/_/g, " ")}
-                                  </option>
-                                ))}
-                              </select>
-                            </label>
-                            <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-                              Visibility
-                              <select
-                                value={baseRow.socialProfile?.visibilityState ?? "show"}
-                                onChange={(e) =>
-                                  applySocialProfilePatch(t.id, {
-                                    visibilityState: e.target.value as SocialVisibilityState,
-                                  })
-                                }
-                                className="mt-1 block w-full rounded border border-neutral-300 bg-white px-2 py-1.5 text-[11px]"
-                              >
-                                {SOCIAL_VISIBILITY_STATES.map((v) => (
-                                  <option key={v} value={v}>
-                                    {v}
-                                  </option>
-                                ))}
-                              </select>
-                            </label>
+                        <div className="min-w-0 space-y-2">
+                          <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-2.5">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">System proof</p>
+                            <div className="mt-1 grid gap-1 text-[10px] text-neutral-700">
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                <span>Checked: <span className="font-semibold text-neutral-900">{featuredCheckedAgo}</span></span>
+                                <span>Resolve: <span className="font-semibold text-neutral-900">{featuredIntegrity.displayResolveState}</span></span>
+                                <span>Verify: <span className="font-semibold text-neutral-900">{featuredIntegrity.displayVerificationState.replace(/_/g, " ")}</span></span>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                <span>Freshness: <span className="font-semibold text-neutral-900">{featuredIntegrity.displayResolveState === "stale" ? "stale" : "fresh/unknown"}</span></span>
+                                <span>
+                                  Featured: <span className="font-semibold text-neutral-900">
+                                    {featuredCandidate ? `${platformShortLabel(featuredCandidate.platform)} ${featuredCandidate.handle ? `@${stripAt(featuredCandidate.handle)}` : ""}`.trim() : "none"}
+                                  </span>
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-neutral-600">Reason: {featuredIntegrity.reason || featuredReason}</p>
+                            </div>
                           </div>
 
-                          {viewMode === "review" ? (
-                            <div className="grid gap-2 sm:grid-cols-2">
-                              <select
-                                value={baseRow.profileHealth ?? "unknown"}
-                                onChange={(e) => onProfileHealthChange(t.id, e.target.value as ProfileHealth)}
-                                className="rounded border border-neutral-300 bg-white px-2 py-1.5 text-[11px]"
-                              >
-                                {PROFILE_HEALTH_EDIT.map((h) => (
-                                  <option key={h} value={h}>
-                                    {h.replace(/_/g, " ")}
-                                  </option>
-                                ))}
-                              </select>
-                              <select
-                                value={baseRow.activitySignal ?? "unknown"}
-                                onChange={(e) => onActivitySignalChange(t.id, e.target.value as ActivitySignal)}
-                                className="rounded border border-neutral-300 bg-white px-2 py-1.5 text-[11px]"
-                              >
-                                {ACTIVITY_EDIT.map((a) => (
-                                  <option key={a} value={a}>
-                                    {a}
-                                  </option>
-                                ))}
-                              </select>
+                          <div className="rounded-lg border border-neutral-200 p-2.5 space-y-2">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">Trust and actions</p>
+                            <div className="grid gap-1.5 sm:grid-cols-2">
+                              <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                                Trust
+                                <select
+                                  value={getVerificationStatus(baseRow)}
+                                  onChange={(e) =>
+                                    applySocialProfilePatch(t.id, {
+                                      verificationStatus: e.target.value as SocialVerificationStatus,
+                                    })
+                                  }
+                                  className="mt-0.5 block w-full rounded border border-neutral-300 bg-white px-2 py-1 text-[10px]"
+                                >
+                                  {SOCIAL_VERIFICATION_STATUSES.map((v) => (
+                                    <option key={v} value={v}>
+                                      {v.replace(/_/g, " ")}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                              <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                                Visibility
+                                <select
+                                  value={baseRow.socialProfile?.visibilityState ?? "show"}
+                                  onChange={(e) =>
+                                    applySocialProfilePatch(t.id, {
+                                      visibilityState: e.target.value as SocialVisibilityState,
+                                    })
+                                  }
+                                  className="mt-0.5 block w-full rounded border border-neutral-300 bg-white px-2 py-1 text-[10px]"
+                                >
+                                  {SOCIAL_VISIBILITY_STATES.map((v) => (
+                                    <option key={v} value={v}>
+                                      {v}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
                             </div>
-                          ) : null}
 
-                          {rowCandidates.length > 1 ? (
-                            <label className="block text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-                              Featured profile
-                              <select
-                                value={primarySelectValue}
-                                onChange={(e) => {
-                                  const v = e.target.value;
+                            {viewMode === "review" ? (
+                              <div className="grid gap-1.5 sm:grid-cols-2">
+                                <select
+                                  value={baseRow.profileHealth ?? "unknown"}
+                                  onChange={(e) => onProfileHealthChange(t.id, e.target.value as ProfileHealth)}
+                                  className="rounded border border-neutral-300 bg-white px-2 py-1 text-[10px]"
+                                >
+                                  {PROFILE_HEALTH_EDIT.map((h) => (
+                                    <option key={h} value={h}>
+                                      {h.replace(/_/g, " ")}
+                                    </option>
+                                  ))}
+                                </select>
+                                <select
+                                  value={baseRow.activitySignal ?? "unknown"}
+                                  onChange={(e) => onActivitySignalChange(t.id, e.target.value as ActivitySignal)}
+                                  className="rounded border border-neutral-300 bg-white px-2 py-1 text-[10px]"
+                                >
+                                  {ACTIVITY_EDIT.map((a) => (
+                                    <option key={a} value={a}>
+                                      {a}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            ) : null}
+
+                            {rowCandidates.length > 1 ? (
+                              <label className="block text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                                Featured profile
+                                <select
+                                  value={primarySelectValue}
+                                  onChange={(e) => {
+                                    const v = e.target.value;
+                                    setBaseTargets((prev) => {
+                                      const next = prev.map((x) =>
+                                        x.id === t.id ? normalizeSocialTarget(setPrimaryCandidateId(ensureSocialCandidates(x), v)) : x
+                                      );
+                                      void persistTargetsList(next);
+                                      return next;
+                                    });
+                                  }}
+                                  className="mt-0.5 block w-full rounded border border-neutral-300 bg-white px-2 py-1 text-[10px]"
+                                >
+                                  {rowCandidates.map((c) => (
+                                    <option key={c.id} value={c.id}>
+                                      {platformShortLabel(c.platform)} {c.handle ? `@${stripAt(c.handle)}` : (c.url ?? "—").slice(0, 32)} · {c.overallConfidenceScore}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                            ) : null}
+
+                            {betterAlt ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const bestId = pickBestFeaturedCandidateId(baseRow);
+                                  if (!bestId) return;
                                   setBaseTargets((prev) => {
                                     const next = prev.map((x) =>
-                                      x.id === t.id ? normalizeSocialTarget(setPrimaryCandidateId(ensureSocialCandidates(x), v)) : x
+                                      x.id === t.id ? normalizeSocialTarget(setPrimaryCandidateId(ensureSocialCandidates(x), bestId)) : x
                                     );
                                     void persistTargetsList(next);
                                     return next;
                                   });
                                 }}
-                                className="mt-1 block w-full rounded border border-neutral-300 bg-white px-2 py-1.5 text-[11px]"
+                                className="text-left text-[10px] font-semibold text-indigo-700 underline"
                               >
-                                {rowCandidates.map((c) => (
-                                  <option key={c.id} value={c.id}>
-                                    {platformShortLabel(c.platform)} {c.handle ? `@${stripAt(c.handle)}` : (c.url ?? "—").slice(0, 32)} ·{" "}
-                                    {c.overallConfidenceScore}
-                                  </option>
-                                ))}
-                              </select>
-                            </label>
-                          ) : null}
+                                Promote stronger alternate
+                              </button>
+                            ) : null}
 
-                          {betterAlt ? (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const bestId = pickBestFeaturedCandidateId(baseRow);
-                                if (!bestId) return;
-                                setBaseTargets((prev) => {
-                                  const next = prev.map((x) =>
-                                    x.id === t.id ? normalizeSocialTarget(setPrimaryCandidateId(ensureSocialCandidates(x), bestId)) : x
-                                  );
-                                  void persistTargetsList(next);
-                                  return next;
-                                });
-                              }}
-                              className="text-left text-[11px] font-semibold text-indigo-700 underline"
-                            >
-                              Promote stronger alternate
-                            </button>
-                          ) : null}
+                            {featured?.id ? (
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { verificationStatus: "manual_verified" })}
+                                  className="rounded border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase text-emerald-900 hover:bg-emerald-100"
+                                >
+                                  Verify
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { verificationStatus: "rejected" })}
+                                  className="rounded border border-neutral-400 bg-neutral-100 px-2 py-0.5 text-[9px] font-bold uppercase text-neutral-800 hover:bg-neutral-200"
+                                >
+                                  Reject
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { visibilityState: "hide" })}
+                                  className="rounded border border-rose-300 bg-rose-50 px-2 py-0.5 text-[9px] font-bold uppercase text-rose-900 hover:bg-rose-100"
+                                >
+                                  Hide
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { visibilityState: "review" })}
+                                  className="rounded border border-amber-300 bg-amber-50 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-950 hover:bg-amber-100"
+                                >
+                                  Send to review
+                                </button>
+                              </div>
+                            ) : null}
 
-                          {featured?.id ? (
-                            <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {confirmedNoSocial ? (
+                                <button
+                                  type="button"
+                                  onClick={() => onFindSocial(t)}
+                                  className="rounded border border-amber-300 bg-amber-50 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-950 hover:bg-amber-100"
+                                >
+                                  FIND SOCIAL
+                                </button>
+                              ) : null}
                               <button
                                 type="button"
-                                onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { verificationStatus: "manual_verified" })}
-                                className="rounded border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase text-emerald-900 hover:bg-emerald-100"
+                                disabled={verifyBusyId === t.id}
+                                onClick={() => void runHeadVerify(t)}
+                                className="rounded border border-sky-300 bg-sky-50 px-2 py-0.5 text-[9px] font-bold uppercase text-sky-900 hover:bg-sky-100 disabled:opacity-50"
                               >
-                                Verify
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { verificationStatus: "rejected" })}
-                                className="rounded border border-neutral-400 bg-neutral-100 px-2.5 py-1 text-[10px] font-bold uppercase text-neutral-800 hover:bg-neutral-200"
-                              >
-                                Reject
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { visibilityState: "hide" })}
-                                className="rounded border border-rose-300 bg-rose-50 px-2.5 py-1 text-[10px] font-bold uppercase text-rose-900 hover:bg-rose-100"
-                              >
-                                Hide
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { visibilityState: "review" })}
-                                className="rounded border border-amber-300 bg-amber-50 px-2.5 py-1 text-[10px] font-bold uppercase text-amber-950 hover:bg-amber-100"
-                              >
-                                Send to review
+                                {verifyBusyId === t.id ? "Verifying..." : "Verify link"}
                               </button>
                             </div>
-                          ) : null}
 
-                          {confirmedNoSocial ? (
-                            <div className="flex flex-wrap items-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() => onFindSocial(t)}
-                                className="rounded border border-amber-300 bg-amber-50 px-2.5 py-1 text-[10px] font-bold uppercase text-amber-950 hover:bg-amber-100"
-                              >
-                                FIND SOCIAL
-                              </button>
-                            </div>
-                          ) : null}
-
-                          <div>
-                            <button
-                              type="button"
-                              disabled={verifyBusyId === t.id}
-                              onClick={() => void runHeadVerify(t)}
-                              className="rounded border border-sky-300 bg-sky-50 px-3 py-1 text-[10px] font-bold uppercase text-sky-900 hover:bg-sky-100 disabled:opacity-50"
-                            >
-                              {verifyBusyId === t.id ? "Verifying..." : "Verify link"}
-                            </button>
-                          </div>
-
-                          <div className="space-y-2">
                             <label className="block text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
                               Status
                               <select
                                 value={t.status ?? "new"}
                                 onChange={(e) => setStatus(t.id, e.target.value as SocialTargetStatus)}
-                                className="mt-1 block w-full rounded border border-neutral-300 bg-white px-2 py-1.5 text-[11px]"
+                                className="mt-0.5 block w-full rounded border border-neutral-300 bg-white px-2 py-1 text-[10px]"
                               >
                                 {STATUS_OPTIONS.map((s) => (
                                   <option key={s} value={s}>
@@ -1914,115 +1957,14 @@ export default function SocialTargetsTable({
                                 ))}
                               </select>
                             </label>
-                            {viewMode === "review" ? (
-                              <>
-                                <label className="block text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-                                  Priority (0-100)
-                                  <input
-                                    type="number"
-                                    min={0}
-                                    max={100}
-                                    defaultValue={baseRow.priorityScore ?? score}
-                                    key={`${t.id}-prio-${baseRow.priorityScore}-${baseRow.priorityScoreManual}`}
-                                    onBlur={(e) => {
-                                      const n = Number(e.target.value);
-                                      if (!Number.isFinite(n)) return;
-                                      const clamped = Math.max(0, Math.min(100, Math.round(n)));
-                                      setBaseTargets((p) => {
-                                        const next = p.map((x) =>
-                                          x.id === t.id ? { ...x, priorityScore: clamped, priorityScoreManual: true } : x
-                                        );
-                                        void persistTargetsList(next);
-                                        return next;
-                                      });
-                                    }}
-                                    className="mt-1 w-full rounded border border-neutral-300 bg-white px-2 py-1.5 text-[11px] tabular-nums"
-                                  />
-                                </label>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setBaseTargets((p) => {
-                                      const next = p.map((x) => {
-                                        if (x.id !== t.id) return x;
-                                        const u = { ...x, priorityScoreManual: false as const };
-                                        return { ...u, priorityScore: computePriorityScore(u) };
-                                      });
-                                      void persistTargetsList(next);
-                                      return next;
-                                    });
-                                  }}
-                                  className="text-left text-[11px] font-semibold text-indigo-700 underline"
-                                >
-                                  Use auto score
-                                </button>
-                              </>
-                            ) : null}
-                            <textarea
-                              key={`${t.id}-vnote-${baseRow.verificationNote ?? ""}`}
-                              defaultValue={baseRow.verificationNote ?? ""}
-                              rows={2}
-                              placeholder="Verification note"
-                              onBlur={(e) => {
-                                const v = e.target.value.trim();
-                                const prev = (baseRow.verificationNote ?? "").trim();
-                                if (v === prev) return;
-                                setBaseTargets((p) => {
-                                  const next = p.map((x) =>
-                                    x.id === t.id ? { ...x, ...(v ? { verificationNote: v } : { verificationNote: undefined }) } : x
-                                  );
-                                  void persistTargetsList(next);
-                                  return next;
-                                });
-                              }}
-                              className="w-full rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
-                            />
-                            <textarea
-                              key={`${t.id}-angle-${baseRow.outreachAngle ?? ""}`}
-                              defaultValue={baseRow.outreachAngle ?? ""}
-                              rows={2}
-                              placeholder="Outreach angle"
-                              onBlur={(e) => {
-                                const v = e.target.value.trim();
-                                const prev = (baseRow.outreachAngle ?? "").trim();
-                                if (v === prev) return;
-                                setBaseTargets((p) => {
-                                  const next = p.map((x) =>
-                                    x.id === t.id ? { ...x, ...(v ? { outreachAngle: v } : { outreachAngle: undefined }) } : x
-                                  );
-                                  void persistTargetsList(next);
-                                  return next;
-                                });
-                              }}
-                              className="w-full rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
-                            />
-                            <textarea
-                              key={`${t.id}-notes-${baseRow.notes ?? ""}`}
-                              defaultValue={baseRow.notes ?? ""}
-                              rows={2}
-                              onBlur={(e) => {
-                                const v = e.target.value.trim();
-                                const prev = (baseRow.notes ?? "").trim();
-                                if (v === prev) return;
-                                setBaseTargets((p) => {
-                                  const next = p.map((x) =>
-                                    x.id === t.id ? { ...x, ...(v ? { notes: v } : { notes: undefined }) } : x
-                                  );
-                                  void persistTargetsList(next);
-                                  return next;
-                                });
-                              }}
-                              placeholder="Operator notes"
-                              className="w-full rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
-                            />
                           </div>
 
                           {sourceIntake.length > 0 ? (
-                            <details className="rounded-lg border border-neutral-200 p-3">
+                            <details className="rounded-lg border border-neutral-200 p-2.5">
                               <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-wide text-neutral-600">
-                                Source candidate intake ({sourceIntake.length})
+                                Source intake ({sourceIntake.length})
                               </summary>
-                              <div className="mt-2 space-y-2">
+                              <div className="mt-1.5 space-y-1.5">
                                 {sourceIntake.map((item, idx) => {
                                   const sourceLabel = sourceTypeBadgeLabel(item.input.sourceType);
                                   const trustLabel = sourceTrustTierLabel(item.input.sourceTrustTier);
@@ -2051,36 +1993,25 @@ export default function SocialTargetsTable({
                                     item.input.sourceUrl ||
                                     "Candidate";
                                   return (
-                                    <div key={`${busyKey}:${idx}`} className="rounded-md border border-neutral-200 bg-neutral-50 p-2">
-                                      <div className="flex flex-wrap items-center gap-1.5">
-                                        <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">
-                                          {sourceLabel}
-                                        </span>
-                                        <span className="rounded bg-neutral-200 px-1.5 py-0.5 text-[9px] font-bold uppercase text-neutral-700">
-                                          {trustLabel}
-                                        </span>
+                                    <div key={`${busyKey}:${idx}`} className="rounded-md border border-neutral-200 bg-neutral-50 p-1.5">
+                                      <div className="flex flex-wrap items-center gap-1">
+                                        <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-[8px] font-bold uppercase text-white">{sourceLabel}</span>
+                                        <span className="rounded bg-neutral-200 px-1.5 py-0.5 text-[8px] font-bold uppercase text-neutral-700">{trustLabel}</span>
                                         {item.previewCandidate.platform ? (
-                                          <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold uppercase text-indigo-900">
+                                          <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-[8px] font-bold uppercase text-indigo-900">
                                             {platformShortLabel(item.previewCandidate.platform)}
                                           </span>
                                         ) : null}
-                                        <span className={`rounded border px-1.5 py-0.5 text-[9px] font-semibold ${statusCls}`}>
-                                          {statusLabel}
-                                        </span>
+                                        <span className={`rounded border px-1.5 py-0.5 text-[8px] font-semibold ${statusCls}`}>{statusLabel}</span>
                                       </div>
-                                      <p className="mt-1 text-[11px] font-medium text-neutral-900 break-all">{title}</p>
-                                      {item.input.evidence?.length ? (
-                                        <p className="mt-0.5 text-[10px] text-neutral-600">{item.input.evidence[0]}</p>
-                                      ) : null}
-                                      {item.input.notes?.length ? (
-                                        <p className="mt-0.5 text-[10px] text-neutral-500">{item.input.notes[0]}</p>
-                                      ) : null}
-                                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                      <p className="mt-0.5 text-[10px] font-medium text-neutral-900 break-all">{title}</p>
+                                      {item.input.evidence?.length ? <p className="text-[9px] text-neutral-600">{item.input.evidence[0]}</p> : null}
+                                      <div className="mt-1 flex flex-wrap items-center gap-1">
                                         <button
                                           type="button"
                                           disabled={isBusy}
                                           onClick={() => void applySourceIntakeAction(t.id, item.input, "accept")}
-                                          className="rounded border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase text-emerald-900 hover:bg-emerald-100 disabled:opacity-50"
+                                          className="rounded border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-[8px] font-bold uppercase text-emerald-900 hover:bg-emerald-100 disabled:opacity-50"
                                         >
                                           Accept
                                         </button>
@@ -2088,7 +2019,7 @@ export default function SocialTargetsTable({
                                           type="button"
                                           disabled={isBusy}
                                           onClick={() => void applySourceIntakeAction(t.id, item.input, "verify")}
-                                          className="rounded border border-sky-300 bg-sky-50 px-2 py-0.5 text-[9px] font-bold uppercase text-sky-900 hover:bg-sky-100 disabled:opacity-50"
+                                          className="rounded border border-sky-300 bg-sky-50 px-1.5 py-0.5 text-[8px] font-bold uppercase text-sky-900 hover:bg-sky-100 disabled:opacity-50"
                                         >
                                           Verify
                                         </button>
@@ -2096,7 +2027,7 @@ export default function SocialTargetsTable({
                                           type="button"
                                           disabled={isBusy}
                                           onClick={() => void applySourceIntakeAction(t.id, item.input, "reject")}
-                                          className="rounded border border-neutral-300 bg-white px-2 py-0.5 text-[9px] font-bold uppercase text-neutral-700 hover:bg-neutral-100 disabled:opacity-50"
+                                          className="rounded border border-neutral-300 bg-white px-1.5 py-0.5 text-[8px] font-bold uppercase text-neutral-700 hover:bg-neutral-100 disabled:opacity-50"
                                         >
                                           Reject
                                         </button>
@@ -2104,7 +2035,7 @@ export default function SocialTargetsTable({
                                           type="button"
                                           disabled={isBusy}
                                           onClick={() => void applySourceIntakeAction(t.id, item.input, "hide")}
-                                          className="rounded border border-rose-300 bg-rose-50 px-2 py-0.5 text-[9px] font-bold uppercase text-rose-900 hover:bg-rose-100 disabled:opacity-50"
+                                          className="rounded border border-rose-300 bg-rose-50 px-1.5 py-0.5 text-[8px] font-bold uppercase text-rose-900 hover:bg-rose-100 disabled:opacity-50"
                                         >
                                           Hide
                                         </button>
@@ -2115,9 +2046,117 @@ export default function SocialTargetsTable({
                               </div>
                             </details>
                           ) : null}
+                        </div>
 
-                          <div className="rounded-lg border border-neutral-200 p-3 space-y-2">
-                            <div className="flex flex-wrap items-center gap-3 text-[11px] text-neutral-700">
+                        <div className="min-w-0 space-y-2">
+                          <div className="rounded-lg border border-neutral-200 p-2.5 space-y-1.5">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">Operator inputs</p>
+                            {viewMode === "review" ? (
+                              <>
+                                <label className="block text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                                  Priority (0-100)
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    max={100}
+                                    defaultValue={baseRow.priorityScore ?? score}
+                                    key={`${t.id}-prio-${baseRow.priorityScore}-${baseRow.priorityScoreManual}`}
+                                    onBlur={(e) => {
+                                      const n = Number(e.target.value);
+                                      if (!Number.isFinite(n)) return;
+                                      const clamped = Math.max(0, Math.min(100, Math.round(n)));
+                                      setBaseTargets((p) => {
+                                        const next = p.map((x) =>
+                                          x.id === t.id ? { ...x, priorityScore: clamped, priorityScoreManual: true } : x
+                                        );
+                                        void persistTargetsList(next);
+                                        return next;
+                                      });
+                                    }}
+                                    className="mt-0.5 w-full rounded border border-neutral-300 bg-white px-2 py-0.5 text-[10px] tabular-nums"
+                                  />
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setBaseTargets((p) => {
+                                      const next = p.map((x) => {
+                                        if (x.id !== t.id) return x;
+                                        const u = { ...x, priorityScoreManual: false as const };
+                                        return { ...u, priorityScore: computePriorityScore(u) };
+                                      });
+                                      void persistTargetsList(next);
+                                      return next;
+                                    });
+                                  }}
+                                  className="text-left text-[10px] font-semibold text-indigo-700 underline"
+                                >
+                                  Use auto score
+                                </button>
+                              </>
+                            ) : null}
+                            <textarea
+                              key={`${t.id}-vnote-${baseRow.verificationNote ?? ""}`}
+                              defaultValue={baseRow.verificationNote ?? ""}
+                              rows={1}
+                              placeholder="Verification note"
+                              onBlur={(e) => {
+                                const v = e.target.value.trim();
+                                const prev = (baseRow.verificationNote ?? "").trim();
+                                if (v === prev) return;
+                                setBaseTargets((p) => {
+                                  const next = p.map((x) =>
+                                    x.id === t.id ? { ...x, ...(v ? { verificationNote: v } : { verificationNote: undefined }) } : x
+                                  );
+                                  void persistTargetsList(next);
+                                  return next;
+                                });
+                              }}
+                              className="w-full rounded border border-neutral-300 bg-white px-2 py-0.5 text-[10px]"
+                            />
+                            <textarea
+                              key={`${t.id}-angle-${baseRow.outreachAngle ?? ""}`}
+                              defaultValue={baseRow.outreachAngle ?? ""}
+                              rows={1}
+                              placeholder="Outreach angle"
+                              onBlur={(e) => {
+                                const v = e.target.value.trim();
+                                const prev = (baseRow.outreachAngle ?? "").trim();
+                                if (v === prev) return;
+                                setBaseTargets((p) => {
+                                  const next = p.map((x) =>
+                                    x.id === t.id ? { ...x, ...(v ? { outreachAngle: v } : { outreachAngle: undefined }) } : x
+                                  );
+                                  void persistTargetsList(next);
+                                  return next;
+                                });
+                              }}
+                              className="w-full rounded border border-neutral-300 bg-white px-2 py-0.5 text-[10px]"
+                            />
+                            <textarea
+                              key={`${t.id}-notes-${baseRow.notes ?? ""}`}
+                              defaultValue={baseRow.notes ?? ""}
+                              rows={1}
+                              onBlur={(e) => {
+                                const v = e.target.value.trim();
+                                const prev = (baseRow.notes ?? "").trim();
+                                if (v === prev) return;
+                                setBaseTargets((p) => {
+                                  const next = p.map((x) =>
+                                    x.id === t.id ? { ...x, ...(v ? { notes: v } : { notes: undefined }) } : x
+                                  );
+                                  void persistTargetsList(next);
+                                  return next;
+                                });
+                              }}
+                              placeholder="Operator notes"
+                              className="w-full rounded border border-neutral-300 bg-white px-2 py-0.5 text-[10px]"
+                            />
+                          </div>
+
+                          <div className="rounded-lg border border-neutral-200 p-2.5 space-y-1.5">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">Referral actions</p>
+                            <div className="flex flex-wrap items-center gap-2 text-[10px] text-neutral-700">
                               <span>
                                 Out: <span className="font-semibold tabular-nums text-neutral-900">{outgoing}</span>
                               </span>
@@ -2125,7 +2164,7 @@ export default function SocialTargetsTable({
                                 In: <span className="font-semibold tabular-nums text-neutral-900">{incoming}</span>
                               </span>
                               {t.isReferralHub ? (
-                                <span className="inline-block rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase text-violet-900">
+                                <span className="inline-block rounded-full bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-violet-900">
                                   HUB
                                 </span>
                               ) : null}
@@ -2134,13 +2173,13 @@ export default function SocialTargetsTable({
                               value={draft.toHandle}
                               onChange={(e) => setDraftField(t.id, { toHandle: e.target.value })}
                               placeholder="Referred @handle"
-                              className="w-full rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
+                              className="w-full rounded border border-neutral-300 bg-white px-2 py-0.5 text-[10px]"
                             />
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-1.5">
                               <select
                                 value={draft.referredCategory}
                                 onChange={(e) => setDraftField(t.id, { referredCategory: e.target.value as ReferralCategory })}
-                                className="rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
+                                className="rounded border border-neutral-300 bg-white px-2 py-0.5 text-[10px]"
                               >
                                 {REFERRAL_CATEGORIES.map((c) => (
                                   <option key={c} value={c}>
@@ -2152,13 +2191,13 @@ export default function SocialTargetsTable({
                                 value={draft.note}
                                 onChange={(e) => setDraftField(t.id, { note: e.target.value })}
                                 placeholder="Note"
-                                className="min-w-[6rem] flex-1 rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
+                                className="min-w-[5rem] flex-1 rounded border border-neutral-300 bg-white px-2 py-0.5 text-[10px]"
                               />
                             </div>
                             <button
                               type="button"
                               onClick={() => addReferral(t)}
-                              className="rounded-full bg-indigo-600 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white hover:bg-indigo-700"
+                              className="rounded-full bg-indigo-600 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white hover:bg-indigo-700"
                             >
                               Add referral
                             </button>
