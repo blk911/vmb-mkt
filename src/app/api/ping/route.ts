@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 /**
  * Lightweight health check. On Vercel, `VERCEL_GIT_COMMIT_SHA` is injected at build time
- * so you can confirm production matches GitHub (compare to `git rev-parse origin/main`).
+ * so you can confirm production matches GitHub.
  */
 export async function GET() {
   return NextResponse.json({
