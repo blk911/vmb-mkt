@@ -12,6 +12,10 @@ import {
   adaptQueryResultsToEvidence,
   type GoogleQueryResultSet,
 } from "@/lib/social-targets/google-discovery/run-discovery";
+import {
+  runAddressExpansion,
+  type AddressExpansionQueryResultSet,
+} from "@/lib/social-targets/address-expansion/run-address-expansion";
 import { adaptSourceRecord } from "@/lib/social-targets/source-adapters";
 import {
   SOCIAL_PLATFORMS,
@@ -181,4 +185,44 @@ export function runGoogleDiscoveryForTarget(
   const ingested = ingestSourceCandidateInputs(target, inputs);
   const next = normalizeSocialTarget(appendEvidenceToTarget(ingested, evidence, runMeta));
   return { target: next, queries: pack.queries, inputs };
+}
+
+/**
+ * Address expansion integration hook:
+ * classify address density/aggregator signals, build layered query pack,
+ * adapt injected public search results into evidence + staged operator candidates.
+ */
+export function runAddressExpansionForTarget(
+  target: SocialTarget,
+  input: {
+    allTargets?: SocialTarget[];
+    sourceAddress?: string;
+    normalizedAddress?: string;
+    queryResults?: AddressExpansionQueryResultSet[];
+    runMeta?: Pick<SocialTarget, "runId" | "runType" | "sourceVersion">;
+  }
+): {
+  target: SocialTarget;
+  queries: ReturnType<typeof runAddressExpansion>["queryPack"]["queries"];
+  classification: ReturnType<typeof runAddressExpansion>["classification"];
+  candidatesStaged: number;
+  evidenceAdded: number;
+} {
+  const out = runAddressExpansion({
+    target,
+    allTargets: input.allTargets,
+    sourceAddress: input.sourceAddress,
+    normalizedAddress: input.normalizedAddress,
+    runId: input.runMeta?.runId ?? `address-expansion-${Date.now().toString(36)}`,
+    runType: (input.runMeta?.runType as "validation" | "scale" | "adhoc" | "expansion_test") ?? "adhoc",
+    sourceVersion: input.runMeta?.sourceVersion ?? "address-expansion-v1",
+    queryResults: input.queryResults ?? [],
+  });
+  return {
+    target: out.target,
+    queries: out.queryPack.queries,
+    classification: out.classification,
+    candidatesStaged: out.candidatesStaged,
+    evidenceAdded: out.evidenceAdded,
+  };
 }

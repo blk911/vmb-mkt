@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-04-05T20:40:27.848Z",
+  "runId": "address-expansion-test-2026-04-05-unuh1z",
+  "address": "6001 S Willow Dr, Greenwood Village, CO 80111",
+  "city": "Greenwood Village",
+  "state": "CO",
+  "normalizedAddress": "6001 s willow dr greenwood village co 80111",
+  "baseline": {
+    "knownTargets": 1,
+    "withInstagram": 1,
+    "withTikTok": 1,
+    "withLinktree": 1,
+    "withBooking": 0,
+    "existingTargetNames": [
+      "Hair by Marissa DTC"
+    ],
+    "existingCoverage": [
+      {
+        "id": "hairbymarissadtc",
+        "name": "Hair by Marissa DTC",
+        "hasInstagram": true,
+        "hasTikTok": true,
+        "hasLinktree": true,
+        "hasBooking": false
+      }
+    ]
+  }
+}

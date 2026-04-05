@@ -5,6 +5,8 @@ import { assertSocialTargetsApiAccess } from "@/lib/social-targets/social-target
 import { getMergedSocialTargets, saveMergedSocialTargetsAsRuntime } from "@/lib/social-targets/social-targets-store";
 import type {
   ActivitySignal,
+  AddressExpansionCandidate,
+  AddressExpansionClassification,
   ProfileHealth,
   SocialEvidenceItem,
   SocialEvidencePlatform,
@@ -28,13 +30,20 @@ const EVIDENCE_TYPES: SocialEvidenceType[] = [
   "website_social",
   "phone_lookup",
   "address_lookup",
+  "booking_platform",
+  "directory_expansion",
+  "address_businesses",
+  "aggregator_site",
+  "suite_operator",
   "directory",
   "other",
 ];
 const EVIDENCE_PLATFORMS: SocialEvidencePlatform[] = ["instagram", "tiktok", "linktree", "website"];
 const EVIDENCE_CONFIDENCE = ["high", "medium", "low"] as const;
 const RESOLUTION_STATUS: SocialResolutionStatus[] = ["resolved", "partial", "unknown", "conflict"];
-const RUN_TYPE = ["validation", "scale", "adhoc"] as const;
+const RUN_TYPE = ["validation", "scale", "adhoc", "expansion_test"] as const;
+const DOMAIN_TYPES = ["booking_platform", "directory", "aggregator_site", "social_platform", "website", "other"] as const;
+const AGGREGATOR_TYPES = ["sola", "phenix", "salons_by_jc", "mysalon_suite", "image_studios", "spectra", "other"] as const;
 
 function isNonEmptyString(v: unknown): v is string {
   return typeof v === "string" && v.trim().length > 0;
@@ -87,7 +96,63 @@ function parseEvidence(raw: unknown): SocialEvidenceItem | null {
   if (typeof o.url === "string" && o.url.trim()) item.url = o.url.trim();
   if (typeof o.title === "string" && o.title.trim()) item.title = o.title.trim();
   if (typeof o.snippet === "string" && o.snippet.trim()) item.snippet = o.snippet.trim();
+  if (typeof o.addressLink === "string" && o.addressLink.trim()) item.addressLink = o.addressLink.trim();
+  if (typeof o.domainType === "string" && DOMAIN_TYPES.includes(o.domainType as (typeof DOMAIN_TYPES)[number])) {
+    item.domainType = o.domainType as SocialEvidenceItem["domainType"];
+  }
   return item;
+}
+
+function parseAddressExpansionClassification(raw: unknown): AddressExpansionClassification | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const o = raw as Record<string, unknown>;
+  if (typeof o.isLikelyMultiTenant !== "boolean") return undefined;
+  const addressDensityScore =
+    typeof o.addressDensityScore === "number" && Number.isFinite(o.addressDensityScore)
+      ? Math.max(0, Math.min(100, Math.round(o.addressDensityScore)))
+      : 0;
+  const expansionPriority =
+    o.expansionPriority === "high" || o.expansionPriority === "medium" || o.expansionPriority === "low"
+      ? o.expansionPriority
+      : "low";
+  const classification: AddressExpansionClassification = {
+    isLikelyMultiTenant: o.isLikelyMultiTenant,
+    addressDensityScore,
+    expansionPriority,
+  };
+  if (typeof o.aggregatorType === "string" && AGGREGATOR_TYPES.includes(o.aggregatorType as (typeof AGGREGATOR_TYPES)[number])) {
+    classification.aggregatorType = o.aggregatorType as AddressExpansionClassification["aggregatorType"];
+  }
+  return classification;
+}
+
+function parseAddressExpansionCandidate(raw: unknown): AddressExpansionCandidate | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  if (!isNonEmptyString(o.id) || !isNonEmptyString(o.operatorName) || !isNonEmptyString(o.createdAt)) return null;
+  const confidence = o.confidence;
+  if (confidence !== "high" && confidence !== "medium" && confidence !== "low") return null;
+  const evidenceIds = Array.isArray(o.evidenceIds)
+    ? o.evidenceIds.filter((x): x is string => typeof x === "string" && x.trim().length > 0)
+    : [];
+  const candidate: AddressExpansionCandidate = {
+    id: o.id.trim(),
+    operatorName: o.operatorName.trim(),
+    confidence,
+    evidenceIds,
+    discoveryMode: "address_expansion",
+    createdAt: o.createdAt.trim(),
+  };
+  if (typeof o.platform === "string" && EVIDENCE_PLATFORMS.includes(o.platform as SocialEvidencePlatform)) {
+    candidate.platform = o.platform as SocialEvidencePlatform;
+  }
+  if (typeof o.handle === "string" && o.handle.trim()) candidate.handle = o.handle.trim();
+  if (typeof o.url === "string" && o.url.trim()) candidate.url = o.url.trim();
+  if (typeof o.bookingUrl === "string" && o.bookingUrl.trim()) candidate.bookingUrl = o.bookingUrl.trim();
+  if (typeof o.sourceAddress === "string" && o.sourceAddress.trim()) candidate.sourceAddress = o.sourceAddress.trim();
+  if (typeof o.parentTargetId === "string" && o.parentTargetId.trim()) candidate.parentTargetId = o.parentTargetId.trim();
+  if (typeof o.notes === "string" && o.notes.trim()) candidate.notes = o.notes.trim();
+  return candidate;
 }
 
 function normalizeTarget(raw: unknown): SocialTarget | null {
@@ -164,9 +229,38 @@ function normalizeTarget(raw: unknown): SocialTarget | null {
   }
   if (typeof o.runId === "string" && o.runId.trim()) row.runId = o.runId.trim();
   if (typeof o.runType === "string" && RUN_TYPE.includes(o.runType as (typeof RUN_TYPE)[number])) {
-    row.runType = o.runType as "validation" | "scale" | "adhoc";
+    row.runType = o.runType as "validation" | "scale" | "adhoc" | "expansion_test";
   }
   if (typeof o.sourceVersion === "string" && o.sourceVersion.trim()) row.sourceVersion = o.sourceVersion.trim();
+  if (typeof o.normalizedAddress === "string" && o.normalizedAddress.trim()) row.normalizedAddress = o.normalizedAddress.trim();
+  if (o.addressExpansion && typeof o.addressExpansion === "object") {
+    const ae = o.addressExpansion as Record<string, unknown>;
+    const parsed = {
+      ...(typeof ae.sourceAddress === "string" && ae.sourceAddress.trim() ? { sourceAddress: ae.sourceAddress.trim() } : {}),
+      ...(typeof ae.normalizedAddress === "string" && ae.normalizedAddress.trim()
+        ? { normalizedAddress: ae.normalizedAddress.trim() }
+        : {}),
+      ...(typeof ae.queryCount === "number" && Number.isFinite(ae.queryCount) ? { queryCount: Math.max(0, Math.round(ae.queryCount)) } : {}),
+      ...(typeof ae.candidateCount === "number" && Number.isFinite(ae.candidateCount)
+        ? { candidateCount: Math.max(0, Math.round(ae.candidateCount)) }
+        : {}),
+      ...(typeof ae.lastRunId === "string" && ae.lastRunId.trim() ? { lastRunId: ae.lastRunId.trim() } : {}),
+      ...(typeof ae.lastRunType === "string" && RUN_TYPE.includes(ae.lastRunType as (typeof RUN_TYPE)[number])
+        ? { lastRunType: ae.lastRunType as "validation" | "scale" | "adhoc" | "expansion_test" }
+        : {}),
+      ...(typeof ae.sourceVersion === "string" && ae.sourceVersion.trim() ? { sourceVersion: ae.sourceVersion.trim() } : {}),
+      ...(typeof ae.updatedAt === "string" && ae.updatedAt.trim() ? { updatedAt: ae.updatedAt.trim() } : {}),
+    };
+    const classification = parseAddressExpansionClassification(ae.classification);
+    const candidates = Array.isArray(ae.candidates)
+      ? ae.candidates.map(parseAddressExpansionCandidate).filter((x): x is AddressExpansionCandidate => x !== null)
+      : [];
+    row.addressExpansion = {
+      ...parsed,
+      ...(classification ? { classification } : {}),
+      ...(candidates.length ? { candidates } : {}),
+    };
+  }
   return normalizeSocialTarget(row);
 }
 

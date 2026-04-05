@@ -329,6 +329,28 @@ function hasMultiSignal(t: SocialTarget): boolean {
   return evidenceCount(t) >= 3;
 }
 
+function hasBookingPlatformEvidence(t: SocialTarget): boolean {
+  return (t.evidence ?? []).some((ev) => ev.type === "booking_platform" || ev.domainType === "booking_platform");
+}
+
+function hasAddressExpansionCandidates(t: SocialTarget): boolean {
+  return (t.addressExpansion?.candidateCount ?? t.addressExpansion?.candidates?.length ?? 0) > 0;
+}
+
+function isLikelyMultiTenantTarget(t: SocialTarget): boolean {
+  return t.addressExpansion?.classification?.isLikelyMultiTenant === true;
+}
+
+function matchesAggregatorType(t: SocialTarget, aggregatorTypeFilter: string): boolean {
+  if (aggregatorTypeFilter === "all") return true;
+  const rowType = t.addressExpansion?.classification?.aggregatorType;
+  return (rowType ?? "unknown") === aggregatorTypeFilter;
+}
+
+function hasHighAddressDensity(t: SocialTarget): boolean {
+  return (t.addressExpansion?.classification?.addressDensityScore ?? 0) >= 70;
+}
+
 function formatVerifiedAt(iso?: string): string {
   if (!iso) return "—";
   try {
@@ -399,6 +421,21 @@ function toApiTarget(t: SocialTarget): SocialTarget {
   if (n.runId) row.runId = n.runId;
   if (n.runType) row.runType = n.runType;
   if (n.sourceVersion) row.sourceVersion = n.sourceVersion;
+  if (n.normalizedAddress) row.normalizedAddress = n.normalizedAddress;
+  if (n.addressExpansion) {
+    row.addressExpansion = {
+      ...n.addressExpansion,
+      ...(n.addressExpansion.classification ? { classification: { ...n.addressExpansion.classification } } : {}),
+      ...(n.addressExpansion.candidates
+        ? {
+            candidates: n.addressExpansion.candidates.map((candidate) => ({
+              ...candidate,
+              evidenceIds: [...candidate.evidenceIds],
+            })),
+          }
+        : {}),
+    };
+  }
   return row;
 }
 
@@ -462,6 +499,11 @@ export default function SocialTargetsTable({
   const [hasLinktreeOnly, setHasLinktreeOnly] = useState(false);
   const [unknownOnly, setUnknownOnly] = useState(false);
   const [multiSignalOnly, setMultiSignalOnly] = useState(false);
+  const [multiTenantOnly, setMultiTenantOnly] = useState(false);
+  const [bookingEvidenceOnly, setBookingEvidenceOnly] = useState(false);
+  const [addressExpansionOnly, setAddressExpansionOnly] = useState(false);
+  const [highAddressDensityOnly, setHighAddressDensityOnly] = useState(false);
+  const [aggregatorTypeFilter, setAggregatorTypeFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<
     | "operatorRank"
     | "name"
@@ -472,6 +514,7 @@ export default function SocialTargetsTable({
     | "profileHealth"
     | "confidenceScore"
     | "evidenceCount"
+    | "addressDensity"
   >("operatorRank");
   const [bulkBusy, setBulkBusy] = useState<string | null>(null);
   const [bulkSummary, setBulkSummary] = useState<string | null>(null);
@@ -558,6 +601,15 @@ export default function SocialTargetsTable({
     return [...c].sort();
   }, [baseTargets]);
 
+  const aggregatorTypes = useMemo(() => {
+    const out = new Set<string>(["unknown"]);
+    for (const t of baseTargets) {
+      const agg = t.addressExpansion?.classification?.aggregatorType;
+      if (agg) out.add(agg);
+    }
+    return [...out].sort();
+  }, [baseTargets]);
+
   const operatorKpis = useMemo(() => {
     const total = baseTargets.length;
     const activeProfiles = baseTargets.filter((t) => t.profileHealth === "active").length;
@@ -635,6 +687,11 @@ export default function SocialTargetsTable({
     if (hasLinktreeOnly) list = list.filter((t) => hasEvidencePlatform(t, "linktree"));
     if (unknownOnly) list = list.filter(hasUnknownResolution);
     if (multiSignalOnly) list = list.filter(hasMultiSignal);
+    if (multiTenantOnly) list = list.filter(isLikelyMultiTenantTarget);
+    if (bookingEvidenceOnly) list = list.filter(hasBookingPlatformEvidence);
+    if (addressExpansionOnly) list = list.filter(hasAddressExpansionCandidates);
+    if (highAddressDensityOnly) list = list.filter(hasHighAddressDensity);
+    list = list.filter((t) => matchesAggregatorType(t, aggregatorTypeFilter));
 
     const dir = sortDesc ? -1 : 1;
     list.sort((a, b) => {
@@ -663,6 +720,10 @@ export default function SocialTargetsTable({
       } else if (sortBy === "evidenceCount") {
         const va = evidenceCount(a);
         const vb = evidenceCount(b);
+        if (va !== vb) return (vb - va) * (sortDesc ? 1 : -1);
+      } else if (sortBy === "addressDensity") {
+        const va = a.addressExpansion?.classification?.addressDensityScore ?? 0;
+        const vb = b.addressExpansion?.classification?.addressDensityScore ?? 0;
         if (va !== vb) return (vb - va) * (sortDesc ? 1 : -1);
       } else if (sortBy === "zone") {
         const c = a.zone.localeCompare(b.zone);
@@ -693,6 +754,11 @@ export default function SocialTargetsTable({
     hasLinktreeOnly,
     unknownOnly,
     multiSignalOnly,
+    multiTenantOnly,
+    bookingEvidenceOnly,
+    addressExpansionOnly,
+    highAddressDensityOnly,
+    aggregatorTypeFilter,
     sortBy,
     sortDesc,
   ]);
@@ -1090,6 +1156,45 @@ export default function SocialTargetsTable({
       void runHeadVerify(t);
     },
     [persistTargetsList, runHeadVerify]
+  );
+
+  const runAddressExpansionForRow = useCallback(
+    async (t: SocialTarget) => {
+      const key = `address-expansion:${t.id}`;
+      setBulkBusy(key);
+      setSaveError(null);
+      try {
+        const res = await fetch("/api/social-targets/address-expansion", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            targetIds: [t.id],
+            runType: "adhoc",
+          }),
+        });
+        const data = (await res.json().catch(() => ({}))) as {
+          ok?: boolean;
+          error?: string;
+          outcomes?: Array<{ targetId: string; candidatesStaged?: number; queryCount?: number; isLikelyMultiTenant?: boolean }>;
+        };
+        if (!res.ok || data.ok !== true) {
+          setSaveError(data.error || `Address expansion failed (${res.status})`);
+          return;
+        }
+        const first = data.outcomes?.[0];
+        setBulkSummary(
+          `Address expansion: ${first?.queryCount ?? 0} queries, ${first?.candidatesStaged ?? 0} staged candidates${
+            first?.isLikelyMultiTenant ? ", multi-tenant likely" : ""
+          }`
+        );
+        router.refresh();
+      } catch {
+        setSaveError("Address expansion failed (network)");
+      } finally {
+        setBulkBusy(null);
+      }
+    },
+    [router]
   );
 
   const applySourceIntakeAction = useCallback(
@@ -1564,6 +1669,7 @@ export default function SocialTargetsTable({
                   | "profileHealth"
                   | "confidenceScore"
                   | "evidenceCount"
+                  | "addressDensity"
               )
             }
             className="mt-0.5 block max-w-[11rem] rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
@@ -1572,6 +1678,7 @@ export default function SocialTargetsTable({
             <option value="priorityScore">Priority score</option>
             <option value="confidenceScore">Confidence</option>
             <option value="evidenceCount">Evidence count</option>
+            <option value="addressDensity">Address density</option>
             <option value="activitySignal">Activity</option>
             <option value="profileHealth">Profile health</option>
             <option value="name">Handle</option>
@@ -1619,10 +1726,11 @@ export default function SocialTargetsTable({
               }}
               className="mt-0.5 block rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
             >
-              <option value="all">All</option>
-              <option value="50">50+</option>
-              <option value="70">70+</option>
-              <option value="80">80+</option>
+              {MIN_PRIORITY_FILTER.map((value) => (
+                <option key={String(value)} value={value === "all" ? "all" : String(value)}>
+                  {value === "all" ? "All" : `${value}+`}
+                </option>
+              ))}
             </select>
           </label>
           <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
@@ -1705,6 +1813,57 @@ export default function SocialTargetsTable({
               className="rounded border-neutral-300"
             />
             Multi-signal only
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={multiTenantOnly}
+              onChange={(e) => setMultiTenantOnly(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            Likely multi-tenant
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={bookingEvidenceOnly}
+              onChange={(e) => setBookingEvidenceOnly(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            Has booking evidence
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={addressExpansionOnly}
+              onChange={(e) => setAddressExpansionOnly(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            Address expansion candidates
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={highAddressDensityOnly}
+              onChange={(e) => setHighAddressDensityOnly(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            High address density
+          </label>
+          <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+            Aggregator
+            <select
+              value={aggregatorTypeFilter}
+              onChange={(e) => setAggregatorTypeFilter(e.target.value)}
+              className="mt-0.5 block rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
+            >
+              <option value="all">All</option>
+              {aggregatorTypes.map((agg) => (
+                <option key={agg} value={agg}>
+                  {agg.replace(/_/g, " ")}
+                </option>
+              ))}
+            </select>
           </label>
           <div className="flex flex-wrap gap-2">
             <button
@@ -1869,6 +2028,10 @@ export default function SocialTargetsTable({
                   input,
                   ...classifySourceCandidate(baseRow, input),
                 }));
+                const addressExpansion = baseRow.addressExpansion;
+                const addressClass = addressExpansion?.classification;
+                const addressCandidateCount = addressExpansion?.candidateCount ?? addressExpansion?.candidates?.length ?? 0;
+                const isAddressMultiTenant = addressClass?.isLikelyMultiTenant === true;
                 return (
                   <tr key={t.id} className="border-b border-neutral-100 align-top">
                     <td className="px-2 py-2">
@@ -1931,6 +2094,21 @@ export default function SocialTargetsTable({
                                 stronger alt exists
                               </span>
                             ) : null}
+                            {isAddressMultiTenant ? (
+                              <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold uppercase text-indigo-900">
+                                multi-tenant
+                              </span>
+                            ) : null}
+                            {addressClass?.aggregatorType ? (
+                              <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase text-violet-900">
+                                {addressClass.aggregatorType.replace(/_/g, " ")}
+                              </span>
+                            ) : null}
+                            {addressCandidateCount > 0 ? (
+                              <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold uppercase text-sky-900">
+                                addr candidates {addressCandidateCount}
+                              </span>
+                            ) : null}
                           </div>
 
                           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-neutral-700">
@@ -1948,6 +2126,12 @@ export default function SocialTargetsTable({
                             </span>
                             <span>
                               Confidence: <span className="font-semibold tabular-nums text-neutral-900">{t.confidenceScore ?? "—"}</span>
+                            </span>
+                            <span>
+                              Addr density:{" "}
+                              <span className="font-semibold tabular-nums text-neutral-900">
+                                {addressClass?.addressDensityScore ?? "—"}
+                              </span>
                             </span>
                             <span>
                               Score: <span className="font-bold tabular-nums text-neutral-900">{score}</span>
@@ -1998,6 +2182,25 @@ export default function SocialTargetsTable({
                                   </span>
                                 </span>
                               </div>
+                              {addressClass ? (
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                  <span>
+                                    Address mode:{" "}
+                                    <span className="font-semibold text-neutral-900">
+                                      {addressClass.isLikelyMultiTenant ? "multi-tenant" : "single/unknown"}
+                                    </span>
+                                  </span>
+                                  <span>
+                                    Density: <span className="font-semibold text-neutral-900">{addressClass.addressDensityScore}</span>
+                                  </span>
+                                  {addressClass.aggregatorType ? (
+                                    <span>
+                                      Aggregator:{" "}
+                                      <span className="font-semibold text-neutral-900">{addressClass.aggregatorType.replace(/_/g, " ")}</span>
+                                    </span>
+                                  ) : null}
+                                </div>
+                              ) : null}
                               <p className="text-[10px] text-neutral-600">Reason: {featuredIntegrity.reason || featuredReason}</p>
                             </div>
                           </div>
@@ -2161,6 +2364,14 @@ export default function SocialTargetsTable({
                               ) : null}
                               <button
                                 type="button"
+                                disabled={bulkBusy === `address-expansion:${t.id}`}
+                                onClick={() => void runAddressExpansionForRow(t)}
+                                className="rounded border border-indigo-300 bg-indigo-50 px-2 py-0.5 text-[9px] font-bold uppercase text-indigo-900 hover:bg-indigo-100 disabled:opacity-50"
+                              >
+                                {bulkBusy === `address-expansion:${t.id}` ? "Expanding..." : "Expand address"}
+                              </button>
+                              <button
+                                type="button"
                                 disabled={verifyBusyId === t.id}
                                 onClick={() => void runHeadVerify(t)}
                                 className="rounded border border-sky-300 bg-sky-50 px-2 py-0.5 text-[9px] font-bold uppercase text-sky-900 hover:bg-sky-100 disabled:opacity-50"
@@ -2200,6 +2411,62 @@ export default function SocialTargetsTable({
                               </select>
                             </label>
                           </div>
+
+                          {addressExpansion ? (
+                            <details className="rounded-lg border border-indigo-200 bg-indigo-50/40 p-2.5">
+                              <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-wide text-indigo-800">
+                                Address expansion ({addressCandidateCount})
+                              </summary>
+                              <div className="mt-1.5 space-y-1.5 text-[10px] text-neutral-700">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-indigo-900">
+                                    {isAddressMultiTenant ? "Likely multi-tenant" : "Single/unknown"}
+                                  </span>
+                                  {addressClass?.aggregatorType ? (
+                                    <span className="rounded bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-violet-900">
+                                      {addressClass.aggregatorType.replace(/_/g, " ")}
+                                    </span>
+                                  ) : null}
+                                  <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-neutral-700">
+                                    Density {addressClass?.addressDensityScore ?? 0}
+                                  </span>
+                                  <span className="rounded bg-sky-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-sky-900">
+                                    Priority {addressClass?.expansionPriority ?? "low"}
+                                  </span>
+                                </div>
+                                <p className="text-[9px] text-neutral-600">
+                                  Evidence families: booking {(baseRow.evidence ?? []).filter((ev) => ev.type === "booking_platform").length}
+                                  {" · "}
+                                  social {(baseRow.evidence ?? []).filter((ev) => ev.platform === "instagram" || ev.platform === "tiktok" || ev.platform === "linktree").length}
+                                  {" · "}
+                                  directory {(baseRow.evidence ?? []).filter((ev) => ev.type === "directory_expansion" || ev.type === "directory").length}
+                                  {" · "}
+                                  aggregator {(baseRow.evidence ?? []).filter((ev) => ev.type === "aggregator_site" || ev.type === "suite_operator").length}
+                                </p>
+                                {(addressExpansion.candidates ?? []).slice(0, 6).map((candidate) => (
+                                  <div key={candidate.id} className="rounded border border-indigo-100 bg-white p-1.5">
+                                    <div className="flex flex-wrap items-center gap-1">
+                                      <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-[8px] font-bold uppercase text-white">
+                                        {candidate.confidence}
+                                      </span>
+                                      {candidate.platform ? (
+                                        <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-[8px] font-bold uppercase text-indigo-900">
+                                          {platformShortLabel(candidate.platform)}
+                                        </span>
+                                      ) : null}
+                                      {candidate.bookingUrl ? (
+                                        <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[8px] font-bold uppercase text-emerald-900">
+                                          booking
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                    <p className="mt-0.5 break-all text-[10px] font-medium text-neutral-900">{candidate.operatorName}</p>
+                                    <p className="truncate text-[9px] text-neutral-600">{candidate.url ?? candidate.bookingUrl ?? "No URL captured"}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </details>
+                          ) : null}
 
                           {sourceIntake.length > 0 ? (
                             <details className="rounded-lg border border-neutral-200 p-2.5">

@@ -116,9 +116,13 @@ export function adaptGoogleResultsToEvidenceItems(
             : type;
     const confidenceScore =
       nameSimilarity * 0.62 + (geoMatch ? 0.2 : 0) + (domainAligned ? 0.15 : 0) + (phoneMatch ? 0.1 : 0);
+    const evidencePlatform =
+      platform === "instagram" || platform === "tiktok" || platform === "linktree" || platform === "website"
+        ? platform
+        : undefined;
     const evidence = createEvidenceItem({
       type: inferredType,
-      platform: platform === "unknown" ? undefined : platform,
+      platform: evidencePlatform,
       url,
       title,
       snippet,
@@ -128,7 +132,7 @@ export function adaptGoogleResultsToEvidenceItems(
       geoMatch,
       phoneMatch,
       domainMatch: domainAligned,
-      handle: extractHandle(platform, url),
+      handle: evidencePlatform ? extractHandle(evidencePlatform, url) : undefined,
       createdAt: new Date().toISOString(),
     });
     const key = `${evidence.type}|${evidence.platform ?? ""}|${extractDomain(evidence.url) ?? ""}|${(evidence.url ?? "").toLowerCase()}`;

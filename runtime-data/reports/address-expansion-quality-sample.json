@@ -1,0 +1,91 @@
+{
+  "generatedAt": "2026-04-05T20:40:27.853Z",
+  "runId": "address-expansion-test-2026-04-05-unuh1z",
+  "address": "6001 S Willow Dr, Greenwood Village, CO 80111",
+  "city": "Greenwood Village",
+  "state": "CO",
+  "sampleSize": 10,
+  "qualitySample": [
+    {
+      "name": "KJ Hair Craft booking | Schedule appointments online.",
+      "hasInstagram": false,
+      "hasTikTok": false,
+      "hasLinktree": false,
+      "hasBooking": true,
+      "manualCheck": "ambiguous"
+    },
+    {
+      "name": "Brows by Nia Linktree | Book now and social channels.",
+      "hasInstagram": false,
+      "hasTikTok": false,
+      "hasLinktree": true,
+      "hasBooking": false,
+      "manualCheck": "ambiguous"
+    },
+    {
+      "name": "Nails by Cam on TikTok | Nail design videos and trends.",
+      "hasInstagram": false,
+      "hasTikTok": true,
+      "hasLinktree": false,
+      "hasBooking": false,
+      "manualCheck": "ambiguous"
+    },
+    {
+      "name": "Glow by Dani booking page | Book facials and glow treatments.",
+      "hasInstagram": false,
+      "hasTikTok": false,
+      "hasLinktree": false,
+      "hasBooking": true,
+      "manualCheck": "ambiguous"
+    },
+    {
+      "name": "Sola Salon Studios DTC - Greenwood Village | Independent beauty professionals at 6001 S Willow D",
+      "hasInstagram": false,
+      "hasTikTok": false,
+      "hasLinktree": false,
+      "hasBooking": false,
+      "manualCheck": "ambiguous"
+    },
+    {
+      "name": "Phenix Salon Suites - DTC Area | Salon suites for stylists and estheticians near DTC.",
+      "hasInstagram": false,
+      "hasTikTok": false,
+      "hasLinktree": false,
+      "hasBooking": false,
+      "manualCheck": "ambiguous"
+    },
+    {
+      "name": "Sola DTC directory of salon professionals | Hair, lashes, nails and brows studios at this locati",
+      "hasInstagram": false,
+      "hasTikTok": false,
+      "hasLinktree": false,
+      "hasBooking": false,
+      "manualCheck": "ambiguous"
+    },
+    {
+      "name": "Image Studios Cherry Creek tenant page | Studios for independent beauty operators in Denver.",
+      "hasInstagram": false,
+      "hasTikTok": false,
+      "hasLinktree": false,
+      "hasBooking": false,
+      "manualCheck": "ambiguous"
+    },
+    {
+      "name": "Ashley Color Studio",
+      "hasInstagram": true,
+      "hasTikTok": false,
+      "hasLinktree": false,
+      "hasBooking": true,
+      "manualCheck": "live_correct"
+    },
+    {
+      "name": "Brows by Nia",
+      "hasInstagram": true,
+      "hasTikTok": false,
+      "hasLinktree": false,
+      "hasBooking": true,
+      "manualCheck": "live_correct"
+    }
+  ],
+  "note": "Manual check values are auto-seeded heuristics and should be reviewed in operator QA."
+}

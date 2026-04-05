@@ -1,6 +1,7 @@
 import { extractDomain, normalizePhone } from "@/lib/social-targets/source-adapters/shared";
 import { detectPlatformFromUrl, extractHandle } from "@/lib/social-targets/social-normalization";
 import type {
+  AddressExpansionAggregatorType,
   SocialEvidenceConfidence,
   SocialEvidenceItem,
   SocialEvidencePlatform,
@@ -45,12 +46,31 @@ function asEvidenceType(value: unknown): SocialEvidenceType {
     value === "website_social" ||
     value === "phone_lookup" ||
     value === "address_lookup" ||
+    value === "booking_platform" ||
+    value === "directory_expansion" ||
+    value === "address_businesses" ||
+    value === "aggregator_site" ||
+    value === "suite_operator" ||
     value === "directory" ||
     value === "other"
   ) {
     return value;
   }
   return "other";
+}
+
+function asDomainType(value: unknown): SocialEvidenceItem["domainType"] {
+  if (
+    value === "booking_platform" ||
+    value === "directory" ||
+    value === "aggregator_site" ||
+    value === "social_platform" ||
+    value === "website" ||
+    value === "other"
+  ) {
+    return value;
+  }
+  return undefined;
 }
 
 function sanitizeEvidenceItem(raw: SocialEvidenceItem): SocialEvidenceItem {
@@ -76,8 +96,10 @@ function sanitizeEvidenceItem(raw: SocialEvidenceItem): SocialEvidenceItem {
     ...(url ? { url } : {}),
     ...(typeof raw.title === "string" && raw.title.trim() ? { title: raw.title.trim() } : {}),
     ...(typeof raw.snippet === "string" && raw.snippet.trim() ? { snippet: raw.snippet.trim() } : {}),
+    ...(typeof raw.addressLink === "string" && raw.addressLink.trim() ? { addressLink: raw.addressLink.trim() } : {}),
     sourceQuery,
     confidence: asConfidence(raw.confidence),
+    ...(asDomainType(raw.domainType) ? { domainType: asDomainType(raw.domainType) } : {}),
     matchSignals: {
       nameSimilarity,
       geoMatch: raw.matchSignals?.geoMatch === true,
@@ -98,10 +120,15 @@ function sanitizeEvidenceItem(raw: SocialEvidenceItem): SocialEvidenceItem {
 export function classifyEvidenceTypeFromUrl(url?: string): SocialEvidenceType {
   if (!url) return "other";
   const u = url.toLowerCase();
+  if (isBookingPlatformUrl(u)) return "booking_platform";
   if (u.includes("instagram.com")) return "instagram";
   if (u.includes("tiktok.com")) return "tiktok";
   if (u.includes("linktr.ee")) return "linktree";
-  if (u.includes("yelp.com") || u.includes("maps.google")) return "directory";
+  if (u.includes("solasalons.com") || u.includes("phenixsalonsuites.com") || u.includes("salonsbyjc.com")) {
+    return "aggregator_site";
+  }
+  if (u.includes("yelp.com")) return "directory_expansion";
+  if (u.includes("maps.google")) return "directory";
   if (u.includes("/social") || u.includes("/instagram") || u.includes("/tiktok")) return "website_social";
   if (/^https?:\/\//i.test(u)) return "website";
   return "other";
@@ -113,6 +140,89 @@ export function platformFromEvidenceType(type: SocialEvidenceType): SocialEviden
   if (type === "linktree") return "linktree";
   if (type === "website" || type === "website_social") return "website";
   return undefined;
+}
+
+const BOOKING_HOST_PATTERNS = [
+  "glossgenius.com",
+  "vagaro.com",
+  "styleseat.com",
+  "booksy.com",
+  "fresha.com",
+  "square.site",
+  "squareup.com",
+] as const;
+
+const DIRECTORY_HOST_PATTERNS = ["yelp.com", "mapquest.com", "yellowpages.com"] as const;
+
+const AGGREGATOR_HOST_PATTERNS = [
+  "solasalons.com",
+  "phenixsalonsuites.com",
+  "salonsbyjc.com",
+  "mysalonsuite.com",
+  "imagestudios360.com",
+  "spectrasalonstudios.com",
+] as const;
+
+function hostForUrl(url?: string): string {
+  if (!url) return "";
+  try {
+    return new URL(normalizeUrl(url) ?? url).hostname.toLowerCase().replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
+function hostMatches(host: string, patterns: readonly string[]): boolean {
+  return patterns.some((pattern) => host === pattern || host.endsWith(`.${pattern}`));
+}
+
+export function isBookingPlatformUrl(url?: string): boolean {
+  const host = hostForUrl(url);
+  if (!host) return false;
+  return hostMatches(host, BOOKING_HOST_PATTERNS);
+}
+
+export function isDirectoryUrl(url?: string): boolean {
+  const host = hostForUrl(url);
+  if (!host) return false;
+  return hostMatches(host, DIRECTORY_HOST_PATTERNS);
+}
+
+export function detectAggregatorTypeFromText(input?: string): AddressExpansionAggregatorType | undefined {
+  const value = (input ?? "").toLowerCase();
+  if (!value) return undefined;
+  if (value.includes("sola")) return "sola";
+  if (value.includes("phenix")) return "phenix";
+  if (value.includes("salons by jc") || value.includes("salonsbyjc")) return "salons_by_jc";
+  if (value.includes("mysalon") || value.includes("my salon suite")) return "mysalon_suite";
+  if (value.includes("image studios") || value.includes("imagestudios")) return "image_studios";
+  if (value.includes("spectra")) return "spectra";
+  if (value.includes("suite")) return "other";
+  return undefined;
+}
+
+export function domainTypeForUrl(url?: string): NonNullable<SocialEvidenceItem["domainType"]> {
+  if (!url) return "other";
+  if (isBookingPlatformUrl(url)) return "booking_platform";
+  if (isDirectoryUrl(url)) return "directory";
+  const host = hostForUrl(url);
+  if (hostMatches(host, AGGREGATOR_HOST_PATTERNS)) return "aggregator_site";
+  const social = detectPlatformFromUrl(url);
+  if (social === "instagram" || social === "tiktok" || social === "linktree") return "social_platform";
+  if (/^https?:\/\//i.test(url.trim())) return "website";
+  return "other";
+}
+
+export function extractOperatorNameFromResult(title?: string, snippet?: string): string | undefined {
+  const source = [title, snippet].filter((x): x is string => typeof x === "string" && x.trim().length > 0).join(" | ");
+  if (!source) return undefined;
+  const cleaned = source
+    .replace(/\s+/g, " ")
+    .replace(/\([^)]+\)/g, "")
+    .replace(/\s*[|\-•·]\s*(Instagram|TikTok|Linktree|Vagaro|StyleSeat|Booksy|GlossGenius|Fresha).*$/i, "")
+    .trim();
+  if (!cleaned) return undefined;
+  return cleaned.slice(0, 96);
 }
 
 export function extractHandleFromUrl(url?: string, platform?: SocialEvidencePlatform): string | undefined {
@@ -145,7 +255,9 @@ export function computeConfidenceScore(target: Pick<SocialTarget, "evidence">): 
       const phoneBonus = ev.matchSignals.phoneMatch ? 8 : 0;
       const domainBonus = ev.matchSignals.domainMatch ? 8 : 0;
       const platformBonus = ev.platform === "instagram" || ev.platform === "tiktok" || ev.platform === "linktree" ? 6 : 0;
-      return sum + base + nameBonus + geoBonus + phoneBonus + domainBonus + platformBonus;
+      const bookingBonus = ev.type === "booking_platform" || ev.domainType === "booking_platform" ? 5 : 0;
+      const suiteBonus = ev.type === "suite_operator" || ev.type === "aggregator_site" ? 4 : 0;
+      return sum + base + nameBonus + geoBonus + phoneBonus + domainBonus + platformBonus + bookingBonus + suiteBonus;
     }, 0) / evidence.length;
   const countBonus = Math.min(12, Math.max(0, evidence.length - 1) * 2);
   return clampInt(avgSignal + countBonus, 0, 100);
@@ -244,6 +356,8 @@ export function createEvidenceItem(input: {
   email?: string;
   handle?: string;
   createdAt?: string;
+  addressLink?: string;
+  domainType?: SocialEvidenceItem["domainType"];
 }): SocialEvidenceItem {
   const normalizedUrl = normalizeUrl(input.url);
   const type = input.type;
@@ -261,6 +375,8 @@ export function createEvidenceItem(input: {
     ...(normalizedUrl ? { url: normalizedUrl } : {}),
     ...(input.title ? { title: input.title.trim() } : {}),
     ...(input.snippet ? { snippet: input.snippet.trim() } : {}),
+    ...(input.addressLink ? { addressLink: input.addressLink.trim() } : {}),
+    ...(input.domainType ? { domainType: input.domainType } : normalizedUrl ? { domainType: domainTypeForUrl(normalizedUrl) } : {}),
     sourceQuery,
     confidence: input.confidence,
     matchSignals: {
@@ -281,6 +397,22 @@ export function createEvidenceItem(input: {
 export function normalizeSocialTargetRecord(target: SocialTarget): SocialTarget {
   const evidence = Array.isArray(target.evidence) ? target.evidence.map(sanitizeEvidenceItem) : [];
   const mergedEvidence = mergeEvidenceItems([], evidence);
+  const safeAddressExpansion =
+    target.addressExpansion && typeof target.addressExpansion === "object"
+      ? {
+          ...target.addressExpansion,
+          ...(Array.isArray(target.addressExpansion.candidates)
+            ? {
+                candidates: target.addressExpansion.candidates
+                  .filter((candidate) => candidate && typeof candidate === "object" && typeof candidate.id === "string")
+                  .map((candidate) => ({
+                    ...candidate,
+                    evidenceIds: Array.isArray(candidate.evidenceIds) ? candidate.evidenceIds.filter(Boolean) : [],
+                  })),
+              }
+            : {}),
+        }
+      : undefined;
   const platforms = {
     ...(target.platforms ?? {}),
     ...derivePlatformsFromEvidence(mergedEvidence),
@@ -297,6 +429,7 @@ export function normalizeSocialTargetRecord(target: SocialTarget): SocialTarget 
     platforms,
     confidenceScore,
     resolutionStatus,
+    ...(safeAddressExpansion ? { addressExpansion: safeAddressExpansion } : {}),
   };
 }
 

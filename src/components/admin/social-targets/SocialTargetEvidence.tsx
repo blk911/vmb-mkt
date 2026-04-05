@@ -53,11 +53,19 @@ export function SocialTargetEvidence({ target }: Props) {
     typeof target.confidenceScore === "number" && Number.isFinite(target.confidenceScore)
       ? `${Math.max(0, Math.min(100, Math.round(target.confidenceScore)))}`
       : "—";
+  const addressExpansion = target.addressExpansion;
+  const expansionSummary =
+    addressExpansion && addressExpansion.classification
+      ? `Address expansion: ${addressExpansion.classification.isLikelyMultiTenant ? "multi-tenant likely" : "single/unknown"}, density ${
+          addressExpansion.classification.addressDensityScore
+        }, candidates ${addressExpansion.candidateCount ?? addressExpansion.candidates?.length ?? 0}`
+      : null;
 
   return (
     <div className="mt-1 max-w-[340px] text-[10px] leading-snug text-neutral-600">
       {noSocialAnchorHint ? <p className="mb-0.5 text-neutral-700">{noSocialAnchorHint}</p> : null}
       {hasGoogleDiscoverySource ? <p className="mb-0.5 text-neutral-700">Source: Google discovery (query-based)</p> : null}
+      {expansionSummary ? <p className="mb-0.5 text-neutral-700">{expansionSummary}</p> : null}
       <div className="mb-0.5 flex flex-wrap items-center gap-1.5">
         <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${resolutionTone}`}>{resolution}</span>
         <span className="rounded bg-sky-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-sky-900">
@@ -114,6 +122,8 @@ export function SocialTargetEvidence({ target }: Props) {
                         {item.extracted.handle ? <span>@{item.extracted.handle.replace(/^@/, "")}</span> : null}
                         {item.extracted.phone ? <span>{item.extracted.phone}</span> : null}
                         {item.extracted.email ? <span>{item.extracted.email}</span> : null}
+                        {item.domainType ? <span>{item.domainType.replace(/_/g, " ")}</span> : null}
+                        {item.addressLink ? <span>addr: {item.addressLink}</span> : null}
                       </div>
                       {item.url ? <p className="truncate text-[9px] text-neutral-500">{item.url}</p> : null}
                       {item.title ? <p className="truncate text-[9px] text-neutral-500">{item.title}</p> : null}

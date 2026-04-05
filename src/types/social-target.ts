@@ -61,6 +61,11 @@ export type SocialEvidenceType =
   | "website_social"
   | "phone_lookup"
   | "address_lookup"
+  | "booking_platform"
+  | "directory_expansion"
+  | "address_businesses"
+  | "aggregator_site"
+  | "suite_operator"
   | "directory"
   | "other";
 
@@ -72,11 +77,13 @@ export type SocialEvidenceItem = {
   id: string;
   type: SocialEvidenceType;
   platform?: SocialEvidencePlatform;
+  domainType?: "booking_platform" | "directory" | "aggregator_site" | "social_platform" | "website" | "other";
   url?: string;
   title?: string;
   snippet?: string;
   sourceQuery: string;
   confidence: SocialEvidenceConfidence;
+  addressLink?: string;
   matchSignals: {
     nameSimilarity: number;
     geoMatch: boolean;
@@ -92,6 +99,62 @@ export type SocialEvidenceItem = {
 };
 
 export type SocialResolutionStatus = "resolved" | "partial" | "unknown" | "conflict";
+
+export type AddressExpansionQueryCategory =
+  | "address_suites"
+  | "address_stylist"
+  | "address_salons"
+  | "aggregator_brand"
+  | "booking_platform"
+  | "social_platform"
+  | "directory_expansion"
+  | "address_businesses"
+  | "category_geo_expansion";
+
+export type AddressExpansionAggregatorType =
+  | "sola"
+  | "phenix"
+  | "salons_by_jc"
+  | "mysalon_suite"
+  | "image_studios"
+  | "spectra"
+  | "other";
+
+export type AddressExpansionClassification = {
+  isLikelyMultiTenant: boolean;
+  aggregatorType?: AddressExpansionAggregatorType;
+  addressDensityScore: number;
+  expansionPriority: "high" | "medium" | "low";
+};
+
+export type AddressExpansionCandidate = {
+  id: string;
+  operatorName: string;
+  platform?: SocialEvidencePlatform;
+  handle?: string;
+  url?: string;
+  bookingUrl?: string;
+  confidence: SocialEvidenceConfidence;
+  evidenceIds: string[];
+  discoveryMode: "address_expansion";
+  sourceAddress?: string;
+  parentTargetId?: string;
+  createdAt: string;
+  notes?: string;
+};
+
+export type AddressExpansionSummary = {
+  sourceAddress?: string;
+  normalizedAddress?: string;
+  classification?: AddressExpansionClassification;
+  queryCount?: number;
+  candidateCount?: number;
+  candidates?: AddressExpansionCandidate[];
+  lastRunId?: string;
+  lastRunType?: "validation" | "scale" | "adhoc" | "expansion_test";
+  sourceVersion?: string;
+  updatedAt?: string;
+};
 
 export type SocialTargetSocialProfile = {
   platform?: SocialProfilePlatform;
@@ -145,8 +208,10 @@ export type SocialTarget = {
   confidenceScore?: number;
   resolutionStatus?: SocialResolutionStatus;
   runId?: string;
-  runType?: "validation" | "scale" | "adhoc";
+  runType?: "validation" | "scale" | "adhoc" | "expansion_test";
   sourceVersion?: string;
+  normalizedAddress?: string;
+  addressExpansion?: AddressExpansionSummary;
 };
 
 export type ReferralCategory = "nails" | "hair" | "lashes" | "brows" | "spa" | "other";

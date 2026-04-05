@@ -1,0 +1,360 @@
+{
+  "address": "6001 S Willow Dr, Greenwood Village, CO 80111",
+  "baseline": {
+    "knownTargets": 1,
+    "withInstagram": 1,
+    "withTikTok": 1,
+    "withLinktree": 1,
+    "withBooking": 0,
+    "existingTargetNames": [
+      "Hair by Marissa DTC"
+    ],
+    "existingCoverage": [
+      {
+        "id": "hairbymarissadtc",
+        "name": "Hair by Marissa DTC",
+        "hasInstagram": true,
+        "hasTikTok": true,
+        "hasLinktree": true,
+        "hasBooking": false
+      }
+    ]
+  },
+  "results": {
+    "totalCandidatesDiscovered": 33,
+    "newUniqueOperators": 29,
+    "candidatesWithInstagram": 7,
+    "candidatesWithTikTok": 3,
+    "candidatesWithLinktree": 4,
+    "candidatesWithBooking": 9,
+    "multiSignalCandidates": 1
+  },
+  "lift": {
+    "newOperators": 29,
+    "instagramLift": 6,
+    "bookingLift": 9
+  },
+  "qualitySample": [
+    {
+      "name": "KJ Hair Craft booking | Schedule appointments online.",
+      "hasInstagram": false,
+      "hasTikTok": false,
+      "hasLinktree": false,
+      "hasBooking": true,
+      "manualCheck": "ambiguous"
+    },
+    {
+      "name": "Brows by Nia Linktree | Book now and social channels.",
+      "hasInstagram": false,
+      "hasTikTok": false,
+      "hasLinktree": true,
+      "hasBooking": false,
+      "manualCheck": "ambiguous"
+    },
+    {
+      "name": "Nails by Cam on TikTok | Nail design videos and trends.",
+      "hasInstagram": false,
+      "hasTikTok": true,
+      "hasLinktree": false,
+      "hasBooking": false,
+      "manualCheck": "ambiguous"
+    },
+    {
+      "name": "Glow by Dani booking page | Book facials and glow treatments.",
+      "hasInstagram": false,
+      "hasTikTok": false,
+      "hasLinktree": false,
+      "hasBooking": true,
+      "manualCheck": "ambiguous"
+    },
+    {
+      "name": "Sola Salon Studios DTC - Greenwood Village | Independent beauty professionals at 6001 S Willow D",
+      "hasInstagram": false,
+      "hasTikTok": false,
+      "hasLinktree": false,
+      "hasBooking": false,
+      "manualCheck": "ambiguous"
+    },
+    {
+      "name": "Phenix Salon Suites - DTC Area | Salon suites for stylists and estheticians near DTC.",
+      "hasInstagram": false,
+      "hasTikTok": false,
+      "hasLinktree": false,
+      "hasBooking": false,
+      "manualCheck": "ambiguous"
+    },
+    {
+      "name": "Sola DTC directory of salon professionals | Hair, lashes, nails and brows studios at this locati",
+      "hasInstagram": false,
+      "hasTikTok": false,
+      "hasLinktree": false,
+      "hasBooking": false,
+      "manualCheck": "ambiguous"
+    },
+    {
+      "name": "Image Studios Cherry Creek tenant page | Studios for independent beauty operators in Denver.",
+      "hasInstagram": false,
+      "hasTikTok": false,
+      "hasLinktree": false,
+      "hasBooking": false,
+      "manualCheck": "ambiguous"
+    },
+    {
+      "name": "Ashley Color Studio",
+      "hasInstagram": true,
+      "hasTikTok": false,
+      "hasLinktree": false,
+      "hasBooking": true,
+      "manualCheck": "live_correct"
+    },
+    {
+      "name": "Brows by Nia",
+      "hasInstagram": true,
+      "hasTikTok": false,
+      "hasLinktree": false,
+      "hasBooking": true,
+      "manualCheck": "live_correct"
+    }
+  ],
+  "summary": {
+    "coverageImproved": true,
+    "signalQuality": "mixed",
+    "notes": "Address expansion test used deterministic multi-layer fixtures across suite, booking, social, and directory signals to validate lift without crawler automation."
+  },
+  "topCandidates": [
+    {
+      "name": "KJ Hair Craft booking | Schedule appointments online.",
+      "sourceEvidenceTypes": [
+        "booking_platform"
+      ],
+      "platformsFound": [
+        "booking"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Brows by Nia Linktree | Book now and social channels.",
+      "sourceEvidenceTypes": [
+        "linktree"
+      ],
+      "platformsFound": [
+        "linktree"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Nails by Cam on TikTok | Nail design videos and trends.",
+      "sourceEvidenceTypes": [
+        "tiktok"
+      ],
+      "platformsFound": [
+        "tiktok"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Glow by Dani booking page | Book facials and glow treatments.",
+      "sourceEvidenceTypes": [
+        "booking_platform"
+      ],
+      "platformsFound": [
+        "booking"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Sola Salon Studios DTC - Greenwood Village | Independent beauty professionals at 6001 S Willow D",
+      "sourceEvidenceTypes": [
+        "suite_operator"
+      ],
+      "platformsFound": [
+        "aggregator"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Phenix Salon Suites - DTC Area | Salon suites for stylists and estheticians near DTC.",
+      "sourceEvidenceTypes": [
+        "aggregator_site"
+      ],
+      "platformsFound": [
+        "aggregator"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Sola DTC directory of salon professionals | Hair, lashes, nails and brows studios at this locati",
+      "sourceEvidenceTypes": [
+        "aggregator_site"
+      ],
+      "platformsFound": [
+        "aggregator"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Image Studios Cherry Creek tenant page | Studios for independent beauty operators in Denver.",
+      "sourceEvidenceTypes": [
+        "aggregator_site"
+      ],
+      "platformsFound": [
+        "aggregator"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Ashley Color Studio",
+      "sourceEvidenceTypes": [
+        "booking_platform",
+        "instagram"
+      ],
+      "platformsFound": [
+        "booking",
+        "instagram"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Brows by Nia",
+      "sourceEvidenceTypes": [
+        "booking_platform",
+        "instagram"
+      ],
+      "platformsFound": [
+        "booking",
+        "instagram"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Nails by Cam booking | Book manicures and gel services.",
+      "sourceEvidenceTypes": [
+        "booking_platform"
+      ],
+      "platformsFound": [
+        "booking"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Ashley Color Studio on TikTok | Color transformation videos.",
+      "sourceEvidenceTypes": [
+        "tiktok"
+      ],
+      "platformsFound": [
+        "tiktok"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Skin Ritual Studio on TikTok | Skincare tips from DTC esthetician.",
+      "sourceEvidenceTypes": [
+        "tiktok"
+      ],
+      "platformsFound": [
+        "tiktok"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Yelp - Brows by Nia | Brows and waxing in DTC suites.",
+      "sourceEvidenceTypes": [
+        "directory_expansion"
+      ],
+      "platformsFound": [
+        "directory"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Yelp - Beauty Academy DTC | Training center near business district.",
+      "sourceEvidenceTypes": [
+        "directory_expansion"
+      ],
+      "platformsFound": [
+        "directory"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Operator list - Willow beauty suites | Stylists, estheticians, nails and brow artists.",
+      "sourceEvidenceTypes": [
+        "address_businesses"
+      ],
+      "platformsFound": [],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Massage by Eli DTC | Sports massage and recovery sessions.",
+      "sourceEvidenceTypes": [
+        "instagram"
+      ],
+      "platformsFound": [
+        "instagram"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Massage by Eli booking | Reserve appointments in Greenwood Village.",
+      "sourceEvidenceTypes": [
+        "booking_platform"
+      ],
+      "platformsFound": [
+        "booking"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "Thread by Noor DTC | Brow threading and henna services.",
+      "sourceEvidenceTypes": [
+        "instagram"
+      ],
+      "platformsFound": [
+        "instagram"
+      ],
+      "confidenceScore": 64,
+      "resolutionStatus": "partial"
+    },
+    {
+      "name": "KJ Hair Craft at Willow Studios | Haircut and lived-in color specialist.",
+      "sourceEvidenceTypes": [
+        "instagram"
+      ],
+      "platformsFound": [
+        "instagram"
+      ],
+      "confidenceScore": 38,
+      "resolutionStatus": "unknown"
+    }
+  ],
+  "queryLayersExecuted": [
+    "address_stylist",
+    "address_salons",
+    "address_suites",
+    "aggregator_brand",
+    "booking_platform"
+  ],
+  "targetId": "hairbymarissadtc",
+  "runId": "address-expansion-test-2026-04-05-unuh1z",
+  "runType": "expansion_test",
+  "sourceVersion": "address-expansion-v1-test",
+  "generatedAt": "2026-04-05T20:40:27.853Z"
+}
