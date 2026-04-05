@@ -1176,108 +1176,114 @@ export default function SocialTargetsTable({
         </span>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <div className="rounded-xl border border-slate-200 bg-slate-50/90 px-3 py-2 shadow-sm">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-600">Primary queue</p>
-          <p className="text-2xl font-bold tabular-nums text-slate-950">{operatorKpis.primaryQueue}</p>
+      <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="rounded-lg border border-slate-200 bg-slate-50/90 px-2.5 py-1.5 shadow-sm">
+          <p className="text-[9px] font-bold uppercase tracking-wide text-slate-600">Primary queue</p>
+          <p className="text-lg font-bold tabular-nums text-slate-950">{operatorKpis.primaryQueue}</p>
         </div>
         {operatorKpis.reviewQueue > 0 ? (
-          <div className="rounded-xl border border-amber-200 bg-amber-50/90 px-3 py-2 shadow-sm">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-amber-900">Review queue</p>
-            <p className="text-2xl font-bold tabular-nums text-amber-950">{operatorKpis.reviewQueue}</p>
+          <div className="rounded-lg border border-amber-200 bg-amber-50/90 px-2.5 py-1.5 shadow-sm">
+            <p className="text-[9px] font-bold uppercase tracking-wide text-amber-900">Review queue</p>
+            <p className="text-lg font-bold tabular-nums text-amber-950">{operatorKpis.reviewQueue}</p>
           </div>
         ) : null}
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/90 px-3 py-2 shadow-sm">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-800">Active profiles</p>
-          <p className="text-2xl font-bold tabular-nums text-emerald-950">{operatorKpis.activeProfiles}</p>
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50/90 px-2.5 py-1.5 shadow-sm">
+          <p className="text-[9px] font-bold uppercase tracking-wide text-emerald-800">Active profiles</p>
+          <p className="text-lg font-bold tabular-nums text-emerald-950">{operatorKpis.activeProfiles}</p>
         </div>
-        <div className="rounded-xl border border-rose-200 bg-rose-50/90 px-3 py-2 shadow-sm">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-rose-900">Ready to attack</p>
-          <p className="text-2xl font-bold tabular-nums text-rose-950">{operatorKpis.ready}</p>
+        <div className="rounded-lg border border-rose-200 bg-rose-50/90 px-2.5 py-1.5 shadow-sm">
+          <p className="text-[9px] font-bold uppercase tracking-wide text-rose-900">Ready</p>
+          <p className="text-lg font-bold tabular-nums text-rose-950">{operatorKpis.ready}</p>
         </div>
         {operatorKpis.deadBroken > 0 ? (
-          <div className="rounded-xl border border-neutral-300 bg-neutral-100/90 px-3 py-2 shadow-sm">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-600">Dead / broken</p>
-            <p className="text-2xl font-bold tabular-nums text-neutral-900">{operatorKpis.deadBroken}</p>
+          <div className="rounded-lg border border-neutral-300 bg-neutral-100/90 px-2.5 py-1.5 shadow-sm">
+            <p className="text-[9px] font-bold uppercase tracking-wide text-neutral-600">Dead / broken</p>
+            <p className="text-lg font-bold tabular-nums text-neutral-900">{operatorKpis.deadBroken}</p>
           </div>
         ) : null}
         {operatorKpis.liveProviders > 0 ? (
-          <div className="rounded-xl border border-sky-200 bg-sky-50/90 px-3 py-2 shadow-sm">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-sky-900">Live providers</p>
-            <p className="text-2xl font-bold tabular-nums text-sky-950">{operatorKpis.liveProviders}</p>
+          <div className="rounded-lg border border-sky-200 bg-sky-50/90 px-2.5 py-1.5 shadow-sm">
+            <p className="text-[9px] font-bold uppercase tracking-wide text-sky-900">Live providers</p>
+            <p className="text-lg font-bold tabular-nums text-sky-950">{operatorKpis.liveProviders}</p>
           </div>
         ) : null}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-sm">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">Targets</p>
-          <p className="text-2xl font-bold tabular-nums text-neutral-950">{baseTargets.length}</p>
-        </div>
-        <div className="rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-sm">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">Shown</p>
-          <p className="text-2xl font-bold tabular-nums text-neutral-950">{filteredSorted.length}</p>
-        </div>
-        <div className="rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-sm">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">Selected</p>
-          <p className="text-2xl font-bold tabular-nums text-neutral-950">{selectedIds.size}</p>
-        </div>
-        <div className="rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-sm">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">Zones</p>
-          <p className="text-2xl font-bold tabular-nums text-neutral-950">{zones.length}</p>
-        </div>
-      </div>
-
-      {referralSummary.totalEdges > 0 ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-indigo-200 bg-indigo-50/80 px-3 py-2">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-indigo-900">Referral edges</p>
-            <p className="text-2xl font-bold tabular-nums text-indigo-950">{referralSummary.totalEdges}</p>
+      <details className="rounded-lg border border-neutral-200 bg-neutral-50/80 p-2.5">
+        <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-wide text-neutral-600">
+          More metrics
+        </summary>
+        <div className="mt-2 grid gap-2 sm:grid-cols-4">
+          <div className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 shadow-sm">
+            <p className="text-[9px] font-bold uppercase tracking-wide text-neutral-500">Targets</p>
+            <p className="text-lg font-bold tabular-nums text-neutral-950">{baseTargets.length}</p>
           </div>
-          <div className="rounded-xl border border-fuchsia-200 bg-fuchsia-50/80 px-3 py-2">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-fuchsia-900">Multi-confidence</p>
-            <p className="text-2xl font-bold tabular-nums text-fuchsia-950">{referralSummary.multiEdges}</p>
+          <div className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 shadow-sm">
+            <p className="text-[9px] font-bold uppercase tracking-wide text-neutral-500">Shown</p>
+            <p className="text-lg font-bold tabular-nums text-neutral-950">{filteredSorted.length}</p>
           </div>
-          <div className="rounded-xl border border-teal-200 bg-teal-50/80 px-3 py-2">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-teal-900">Referral hubs</p>
-            <p className="text-2xl font-bold tabular-nums text-teal-950">{referralSummary.hubCount}</p>
+          <div className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 shadow-sm">
+            <p className="text-[9px] font-bold uppercase tracking-wide text-neutral-500">Selected</p>
+            <p className="text-lg font-bold tabular-nums text-neutral-950">{selectedIds.size}</p>
           </div>
-          <div className="rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-amber-900">Top referred</p>
-            <p className="text-sm font-semibold text-amber-950">
-              {referralSummary.topHandle ? (
-                <>
-                  @{referralSummary.topHandle}{" "}
-                  <span className="text-xs font-normal text-amber-800">({referralSummary.topSeen}×)</span>
-                </>
-              ) : (
-                <span className="text-neutral-500">—</span>
-              )}
-            </p>
+          <div className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 shadow-sm">
+            <p className="text-[9px] font-bold uppercase tracking-wide text-neutral-500">Zones</p>
+            <p className="text-lg font-bold tabular-nums text-neutral-950">{zones.length}</p>
           </div>
+          {referralSummary.totalEdges > 0 ? (
+            <>
+              <div className="rounded-lg border border-indigo-200 bg-indigo-50/80 px-2.5 py-1.5">
+                <p className="text-[9px] font-bold uppercase tracking-wide text-indigo-900">Referral edges</p>
+                <p className="text-lg font-bold tabular-nums text-indigo-950">{referralSummary.totalEdges}</p>
+              </div>
+              <div className="rounded-lg border border-fuchsia-200 bg-fuchsia-50/80 px-2.5 py-1.5">
+                <p className="text-[9px] font-bold uppercase tracking-wide text-fuchsia-900">Multi-confidence</p>
+                <p className="text-lg font-bold tabular-nums text-fuchsia-950">{referralSummary.multiEdges}</p>
+              </div>
+              <div className="rounded-lg border border-teal-200 bg-teal-50/80 px-2.5 py-1.5">
+                <p className="text-[9px] font-bold uppercase tracking-wide text-teal-900">Referral hubs</p>
+                <p className="text-lg font-bold tabular-nums text-teal-950">{referralSummary.hubCount}</p>
+              </div>
+              <div className="rounded-lg border border-amber-200 bg-amber-50/80 px-2.5 py-1.5">
+                <p className="text-[9px] font-bold uppercase tracking-wide text-amber-900">Top referred</p>
+                <p className="text-[11px] font-semibold text-amber-950">
+                  {referralSummary.topHandle ? (
+                    <>
+                      @{referralSummary.topHandle}{" "}
+                      <span className="text-[10px] font-normal text-amber-800">({referralSummary.topSeen}×)</span>
+                    </>
+                  ) : (
+                    <span className="text-neutral-500">—</span>
+                  )}
+                </p>
+              </div>
+            </>
+          ) : null}
         </div>
-      ) : null}
+      </details>
 
       {viewMode === "primary" && topReadyTargets.length > 0 ? (
-        <div className="rounded-xl border border-rose-200 bg-rose-50/40 p-4">
+        <div className="rounded-lg border border-rose-200 bg-rose-50/30 p-2.5">
           <h2 className="text-[11px] font-bold uppercase tracking-wide text-rose-900">Top ready targets</h2>
-          <p className="mt-1 text-xs text-neutral-600">
+          <p className="mt-0.5 text-[11px] text-neutral-600">
             Verified/live rows with operator rank preference: trust, validity, confidence, then activity.
           </p>
-          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+          <ul className="mt-2 space-y-1.5">
             {topReadyTargets.map((t) => (
               <li
                 key={t.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-rose-100 bg-white px-3 py-2 text-xs"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-rose-100 bg-white px-2.5 py-1.5 text-[11px]"
               >
-                <div>
-                  <TargetHandleLink t={t}>
-                    @{displayHandleForTarget(t)}
-                  </TargetHandleLink>
-                  <span className="ml-2 text-neutral-500">{t.category}</span>
-                  <span className="ml-2 font-bold tabular-nums text-neutral-800">{getEffectivePriorityScore(t)}</span>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <TargetHandleLink t={t}>
+                      @{displayHandleForTarget(t)}
+                    </TargetHandleLink>
+                    <span className="text-neutral-500">{t.category}</span>
+                    <span className="font-bold tabular-nums text-neutral-800">{getEffectivePriorityScore(t)}</span>
+                  </div>
                   {t.outreachAngle ? (
-                    <p className="mt-1 max-w-md text-[11px] text-neutral-600">{t.outreachAngle}</p>
+                    <p className="mt-0.5 max-w-md truncate text-[10px] text-neutral-600">{t.outreachAngle}</p>
                   ) : null}
                 </div>
                 {!shouldHideTargetBecauseDead(t) ? (
@@ -1285,7 +1291,7 @@ export default function SocialTargetsTable({
                     href={profileUrlForTarget(t)}
                     target="_blank"
                     rel="noreferrer"
-                    className="shrink-0 rounded-full border border-rose-200 bg-rose-50 px-2 py-1 text-[10px] font-bold uppercase text-rose-900 hover:bg-rose-100"
+                    className="shrink-0 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[9px] font-bold uppercase text-rose-900 hover:bg-rose-100"
                   >
                     Open profile
                   </a>
@@ -1297,25 +1303,27 @@ export default function SocialTargetsTable({
       ) : null}
 
       {topReferred.length > 0 ? (
-        <div className="rounded-xl border border-neutral-200 bg-neutral-50/80 p-4">
-          <h2 className="text-[11px] font-bold uppercase tracking-wide text-neutral-600">Emerging referral nodes</h2>
-          <p className="mt-1 text-xs text-neutral-500">Top referred handles by category (includes handles not yet in the target list).</p>
-          <ul className="mt-3 space-y-2">
+        <details className="rounded-lg border border-neutral-200 bg-neutral-50/70 p-2.5">
+          <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-wide text-neutral-600">
+            Emerging referral nodes
+          </summary>
+          <p className="mt-1 text-[11px] text-neutral-500">Top referred handles by category (includes handles not yet in the target list).</p>
+          <ul className="mt-2 space-y-1.5">
             {topReferred.map((n) => {
               const known = isKnownReferredNode(n.toHandle);
               return (
                 <li
                   key={`${n.toHandle}::${n.category}`}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-neutral-200 bg-white px-2.5 py-1.5 text-[11px]"
                 >
                   <div>
                     <span className="font-semibold text-neutral-900">@{n.toHandle}</span>
-                    <span className="ml-2 rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-neutral-600">
+                    <span className="ml-2 rounded bg-neutral-100 px-1 py-0.5 text-[9px] font-semibold uppercase text-neutral-600">
                       {n.category}
                     </span>
                     <span className="ml-2 tabular-nums text-neutral-600">{n.timesSeen}×</span>
                     <span
-                      className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                      className={`ml-2 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${
                         known ? "bg-emerald-100 text-emerald-900" : "bg-orange-100 text-orange-900"
                       }`}
                     >
@@ -1326,7 +1334,7 @@ export default function SocialTargetsTable({
                     <button
                       type="button"
                       onClick={() => promoteNodeToTarget(n)}
-                      className="rounded-full border border-neutral-300 bg-neutral-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-neutral-800 hover:bg-white"
+                      className="rounded-full border border-neutral-300 bg-neutral-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-neutral-800 hover:bg-white"
                     >
                       Promote to target
                     </button>
@@ -1335,17 +1343,17 @@ export default function SocialTargetsTable({
               );
             })}
           </ul>
-        </div>
+        </details>
       ) : null}
 
-      <div className="flex flex-wrap items-end gap-3 rounded-xl border border-neutral-200 bg-neutral-50/80 p-3">
+      <div className="flex flex-wrap items-end gap-2 rounded-lg border border-neutral-200 bg-neutral-50/80 p-2">
         <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
           Search
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Handle or business"
-            className="mt-0.5 block w-44 rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
+            className="mt-0.5 block w-40 rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
           />
         </label>
         <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
@@ -1353,7 +1361,7 @@ export default function SocialTargetsTable({
           <select
             value={zoneFilter}
             onChange={(e) => setZoneFilter(e.target.value)}
-            className="mt-0.5 block max-w-[12rem] rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
+            className="mt-0.5 block max-w-[11rem] rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
           >
             <option value="all">All zones</option>
             {zones.map((z) => (
@@ -1368,7 +1376,7 @@ export default function SocialTargetsTable({
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="mt-0.5 block max-w-[10rem] rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
+            className="mt-0.5 block max-w-[9.5rem] rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
           >
             <option value="all">All</option>
             {categories.map((c) => (
@@ -1383,7 +1391,7 @@ export default function SocialTargetsTable({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as "all" | SocialTargetStatus)}
-            className="mt-0.5 block rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
+            className="mt-0.5 block rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
           >
             <option value="all">All</option>
             {STATUS_OPTIONS.map((s) => (
@@ -1398,7 +1406,7 @@ export default function SocialTargetsTable({
           <select
             value={activityFilter}
             onChange={(e) => setActivityFilter(e.target.value as (typeof ACTIVITY_FILTER)[number])}
-            className="mt-0.5 block rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
+            className="mt-0.5 block rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
           >
             {ACTIVITY_FILTER.map((f) => (
               <option key={f} value={f}>
@@ -1423,7 +1431,7 @@ export default function SocialTargetsTable({
                   | "profileHealth"
               )
             }
-            className="mt-0.5 block max-w-[11rem] rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
+            className="mt-0.5 block max-w-[11rem] rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
           >
             <option value="operatorRank">Operator rank</option>
             <option value="priorityScore">Priority score</option>
@@ -1445,11 +1453,11 @@ export default function SocialTargetsTable({
         </label>
       </div>
 
-      <details className="rounded-xl border border-neutral-200 bg-neutral-50/80 p-3">
-        <summary className="cursor-pointer text-[11px] font-bold uppercase tracking-wide text-neutral-600">
+      <details className="rounded-lg border border-neutral-200 bg-neutral-50/80 p-2.5">
+        <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-wide text-neutral-600">
           More filters & bulk actions
         </summary>
-        <div className="mt-3 flex flex-wrap items-end gap-3">
+        <div className="mt-2 flex flex-wrap items-end gap-2">
           <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
             Profile health
             <select
