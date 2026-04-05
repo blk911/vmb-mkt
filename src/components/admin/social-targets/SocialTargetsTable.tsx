@@ -1609,11 +1609,11 @@ export default function SocialTargetsTable({
       </details>
 
       <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
-        <table className="w-full min-w-[1200px] border-collapse text-left text-xs">
+        <table className="w-full border-collapse text-left text-xs">
           <thead>
             <tr className="border-b border-neutral-200 bg-neutral-50 text-[10px] font-bold uppercase tracking-wide text-neutral-500">
               <th className="w-10 px-2 py-2">Sel</th>
-              <th className="min-w-[980px] px-2 py-2">Target summary & actions</th>
+              <th className="px-2 py-2">Target summary & actions</th>
             </tr>
           </thead>
           <tbody className="text-neutral-800">
