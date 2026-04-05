@@ -16,3 +16,9 @@ data/markets/*
 !data/markets/beauty_zone_members_enriched_with_presence.json
 !data/markets/beauty_zone_members_enriched_with_presence_and_anchor.json
 !data/markets/beauty_zone_members_enriched_full.json
+
+# Social targets seed JSON (bundled imports in `src/lib/social-targets/*-store.ts`).
+!data/socialTargets/
+data/socialTargets/*
+!data/socialTargets/social_targets_v1.json
+!data/socialTargets/referral_edges_v1.json
