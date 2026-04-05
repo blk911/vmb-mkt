@@ -351,6 +351,34 @@ function hasHighAddressDensity(t: SocialTarget): boolean {
   return (t.addressExpansion?.classification?.addressDensityScore ?? 0) >= 70;
 }
 
+function bestProspect(t: SocialTarget): { tier: "hot" | "warm" | "cold" | "exclude"; score: number } | null {
+  const candidates = t.addressExpansion?.candidates ?? [];
+  let best: { tier: "hot" | "warm" | "cold" | "exclude"; score: number } | null = null;
+  for (const candidate of candidates) {
+    const tier = candidate.prospect?.tier;
+    const score = candidate.prospect?.readinessScore;
+    if (!tier || typeof score !== "number" || !Number.isFinite(score)) continue;
+    if (!best || score > best.score) best = { tier, score };
+  }
+  return best;
+}
+
+function hasHotProspect(t: SocialTarget): boolean {
+  return bestProspect(t)?.tier === "hot" || (t.addressExpansion?.prospectCounts?.hot ?? 0) > 0;
+}
+
+function hasWarmOrBetterProspect(t: SocialTarget): boolean {
+  const best = bestProspect(t);
+  if (best) return best.tier === "hot" || best.tier === "warm";
+  return (t.addressExpansion?.prospectCounts?.hot ?? 0) + (t.addressExpansion?.prospectCounts?.warm ?? 0) > 0;
+}
+
+function hasNonExcludedProspect(t: SocialTarget): boolean {
+  const counts = t.addressExpansion?.prospectCounts;
+  if (counts) return counts.hot + counts.warm + counts.cold > 0;
+  return (t.addressExpansion?.candidates ?? []).some((candidate) => candidate.prospect?.tier !== "exclude");
+}
+
 function formatVerifiedAt(iso?: string): string {
   if (!iso) return "—";
   try {
@@ -431,6 +459,14 @@ function toApiTarget(t: SocialTarget): SocialTarget {
             candidates: n.addressExpansion.candidates.map((candidate) => ({
               ...candidate,
               evidenceIds: [...candidate.evidenceIds],
+              ...(candidate.prospect
+                ? {
+                    prospect: {
+                      ...candidate.prospect,
+                      addressMatch: { ...candidate.prospect.addressMatch },
+                    },
+                  }
+                : {}),
             })),
           }
         : {}),
@@ -504,6 +540,9 @@ export default function SocialTargetsTable({
   const [addressExpansionOnly, setAddressExpansionOnly] = useState(false);
   const [highAddressDensityOnly, setHighAddressDensityOnly] = useState(false);
   const [aggregatorTypeFilter, setAggregatorTypeFilter] = useState<string>("all");
+  const [hotProspectOnly, setHotProspectOnly] = useState(false);
+  const [warmPlusOnly, setWarmPlusOnly] = useState(false);
+  const [excludeHidden, setExcludeHidden] = useState(true);
   const [sortBy, setSortBy] = useState<
     | "operatorRank"
     | "name"
@@ -515,6 +554,7 @@ export default function SocialTargetsTable({
     | "confidenceScore"
     | "evidenceCount"
     | "addressDensity"
+    | "prospectScore"
   >("operatorRank");
   const [bulkBusy, setBulkBusy] = useState<string | null>(null);
   const [bulkSummary, setBulkSummary] = useState<string | null>(null);
@@ -692,6 +732,9 @@ export default function SocialTargetsTable({
     if (addressExpansionOnly) list = list.filter(hasAddressExpansionCandidates);
     if (highAddressDensityOnly) list = list.filter(hasHighAddressDensity);
     list = list.filter((t) => matchesAggregatorType(t, aggregatorTypeFilter));
+    if (hotProspectOnly) list = list.filter(hasHotProspect);
+    if (warmPlusOnly) list = list.filter(hasWarmOrBetterProspect);
+    if (excludeHidden) list = list.filter(hasNonExcludedProspect);
 
     const dir = sortDesc ? -1 : 1;
     list.sort((a, b) => {
@@ -724,6 +767,10 @@ export default function SocialTargetsTable({
       } else if (sortBy === "addressDensity") {
         const va = a.addressExpansion?.classification?.addressDensityScore ?? 0;
         const vb = b.addressExpansion?.classification?.addressDensityScore ?? 0;
+        if (va !== vb) return (vb - va) * (sortDesc ? 1 : -1);
+      } else if (sortBy === "prospectScore") {
+        const va = bestProspect(a)?.score ?? 0;
+        const vb = bestProspect(b)?.score ?? 0;
         if (va !== vb) return (vb - va) * (sortDesc ? 1 : -1);
       } else if (sortBy === "zone") {
         const c = a.zone.localeCompare(b.zone);
@@ -759,6 +806,9 @@ export default function SocialTargetsTable({
     addressExpansionOnly,
     highAddressDensityOnly,
     aggregatorTypeFilter,
+    hotProspectOnly,
+    warmPlusOnly,
+    excludeHidden,
     sortBy,
     sortDesc,
   ]);
@@ -1670,6 +1720,7 @@ export default function SocialTargetsTable({
                   | "confidenceScore"
                   | "evidenceCount"
                   | "addressDensity"
+                  | "prospectScore"
               )
             }
             className="mt-0.5 block max-w-[11rem] rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
@@ -1679,6 +1730,7 @@ export default function SocialTargetsTable({
             <option value="confidenceScore">Confidence</option>
             <option value="evidenceCount">Evidence count</option>
             <option value="addressDensity">Address density</option>
+            <option value="prospectScore">Prospect score</option>
             <option value="activitySignal">Activity</option>
             <option value="profileHealth">Profile health</option>
             <option value="name">Handle</option>
@@ -1850,6 +1902,33 @@ export default function SocialTargetsTable({
             />
             High address density
           </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={hotProspectOnly}
+              onChange={(e) => setHotProspectOnly(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            Hot prospects only
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={warmPlusOnly}
+              onChange={(e) => setWarmPlusOnly(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            Warm+ only
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={excludeHidden}
+              onChange={(e) => setExcludeHidden(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            Exclude hidden
+          </label>
           <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
             Aggregator
             <select
@@ -2007,6 +2086,7 @@ export default function SocialTargetsTable({
                 const state = getPrimaryOperationalState(baseRow);
                 const rank = computeOperatorDisplayRank(baseRow);
                 const betterAlt = featuredWeakerThanBestAlternate(baseRow);
+                const prospect = bestProspect(baseRow);
                 const featuredIntegrity = getFeaturedValidationIntegrity(baseRow);
                 const confirmedNoSocial = isConfirmedRealNoSocial(baseRow);
                 const featuredCandidate = featuredIntegrity.displayCandidate;
@@ -2109,6 +2189,21 @@ export default function SocialTargetsTable({
                                 addr candidates {addressCandidateCount}
                               </span>
                             ) : null}
+                            {prospect ? (
+                              <span
+                                className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                                  prospect.tier === "hot"
+                                    ? "bg-rose-100 text-rose-900"
+                                    : prospect.tier === "warm"
+                                      ? "bg-amber-100 text-amber-900"
+                                      : prospect.tier === "cold"
+                                        ? "bg-neutral-200 text-neutral-700"
+                                        : "bg-neutral-100 text-neutral-500"
+                                }`}
+                              >
+                                {prospect.tier}
+                              </span>
+                            ) : null}
                           </div>
 
                           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-neutral-700">
@@ -2131,6 +2226,12 @@ export default function SocialTargetsTable({
                               Addr density:{" "}
                               <span className="font-semibold tabular-nums text-neutral-900">
                                 {addressClass?.addressDensityScore ?? "—"}
+                              </span>
+                            </span>
+                            <span>
+                              Prospect:{" "}
+                              <span className="font-semibold tabular-nums text-neutral-900">
+                                {prospect ? `${prospect.tier} ${prospect.score}` : "—"}
                               </span>
                             </span>
                             <span>
@@ -2449,6 +2550,21 @@ export default function SocialTargetsTable({
                                       <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-[8px] font-bold uppercase text-white">
                                         {candidate.confidence}
                                       </span>
+                                      {candidate.prospect ? (
+                                        <span
+                                          className={`rounded px-1.5 py-0.5 text-[8px] font-bold uppercase ${
+                                            candidate.prospect.tier === "hot"
+                                              ? "bg-rose-100 text-rose-900"
+                                              : candidate.prospect.tier === "warm"
+                                                ? "bg-amber-100 text-amber-900"
+                                                : candidate.prospect.tier === "cold"
+                                                  ? "bg-neutral-200 text-neutral-700"
+                                                  : "bg-neutral-100 text-neutral-500"
+                                          }`}
+                                        >
+                                          {candidate.prospect.tier} {candidate.prospect.readinessScore}
+                                        </span>
+                                      ) : null}
                                       {candidate.platform ? (
                                         <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-[8px] font-bold uppercase text-indigo-900">
                                           {platformShortLabel(candidate.platform)}

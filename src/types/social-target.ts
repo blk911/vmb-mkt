@@ -127,6 +127,17 @@ export type AddressExpansionClassification = {
   expansionPriority: "high" | "medium" | "low";
 };
 
+export type CandidateType = "operator" | "booking_operator" | "aggregator" | "directory" | "ambiguous";
+
+export type ProspectTier = "hot" | "warm" | "cold" | "exclude";
+
+export type AddressMatch = {
+  exactAddressMatch: boolean;
+  propertyMatch: boolean;
+  cityMatch: boolean;
+  score: number;
+};
+
 export type AddressExpansionCandidate = {
   id: string;
   operatorName: string;
@@ -141,6 +152,12 @@ export type AddressExpansionCandidate = {
   parentTargetId?: string;
   createdAt: string;
   notes?: string;
+  prospect?: {
+    type: CandidateType;
+    readinessScore: number;
+    tier: ProspectTier;
+    addressMatch: AddressMatch;
+  };
 };
 
 export type AddressExpansionSummary = {
@@ -150,6 +167,13 @@ export type AddressExpansionSummary = {
   queryCount?: number;
   candidateCount?: number;
   candidates?: AddressExpansionCandidate[];
+  usableCandidateCount?: number;
+  prospectCounts?: {
+    hot: number;
+    warm: number;
+    cold: number;
+    exclude: number;
+  };
   lastRunId?: string;
   lastRunType?: "validation" | "scale" | "adhoc" | "expansion_test";
   sourceVersion?: string;

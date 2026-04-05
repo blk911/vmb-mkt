@@ -401,6 +401,20 @@ export function normalizeSocialTargetRecord(target: SocialTarget): SocialTarget 
     target.addressExpansion && typeof target.addressExpansion === "object"
       ? {
           ...target.addressExpansion,
+          ...(target.addressExpansion.prospectCounts
+            ? {
+                prospectCounts: {
+                  hot: Math.max(0, Math.round(target.addressExpansion.prospectCounts.hot ?? 0)),
+                  warm: Math.max(0, Math.round(target.addressExpansion.prospectCounts.warm ?? 0)),
+                  cold: Math.max(0, Math.round(target.addressExpansion.prospectCounts.cold ?? 0)),
+                  exclude: Math.max(0, Math.round(target.addressExpansion.prospectCounts.exclude ?? 0)),
+                },
+              }
+            : {}),
+          ...(typeof target.addressExpansion.usableCandidateCount === "number" &&
+          Number.isFinite(target.addressExpansion.usableCandidateCount)
+            ? { usableCandidateCount: Math.max(0, Math.round(target.addressExpansion.usableCandidateCount)) }
+            : {}),
           ...(Array.isArray(target.addressExpansion.candidates)
             ? {
                 candidates: target.addressExpansion.candidates
@@ -408,6 +422,42 @@ export function normalizeSocialTargetRecord(target: SocialTarget): SocialTarget 
                   .map((candidate) => ({
                     ...candidate,
                     evidenceIds: Array.isArray(candidate.evidenceIds) ? candidate.evidenceIds.filter(Boolean) : [],
+                    ...(candidate.prospect
+                      ? {
+                          prospect: {
+                            type:
+                              candidate.prospect.type === "operator" ||
+                              candidate.prospect.type === "booking_operator" ||
+                              candidate.prospect.type === "aggregator" ||
+                              candidate.prospect.type === "directory" ||
+                              candidate.prospect.type === "ambiguous"
+                                ? candidate.prospect.type
+                                : "ambiguous",
+                            tier:
+                              candidate.prospect.tier === "hot" ||
+                              candidate.prospect.tier === "warm" ||
+                              candidate.prospect.tier === "cold" ||
+                              candidate.prospect.tier === "exclude"
+                                ? candidate.prospect.tier
+                                : "exclude",
+                            readinessScore:
+                              typeof candidate.prospect.readinessScore === "number" &&
+                              Number.isFinite(candidate.prospect.readinessScore)
+                                ? clampInt(candidate.prospect.readinessScore, 0, 100)
+                                : 0,
+                            addressMatch: {
+                              exactAddressMatch: candidate.prospect.addressMatch?.exactAddressMatch === true,
+                              propertyMatch: candidate.prospect.addressMatch?.propertyMatch === true,
+                              cityMatch: candidate.prospect.addressMatch?.cityMatch === true,
+                              score:
+                                typeof candidate.prospect.addressMatch?.score === "number" &&
+                                Number.isFinite(candidate.prospect.addressMatch.score)
+                                  ? Math.round(candidate.prospect.addressMatch.score)
+                                  : 0,
+                            },
+                          },
+                        }
+                      : {}),
                   })),
               }
             : {}),

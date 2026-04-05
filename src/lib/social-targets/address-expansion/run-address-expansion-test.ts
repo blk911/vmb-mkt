@@ -9,7 +9,7 @@ import {
   RUNTIME_ADDRESS_EXPANSION_REPORT_FILE,
 } from "../runtime-paths";
 import { getMergedSocialTargets, saveMergedSocialTargetsAsRuntime } from "../social-targets-store";
-import type { AddressExpansionCandidate, SocialEvidenceItem, SocialTarget } from "../../../types/social-target";
+import type { AddressExpansionCandidate, CandidateType, ProspectTier, SocialEvidenceItem, SocialTarget } from "../../../types/social-target";
 
 type Baseline = {
   knownTargets: number;
@@ -44,6 +44,9 @@ type CandidateSummary = {
   platformsFound: string[];
   confidenceScore: number;
   resolutionStatus: "resolved" | "partial" | "unknown" | "conflict";
+  type?: CandidateType;
+  tier?: ProspectTier;
+  addressMatch?: string;
 };
 
 type QualitySampleItem = {
@@ -85,7 +88,8 @@ function shortId(): string {
 }
 
 function normalizeName(value?: string): string {
-  return (value ?? "")
+  const base = (value ?? "").split("|")[0]?.split("•")[0]?.split(" - ")[0] ?? value ?? "";
+  return base
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
@@ -243,6 +247,17 @@ function manualCheck(summary: CandidateSummary): QualitySampleItem["manualCheck"
   return "ambiguous";
 }
 
+function addressMatchLabel(candidate: AddressExpansionCandidate): string {
+  const match = candidate.prospect?.addressMatch;
+  if (!match) return "none";
+  if (match.exactAddressMatch && match.propertyMatch) return "exact+property";
+  if (match.exactAddressMatch) return "exact";
+  if (match.propertyMatch && match.cityMatch) return "property+city";
+  if (match.propertyMatch) return "property";
+  if (match.cityMatch) return "city";
+  return "none";
+}
+
 function buildAnchor(target: SocialTarget, address: string, city: string): AddressExpansionAnchor {
   const aliases = [target.businessName, target.handle.replace(/^@/, "")]
     .filter((v): v is string => Boolean(v && v.trim()))
@@ -317,16 +332,21 @@ export async function runAddressExpansionTest(input: AddressExpansionTestInput =
     await saveMergedSocialTargetsAsRuntime(nextTargets);
   }
 
-  const candidates = expanded.target.addressExpansion?.candidates ?? [];
+  const candidates = expanded.allCandidates;
   const evidenceById = new Map((expanded.target.evidence ?? []).map((ev) => [ev.id, ev]));
   const baselineOperatorNames = new Set(baselineRows.map((row) => normalizeName(row.businessName || row.handle)));
   const uniqueOperators = new Set(candidates.map((candidate) => normalizeName(candidate.operatorName)).filter(Boolean));
   const newOperators = [...uniqueOperators].filter((name) => !baselineOperatorNames.has(name));
 
-  const byOperator = new Map<string, { name: string; score: number; signals: Set<string>; evidenceTypes: Set<string>; candidateCount: number }>();
+  const byOperator = new Map<
+    string,
+    { name: string; score: number; readinessScore: number; signals: Set<string>; evidenceTypes: Set<string>; candidateCount: number }
+  >();
+  const candidateByName = new Map<string, AddressExpansionCandidate>();
   for (const candidate of candidates) {
     const key = normalizeName(candidate.operatorName);
     if (!key) continue;
+    if (!candidateByName.has(key)) candidateByName.set(key, candidate);
     const signals = signalSet(candidate, evidenceById);
     const evidenceTypes = new Set<string>();
     for (const evidenceId of candidate.evidenceIds) {
@@ -334,14 +354,16 @@ export async function runAddressExpansionTest(input: AddressExpansionTestInput =
       if (ev) evidenceTypes.add(ev.type);
     }
     const score = confidenceToScore(candidate.confidence);
+    const readinessScore = candidate.prospect?.readinessScore ?? score;
     const prev = byOperator.get(key);
     if (!prev) {
-      byOperator.set(key, { name: candidate.operatorName, score, signals, evidenceTypes, candidateCount: 1 });
+      byOperator.set(key, { name: candidate.operatorName, score, readinessScore, signals, evidenceTypes, candidateCount: 1 });
       continue;
     }
     byOperator.set(key, {
       name: prev.name,
       score: Math.max(prev.score, score),
+      readinessScore: Math.max(prev.readinessScore, readinessScore),
       signals: new Set([...prev.signals, ...signals]),
       evidenceTypes: new Set([...prev.evidenceTypes, ...evidenceTypes]),
       candidateCount: prev.candidateCount + 1,
@@ -349,13 +371,20 @@ export async function runAddressExpansionTest(input: AddressExpansionTestInput =
   }
 
   const summaries: CandidateSummary[] = [...byOperator.values()]
-    .map((row) => ({
-      name: row.name,
-      sourceEvidenceTypes: [...row.evidenceTypes].sort(),
-      platformsFound: [...row.signals].sort(),
-      confidenceScore: row.score,
-      resolutionStatus: deriveResolution(row.score, row.candidateCount),
-    }))
+    .map((row) => {
+      const key = normalizeName(row.name);
+      const sample = candidateByName.get(key);
+      return {
+        name: row.name,
+        sourceEvidenceTypes: [...row.evidenceTypes].sort(),
+        platformsFound: [...row.signals].sort(),
+        confidenceScore: row.readinessScore,
+        resolutionStatus: deriveResolution(row.readinessScore, row.candidateCount),
+        type: sample?.prospect?.type,
+        tier: sample?.prospect?.tier,
+        addressMatch: sample ? addressMatchLabel(sample) : "none",
+      };
+    })
     .sort((a, b) => b.confidenceScore - a.confidenceScore);
 
   const results: Results = {
@@ -387,6 +416,24 @@ export async function runAddressExpansionTest(input: AddressExpansionTestInput =
     note: "Manual check values are auto-seeded heuristics and should be reviewed in operator QA.",
   });
 
+  const prospectBuckets = {
+    hot: candidates.filter((candidate) => candidate.prospect?.tier === "hot").length,
+    warm: candidates.filter((candidate) => candidate.prospect?.tier === "warm").length,
+    cold: candidates.filter((candidate) => candidate.prospect?.tier === "cold").length,
+    excluded: candidates.filter((candidate) => candidate.prospect?.tier === "exclude" || !candidate.prospect).length,
+  };
+
+  const topHotProspects = summaries
+    .filter((summary) => summary.tier === "hot")
+    .slice(0, 20)
+    .map((summary) => ({
+      name: summary.name,
+      score: summary.confidenceScore,
+      type: summary.type ?? "ambiguous",
+      platforms: summary.platformsFound,
+      addressMatch: summary.addressMatch ?? "none",
+    }));
+
   const report = {
     address,
     baseline,
@@ -396,6 +443,8 @@ export async function runAddressExpansionTest(input: AddressExpansionTestInput =
       instagramLift: results.candidatesWithInstagram - baseline.withInstagram,
       bookingLift: results.candidatesWithBooking - baseline.withBooking,
     },
+    prospects: prospectBuckets,
+    topHotProspects,
     qualitySample,
     summary: {
       coverageImproved: results.newUniqueOperators > 0,
@@ -429,6 +478,7 @@ export async function runAddressExpansionTest(input: AddressExpansionTestInput =
   console.log(`Instagram found: ${baseline.withInstagram} -> ${results.candidatesWithInstagram}`);
   console.log(`Booking pages found: ${baseline.withBooking} -> ${results.candidatesWithBooking}`);
   console.log(`Multi-signal operators: ${results.multiSignalCandidates}`);
+  console.log(`Prospects hot/warm/cold/excluded: ${prospectBuckets.hot}/${prospectBuckets.warm}/${prospectBuckets.cold}/${prospectBuckets.excluded}`);
   console.log("Quality sample:");
   console.log(`- live correct: ${liveCorrect}`);
   console.log(`- wrong: ${wrong}`);

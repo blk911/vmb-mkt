@@ -19,6 +19,7 @@ import {
   normalizeAddressKey,
   type AddressExpansionClassificationResult,
 } from "@/lib/social-targets/address-expansion/classification";
+import { scoreProspectCandidate } from "@/lib/social-targets/prospect/scoring";
 import { normalizeSocialTarget } from "@/lib/social-targets/normalization";
 import type { AddressExpansionCandidate, SocialEvidenceItem, SocialTarget } from "@/types/social-target";
 
@@ -50,6 +51,8 @@ export type AddressExpansionRunOutput = {
   classification: AddressExpansionClassificationResult;
   evidenceAdded: number;
   candidatesStaged: number;
+  allCandidates: AddressExpansionCandidate[];
+  usableCandidates: AddressExpansionCandidate[];
 };
 
 function dedupeCandidateKey(candidate: AddressExpansionCandidate): string {
@@ -234,9 +237,31 @@ export function runAddressExpansion(input: AddressExpansionRunInput): AddressExp
       dedupedCandidates.set(key, candidate);
     }
   }
-  const stagedCandidates = [...dedupedCandidates.values()].sort(
-    (a, b) => confidenceRank(b.confidence) - confidenceRank(a.confidence)
+  const evidenceById = new Map((next.evidence ?? []).map((item) => [item.id, item]));
+  const scoredCandidates = [...dedupedCandidates.values()].map((candidate) => ({
+    ...candidate,
+    prospect: scoreProspectCandidate({
+      candidate,
+      evidenceById,
+      sourceAddress: input.sourceAddress ?? classification.normalizedAddress,
+      city: input.target.zone,
+    }),
+  }));
+  scoredCandidates.sort((a, b) => {
+    const ar = a.prospect?.readinessScore ?? 0;
+    const br = b.prospect?.readinessScore ?? 0;
+    if (ar !== br) return br - ar;
+    return confidenceRank(b.confidence) - confidenceRank(a.confidence);
+  });
+  const usableCandidates = scoredCandidates.filter(
+    (candidate) => candidate.prospect?.tier === "hot" || candidate.prospect?.tier === "warm"
   );
+  const prospectCounts = {
+    hot: scoredCandidates.filter((candidate) => candidate.prospect?.tier === "hot").length,
+    warm: scoredCandidates.filter((candidate) => candidate.prospect?.tier === "warm").length,
+    cold: scoredCandidates.filter((candidate) => candidate.prospect?.tier === "cold").length,
+    exclude: scoredCandidates.filter((candidate) => candidate.prospect?.tier === "exclude").length,
+  };
   const target = normalizeSocialTarget({
     ...next,
     ...(classification.normalizedAddress ? { normalizedAddress: classification.normalizedAddress } : {}),
@@ -251,8 +276,10 @@ export function runAddressExpansion(input: AddressExpansionRunInput): AddressExp
         expansionPriority: classification.expansionPriority,
       },
       queryCount: queryPack.queries.length,
-      candidateCount: stagedCandidates.length,
-      candidates: stagedCandidates.slice(0, 120),
+      candidateCount: scoredCandidates.length,
+      usableCandidateCount: usableCandidates.length,
+      prospectCounts,
+      candidates: usableCandidates.slice(0, 120),
       lastRunId: input.runId,
       lastRunType: input.runType,
       sourceVersion: input.sourceVersion,
@@ -264,6 +291,8 @@ export function runAddressExpansion(input: AddressExpansionRunInput): AddressExp
     queryPack,
     classification,
     evidenceAdded: evidence.length,
-    candidatesStaged: stagedCandidates.length,
+    candidatesStaged: usableCandidates.length,
+    allCandidates: scoredCandidates,
+    usableCandidates,
   };
 }

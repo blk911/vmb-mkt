@@ -152,6 +152,43 @@ function parseAddressExpansionCandidate(raw: unknown): AddressExpansionCandidate
   if (typeof o.sourceAddress === "string" && o.sourceAddress.trim()) candidate.sourceAddress = o.sourceAddress.trim();
   if (typeof o.parentTargetId === "string" && o.parentTargetId.trim()) candidate.parentTargetId = o.parentTargetId.trim();
   if (typeof o.notes === "string" && o.notes.trim()) candidate.notes = o.notes.trim();
+  if (o.prospect && typeof o.prospect === "object") {
+    const p = o.prospect as Record<string, unknown>;
+    const type =
+      p.type === "operator" ||
+      p.type === "booking_operator" ||
+      p.type === "aggregator" ||
+      p.type === "directory" ||
+      p.type === "ambiguous"
+        ? p.type
+        : null;
+    const tier = p.tier === "hot" || p.tier === "warm" || p.tier === "cold" || p.tier === "exclude" ? p.tier : null;
+    const readinessScore =
+      typeof p.readinessScore === "number" && Number.isFinite(p.readinessScore)
+        ? Math.max(0, Math.min(100, Math.round(p.readinessScore)))
+        : null;
+    const addressMatchRaw = p.addressMatch;
+    const addressMatch =
+      addressMatchRaw && typeof addressMatchRaw === "object"
+        ? (addressMatchRaw as Record<string, unknown>)
+        : null;
+    if (type && tier && readinessScore !== null && addressMatch) {
+      candidate.prospect = {
+        type,
+        tier,
+        readinessScore,
+        addressMatch: {
+          exactAddressMatch: addressMatch.exactAddressMatch === true,
+          propertyMatch: addressMatch.propertyMatch === true,
+          cityMatch: addressMatch.cityMatch === true,
+          score:
+            typeof addressMatch.score === "number" && Number.isFinite(addressMatch.score)
+              ? Math.round(addressMatch.score)
+              : 0,
+        },
+      };
+    }
+  }
   return candidate;
 }
 
@@ -244,6 +281,9 @@ function normalizeTarget(raw: unknown): SocialTarget | null {
       ...(typeof ae.candidateCount === "number" && Number.isFinite(ae.candidateCount)
         ? { candidateCount: Math.max(0, Math.round(ae.candidateCount)) }
         : {}),
+      ...(typeof ae.usableCandidateCount === "number" && Number.isFinite(ae.usableCandidateCount)
+        ? { usableCandidateCount: Math.max(0, Math.round(ae.usableCandidateCount)) }
+        : {}),
       ...(typeof ae.lastRunId === "string" && ae.lastRunId.trim() ? { lastRunId: ae.lastRunId.trim() } : {}),
       ...(typeof ae.lastRunType === "string" && RUN_TYPE.includes(ae.lastRunType as (typeof RUN_TYPE)[number])
         ? { lastRunType: ae.lastRunType as "validation" | "scale" | "adhoc" | "expansion_test" }
@@ -251,6 +291,15 @@ function normalizeTarget(raw: unknown): SocialTarget | null {
       ...(typeof ae.sourceVersion === "string" && ae.sourceVersion.trim() ? { sourceVersion: ae.sourceVersion.trim() } : {}),
       ...(typeof ae.updatedAt === "string" && ae.updatedAt.trim() ? { updatedAt: ae.updatedAt.trim() } : {}),
     };
+    if (ae.prospectCounts && typeof ae.prospectCounts === "object") {
+      const c = ae.prospectCounts as Record<string, unknown>;
+      parsed.prospectCounts = {
+        hot: typeof c.hot === "number" && Number.isFinite(c.hot) ? Math.max(0, Math.round(c.hot)) : 0,
+        warm: typeof c.warm === "number" && Number.isFinite(c.warm) ? Math.max(0, Math.round(c.warm)) : 0,
+        cold: typeof c.cold === "number" && Number.isFinite(c.cold) ? Math.max(0, Math.round(c.cold)) : 0,
+        exclude: typeof c.exclude === "number" && Number.isFinite(c.exclude) ? Math.max(0, Math.round(c.exclude)) : 0,
+      };
+    }
     const classification = parseAddressExpansionClassification(ae.classification);
     const candidates = Array.isArray(ae.candidates)
       ? ae.candidates.map(parseAddressExpansionCandidate).filter((x): x is AddressExpansionCandidate => x !== null)
