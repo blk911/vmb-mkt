@@ -1,3 +1,4 @@
+import { isTargetActionable } from "@/lib/social-targets/target-visibility";
 import type { ActivitySignal, ProfileHealth, ReferralEdge, SocialTarget } from "@/types/social-target";
 
 export function computeReferralCounts(targets: SocialTarget[], edges: ReferralEdge[]): SocialTarget[] {
@@ -190,8 +191,8 @@ export function withComputedPriorityScore(targets: SocialTarget[]): SocialTarget
 
 export function isReadyToAttack(target: SocialTarget): boolean {
   return (
-    target.profileHealth === "active" &&
+    isTargetActionable(target) &&
     (target.activitySignal === "hot" || target.activitySignal === "warm") &&
-    target.status === "new"
+    (target.status ?? "new") === "new"
   );
 }

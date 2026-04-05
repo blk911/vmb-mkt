@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseSocialProfile } from "@/lib/social-targets/normalization";
 import { assertSocialTargetsApiAccess } from "@/lib/social-targets/social-targets-api-access";
 import { getMergedSocialTargets, saveMergedSocialTargetsAsRuntime } from "@/lib/social-targets/social-targets-store";
 import type {
@@ -57,6 +58,10 @@ function normalizeTarget(raw: unknown): SocialTarget | null {
   }
   if (o.priorityScoreManual === true) row.priorityScoreManual = true;
   if (typeof o.outreachAngle === "string") row.outreachAngle = o.outreachAngle;
+  if ("socialProfile" in o) {
+    const sp = parseSocialProfile(o.socialProfile);
+    if (sp) row.socialProfile = sp;
+  }
   return row;
 }
 

@@ -1,7 +1,17 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  mapProfileHealthToResolveStatus,
+  normalizeSocialTarget,
+  patchSocialProfile,
+} from "@/lib/social-targets/normalization";
+import {
+  SOCIAL_VERIFICATION_STATUSES,
+  SOCIAL_VISIBILITY_STATES,
+} from "@/lib/social-targets/social-profile-constants";
 import {
   computePriorityScore,
   computeReferralCounts,
@@ -12,13 +22,23 @@ import {
   isReadyToAttack,
   upsertReferralEdge,
 } from "@/lib/social-targets/target-utils";
+import {
+  getResolveStatus,
+  getVerificationStatus,
+  shouldHideTargetBecauseDead,
+  shouldShowTargetInPrimaryView,
+  shouldShowTargetInReviewView,
+} from "@/lib/social-targets/target-visibility";
 import type {
   ActivitySignal,
   ProfileHealth,
   ReferralCategory,
   ReferralEdge,
+  SocialResolveStatus,
   SocialTarget,
   SocialTargetStatus,
+  SocialVerificationStatus,
+  SocialVisibilityState,
 } from "@/types/social-target";
 
 type Props = {
@@ -68,6 +88,63 @@ function stripAt(h: string): string {
 
 function igProfileUrl(handle: string): string {
   return `https://www.instagram.com/${encodeURIComponent(stripAt(handle))}/`;
+}
+
+function profileUrlForTarget(t: SocialTarget): string {
+  const u = t.socialProfile?.url?.trim();
+  if (u) return u;
+  if (t.socialProfile?.platform === "tiktok") {
+    return `https://www.tiktok.com/@${encodeURIComponent(stripAt(t.handle))}`;
+  }
+  return igProfileUrl(t.handle);
+}
+
+function TrustBadges({ t }: { t: SocialTarget }) {
+  const rs = getResolveStatus(t);
+  const vs = getVerificationStatus(t);
+  const act = t.socialProfile?.activityStatus ?? "unknown";
+  const rsCls =
+    rs === "live"
+      ? "bg-emerald-100 text-emerald-900"
+      : rs === "dead"
+        ? "bg-red-100 text-red-900"
+        : rs === "redirect" || rs === "blocked"
+          ? "bg-amber-100 text-amber-950"
+          : "bg-neutral-100 text-neutral-700";
+  const vsCls =
+    vs === "manual_verified" || vs === "auto_verified"
+      ? "bg-sky-100 text-sky-950"
+      : vs === "rejected"
+        ? "bg-neutral-300 text-neutral-800"
+        : "bg-violet-50 text-violet-900";
+  const actCls =
+    act === "recent" ? "bg-lime-100 text-lime-950" : act === "stale" ? "bg-orange-100 text-orange-950" : "bg-neutral-50 text-neutral-600";
+  return (
+    <div className="mt-1 flex flex-wrap gap-1">
+      <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${rsCls}`}>{rs}</span>
+      <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${vsCls}`}>
+        {vs.replace(/_/g, " ")}
+      </span>
+      <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${actCls}`}>{act}</span>
+    </div>
+  );
+}
+
+function TargetHandleLink({ t, children }: { t: SocialTarget; children: ReactNode }) {
+  const dead = shouldHideTargetBecauseDead(t);
+  const href = profileUrlForTarget(t);
+  if (dead) {
+    return (
+      <span className="text-neutral-400 line-through" title="Dead or rejected — use Review mode to inspect">
+        {children}
+      </span>
+    );
+  }
+  return (
+    <a href={href} target="_blank" rel="noreferrer" className="font-semibold text-rose-900 underline-offset-2 hover:underline">
+      {children}
+    </a>
+  );
 }
 
 function handleMatchesTarget(targets: SocialTarget[], rawHandle: string): SocialTarget | undefined {
@@ -132,6 +209,9 @@ function toApiTarget(t: SocialTarget): SocialTarget {
   if (typeof t.priorityScore === "number") row.priorityScore = t.priorityScore;
   if (t.priorityScoreManual === true) row.priorityScoreManual = true;
   if (t.outreachAngle) row.outreachAngle = t.outreachAngle;
+  if (t.socialProfile && Object.keys(t.socialProfile).length > 0) {
+    row.socialProfile = { ...t.socialProfile };
+  }
   return row;
 }
 
@@ -179,7 +259,9 @@ export default function SocialTargetsTable({
   const [activityFilter, setActivityFilter] = useState<(typeof ACTIVITY_FILTER)[number]>("all");
   const [minPriority, setMinPriority] = useState<(typeof MIN_PRIORITY_FILTER)[number]>("all");
   const [readyToAttackOnly, setReadyToAttackOnly] = useState(false);
-  const [hideDeadProfiles, setHideDeadProfiles] = useState(false);
+  const [hideDeadProfiles, setHideDeadProfiles] = useState(true);
+  const [viewMode, setViewMode] = useState<"primary" | "review">("primary");
+  const [verifyBusyId, setVerifyBusyId] = useState<string | null>(null);
   const [hotTagOnly, setHotTagOnly] = useState(false);
   const [referralHubsOnly, setReferralHubsOnly] = useState(false);
   const [sortBy, setSortBy] = useState<
@@ -197,6 +279,11 @@ export default function SocialTargetsTable({
       priorityScore: getEffectivePriorityScore(t),
     }));
   }, [baseTargets, referralEdges]);
+
+  const viewScopedTargets = useMemo(() => {
+    if (viewMode === "primary") return targets.filter(shouldShowTargetInPrimaryView);
+    return targets.filter(shouldShowTargetInReviewView);
+  }, [targets, viewMode]);
 
   const persistTargetsList = useCallback(async (next: SocialTarget[]) => {
     setSaveError(null);
@@ -275,8 +362,12 @@ export default function SocialTargetsTable({
   }, [baseTargets]);
 
   const topReadyTargets = useMemo(() => {
-    return baseTargets
-      .filter(isReadyToAttack)
+    return targets
+      .filter((t) => {
+        if (!isReadyToAttack(t)) return false;
+        if (viewMode === "primary" && !shouldShowTargetInPrimaryView(t)) return false;
+        return true;
+      })
       .map((t) => ({
         t,
         score: getEffectivePriorityScore(t),
@@ -288,9 +379,17 @@ export default function SocialTargetsTable({
       })
       .slice(0, 10)
       .map((x) => x.t);
-  }, [baseTargets]);
+  }, [targets, viewMode]);
 
-  const topReferred = useMemo(() => getTopReferredHandles(referralEdges).slice(0, 5), [referralEdges]);
+  const topReferred = useMemo(() => {
+    const raw = getTopReferredHandles(referralEdges).slice(0, 5);
+    if (viewMode === "review") return raw;
+    return raw.filter((n) => {
+      const tgt = handleMatchesTarget(baseTargets, n.toHandle);
+      if (!tgt) return true;
+      return shouldShowTargetInPrimaryView(normalizeSocialTarget(tgt));
+    });
+  }, [referralEdges, viewMode, baseTargets]);
 
   const referralSummary = useMemo(() => {
     const multi = referralEdges.filter((e) => e.confidence === "multi").length;
@@ -306,7 +405,7 @@ export default function SocialTargetsTable({
   }, [referralEdges, targets]);
 
   const filteredSorted = useMemo(() => {
-    let list = [...targets];
+    let list = [...viewScopedTargets];
     const q = search.trim().toLowerCase();
     if (q) {
       list = list.filter((t) => {
@@ -325,7 +424,7 @@ export default function SocialTargetsTable({
     }
     if (readyToAttackOnly) list = list.filter(isReadyToAttack);
     if (hideDeadProfiles) {
-      list = list.filter((t) => t.profileHealth !== "not_found" && t.profileHealth !== "renamed_or_moved");
+      list = list.filter((t) => !shouldHideTargetBecauseDead(t));
     }
     if (hotTagOnly) list = list.filter(hasHotTag);
     if (referralHubsOnly) list = list.filter((t) => t.isReferralHub);
@@ -360,7 +459,7 @@ export default function SocialTargetsTable({
 
     return list;
   }, [
-    targets,
+    viewScopedTargets,
     search,
     zoneFilter,
     categoryFilter,
@@ -431,14 +530,68 @@ export default function SocialTargetsTable({
       setBaseTargets((prev) => {
         const next = prev.map((t) => {
           if (t.id !== id) return t;
-          return afterHealthOrActivityChange(t, {
+          const stepped = afterHealthOrActivityChange(t, {
             profileHealth: health,
             lastVerifiedAt: new Date().toISOString(),
           });
+          return patchSocialProfile(stepped, { resolveStatus: mapProfileHealthToResolveStatus(health) });
         });
         void persistTargetsList(next);
         return next;
       });
+    },
+    [persistTargetsList]
+  );
+
+  const applySocialProfilePatch = useCallback(
+    (id: string, patch: Partial<NonNullable<SocialTarget["socialProfile"]>>) => {
+      setBaseTargets((prev) => {
+        const next = prev.map((x) => (x.id === id ? patchSocialProfile(x, patch) : x));
+        void persistTargetsList(next);
+        return next;
+      });
+    },
+    [persistTargetsList]
+  );
+
+  const runHeadVerify = useCallback(
+    async (t: SocialTarget) => {
+      const url = profileUrlForTarget(t);
+      setVerifyBusyId(t.id);
+      setSaveError(null);
+      try {
+        const res = await fetch("/api/social-targets/verify-profile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+        const data = (await res.json().catch(() => ({}))) as {
+          ok?: boolean;
+          error?: string;
+          resolveStatus?: string;
+          checkedAt?: string;
+        };
+        if (!res.ok || data.ok !== true || !data.resolveStatus || !data.checkedAt) {
+          setSaveError(data.error || `Verify failed (${res.status})`);
+          return;
+        }
+        setBaseTargets((prev) => {
+          const next = prev.map((x) =>
+            x.id === t.id
+              ? patchSocialProfile(x, {
+                  resolveStatus: data.resolveStatus as SocialResolveStatus,
+                  lastCheckedAt: data.checkedAt,
+                })
+              : x
+          );
+          void persistTargetsList(next);
+          return next;
+        });
+      } catch {
+        setSaveError("Verify failed (network)");
+      } finally {
+        setVerifyBusyId(null);
+      }
     },
     [persistTargetsList]
   );
@@ -525,7 +678,7 @@ export default function SocialTargetsTable({
           activitySignal: "unknown",
         }),
       };
-      const next = [...prev, row];
+      const next = [...prev, patchSocialProfile(row, { discoverySource: "referral" })];
       void persistTargetsList(next);
       return next;
     });
@@ -565,6 +718,31 @@ export default function SocialTargetsTable({
         <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900">{saveError}</div>
       ) : null}
 
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-sm">
+        <span className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">View</span>
+        <button
+          type="button"
+          onClick={() => setViewMode("primary")}
+          className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${
+            viewMode === "primary" ? "bg-emerald-600 text-white" : "border border-neutral-200 bg-neutral-50 text-neutral-700"
+          }`}
+        >
+          Primary
+        </button>
+        <button
+          type="button"
+          onClick={() => setViewMode("review")}
+          className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${
+            viewMode === "review" ? "bg-amber-600 text-white" : "border border-neutral-200 bg-neutral-50 text-neutral-700"
+          }`}
+        >
+          Review
+        </button>
+        <span className="text-[11px] text-neutral-500">
+          Primary = live / trusted queue. Review = dead, hidden, rejected, or explicit review bucket.
+        </span>
+      </div>
+
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <div className="rounded-xl border border-slate-200 bg-slate-50/90 px-3 py-2 shadow-sm">
           <p className="text-[10px] font-bold uppercase tracking-wide text-slate-600">Total targets</p>
@@ -578,14 +756,18 @@ export default function SocialTargetsTable({
           <p className="text-[10px] font-bold uppercase tracking-wide text-rose-900">Ready to attack</p>
           <p className="text-2xl font-bold tabular-nums text-rose-950">{operatorKpis.ready}</p>
         </div>
-        <div className="rounded-xl border border-neutral-300 bg-neutral-100/90 px-3 py-2 shadow-sm">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-600">Dead / broken</p>
-          <p className="text-2xl font-bold tabular-nums text-neutral-900">{operatorKpis.deadBroken}</p>
-        </div>
-        <div className="rounded-xl border border-sky-200 bg-sky-50/90 px-3 py-2 shadow-sm">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-sky-900">Live providers</p>
-          <p className="text-2xl font-bold tabular-nums text-sky-950">{operatorKpis.liveProviders}</p>
-        </div>
+        {operatorKpis.deadBroken > 0 ? (
+          <div className="rounded-xl border border-neutral-300 bg-neutral-100/90 px-3 py-2 shadow-sm">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-600">Dead / broken</p>
+            <p className="text-2xl font-bold tabular-nums text-neutral-900">{operatorKpis.deadBroken}</p>
+          </div>
+        ) : null}
+        {operatorKpis.liveProviders > 0 ? (
+          <div className="rounded-xl border border-sky-200 bg-sky-50/90 px-3 py-2 shadow-sm">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-sky-900">Live providers</p>
+            <p className="text-2xl font-bold tabular-nums text-sky-950">{operatorKpis.liveProviders}</p>
+          </div>
+        ) : null}
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -607,40 +789,42 @@ export default function SocialTargetsTable({
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-indigo-200 bg-indigo-50/80 px-3 py-2">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-indigo-900">Referral edges</p>
-          <p className="text-2xl font-bold tabular-nums text-indigo-950">{referralSummary.totalEdges}</p>
+      {referralSummary.totalEdges > 0 ? (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border border-indigo-200 bg-indigo-50/80 px-3 py-2">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-indigo-900">Referral edges</p>
+            <p className="text-2xl font-bold tabular-nums text-indigo-950">{referralSummary.totalEdges}</p>
+          </div>
+          <div className="rounded-xl border border-fuchsia-200 bg-fuchsia-50/80 px-3 py-2">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-fuchsia-900">Multi-confidence</p>
+            <p className="text-2xl font-bold tabular-nums text-fuchsia-950">{referralSummary.multiEdges}</p>
+          </div>
+          <div className="rounded-xl border border-teal-200 bg-teal-50/80 px-3 py-2">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-teal-900">Referral hubs</p>
+            <p className="text-2xl font-bold tabular-nums text-teal-950">{referralSummary.hubCount}</p>
+          </div>
+          <div className="rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-amber-900">Top referred</p>
+            <p className="text-sm font-semibold text-amber-950">
+              {referralSummary.topHandle ? (
+                <>
+                  @{referralSummary.topHandle}{" "}
+                  <span className="text-xs font-normal text-amber-800">({referralSummary.topSeen}×)</span>
+                </>
+              ) : (
+                <span className="text-neutral-500">—</span>
+              )}
+            </p>
+          </div>
         </div>
-        <div className="rounded-xl border border-fuchsia-200 bg-fuchsia-50/80 px-3 py-2">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-fuchsia-900">Multi-confidence</p>
-          <p className="text-2xl font-bold tabular-nums text-fuchsia-950">{referralSummary.multiEdges}</p>
-        </div>
-        <div className="rounded-xl border border-teal-200 bg-teal-50/80 px-3 py-2">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-teal-900">Referral hubs</p>
-          <p className="text-2xl font-bold tabular-nums text-teal-950">{referralSummary.hubCount}</p>
-        </div>
-        <div className="rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-amber-900">Top referred</p>
-          <p className="text-sm font-semibold text-amber-950">
-            {referralSummary.topHandle ? (
-              <>
-                @{referralSummary.topHandle}{" "}
-                <span className="text-xs font-normal text-amber-800">({referralSummary.topSeen}×)</span>
-              </>
-            ) : (
-              <span className="text-neutral-500">—</span>
-            )}
-          </p>
-        </div>
-      </div>
+      ) : null}
 
-      <div className="rounded-xl border border-rose-200 bg-rose-50/40 p-4">
-        <h2 className="text-[11px] font-bold uppercase tracking-wide text-rose-900">Top ready targets</h2>
-        <p className="mt-1 text-xs text-neutral-600">Active + warm/hot + status new — sorted by score, then followers.</p>
-        {topReadyTargets.length === 0 ? (
-          <p className="mt-2 text-sm text-neutral-500">No rows match Ready to Attack criteria.</p>
-        ) : (
+      {topReadyTargets.length > 0 ? (
+        <div className="rounded-xl border border-rose-200 bg-rose-50/40 p-4">
+          <h2 className="text-[11px] font-bold uppercase tracking-wide text-rose-900">Top ready targets</h2>
+          <p className="mt-1 text-xs text-neutral-600">
+            Verified-enough + live resolve + warm/hot + status new — sorted by score, then followers.
+          </p>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
             {topReadyTargets.map((t) => (
               <li
@@ -648,42 +832,37 @@ export default function SocialTargetsTable({
                 className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-rose-100 bg-white px-3 py-2 text-xs"
               >
                 <div>
-                  <a
-                    href={igProfileUrl(t.handle)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-semibold text-rose-900 underline-offset-2 hover:underline"
-                  >
+                  <TargetHandleLink t={t}>
                     @{stripAt(t.handle)}
-                  </a>
+                  </TargetHandleLink>
                   <span className="ml-2 text-neutral-500">{t.category}</span>
                   <span className="ml-2 font-bold tabular-nums text-neutral-800">{getEffectivePriorityScore(t)}</span>
                   {t.outreachAngle ? (
                     <p className="mt-1 max-w-md text-[11px] text-neutral-600">{t.outreachAngle}</p>
                   ) : null}
                 </div>
-                <a
-                  href={igProfileUrl(t.handle)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="shrink-0 rounded-full border border-rose-200 bg-rose-50 px-2 py-1 text-[10px] font-bold uppercase text-rose-900 hover:bg-rose-100"
-                >
-                  Open IG
-                </a>
+                {!shouldHideTargetBecauseDead(t) ? (
+                  <a
+                    href={profileUrlForTarget(t)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="shrink-0 rounded-full border border-rose-200 bg-rose-50 px-2 py-1 text-[10px] font-bold uppercase text-rose-900 hover:bg-rose-100"
+                  >
+                    Open profile
+                  </a>
+                ) : null}
               </li>
             ))}
           </ul>
-        )}
-      </div>
+        </div>
+      ) : null}
 
-      <div className="rounded-xl border border-neutral-200 bg-neutral-50/80 p-4">
-        <h2 className="text-[11px] font-bold uppercase tracking-wide text-neutral-600">Emerging referral nodes</h2>
-        <p className="mt-1 text-xs text-neutral-500">Top referred handles by category (includes handles not yet in the target list).</p>
-        <ul className="mt-3 space-y-2">
-          {topReferred.length === 0 ? (
-            <li className="text-sm text-neutral-500">No referral edges yet.</li>
-          ) : (
-            topReferred.map((n) => {
+      {topReferred.length > 0 ? (
+        <div className="rounded-xl border border-neutral-200 bg-neutral-50/80 p-4">
+          <h2 className="text-[11px] font-bold uppercase tracking-wide text-neutral-600">Emerging referral nodes</h2>
+          <p className="mt-1 text-xs text-neutral-500">Top referred handles by category (includes handles not yet in the target list).</p>
+          <ul className="mt-3 space-y-2">
+            {topReferred.map((n) => {
               const known = isKnownReferredNode(n.toHandle);
               return (
                 <li
@@ -715,10 +894,10 @@ export default function SocialTargetsTable({
                   ) : null}
                 </li>
               );
-            })
-          )}
-        </ul>
-      </div>
+            })}
+          </ul>
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap items-end gap-3 rounded-xl border border-neutral-200 bg-neutral-50/80 p-3">
         <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
@@ -776,20 +955,6 @@ export default function SocialTargetsTable({
           </select>
         </label>
         <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-          Profile health
-          <select
-            value={profileHealthFilter}
-            onChange={(e) => setProfileHealthFilter(e.target.value as (typeof PROFILE_HEALTH_FILTER)[number])}
-            className="mt-0.5 block max-w-[11rem] rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
-          >
-            {PROFILE_HEALTH_FILTER.map((f) => (
-              <option key={f} value={f}>
-                {f === "all" ? "All" : f.replace(/_/g, " ")}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
           Activity
           <select
             value={activityFilter}
@@ -802,58 +967,6 @@ export default function SocialTargetsTable({
               </option>
             ))}
           </select>
-        </label>
-        <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-          Min priority
-          <select
-            value={minPriority === "all" ? "all" : String(minPriority)}
-            onChange={(e) => {
-              const v = e.target.value;
-              setMinPriority(v === "all" ? "all" : (Number(v) as 50 | 70 | 80));
-            }}
-            className="mt-0.5 block rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
-          >
-            <option value="all">All</option>
-            <option value="50">50+</option>
-            <option value="70">70+</option>
-            <option value="80">80+</option>
-          </select>
-        </label>
-        <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
-          <input
-            type="checkbox"
-            checked={readyToAttackOnly}
-            onChange={(e) => setReadyToAttackOnly(e.target.checked)}
-            className="rounded border-neutral-300"
-          />
-          Ready to attack only
-        </label>
-        <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
-          <input
-            type="checkbox"
-            checked={hideDeadProfiles}
-            onChange={(e) => setHideDeadProfiles(e.target.checked)}
-            className="rounded border-neutral-300"
-          />
-          Hide dead profiles
-        </label>
-        <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
-          <input
-            type="checkbox"
-            checked={hotTagOnly}
-            onChange={(e) => setHotTagOnly(e.target.checked)}
-            className="rounded border-neutral-300"
-          />
-          HOT tag only
-        </label>
-        <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
-          <input
-            type="checkbox"
-            checked={referralHubsOnly}
-            onChange={(e) => setReferralHubsOnly(e.target.checked)}
-            className="rounded border-neutral-300"
-          />
-          Referral hubs only
         </label>
         <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
           Sort
@@ -889,30 +1002,104 @@ export default function SocialTargetsTable({
           />
           Descending
         </label>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={selectAllVisible}
-            className="rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-neutral-800 hover:bg-neutral-50"
-          >
-            Select visible
-          </button>
-          <button
-            type="button"
-            onClick={clearSelection}
-            className="rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-neutral-800 hover:bg-neutral-50"
-          >
-            Clear
-          </button>
-          <button
-            type="button"
-            onClick={() => void copySelectedHandles()}
-            className="rounded-full border border-neutral-900 bg-neutral-900 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-white hover:bg-neutral-800"
-          >
-            Copy selected @handles
-          </button>
-        </div>
       </div>
+
+      <details className="rounded-xl border border-neutral-200 bg-neutral-50/80 p-3">
+        <summary className="cursor-pointer text-[11px] font-bold uppercase tracking-wide text-neutral-600">
+          More filters & bulk actions
+        </summary>
+        <div className="mt-3 flex flex-wrap items-end gap-3">
+          <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+            Profile health
+            <select
+              value={profileHealthFilter}
+              onChange={(e) => setProfileHealthFilter(e.target.value as (typeof PROFILE_HEALTH_FILTER)[number])}
+              className="mt-0.5 block max-w-[11rem] rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
+            >
+              {PROFILE_HEALTH_FILTER.map((f) => (
+                <option key={f} value={f}>
+                  {f === "all" ? "All" : f.replace(/_/g, " ")}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+            Min priority
+            <select
+              value={minPriority === "all" ? "all" : String(minPriority)}
+              onChange={(e) => {
+                const v = e.target.value;
+                setMinPriority(v === "all" ? "all" : (Number(v) as 50 | 70 | 80));
+              }}
+              className="mt-0.5 block rounded border border-neutral-300 bg-white px-2 py-1.5 text-xs"
+            >
+              <option value="all">All</option>
+              <option value="50">50+</option>
+              <option value="70">70+</option>
+              <option value="80">80+</option>
+            </select>
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={readyToAttackOnly}
+              onChange={(e) => setReadyToAttackOnly(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            Ready to attack only
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={hideDeadProfiles}
+              onChange={(e) => setHideDeadProfiles(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            Hide dead profiles
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={hotTagOnly}
+              onChange={(e) => setHotTagOnly(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            HOT tag only
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={referralHubsOnly}
+              onChange={(e) => setReferralHubsOnly(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            Referral hubs only
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={selectAllVisible}
+              className="rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-neutral-800 hover:bg-neutral-50"
+            >
+              Select visible
+            </button>
+            <button
+              type="button"
+              onClick={clearSelection}
+              className="rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-neutral-800 hover:bg-neutral-50"
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={() => void copySelectedHandles()}
+              className="rounded-full border border-neutral-900 bg-neutral-900 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-white hover:bg-neutral-800"
+            >
+              Copy selected @handles
+            </button>
+          </div>
+        </div>
+      </details>
 
       <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
         <table className="w-full min-w-[1400px] border-collapse text-left text-xs">
@@ -956,7 +1143,9 @@ export default function SocialTargetsTable({
                     </td>
                     <td className="px-2 py-2">
                       <div className="flex flex-wrap items-center gap-1">
-                        <div className="font-semibold text-neutral-900">@{stripAt(t.handle)}</div>
+                        <TargetHandleLink t={t}>
+                          <span className="font-semibold">@{stripAt(t.handle)}</span>
+                        </TargetHandleLink>
                         {ready ? (
                           <span className="rounded-full bg-rose-600 px-2 py-0.5 text-[9px] font-black uppercase text-white">
                             Ready
@@ -968,6 +1157,7 @@ export default function SocialTargetsTable({
                           </span>
                         ) : null}
                       </div>
+                      <TrustBadges t={t} />
                       {t.businessName ? <div className="text-[11px] text-neutral-600">{t.businessName}</div> : null}
                       <div className="mt-1 space-y-0.5 text-[10px] text-neutral-600">
                         <div>
@@ -1024,6 +1214,50 @@ export default function SocialTargetsTable({
                             </option>
                           ))}
                         </select>
+                        <label className="text-[9px] font-semibold text-neutral-500">
+                          Trust / visibility
+                          <select
+                            value={getVerificationStatus(baseRow)}
+                            onChange={(e) =>
+                              applySocialProfilePatch(t.id, {
+                                verificationStatus: e.target.value as SocialVerificationStatus,
+                              })
+                            }
+                            className="mt-0.5 block w-full rounded border border-neutral-300 bg-white px-1 py-1 text-[10px]"
+                          >
+                            {SOCIAL_VERIFICATION_STATUSES.map((v) => (
+                              <option key={v} value={v}>
+                                {v.replace(/_/g, " ")}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label className="text-[9px] font-semibold text-neutral-500">
+                          Visibility
+                          <select
+                            value={baseRow.socialProfile?.visibilityState ?? "show"}
+                            onChange={(e) =>
+                              applySocialProfilePatch(t.id, {
+                                visibilityState: e.target.value as SocialVisibilityState,
+                              })
+                            }
+                            className="mt-0.5 block w-full rounded border border-neutral-300 bg-white px-1 py-1 text-[10px]"
+                          >
+                            {SOCIAL_VISIBILITY_STATES.map((v) => (
+                              <option key={v} value={v}>
+                                {v}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <button
+                          type="button"
+                          disabled={verifyBusyId === t.id}
+                          onClick={() => void runHeadVerify(t)}
+                          className="rounded border border-sky-300 bg-sky-50 px-2 py-1 text-[9px] font-bold uppercase text-sky-900 hover:bg-sky-100 disabled:opacity-50"
+                        >
+                          {verifyBusyId === t.id ? "Checking…" : "Check link"}
+                        </button>
                         <label className="text-[9px] font-semibold text-neutral-500">
                           Priority (0–100)
                           <input
