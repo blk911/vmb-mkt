@@ -1,4 +1,5 @@
 import { ensureSocialCandidates, getPrimaryCandidate } from "@/lib/social-targets/social-candidate-logic";
+import { getFeaturedValidationIntegrity } from "@/lib/social-targets/featured-validation-integrity";
 import { mapProfileHealthToResolveStatus } from "@/lib/social-targets/normalization";
 import type { SocialCandidate, SocialTarget } from "@/types/social-target";
 
@@ -21,16 +22,17 @@ function platformLabel(p: SocialCandidate["platform"]): string {
 
 /** One short line for table row (no wrap explosion). */
 export function buildEvidenceHeadline(t: SocialTarget): string {
-  const p = getPrimaryCandidate(ensureSocialCandidates(t));
+  const integrity = getFeaturedValidationIntegrity(t);
+  const p = integrity.displayCandidate ?? getPrimaryCandidate(ensureSocialCandidates(t));
   if (!p) return "No profile candidate.";
   const plat = platformLabel(p.platform);
-  const rs = p.resolveStatus;
-  const act = p.activityStatus;
+  const rs = integrity.displayResolveState;
+  const act = integrity.displayActivityState;
   const parts: string[] = [];
   if (rs === "live") parts.push(`Live ${plat}`);
+  else if (rs === "stale") parts.push(`Stale ${plat}`);
   else if (rs === "dead") parts.push(`Dead link (${plat})`);
   else if (rs === "blocked") parts.push(`Blocked check (${plat})`);
-  else if (rs === "redirect") parts.push(`Redirect (${plat})`);
   else parts.push(`${rs} (${plat})`);
 
   if (act === "recent") parts.push("recent activity");

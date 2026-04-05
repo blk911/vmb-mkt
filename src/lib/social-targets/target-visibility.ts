@@ -1,6 +1,6 @@
 import { ensureSocialCandidates, getPrimaryCandidate } from "@/lib/social-targets/social-candidate-logic";
+import { getFeaturedValidationIntegrity } from "@/lib/social-targets/featured-validation-integrity";
 import { isConfirmedRealNoSocial, isPrimaryLowConfidenceOnly } from "@/lib/social-targets/operator-rank";
-import { mapProfileHealthToResolveStatus } from "@/lib/social-targets/normalization";
 import type {
   SocialTarget,
   SocialResolveStatus,
@@ -14,13 +14,15 @@ function primaryRow(t: SocialTarget) {
 }
 
 export function getResolveStatus(t: SocialTarget): SocialResolveStatus {
-  const p = primaryRow(t);
-  return p?.resolveStatus ?? mapProfileHealthToResolveStatus(t.profileHealth);
+  const integrity = getFeaturedValidationIntegrity(t);
+  if (integrity.displayResolveState === "stale") return "unknown";
+  return integrity.displayResolveState;
 }
 
 export function getVerificationStatus(t: SocialTarget): SocialVerificationStatus {
-  const p = primaryRow(t);
-  return p?.verificationStatus ?? t.socialProfile?.verificationStatus ?? "candidate";
+  const integrity = getFeaturedValidationIntegrity(t);
+  if (integrity.displayVerificationState === "verify_needed") return "candidate";
+  return integrity.displayVerificationState;
 }
 
 /** URL/handle resolves and responds as a real profile (not hard 404 / gone). */
@@ -61,8 +63,9 @@ export function shouldShowTargetInReviewView(t: SocialTarget): boolean {
 /** Worth surfacing in “attack now” style KPIs (verified-enough + live resolve). */
 export function isTargetActionable(t: SocialTarget): boolean {
   if (shouldHideTargetBecauseDead(t)) return false;
-  if (getResolveStatus(t) !== "live") return false;
-  const vs = getVerificationStatus(t);
+  const integrity = getFeaturedValidationIntegrity(t);
+  if (integrity.displayResolveState !== "live") return false;
+  const vs = integrity.displayVerificationState === "verify_needed" ? "candidate" : integrity.displayVerificationState;
   if (vs === "rejected") return false;
   if (vs === "manual_verified" || vs === "auto_verified") return true;
   if (vs === "candidate") {

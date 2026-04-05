@@ -7,6 +7,7 @@ import {
   buildEvidenceTail,
   legacyHealthHint,
 } from "@/lib/social-targets/operator-evidence";
+import { getFeaturedValidationIntegrity } from "@/lib/social-targets/featured-validation-integrity";
 import { isConfirmedRealNoSocial } from "@/lib/social-targets/operator-rank";
 import type { SocialTarget } from "@/types/social-target";
 
@@ -15,6 +16,7 @@ type Props = { target: SocialTarget };
 /** Compact reasoning for trust/rank; expandable for evidence strings. */
 export function SocialTargetEvidence({ target }: Props) {
   const [open, setOpen] = useState(false);
+  const integrity = getFeaturedValidationIntegrity(target);
   const head = buildEvidenceHeadline(target);
   const detail = buildEvidenceDetailLine(target);
   const tail = buildEvidenceTail(target);
@@ -22,7 +24,9 @@ export function SocialTargetEvidence({ target }: Props) {
   const noSocialAnchorHint = isConfirmedRealNoSocial(target)
     ? "Real business anchor confirmed; no verified social footprint."
     : null;
-  const extra = [...(hint ? [hint] : []), ...tail];
+  const integrityLine =
+    integrity.reason && integrity.reason !== "Featured profile verified and fresh" ? integrity.reason : null;
+  const extra = [...(hint ? [hint] : []), ...(integrityLine ? [integrityLine] : []), ...tail];
 
   return (
     <div className="mt-1 max-w-[280px] text-[10px] leading-snug text-neutral-600">

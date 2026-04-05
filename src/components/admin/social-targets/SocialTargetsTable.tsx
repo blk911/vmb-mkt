@@ -6,7 +6,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ensureSocialCandidates,
   getPrimaryCandidate,
+  ingestSourceCandidateInputs,
+  patchCandidate,
   setPrimaryCandidateId,
+  sourceCandidateInputToSocialCandidate,
 } from "@/lib/social-targets/social-candidate-logic";
 import {
   mapProfileHealthToResolveStatus,
@@ -24,6 +27,10 @@ import {
 import { confidenceTier } from "@/lib/social-targets/social-scoring";
 import { SocialTargetEvidence } from "@/components/admin/social-targets/SocialTargetEvidence";
 import {
+  buildSourceIntakeInputsForTarget,
+  classifySourceCandidate,
+} from "@/lib/social-targets/source-intake-status";
+import {
   SOCIAL_VERIFICATION_STATUSES,
   SOCIAL_VISIBILITY_STATES,
 } from "@/lib/social-targets/social-profile-constants";
@@ -38,12 +45,12 @@ import {
   upsertReferralEdge,
 } from "@/lib/social-targets/target-utils";
 import {
-  getResolveStatus,
   getVerificationStatus,
   shouldHideTargetBecauseDead,
   shouldShowTargetInPrimaryView,
   shouldShowTargetInReviewView,
 } from "@/lib/social-targets/target-visibility";
+import { getFeaturedValidationIntegrity } from "@/lib/social-targets/featured-validation-integrity";
 import type {
   ActivitySignal,
   ProfileHealth,
@@ -54,6 +61,8 @@ import type {
   SocialVerificationStatus,
   SocialVisibilityState,
 } from "@/types/social-target";
+import type { SourceCandidateInput } from "@/lib/social-targets/source-adapters";
+import type { BatchIngestResult, BatchIngestSummary } from "@/lib/social-targets/batch-ingest-types";
 
 type Props = {
   initialTargets: SocialTarget[];
@@ -105,11 +114,11 @@ function igProfileUrl(handle: string): string {
 }
 
 function profileUrlForTarget(t: SocialTarget): string {
-  const primary = getPrimaryCandidate(ensureSocialCandidates(t));
-  const u = primary?.url?.trim() ?? t.socialProfile?.url?.trim();
+  const integrity = getFeaturedValidationIntegrity(t);
+  const u = integrity.displayCandidate?.url?.trim();
   if (u) return u;
-  const plat = primary?.platform ?? t.socialProfile?.platform;
-  const h = stripAt(primary?.handle ?? t.handle);
+  const plat = integrity.displayCandidate?.platform;
+  const h = stripAt(integrity.displayCandidate?.handle ?? t.handle);
   if (plat === "tiktok") {
     return `https://www.tiktok.com/@${encodeURIComponent(h)}`;
   }
@@ -155,10 +164,11 @@ function tierShortLabel(tier: ReturnType<typeof confidenceTier>): string {
 }
 
 function TrustBadges({ t }: { t: SocialTarget }) {
-  const primary = getPrimaryCandidate(ensureSocialCandidates(t));
-  const rs = getResolveStatus(t);
-  const vs = getVerificationStatus(t);
-  const act = primary?.activityStatus ?? t.socialProfile?.activityStatus ?? "unknown";
+  const integrity = getFeaturedValidationIntegrity(t);
+  const primary = integrity.displayCandidate ?? getPrimaryCandidate(ensureSocialCandidates(t));
+  const rs = integrity.displayResolveState;
+  const vs = integrity.displayVerificationState;
+  const act = integrity.displayActivityState;
   const tier = primary ? confidenceTier(primary.overallConfidenceScore) : "review";
   const tierCls =
     tier === "high"
@@ -171,14 +181,18 @@ function TrustBadges({ t }: { t: SocialTarget }) {
   const rsCls =
     rs === "live"
       ? "bg-emerald-100 text-emerald-900"
+      : rs === "stale"
+        ? "bg-amber-100 text-amber-950"
       : rs === "dead"
         ? "bg-red-100 text-red-900"
-        : rs === "redirect" || rs === "blocked"
+        : rs === "blocked"
           ? "bg-amber-100 text-amber-950"
           : "bg-neutral-100 text-neutral-700";
   const vsCls =
     vs === "manual_verified" || vs === "auto_verified"
       ? "bg-sky-100 text-sky-950"
+      : vs === "verify_needed"
+        ? "bg-amber-50 text-amber-900 ring-1 ring-amber-200"
       : vs === "rejected"
         ? "bg-neutral-300 text-neutral-800"
         : "bg-violet-50 text-violet-900";
@@ -197,6 +211,9 @@ function TrustBadges({ t }: { t: SocialTarget }) {
         {vs.replace(/_/g, " ")}
       </span>
       <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${actCls}`}>{act}</span>
+      {integrity.needsRecheck ? (
+        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-950">verify needed</span>
+      ) : null}
     </div>
   );
 }
@@ -235,6 +252,41 @@ function referralCategoryToTargetCategory(cat: ReferralCategory): string {
 
 function hasHotTag(t: SocialTarget): boolean {
   return Boolean(t.tags?.some((tag) => tag.toUpperCase() === "HOT"));
+}
+
+function socialCandidateIdentityKeyForIntake(c: { platform?: string; handle?: string; url?: string }): string {
+  const platform = c.platform || "unknown";
+  const handle = (c.handle ?? "").trim().toLowerCase();
+  const url = (c.url ?? "").trim().toLowerCase();
+  return `${platform}|${handle}|${url}`;
+}
+
+function sourceTypeBadgeLabel(sourceType: SourceCandidateInput["sourceType"]): string {
+  switch (sourceType) {
+    case "google_maps":
+      return "MAPS";
+    case "yelp":
+      return "YELP";
+    case "dora":
+      return "DORA";
+    case "website":
+      return "WEBSITE";
+    default:
+      return "SOURCE";
+  }
+}
+
+function sourceTrustTierLabel(tier: SourceCandidateInput["sourceTrustTier"]): string {
+  switch (tier) {
+    case "tier1":
+      return "T1";
+    case "tier2":
+      return "T2";
+    case "tier3":
+      return "T3";
+    default:
+      return "T?";
+  }
 }
 
 function noSocialFallbackAngle(t: SocialTarget): string {
@@ -346,6 +398,11 @@ export default function SocialTargetsTable({
   const [hideDeadProfiles, setHideDeadProfiles] = useState(true);
   const [viewMode, setViewMode] = useState<"primary" | "review">("primary");
   const [verifyBusyId, setVerifyBusyId] = useState<string | null>(null);
+  const [sourceIntakeBusyKey, setSourceIntakeBusyKey] = useState<string | null>(null);
+  const [batchIngestBusy, setBatchIngestBusy] = useState(false);
+  const [batchIngestInput, setBatchIngestInput] = useState("");
+  const [batchIngestSummary, setBatchIngestSummary] = useState<BatchIngestSummary | null>(null);
+  const [batchIngestResults, setBatchIngestResults] = useState<BatchIngestResult[] | null>(null);
   const [hotTagOnly, setHotTagOnly] = useState(false);
   const [referralHubsOnly, setReferralHubsOnly] = useState(false);
   const [sortBy, setSortBy] = useState<
@@ -635,6 +692,52 @@ export default function SocialTargetsTable({
     [router]
   );
 
+  const runBatchIngest = useCallback(async () => {
+    if (!batchIngestInput.trim()) return;
+    setBatchIngestBusy(true);
+    setSaveError(null);
+    setBatchIngestSummary(null);
+    setBatchIngestResults(null);
+    try {
+      const parsed: unknown = JSON.parse(batchIngestInput);
+      const payload =
+        Array.isArray(parsed)
+          ? { inputs: parsed, mode: "review_seed" }
+          : typeof parsed === "object" && parsed !== null
+            ? parsed
+            : null;
+      if (!payload) {
+        setSaveError("Batch ingest input must be a JSON array or payload object.");
+        return;
+      }
+      const res = await fetch("/api/social-targets/batch-ingest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        error?: string;
+        summary?: BatchIngestSummary;
+        results?: BatchIngestResult[];
+      };
+      if (!res.ok || data.ok !== true || !data.summary) {
+        setSaveError(data.error || `Batch ingest failed (${res.status})`);
+        return;
+      }
+      setBatchIngestSummary(data.summary);
+      setBatchIngestResults(data.results ?? []);
+      setBulkSummary(
+        `Batch ingest: ${data.summary.createdReviewCandidate} review-seeded, ${data.summary.attached} attached, ${data.summary.duplicates + data.summary.alreadyPresent} duplicate/already, ${data.summary.suppressed + data.summary.rejected} suppressed/rejected`
+      );
+      router.refresh();
+    } catch {
+      setSaveError("Batch ingest failed: invalid JSON or network error");
+    } finally {
+      setBatchIngestBusy(false);
+    }
+  }, [batchIngestInput, router]);
+
   const applyBulkOperationalState = useCallback(
     (patch: Partial<NonNullable<SocialTarget["socialProfile"]>>, summary: string) => {
       if (selectedTargets.length === 0) return;
@@ -838,6 +941,78 @@ export default function SocialTargetsTable({
     [persistTargetsList, runHeadVerify]
   );
 
+  const applySourceIntakeAction = useCallback(
+    async (
+      targetId: string,
+      input: SourceCandidateInput,
+      action: "accept" | "reject" | "verify" | "hide"
+    ) => {
+      const busyKey = `${targetId}:${input.sourceType}:${input.rawSourceId ?? input.profileUrl ?? input.handle ?? "source"}`;
+      setSourceIntakeBusyKey(busyKey);
+      setSaveError(null);
+      let verifyTargetId: string | null = null;
+      let verifyCandidateId: string | null = null;
+
+      setBaseTargets((prev) => {
+        const next = prev.map((row) => {
+          if (row.id !== targetId) return row;
+          let normalized = normalizeSocialTarget(row);
+          normalized = ingestSourceCandidateInputs(normalized, [input]);
+          const preview = sourceCandidateInputToSocialCandidate(normalized, input);
+          const key = socialCandidateIdentityKeyForIntake(preview);
+          const matched = (normalized.socialCandidates ?? []).find(
+            (c) => c.id === preview.id || socialCandidateIdentityKeyForIntake(c) === key
+          );
+          if (!matched) return normalized;
+          if (action === "accept") return normalized;
+          if (action === "reject") {
+            return normalizeSocialTarget(
+              patchCandidate(normalized, matched.id, {
+                verificationStatus: "rejected",
+                visibilityState: "hide",
+                notes: [matched.notes, "Rejected from source intake"].filter(Boolean).join(" | "),
+              })
+            );
+          }
+          if (action === "hide") {
+            return normalizeSocialTarget(
+              patchCandidate(normalized, matched.id, {
+                visibilityState: "hide",
+                notes: [matched.notes, "Hidden from source intake"].filter(Boolean).join(" | "),
+              })
+            );
+          }
+          verifyTargetId = normalized.id;
+          verifyCandidateId = matched.id;
+          return normalized;
+        });
+        void persistTargetsList(next);
+        return next;
+      });
+
+      if (action === "verify" && verifyTargetId && verifyCandidateId) {
+        try {
+          const res = await fetch("/api/social-targets/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ targetId: verifyTargetId, candidateId: verifyCandidateId }),
+          });
+          const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+          if (!res.ok || data.ok !== true) {
+            setSaveError(data.error || `Verify failed (${res.status})`);
+          } else {
+            router.refresh();
+          }
+        } catch {
+          setSaveError("Verify failed (network)");
+        }
+      }
+
+      setSourceIntakeBusyKey(null);
+    },
+    [persistTargetsList, router]
+  );
+
   const promoteNodeToTarget = useCallback((node: { toHandle: string; category: string }) => {
     setBaseTargets((prev) => {
       const existing = handleMatchesTarget(prev, node.toHandle);
@@ -908,6 +1083,55 @@ export default function SocialTargetsTable({
       {bulkSummary ? (
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">{bulkSummary}</div>
       ) : null}
+
+      <details className="rounded-xl border border-neutral-200 bg-neutral-50/70 p-3">
+        <summary className="cursor-pointer text-[11px] font-bold uppercase tracking-wide text-neutral-600">
+          Batch source ingest (normalized inputs)
+        </summary>
+        <div className="mt-3 space-y-2">
+          <p className="text-[11px] text-neutral-600">
+            Paste normalized source inputs as JSON array or payload object. Batch ingest seeds review queue without silent promotion.
+          </p>
+          <textarea
+            value={batchIngestInput}
+            onChange={(e) => setBatchIngestInput(e.target.value)}
+            rows={5}
+            placeholder='{"mode":"review_seed","sourceBatchLabel":"maps-import-2026-04-05","inputs":[...]}'
+            className="w-full rounded border border-neutral-300 bg-white px-2 py-1.5 text-[11px] text-neutral-800"
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              disabled={batchIngestBusy || !batchIngestInput.trim()}
+              onClick={() => void runBatchIngest()}
+              className="rounded-full border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-indigo-900 hover:bg-indigo-100 disabled:opacity-50"
+            >
+              {batchIngestBusy ? "Ingesting..." : "Run batch ingest"}
+            </button>
+            {batchIngestSummary ? (
+              <span className="text-[11px] text-neutral-700">
+                Processed {batchIngestSummary.totalProcessed}: seeded {batchIngestSummary.createdReviewCandidate}, attached{" "}
+                {batchIngestSummary.attached}, duplicate/already {batchIngestSummary.duplicates + batchIngestSummary.alreadyPresent},
+                suppressed/rejected {batchIngestSummary.suppressed + batchIngestSummary.rejected}, skipped {batchIngestSummary.skipped}
+              </span>
+            ) : null}
+          </div>
+          {batchIngestResults && batchIngestResults.length > 0 ? (
+            <div className="max-h-44 overflow-auto rounded border border-neutral-200 bg-white p-2">
+              <ul className="space-y-1 text-[10px] text-neutral-700">
+                {batchIngestResults.slice(0, 80).map((r, i) => (
+                  <li key={`${r.sourceType}:${r.candidateKey ?? i}`} className="flex flex-wrap items-center gap-1.5">
+                    <span className="rounded bg-neutral-100 px-1 py-0.5 font-semibold uppercase">{r.sourceType}</span>
+                    <span className="rounded bg-slate-100 px-1 py-0.5">{r.outcome}</span>
+                    {r.targetId ? <span>target:{r.targetId}</span> : null}
+                    {r.reason ? <span className="text-neutral-500">({r.reason})</span> : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+      </details>
 
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-sm">
         <span className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">View</span>
@@ -1389,8 +1613,19 @@ export default function SocialTargetsTable({
                 const state = getPrimaryOperationalState(baseRow);
                 const rank = computeOperatorDisplayRank(baseRow);
                 const betterAlt = featuredWeakerThanBestAlternate(baseRow);
+                const featuredIntegrity = getFeaturedValidationIntegrity(baseRow);
                 const confirmedNoSocial = isConfirmedRealNoSocial(baseRow);
-                const recommendedAngle = t.outreachAngle || (confirmedNoSocial ? noSocialFallbackAngle(baseRow) : "No outreach angle yet");
+                const recommendedAngle =
+                  t.outreachAngle ||
+                  (featuredIntegrity.needsRecheck
+                    ? "Recheck featured profile before treating as live truth"
+                    : confirmedNoSocial
+                      ? noSocialFallbackAngle(baseRow)
+                      : "No outreach angle yet");
+                const sourceIntake = buildSourceIntakeInputsForTarget(baseRow).map((input) => ({
+                  input,
+                  ...classifySourceCandidate(baseRow, input),
+                }));
                 return (
                   <tr key={t.id} className="border-b border-neutral-100 align-top">
                     <td className="px-2 py-2">
@@ -1475,6 +1710,11 @@ export default function SocialTargetsTable({
                           <div className="text-[13px] font-medium text-neutral-900">
                             {recommendedAngle}
                           </div>
+                          {featuredIntegrity.needsRecheck ? (
+                            <div className="text-[11px] font-semibold uppercase tracking-wide text-amber-800">
+                              Verify needed: {featuredIntegrity.reason}
+                            </div>
+                          ) : null}
 
                           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-neutral-500">
                             <span>Verified {formatVerifiedAt(t.lastVerifiedAt)}</span>
@@ -1776,6 +2016,105 @@ export default function SocialTargetsTable({
                               className="w-full rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
                             />
                           </div>
+
+                          {sourceIntake.length > 0 ? (
+                            <details className="rounded-lg border border-neutral-200 p-3">
+                              <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-wide text-neutral-600">
+                                Source candidate intake ({sourceIntake.length})
+                              </summary>
+                              <div className="mt-2 space-y-2">
+                                {sourceIntake.map((item, idx) => {
+                                  const sourceLabel = sourceTypeBadgeLabel(item.input.sourceType);
+                                  const trustLabel = sourceTrustTierLabel(item.input.sourceTrustTier);
+                                  const statusLabel =
+                                    item.status === "already_present"
+                                      ? "Already present"
+                                      : item.status === "duplicate"
+                                        ? "Duplicate"
+                                        : item.status === "rejected_previously"
+                                          ? "Rejected previously"
+                                          : item.status === "hidden_previously"
+                                            ? "Hidden previously"
+                                            : "New candidate";
+                                  const statusCls =
+                                    item.status === "new_candidate"
+                                      ? "bg-emerald-50 text-emerald-900 border-emerald-200"
+                                      : item.status === "already_present" || item.status === "duplicate"
+                                        ? "bg-sky-50 text-sky-900 border-sky-200"
+                                        : "bg-neutral-100 text-neutral-700 border-neutral-300";
+                                  const busyKey = `${t.id}:${item.input.sourceType}:${item.input.rawSourceId ?? item.input.profileUrl ?? item.input.handle ?? "source"}`;
+                                  const isBusy = sourceIntakeBusyKey === busyKey;
+                                  const title =
+                                    item.input.profileUrl ||
+                                    item.input.handle ||
+                                    item.input.businessName ||
+                                    item.input.sourceUrl ||
+                                    "Candidate";
+                                  return (
+                                    <div key={`${busyKey}:${idx}`} className="rounded-md border border-neutral-200 bg-neutral-50 p-2">
+                                      <div className="flex flex-wrap items-center gap-1.5">
+                                        <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">
+                                          {sourceLabel}
+                                        </span>
+                                        <span className="rounded bg-neutral-200 px-1.5 py-0.5 text-[9px] font-bold uppercase text-neutral-700">
+                                          {trustLabel}
+                                        </span>
+                                        {item.previewCandidate.platform ? (
+                                          <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold uppercase text-indigo-900">
+                                            {platformShortLabel(item.previewCandidate.platform)}
+                                          </span>
+                                        ) : null}
+                                        <span className={`rounded border px-1.5 py-0.5 text-[9px] font-semibold ${statusCls}`}>
+                                          {statusLabel}
+                                        </span>
+                                      </div>
+                                      <p className="mt-1 text-[11px] font-medium text-neutral-900 break-all">{title}</p>
+                                      {item.input.evidence?.length ? (
+                                        <p className="mt-0.5 text-[10px] text-neutral-600">{item.input.evidence[0]}</p>
+                                      ) : null}
+                                      {item.input.notes?.length ? (
+                                        <p className="mt-0.5 text-[10px] text-neutral-500">{item.input.notes[0]}</p>
+                                      ) : null}
+                                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                        <button
+                                          type="button"
+                                          disabled={isBusy}
+                                          onClick={() => void applySourceIntakeAction(t.id, item.input, "accept")}
+                                          className="rounded border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase text-emerald-900 hover:bg-emerald-100 disabled:opacity-50"
+                                        >
+                                          Accept
+                                        </button>
+                                        <button
+                                          type="button"
+                                          disabled={isBusy}
+                                          onClick={() => void applySourceIntakeAction(t.id, item.input, "verify")}
+                                          className="rounded border border-sky-300 bg-sky-50 px-2 py-0.5 text-[9px] font-bold uppercase text-sky-900 hover:bg-sky-100 disabled:opacity-50"
+                                        >
+                                          Verify
+                                        </button>
+                                        <button
+                                          type="button"
+                                          disabled={isBusy}
+                                          onClick={() => void applySourceIntakeAction(t.id, item.input, "reject")}
+                                          className="rounded border border-neutral-300 bg-white px-2 py-0.5 text-[9px] font-bold uppercase text-neutral-700 hover:bg-neutral-100 disabled:opacity-50"
+                                        >
+                                          Reject
+                                        </button>
+                                        <button
+                                          type="button"
+                                          disabled={isBusy}
+                                          onClick={() => void applySourceIntakeAction(t.id, item.input, "hide")}
+                                          className="rounded border border-rose-300 bg-rose-50 px-2 py-0.5 text-[9px] font-bold uppercase text-rose-900 hover:bg-rose-100 disabled:opacity-50"
+                                        >
+                                          Hide
+                                        </button>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </details>
+                          ) : null}
 
                           <div className="rounded-lg border border-neutral-200 p-3 space-y-2">
                             <div className="flex flex-wrap items-center gap-3 text-[11px] text-neutral-700">

@@ -1,5 +1,5 @@
 import { ensureSocialCandidates, getPrimaryCandidate } from "@/lib/social-targets/social-candidate-logic";
-import { mapProfileHealthToResolveStatus } from "@/lib/social-targets/normalization";
+import { getFeaturedValidationIntegrity } from "@/lib/social-targets/featured-validation-integrity";
 import { confidenceTier } from "@/lib/social-targets/social-scoring";
 import type { SocialCandidate, SocialTarget } from "@/types/social-target";
 
@@ -25,7 +25,7 @@ export function isConfirmedRealNoSocial(t: SocialTarget): boolean {
   return !p || p.resolveStatus !== "live";
 }
 
-function activityRank(signal: SocialCandidate["activityStatus"]): number {
+function activityRank(signal: "recent" | "stale" | "unknown"): number {
   switch (signal) {
     case "recent":
       return 3;
@@ -38,10 +38,12 @@ function activityRank(signal: SocialCandidate["activityStatus"]): number {
   }
 }
 
-function resolveRank(rs: SocialCandidate["resolveStatus"]): number {
+function resolveRank(rs: "live" | "dead" | "redirect" | "blocked" | "unknown" | "stale"): number {
   switch (rs) {
     case "live":
       return 5;
+    case "stale":
+      return 3;
     case "redirect":
       return 4;
     case "unknown":
@@ -55,7 +57,7 @@ function resolveRank(rs: SocialCandidate["resolveStatus"]): number {
   }
 }
 
-function verificationRank(vs: SocialCandidate["verificationStatus"]): number {
+function verificationRank(vs: SocialCandidate["verificationStatus"] | "verify_needed"): number {
   switch (vs) {
     case "manual_verified":
       return 4;
@@ -63,6 +65,8 @@ function verificationRank(vs: SocialCandidate["verificationStatus"]): number {
       return 3;
     case "candidate":
       return 2;
+    case "verify_needed":
+      return 1;
     case "rejected":
       return 0;
     default:
@@ -85,16 +89,17 @@ function tierRank(score: number): number {
 }
 
 export function getPrimaryOperationalState(t: SocialTarget): PrimaryOperationalState {
-  const p = primaryCandidate(t);
-  const rs = p?.resolveStatus ?? mapProfileHealthToResolveStatus(t.profileHealth);
+  const integrity = getFeaturedValidationIntegrity(t);
+  const p = integrity.displayCandidate ?? primaryCandidate(t);
+  const rs = integrity.displayResolveState === "stale" ? "unknown" : integrity.displayResolveState;
   if (rs === "dead" || p?.verificationStatus === "rejected" || p?.visibilityState === "hide") {
     return "dead_or_suppressed";
   }
   if (isConfirmedRealNoSocial(t)) return "confirmed_real_no_social";
-  const vs = p?.verificationStatus ?? "candidate";
+  const vs = integrity.displayVerificationState === "verify_needed" ? "candidate" : integrity.displayVerificationState;
   if (rs !== "live") return "not_live";
   if (vs === "manual_verified" || vs === "auto_verified") return "verified_live";
-  const score = p?.overallConfidenceScore ?? 0;
+  const score = integrity.displayCandidate?.overallConfidenceScore ?? 0;
   if (score >= SUPPRESS_THRESHOLD) return "live_usable";
   return "live_review";
 }
@@ -115,13 +120,13 @@ export type OperatorRankParts = {
  * so high-follower junk does not float above verified live rows.
  */
 export function computeOperatorDisplayRank(t: SocialTarget): OperatorRankParts {
-  const p = primaryCandidate(t);
-  const rs = p?.resolveStatus ?? mapProfileHealthToResolveStatus(t.profileHealth);
-  const vs = p?.verificationStatus ?? "candidate";
+  const integrity = getFeaturedValidationIntegrity(t);
+  const rs = integrity.displayResolveState;
+  const vs = integrity.displayVerificationState;
   const vr = verificationRank(vs);
   const rr = resolveRank(rs);
-  const tr = tierRank(p?.overallConfidenceScore ?? 0);
-  const ar = activityRank(p?.activityStatus ?? "unknown");
+  const tr = tierRank(integrity.displayCandidate?.overallConfidenceScore ?? 0);
+  const ar = activityRank(integrity.displayActivityState);
   const prio = t.priorityScore ?? 0;
   const fol = typeof t.followers === "number" && t.followers >= 0 ? t.followers : 0;
   const state = getPrimaryOperationalState(t);
