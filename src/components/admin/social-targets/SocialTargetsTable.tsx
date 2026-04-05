@@ -1671,8 +1671,8 @@ export default function SocialTargetsTable({
                       />
                     </td>
                     <td className="px-2 py-2">
-                      <div className="grid gap-4 md:grid-cols-[minmax(320px,1.1fr)_minmax(240px,0.7fr)_minmax(260px,0.8fr)]">
-                        <div className="min-w-0 space-y-2">
+                      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-[minmax(320px,1.15fr)_minmax(230px,0.78fr)_minmax(210px,0.62fr)]">
+                        <div className="min-w-0 space-y-2 md:col-span-2 lg:col-span-1">
                           <div className="flex flex-wrap items-center gap-2">
                             <TargetHandleLink t={t}>
                               <span className="text-[15px] font-semibold text-neutral-900">@{displayHandleForTarget(t)}</span>
@@ -2056,7 +2056,7 @@ export default function SocialTargetsTable({
                           ) : null}
                         </div>
 
-                        <div className="min-w-0 space-y-2">
+                        <div className="min-w-0 space-y-2 lg:max-w-[22rem]">
                           <div className="rounded-lg border border-neutral-200 p-2.5 space-y-1.5">
                             <p className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">Operator inputs</p>
                             {viewMode === "review" ? (
