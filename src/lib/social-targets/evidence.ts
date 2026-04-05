@@ -31,6 +31,70 @@ function shortHash(input: string): string {
   return hash.toString(36);
 }
 
+function asConfidence(value: unknown): SocialEvidenceConfidence {
+  if (value === "high" || value === "medium" || value === "low") return value;
+  return "low";
+}
+
+function asEvidenceType(value: unknown): SocialEvidenceType {
+  if (
+    value === "instagram" ||
+    value === "tiktok" ||
+    value === "linktree" ||
+    value === "website" ||
+    value === "website_social" ||
+    value === "phone_lookup" ||
+    value === "address_lookup" ||
+    value === "directory" ||
+    value === "other"
+  ) {
+    return value;
+  }
+  return "other";
+}
+
+function sanitizeEvidenceItem(raw: SocialEvidenceItem): SocialEvidenceItem {
+  const type = asEvidenceType(raw.type);
+  const platform =
+    raw.platform === "instagram" || raw.platform === "tiktok" || raw.platform === "linktree" || raw.platform === "website"
+      ? raw.platform
+      : platformFromEvidenceType(type);
+  const url = normalizeUrl(raw.url);
+  const sourceQuery = typeof raw.sourceQuery === "string" && raw.sourceQuery.trim() ? raw.sourceQuery.trim() : "unknown query";
+  const createdAt =
+    typeof raw.createdAt === "string" && raw.createdAt.trim()
+      ? raw.createdAt
+      : new Date().toISOString();
+  const nameSimilarity =
+    typeof raw.matchSignals?.nameSimilarity === "number" && Number.isFinite(raw.matchSignals.nameSimilarity)
+      ? clamp(raw.matchSignals.nameSimilarity, 0, 1)
+      : 0;
+  return {
+    id: typeof raw.id === "string" && raw.id.trim() ? raw.id.trim() : `ev-${shortHash(`${type}|${url ?? ""}|${sourceQuery}`)}`,
+    type,
+    ...(platform ? { platform } : {}),
+    ...(url ? { url } : {}),
+    ...(typeof raw.title === "string" && raw.title.trim() ? { title: raw.title.trim() } : {}),
+    ...(typeof raw.snippet === "string" && raw.snippet.trim() ? { snippet: raw.snippet.trim() } : {}),
+    sourceQuery,
+    confidence: asConfidence(raw.confidence),
+    matchSignals: {
+      nameSimilarity,
+      geoMatch: raw.matchSignals?.geoMatch === true,
+      ...(typeof raw.matchSignals?.phoneMatch === "boolean" ? { phoneMatch: raw.matchSignals.phoneMatch } : {}),
+      ...(typeof raw.matchSignals?.domainMatch === "boolean" ? { domainMatch: raw.matchSignals.domainMatch } : {}),
+    },
+    extracted: {
+      ...(typeof raw.extracted?.phone === "string" && raw.extracted.phone.trim() ? { phone: raw.extracted.phone.trim() } : {}),
+      ...(typeof raw.extracted?.email === "string" && raw.extracted.email.trim() ? { email: raw.extracted.email.trim() } : {}),
+      ...(typeof raw.extracted?.handle === "string" && raw.extracted.handle.trim()
+        ? { handle: raw.extracted.handle.trim() }
+        : {}),
+    },
+    createdAt,
+  };
+}
+
 export function classifyEvidenceTypeFromUrl(url?: string): SocialEvidenceType {
   if (!url) return "other";
   const u = url.toLowerCase();
@@ -215,7 +279,7 @@ export function createEvidenceItem(input: {
 }
 
 export function normalizeSocialTargetRecord(target: SocialTarget): SocialTarget {
-  const evidence = Array.isArray(target.evidence) ? target.evidence : [];
+  const evidence = Array.isArray(target.evidence) ? target.evidence.map(sanitizeEvidenceItem) : [];
   const mergedEvidence = mergeEvidenceItems([], evidence);
   const platforms = {
     ...(target.platforms ?? {}),

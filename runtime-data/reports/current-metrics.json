@@ -1,0 +1,15 @@
+{
+  "totalTargets": 13,
+  "withWebsite": 0,
+  "withInstagram": 1,
+  "withTikTok": 1,
+  "withLinktree": 1,
+  "withPhone": 0,
+  "withEmail": 0,
+  "resolved": 1,
+  "partial": 0,
+  "unknown": 12,
+  "conflict": 0,
+  "avgConfidence": 7.62,
+  "multiSignal": 1
+}

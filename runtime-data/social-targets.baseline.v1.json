@@ -201,7 +201,7 @@
     "outreachAngle": "Ask for trusted hair referral nearby",
     "evidence": [
       {
-        "id": "ev-8z9jl2",
+        "id": "ev-j0fwd9",
         "type": "linktree",
         "platform": "linktree",
         "url": "https://linktr.ee/hairbymarissadtc",
@@ -218,10 +218,10 @@
         "extracted": {
           "handle": "hairbymarissadtc"
         },
-        "createdAt": "2026-04-05T18:09:52.824Z"
+        "createdAt": "2026-04-05T17:59:25.669Z"
       },
       {
-        "id": "ev-1ej3rjd",
+        "id": "ev-1oka4bk",
         "type": "tiktok",
         "platform": "tiktok",
         "url": "https://www.tiktok.com/@hairbymarissadtc",
@@ -238,10 +238,10 @@
         "extracted": {
           "handle": "hairbymarissadtc"
         },
-        "createdAt": "2026-04-05T18:09:52.824Z"
+        "createdAt": "2026-04-05T17:59:25.669Z"
       },
       {
-        "id": "ev-1a2x4ge",
+        "id": "ev-1k43h8l",
         "type": "instagram",
         "platform": "instagram",
         "url": "https://www.instagram.com/hairbymarissadtc/",
@@ -253,12 +253,12 @@
           "nameSimilarity": 0.86,
           "geoMatch": false,
           "phoneMatch": false,
-          "domainMatch": true
+          "domainMatch": false
         },
         "extracted": {
           "handle": "hairbymarissadtc"
         },
-        "createdAt": "2026-04-05T18:09:52.824Z"
+        "createdAt": "2026-04-05T17:59:25.669Z"
       }
     ],
     "platforms": {
@@ -266,7 +266,7 @@
       "tiktok": "https://www.tiktok.com/@hairbymarissadtc",
       "linktree": "https://linktr.ee/hairbymarissadtc"
     },
-    "confidenceScore": 99,
+    "confidenceScore": 97,
     "resolutionStatus": "resolved",
     "socialCandidates": [
       {
@@ -352,7 +352,7 @@
       "lastCheckedAt": null,
       "lastVerifiedAt": "2026-04-03T09:00:00.000Z"
     },
-    "runId": "dtc-2026-04-05-google-discovery-v2-rv4qtw",
+    "runId": "dtc-2026-04-05-google-discovery-v2-gfr5ag",
     "runType": "validation",
     "sourceVersion": "google-discovery-v2"
   },

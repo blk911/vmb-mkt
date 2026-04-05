@@ -1,0 +1,51 @@
+{
+  "runId": "dtc-2026-04-05-google-discovery-v2-rv4qtw",
+  "runType": "validation",
+  "sourceVersion": "google-discovery-v2",
+  "generatedAt": "2026-04-05T18:09:52.828Z",
+  "baseline": {
+    "totalTargets": 13,
+    "withWebsite": 0,
+    "withInstagram": 1,
+    "withTikTok": 1,
+    "withLinktree": 1,
+    "withPhone": 0,
+    "withEmail": 0,
+    "resolved": 1,
+    "partial": 0,
+    "unknown": 12,
+    "conflict": 0,
+    "avgConfidence": 7.46,
+    "multiSignal": 1
+  },
+  "current": {
+    "totalTargets": 13,
+    "withWebsite": 0,
+    "withInstagram": 1,
+    "withTikTok": 1,
+    "withLinktree": 1,
+    "withPhone": 0,
+    "withEmail": 0,
+    "resolved": 1,
+    "partial": 0,
+    "unknown": 12,
+    "conflict": 0,
+    "avgConfidence": 7.62,
+    "multiSignal": 1
+  },
+  "delta": {
+    "totalTargets": 0,
+    "withWebsite": 0,
+    "withInstagram": 0,
+    "withTikTok": 0,
+    "withLinktree": 0,
+    "withPhone": 0,
+    "withEmail": 0,
+    "resolved": 0,
+    "partial": 0,
+    "unknown": 0,
+    "conflict": 0,
+    "avgConfidence": 0.16,
+    "multiSignal": 0
+  }
+}
