@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Graphic1Module } from "@/components/vmb-faq/Graphic1Module";
 import { Graphic2Module } from "@/components/vmb-faq/Graphic2Module";
 import EmpoweringPersonalConnectionDeck from "./EmpoweringPersonalConnectionDeck";
+import InviteOnlyNetworkDeck from "./InviteOnlyNetworkDeck";
 
 const IMG = {
   card1: "/mscard1.jpg",
@@ -253,6 +254,10 @@ const CARDS: MoneyShotCard[] = [
     id: "#6",
     title: "Empowering Personal Connection",
   },
+  {
+    id: "#7",
+    title: "Invite-Only Network Layer",
+  },
 ];
 
 export default function MoneyShotsCards() {
@@ -268,7 +273,7 @@ export default function MoneyShotsCards() {
           return (
             <article
               key={card.id}
-              className={`rounded-2xl border bg-white shadow-sm ${card.id === "#6" ? "overflow-x-visible overflow-y-visible" : "overflow-hidden"}`}
+              className={`rounded-2xl border bg-white shadow-sm ${card.id === "#6" || card.id === "#7" ? "overflow-x-visible overflow-y-visible" : "overflow-hidden"}`}
             >
               <button
                 type="button"
@@ -284,9 +289,11 @@ export default function MoneyShotsCards() {
               </button>
 
               {open ? (
-                <div className={`border-t px-5 py-4 ${card.id === "#6" ? "min-w-0 overflow-x-auto" : ""}`}>
+                <div className={`border-t px-5 py-4 ${card.id === "#6" || card.id === "#7" ? "min-w-0 overflow-x-auto" : ""}`}>
                   {card.id === "#6" ? (
                     <EmpoweringPersonalConnectionDeck />
+                  ) : card.id === "#7" ? (
+                    <InviteOnlyNetworkDeck />
                   ) : (
                   <div className="grid items-stretch gap-4 md:grid-cols-[minmax(0,1fr)_280px]">
                     <div className="min-h-[150px] rounded-xl border border-neutral-200 p-4">
