@@ -1663,7 +1663,7 @@ export default function SocialTargetsTable({
                       />
                     </td>
                     <td className="px-2 py-2">
-                      <div className="grid gap-4 lg:grid-cols-[minmax(320px,1.1fr)_minmax(240px,0.7fr)_minmax(260px,0.8fr)]">
+                      <div className="grid gap-4 md:grid-cols-[minmax(320px,1.1fr)_minmax(240px,0.7fr)_minmax(260px,0.8fr)]">
                         <div className="min-w-0 space-y-2">
                           <div className="flex flex-wrap items-center gap-2">
                             <TargetHandleLink t={t}>
