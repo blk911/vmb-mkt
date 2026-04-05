@@ -184,18 +184,18 @@ function TrustBadges({ t }: { t: SocialTarget }) {
   const actCls =
     act === "recent" ? "bg-lime-100 text-lime-950" : act === "stale" ? "bg-orange-100 text-orange-950" : "bg-neutral-50 text-neutral-600";
   return (
-    <div className="mt-1 flex flex-wrap gap-1">
+    <div className="flex flex-wrap gap-1.5">
       {primary ? (
-        <span className="rounded-full bg-neutral-800 px-1.5 py-0.5 text-[9px] font-black uppercase text-white">
+        <span className="rounded-full bg-neutral-800 px-2 py-0.5 text-[10px] font-black uppercase text-white">
           {platformShortLabel(primary.platform)}
         </span>
       ) : null}
-      <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${tierCls}`}>{tierShortLabel(tier)}</span>
-      <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${rsCls}`}>{rs}</span>
-      <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${vsCls}`}>
+      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${tierCls}`}>{tierShortLabel(tier)}</span>
+      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${rsCls}`}>{rs}</span>
+      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${vsCls}`}>
         {vs.replace(/_/g, " ")}
       </span>
-      <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${actCls}`}>{act}</span>
+      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${actCls}`}>{act}</span>
     </div>
   );
 }
@@ -1331,24 +1331,17 @@ export default function SocialTargetsTable({
       </details>
 
       <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
-        <table className="w-full min-w-[1400px] border-collapse text-left text-xs">
+        <table className="w-full min-w-[1200px] border-collapse text-left text-xs">
           <thead>
             <tr className="border-b border-neutral-200 bg-neutral-50 text-[10px] font-bold uppercase tracking-wide text-neutral-500">
               <th className="w-10 px-2 py-2">Sel</th>
-              <th className="min-w-[200px] px-2 py-2">Target & signals</th>
-              <th className="min-w-[160px] px-2 py-2">Verify & rank</th>
-              <th className="px-2 py-2">Zone</th>
-              <th className="px-2 py-2">Category</th>
-              <th className="px-2 py-2">Status</th>
-              <th className="min-w-[120px] px-2 py-2">Notes</th>
-              <th className="px-2 py-2">Referral</th>
-              <th className="min-w-[240px] px-2 py-2">Add referral</th>
+              <th className="min-w-[980px] px-2 py-2">Target summary & actions</th>
             </tr>
           </thead>
           <tbody className="text-neutral-800">
             {filteredSorted.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-3 py-8 text-center text-sm text-neutral-500">
+                <td colSpan={2} className="px-3 py-8 text-center text-sm text-neutral-500">
                   No targets match filters.
                 </td>
               </tr>
@@ -1379,402 +1372,412 @@ export default function SocialTargetsTable({
                       />
                     </td>
                     <td className="px-2 py-2">
-                      <div className="flex flex-wrap items-center gap-1">
-                        <TargetHandleLink t={t}>
-                          <span className="font-semibold">@{displayHandleForTarget(t)}</span>
-                        </TargetHandleLink>
-                        {alternateCount > 0 ? (
-                          <span className="rounded-full bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold uppercase text-indigo-900">
-                            +{alternateCount} alt
-                          </span>
-                        ) : null}
-                        {betterAlt ? (
-                          <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-amber-950">
-                            stronger alt exists
-                          </span>
-                        ) : null}
-                        {ready ? (
-                          <span className="rounded-full bg-rose-600 px-2 py-0.5 text-[9px] font-black uppercase text-white">
-                            Ready
-                          </span>
-                        ) : null}
-                        {score >= 80 ? (
-                          <span className="rounded-full bg-amber-200 px-1.5 py-0.5 text-[9px] font-bold text-amber-950">
-                            80+
-                          </span>
-                        ) : null}
-                      </div>
-                      <TrustBadges t={t} />
-                      {t.businessName ? <div className="text-[11px] text-neutral-600">{t.businessName}</div> : null}
-                      <div className="mt-1 space-y-0.5 text-[10px] text-neutral-600">
-                        <div>
-                          Queue:{" "}
-                          <span className="font-semibold text-neutral-800">{state.replace(/_/g, " ")}</span>
-                          <span className="ml-2 text-neutral-500">
-                            v{rank.verificationRank} r{rank.resolveRank} t{rank.tierRank}
-                          </span>
-                        </div>
-                        <div>
-                          Health: <span className="font-semibold text-neutral-800">{t.profileHealth ?? "—"}</span>
-                        </div>
-                        <div>
-                          Activity: <span className="font-semibold text-neutral-800">{t.activitySignal ?? "—"}</span>
-                        </div>
-                        <div>
-                          Score: <span className="font-bold tabular-nums text-neutral-900">{score}</span>
-                          {baseRow.priorityScoreManual ? (
-                            <span className="ml-1 text-[9px] text-neutral-500">(manual)</span>
-                          ) : null}
-                        </div>
-                        {t.outreachAngle ? (
-                          <div className="text-[10px] text-neutral-700">Angle: {t.outreachAngle}</div>
-                        ) : null}
-                        <div>Verified: {formatVerifiedAt(t.lastVerifiedAt)}</div>
-                      </div>
-                      <SocialTargetEvidence target={baseRow} />
-                      {t.tags?.length ? (
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {t.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-600"
-                            >
-                              {tag}
+                      <div className="grid gap-4 lg:grid-cols-[minmax(340px,1.15fr)_minmax(420px,0.85fr)]">
+                        <div className="min-w-0 space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <TargetHandleLink t={t}>
+                              <span className="text-[15px] font-semibold text-neutral-900">@{displayHandleForTarget(t)}</span>
+                            </TargetHandleLink>
+                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold tabular-nums text-amber-950">
+                              {score}
                             </span>
-                          ))}
-                        </div>
-                      ) : null}
-                    </td>
-                    <td className="px-2 py-2">
-                      <div className="flex max-w-[200px] flex-col gap-1.5">
-                        {viewMode === "review" ? (
-                          <>
-                            <select
-                              value={baseRow.profileHealth ?? "unknown"}
-                              onChange={(e) => onProfileHealthChange(t.id, e.target.value as ProfileHealth)}
-                              className="rounded border border-neutral-300 bg-white px-1 py-1 text-[10px]"
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase ${
+                                ready ? "bg-rose-600 text-white" : "bg-neutral-200 text-neutral-700"
+                              }`}
                             >
-                              {PROFILE_HEALTH_EDIT.map((h) => (
-                                <option key={h} value={h}>
-                                  {h.replace(/_/g, " ")}
-                                </option>
-                              ))}
-                            </select>
-                            <select
-                              value={baseRow.activitySignal ?? "unknown"}
-                              onChange={(e) => onActivitySignalChange(t.id, e.target.value as ActivitySignal)}
-                              className="rounded border border-neutral-300 bg-white px-1 py-1 text-[10px]"
-                            >
-                              {ACTIVITY_EDIT.map((a) => (
-                                <option key={a} value={a}>
-                                  {a}
-                                </option>
-                              ))}
-                            </select>
-                          </>
-                        ) : null}
-                        <label className="text-[9px] font-semibold text-neutral-500">
-                          Trust / visibility
-                          <select
-                            value={getVerificationStatus(baseRow)}
-                            onChange={(e) =>
-                              applySocialProfilePatch(t.id, {
-                                verificationStatus: e.target.value as SocialVerificationStatus,
-                              })
-                            }
-                            className="mt-0.5 block w-full rounded border border-neutral-300 bg-white px-1 py-1 text-[10px]"
-                          >
-                            {SOCIAL_VERIFICATION_STATUSES.map((v) => (
-                              <option key={v} value={v}>
-                                {v.replace(/_/g, " ")}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <label className="text-[9px] font-semibold text-neutral-500">
-                          Visibility
-                          <select
-                            value={baseRow.socialProfile?.visibilityState ?? "show"}
-                            onChange={(e) =>
-                              applySocialProfilePatch(t.id, {
-                                visibilityState: e.target.value as SocialVisibilityState,
-                              })
-                            }
-                            className="mt-0.5 block w-full rounded border border-neutral-300 bg-white px-1 py-1 text-[10px]"
-                          >
-                            {SOCIAL_VISIBILITY_STATES.map((v) => (
-                              <option key={v} value={v}>
-                                {v}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        {rowCandidates.length > 1 ? (
-                          <label className="text-[9px] font-semibold text-neutral-500">
-                            Featured profile
-                            <select
-                              value={primarySelectValue}
-                              onChange={(e) => {
-                                const v = e.target.value;
-                                setBaseTargets((prev) => {
-                                  const next = prev.map((x) =>
-                                    x.id === t.id
-                                      ? normalizeSocialTarget(setPrimaryCandidateId(ensureSocialCandidates(x), v))
-                                      : x
-                                  );
-                                  void persistTargetsList(next);
-                                  return next;
-                                });
-                              }}
-                              className="mt-0.5 block w-full rounded border border-neutral-300 bg-white px-1 py-1 text-[10px]"
-                            >
-                              {rowCandidates.map((c) => (
-                                <option key={c.id} value={c.id}>
-                                  {platformShortLabel(c.platform)}{" "}
-                                  {c.handle ? `@${stripAt(c.handle)}` : (c.url ?? "—").slice(0, 32)}
-                                  {" · "}
-                                  {c.overallConfidenceScore}
-                                </option>
-                              ))}
-                            </select>
-                          </label>
-                        ) : null}
-                        {betterAlt ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const bestId = pickBestFeaturedCandidateId(baseRow);
-                              if (!bestId) return;
-                              setBaseTargets((prev) => {
-                                const next = prev.map((x) =>
-                                  x.id === t.id
-                                    ? normalizeSocialTarget(setPrimaryCandidateId(ensureSocialCandidates(x), bestId))
-                                    : x
-                                );
-                                void persistTargetsList(next);
-                                return next;
-                              });
-                            }}
-                            className="text-left text-[9px] font-semibold text-indigo-700 underline"
-                          >
-                            Promote stronger alternate
-                          </button>
-                        ) : null}
-                        {featured?.id ? (
-                          <div className="flex flex-wrap gap-1">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                void postPrimaryCandidatePatch(t.id, featured.id, { verificationStatus: "manual_verified" })
-                              }
-                              className="rounded border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-[8px] font-bold uppercase text-emerald-900 hover:bg-emerald-100"
-                            >
-                              Verify
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { verificationStatus: "rejected" })}
-                              className="rounded border border-neutral-400 bg-neutral-100 px-1.5 py-0.5 text-[8px] font-bold uppercase text-neutral-800 hover:bg-neutral-200"
-                            >
-                              Reject
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { visibilityState: "hide" })}
-                              className="rounded border border-rose-300 bg-rose-50 px-1.5 py-0.5 text-[8px] font-bold uppercase text-rose-900 hover:bg-rose-100"
-                            >
-                              Hide
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { visibilityState: "review" })}
-                              className="rounded border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[8px] font-bold uppercase text-amber-950 hover:bg-amber-100"
-                            >
-                              Send to review
-                            </button>
+                              {ready ? "READY" : state.replace(/_/g, " ")}
+                            </span>
+                            {score >= 80 ? (
+                              <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-950">80+</span>
+                            ) : null}
                           </div>
-                        ) : null}
-                        <button
-                          type="button"
-                          disabled={verifyBusyId === t.id}
-                          onClick={() => void runHeadVerify(t)}
-                          className="rounded border border-sky-300 bg-sky-50 px-2 py-1 text-[9px] font-bold uppercase text-sky-900 hover:bg-sky-100 disabled:opacity-50"
-                        >
-                          {verifyBusyId === t.id ? "Verifying..." : "Verify link"}
-                        </button>
-                        {viewMode === "review" ? (
-                          <>
-                            <label className="text-[9px] font-semibold text-neutral-500">
-                              Priority (0–100)
-                              <input
-                                type="number"
-                                min={0}
-                                max={100}
-                                defaultValue={baseRow.priorityScore ?? score}
-                                key={`${t.id}-prio-${baseRow.priorityScore}-${baseRow.priorityScoreManual}`}
-                                onBlur={(e) => {
-                                  const n = Number(e.target.value);
-                                  if (!Number.isFinite(n)) return;
-                                  const clamped = Math.max(0, Math.min(100, Math.round(n)));
-                                  setBaseTargets((p) => {
-                                    const next = p.map((x) =>
-                                      x.id === t.id
-                                        ? { ...x, priorityScore: clamped, priorityScoreManual: true }
-                                        : x
+
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-neutral-800">
+                            <span className="font-medium text-neutral-900">{t.businessName || "—"}</span>
+                            <span className="text-neutral-400">•</span>
+                            <span>{t.zone}</span>
+                            <span className="text-neutral-400">•</span>
+                            <span>{t.category}</span>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <TrustBadges t={t} />
+                            {hasHotTag(t) ? (
+                              <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold uppercase text-rose-900">
+                                HOT
+                              </span>
+                            ) : null}
+                            {alternateCount > 0 ? (
+                              <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold uppercase text-indigo-900">
+                                +{alternateCount} alt
+                              </span>
+                            ) : null}
+                            {betterAlt ? (
+                              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-950">
+                                stronger alt exists
+                              </span>
+                            ) : null}
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-neutral-700">
+                            <span>
+                              Health: <span className="font-semibold text-neutral-900">{t.profileHealth ?? "—"}</span>
+                            </span>
+                            <span>
+                              Activity: <span className="font-semibold text-neutral-900">{t.activitySignal ?? "—"}</span>
+                            </span>
+                            <span>
+                              Score: <span className="font-bold tabular-nums text-neutral-900">{score}</span>
+                              {baseRow.priorityScoreManual ? <span className="ml-1 text-[11px] text-neutral-500">(manual)</span> : null}
+                            </span>
+                          </div>
+
+                          <div className="text-[12px] text-neutral-600">
+                            <SocialTargetEvidence target={baseRow} />
+                          </div>
+
+                          <div className="text-[13px] font-medium text-neutral-900">
+                            {t.outreachAngle || "No outreach angle yet"}
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-neutral-500">
+                            <span>Verified {formatVerifiedAt(t.lastVerifiedAt)}</span>
+                            <span>
+                              Queue v{rank.verificationRank} r{rank.resolveRank} t{rank.tierRank}
+                            </span>
+                            {t.tags?.map((tag) => (
+                              <span key={tag} className="rounded bg-neutral-100 px-1.5 py-0.5 text-[11px] text-neutral-600">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="min-w-0 space-y-3">
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                              Trust / visibility
+                              <select
+                                value={getVerificationStatus(baseRow)}
+                                onChange={(e) =>
+                                  applySocialProfilePatch(t.id, {
+                                    verificationStatus: e.target.value as SocialVerificationStatus,
+                                  })
+                                }
+                                className="mt-1 block w-full rounded border border-neutral-300 bg-white px-2 py-1.5 text-[11px]"
+                              >
+                                {SOCIAL_VERIFICATION_STATUSES.map((v) => (
+                                  <option key={v} value={v}>
+                                    {v.replace(/_/g, " ")}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <label className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                              Visibility
+                              <select
+                                value={baseRow.socialProfile?.visibilityState ?? "show"}
+                                onChange={(e) =>
+                                  applySocialProfilePatch(t.id, {
+                                    visibilityState: e.target.value as SocialVisibilityState,
+                                  })
+                                }
+                                className="mt-1 block w-full rounded border border-neutral-300 bg-white px-2 py-1.5 text-[11px]"
+                              >
+                                {SOCIAL_VISIBILITY_STATES.map((v) => (
+                                  <option key={v} value={v}>
+                                    {v}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                          </div>
+
+                          {viewMode === "review" ? (
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              <select
+                                value={baseRow.profileHealth ?? "unknown"}
+                                onChange={(e) => onProfileHealthChange(t.id, e.target.value as ProfileHealth)}
+                                className="rounded border border-neutral-300 bg-white px-2 py-1.5 text-[11px]"
+                              >
+                                {PROFILE_HEALTH_EDIT.map((h) => (
+                                  <option key={h} value={h}>
+                                    {h.replace(/_/g, " ")}
+                                  </option>
+                                ))}
+                              </select>
+                              <select
+                                value={baseRow.activitySignal ?? "unknown"}
+                                onChange={(e) => onActivitySignalChange(t.id, e.target.value as ActivitySignal)}
+                                className="rounded border border-neutral-300 bg-white px-2 py-1.5 text-[11px]"
+                              >
+                                {ACTIVITY_EDIT.map((a) => (
+                                  <option key={a} value={a}>
+                                    {a}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          ) : null}
+
+                          {rowCandidates.length > 1 ? (
+                            <label className="block text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                              Featured profile
+                              <select
+                                value={primarySelectValue}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  setBaseTargets((prev) => {
+                                    const next = prev.map((x) =>
+                                      x.id === t.id ? normalizeSocialTarget(setPrimaryCandidateId(ensureSocialCandidates(x), v)) : x
                                     );
                                     void persistTargetsList(next);
                                     return next;
                                   });
                                 }}
-                                className="mt-0.5 w-full rounded border border-neutral-300 bg-white px-1 py-0.5 text-[10px] tabular-nums"
-                              />
+                                className="mt-1 block w-full rounded border border-neutral-300 bg-white px-2 py-1.5 text-[11px]"
+                              >
+                                {rowCandidates.map((c) => (
+                                  <option key={c.id} value={c.id}>
+                                    {platformShortLabel(c.platform)} {c.handle ? `@${stripAt(c.handle)}` : (c.url ?? "—").slice(0, 32)} ·{" "}
+                                    {c.overallConfidenceScore}
+                                  </option>
+                                ))}
+                              </select>
                             </label>
+                          ) : null}
+
+                          {betterAlt ? (
                             <button
                               type="button"
                               onClick={() => {
-                                setBaseTargets((p) => {
-                                  const next = p.map((x) => {
-                                    if (x.id !== t.id) return x;
-                                    const u = { ...x, priorityScoreManual: false as const };
-                                    return { ...u, priorityScore: computePriorityScore(u) };
-                                  });
+                                const bestId = pickBestFeaturedCandidateId(baseRow);
+                                if (!bestId) return;
+                                setBaseTargets((prev) => {
+                                  const next = prev.map((x) =>
+                                    x.id === t.id ? normalizeSocialTarget(setPrimaryCandidateId(ensureSocialCandidates(x), bestId)) : x
+                                  );
                                   void persistTargetsList(next);
                                   return next;
                                 });
                               }}
-                              className="text-left text-[9px] font-semibold text-indigo-700 underline"
+                              className="text-left text-[11px] font-semibold text-indigo-700 underline"
                             >
-                              Use auto score
+                              Promote stronger alternate
                             </button>
-                          </>
-                        ) : null}
-                        <textarea
-                          key={`${t.id}-vnote-${baseRow.verificationNote ?? ""}`}
-                          defaultValue={baseRow.verificationNote ?? ""}
-                          rows={2}
-                          placeholder="Verification note"
-                          onBlur={(e) => {
-                            const v = e.target.value.trim();
-                            const prev = (baseRow.verificationNote ?? "").trim();
-                            if (v === prev) return;
-                            setBaseTargets((p) => {
-                              const next = p.map((x) =>
-                                x.id === t.id ? { ...x, ...(v ? { verificationNote: v } : { verificationNote: undefined }) } : x
-                              );
-                              void persistTargetsList(next);
-                              return next;
-                            });
-                          }}
-                          className="w-full rounded border border-neutral-300 bg-white px-1 py-0.5 text-[10px]"
-                        />
-                        <textarea
-                          key={`${t.id}-angle-${baseRow.outreachAngle ?? ""}`}
-                          defaultValue={baseRow.outreachAngle ?? ""}
-                          rows={2}
-                          placeholder="Outreach angle"
-                          onBlur={(e) => {
-                            const v = e.target.value.trim();
-                            const prev = (baseRow.outreachAngle ?? "").trim();
-                            if (v === prev) return;
-                            setBaseTargets((p) => {
-                              const next = p.map((x) =>
-                                x.id === t.id ? { ...x, ...(v ? { outreachAngle: v } : { outreachAngle: undefined }) } : x
-                              );
-                              void persistTargetsList(next);
-                              return next;
-                            });
-                          }}
-                          className="w-full rounded border border-neutral-300 bg-white px-1 py-0.5 text-[10px]"
-                        />
-                      </div>
-                    </td>
-                    <td className="px-2 py-2 text-neutral-700">{t.zone}</td>
-                    <td className="px-2 py-2 text-neutral-700">{t.category}</td>
-                    <td className="px-2 py-2">
-                      <select
-                        value={t.status ?? "new"}
-                        onChange={(e) => setStatus(t.id, e.target.value as SocialTargetStatus)}
-                        className="rounded border border-neutral-300 bg-white px-1.5 py-1 text-[11px]"
-                      >
-                        {STATUS_OPTIONS.map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="px-2 py-2">
-                      <textarea
-                        key={`${t.id}-notes-${baseRow.notes ?? ""}`}
-                        defaultValue={baseRow.notes ?? ""}
-                        rows={2}
-                        onBlur={(e) => {
-                          const v = e.target.value.trim();
-                          const prev = (baseRow.notes ?? "").trim();
-                          if (v === prev) return;
-                          setBaseTargets((p) => {
-                            const next = p.map((x) =>
-                              x.id === t.id ? { ...x, ...(v ? { notes: v } : { notes: undefined }) } : x
-                            );
-                            void persistTargetsList(next);
-                            return next;
-                          });
-                        }}
-                        placeholder="Operator notes"
-                        className="w-full min-w-[6rem] rounded border border-neutral-300 bg-white px-2 py-1 text-[11px] text-neutral-800"
-                      />
-                    </td>
-                    <td className="px-2 py-2">
-                      <div className="space-y-0.5 text-[11px] text-neutral-700">
-                        <div>
-                          Out: <span className="font-semibold tabular-nums text-neutral-900">{outgoing}</span>
+                          ) : null}
+
+                          {featured?.id ? (
+                            <div className="flex flex-wrap items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { verificationStatus: "manual_verified" })}
+                                className="rounded border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase text-emerald-900 hover:bg-emerald-100"
+                              >
+                                Verify
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { verificationStatus: "rejected" })}
+                                className="rounded border border-neutral-400 bg-neutral-100 px-2.5 py-1 text-[10px] font-bold uppercase text-neutral-800 hover:bg-neutral-200"
+                              >
+                                Reject
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { visibilityState: "hide" })}
+                                className="rounded border border-rose-300 bg-rose-50 px-2.5 py-1 text-[10px] font-bold uppercase text-rose-900 hover:bg-rose-100"
+                              >
+                                Hide
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void postPrimaryCandidatePatch(t.id, featured.id, { visibilityState: "review" })}
+                                className="rounded border border-amber-300 bg-amber-50 px-2.5 py-1 text-[10px] font-bold uppercase text-amber-950 hover:bg-amber-100"
+                              >
+                                Send to review
+                              </button>
+                            </div>
+                          ) : null}
+
+                          <div>
+                            <button
+                              type="button"
+                              disabled={verifyBusyId === t.id}
+                              onClick={() => void runHeadVerify(t)}
+                              className="rounded border border-sky-300 bg-sky-50 px-3 py-1 text-[10px] font-bold uppercase text-sky-900 hover:bg-sky-100 disabled:opacity-50"
+                            >
+                              {verifyBusyId === t.id ? "Verifying..." : "Verify link"}
+                            </button>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="block text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                              Status
+                              <select
+                                value={t.status ?? "new"}
+                                onChange={(e) => setStatus(t.id, e.target.value as SocialTargetStatus)}
+                                className="mt-1 block w-full rounded border border-neutral-300 bg-white px-2 py-1.5 text-[11px]"
+                              >
+                                {STATUS_OPTIONS.map((s) => (
+                                  <option key={s} value={s}>
+                                    {s}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            {viewMode === "review" ? (
+                              <>
+                                <label className="block text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                                  Priority (0-100)
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    max={100}
+                                    defaultValue={baseRow.priorityScore ?? score}
+                                    key={`${t.id}-prio-${baseRow.priorityScore}-${baseRow.priorityScoreManual}`}
+                                    onBlur={(e) => {
+                                      const n = Number(e.target.value);
+                                      if (!Number.isFinite(n)) return;
+                                      const clamped = Math.max(0, Math.min(100, Math.round(n)));
+                                      setBaseTargets((p) => {
+                                        const next = p.map((x) =>
+                                          x.id === t.id ? { ...x, priorityScore: clamped, priorityScoreManual: true } : x
+                                        );
+                                        void persistTargetsList(next);
+                                        return next;
+                                      });
+                                    }}
+                                    className="mt-1 w-full rounded border border-neutral-300 bg-white px-2 py-1.5 text-[11px] tabular-nums"
+                                  />
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setBaseTargets((p) => {
+                                      const next = p.map((x) => {
+                                        if (x.id !== t.id) return x;
+                                        const u = { ...x, priorityScoreManual: false as const };
+                                        return { ...u, priorityScore: computePriorityScore(u) };
+                                      });
+                                      void persistTargetsList(next);
+                                      return next;
+                                    });
+                                  }}
+                                  className="text-left text-[11px] font-semibold text-indigo-700 underline"
+                                >
+                                  Use auto score
+                                </button>
+                              </>
+                            ) : null}
+                            <textarea
+                              key={`${t.id}-vnote-${baseRow.verificationNote ?? ""}`}
+                              defaultValue={baseRow.verificationNote ?? ""}
+                              rows={2}
+                              placeholder="Verification note"
+                              onBlur={(e) => {
+                                const v = e.target.value.trim();
+                                const prev = (baseRow.verificationNote ?? "").trim();
+                                if (v === prev) return;
+                                setBaseTargets((p) => {
+                                  const next = p.map((x) =>
+                                    x.id === t.id ? { ...x, ...(v ? { verificationNote: v } : { verificationNote: undefined }) } : x
+                                  );
+                                  void persistTargetsList(next);
+                                  return next;
+                                });
+                              }}
+                              className="w-full rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
+                            />
+                            <textarea
+                              key={`${t.id}-angle-${baseRow.outreachAngle ?? ""}`}
+                              defaultValue={baseRow.outreachAngle ?? ""}
+                              rows={2}
+                              placeholder="Outreach angle"
+                              onBlur={(e) => {
+                                const v = e.target.value.trim();
+                                const prev = (baseRow.outreachAngle ?? "").trim();
+                                if (v === prev) return;
+                                setBaseTargets((p) => {
+                                  const next = p.map((x) =>
+                                    x.id === t.id ? { ...x, ...(v ? { outreachAngle: v } : { outreachAngle: undefined }) } : x
+                                  );
+                                  void persistTargetsList(next);
+                                  return next;
+                                });
+                              }}
+                              className="w-full rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
+                            />
+                            <textarea
+                              key={`${t.id}-notes-${baseRow.notes ?? ""}`}
+                              defaultValue={baseRow.notes ?? ""}
+                              rows={2}
+                              onBlur={(e) => {
+                                const v = e.target.value.trim();
+                                const prev = (baseRow.notes ?? "").trim();
+                                if (v === prev) return;
+                                setBaseTargets((p) => {
+                                  const next = p.map((x) =>
+                                    x.id === t.id ? { ...x, ...(v ? { notes: v } : { notes: undefined }) } : x
+                                  );
+                                  void persistTargetsList(next);
+                                  return next;
+                                });
+                              }}
+                              placeholder="Operator notes"
+                              className="w-full rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
+                            />
+                          </div>
+
+                          <div className="rounded-lg border border-neutral-200 p-3 space-y-2">
+                            <div className="flex flex-wrap items-center gap-3 text-[11px] text-neutral-700">
+                              <span>
+                                Out: <span className="font-semibold tabular-nums text-neutral-900">{outgoing}</span>
+                              </span>
+                              <span>
+                                In: <span className="font-semibold tabular-nums text-neutral-900">{incoming}</span>
+                              </span>
+                              {t.isReferralHub ? (
+                                <span className="inline-block rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase text-violet-900">
+                                  HUB
+                                </span>
+                              ) : null}
+                            </div>
+                            <input
+                              value={draft.toHandle}
+                              onChange={(e) => setDraftField(t.id, { toHandle: e.target.value })}
+                              placeholder="Referred @handle"
+                              className="w-full rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
+                            />
+                            <div className="flex flex-wrap gap-2">
+                              <select
+                                value={draft.referredCategory}
+                                onChange={(e) => setDraftField(t.id, { referredCategory: e.target.value as ReferralCategory })}
+                                className="rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
+                              >
+                                {REFERRAL_CATEGORIES.map((c) => (
+                                  <option key={c} value={c}>
+                                    {c}
+                                  </option>
+                                ))}
+                              </select>
+                              <input
+                                value={draft.note}
+                                onChange={(e) => setDraftField(t.id, { note: e.target.value })}
+                                placeholder="Note"
+                                className="min-w-[6rem] flex-1 rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => addReferral(t)}
+                              className="rounded-full bg-indigo-600 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white hover:bg-indigo-700"
+                            >
+                              Add referral
+                            </button>
+                          </div>
                         </div>
-                        <div>
-                          In: <span className="font-semibold tabular-nums text-neutral-900">{incoming}</span>
-                        </div>
-                        {t.isReferralHub ? (
-                          <span className="inline-block rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase text-violet-900">
-                            Hub
-                          </span>
-                        ) : null}
-                      </div>
-                    </td>
-                    <td className="px-2 py-2">
-                      <div className="flex flex-col gap-1.5">
-                        <input
-                          value={draft.toHandle}
-                          onChange={(e) => setDraftField(t.id, { toHandle: e.target.value })}
-                          placeholder="Referred @handle"
-                          className="w-full rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
-                        />
-                        <div className="flex flex-wrap gap-1">
-                          <select
-                            value={draft.referredCategory}
-                            onChange={(e) =>
-                              setDraftField(t.id, { referredCategory: e.target.value as ReferralCategory })
-                            }
-                            className="rounded border border-neutral-300 bg-white px-1.5 py-1 text-[11px]"
-                          >
-                            {REFERRAL_CATEGORIES.map((c) => (
-                              <option key={c} value={c}>
-                                {c}
-                              </option>
-                            ))}
-                          </select>
-                          <input
-                            value={draft.note}
-                            onChange={(e) => setDraftField(t.id, { note: e.target.value })}
-                            placeholder="Note"
-                            className="min-w-[6rem] flex-1 rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => addReferral(t)}
-                          className="self-start rounded-full bg-indigo-600 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white hover:bg-indigo-700"
-                        >
-                          Add referral
-                        </button>
                       </div>
                     </td>
                   </tr>
