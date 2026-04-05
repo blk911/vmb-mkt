@@ -44,13 +44,11 @@ import {
   upsertReferralEdge,
 } from "@/lib/social-targets/target-utils";
 import {
-  getVerificationState,
   getVerificationStatus,
   isLiveVerified,
   shouldHideTargetBecauseDead,
-  shouldShowTargetInPrimaryView,
-  shouldShowTargetInReviewView,
 } from "@/lib/social-targets/target-visibility";
+import { getVerificationState } from "@/lib/social-targets/verification-state";
 import { getFeaturedValidationIntegrity } from "@/lib/social-targets/featured-validation-integrity";
 import type {
   ActivitySignal,
@@ -404,6 +402,28 @@ function matchesCandidateTypeFilter(
   return (t.addressExpansion?.candidates ?? []).some((candidate) => candidate.prospect?.type === filter);
 }
 
+function rowVisibilityBucket(t: SocialTarget): "show" | "review" | "hide" {
+  const p = getPrimaryCandidate(ensureSocialCandidates(t));
+  if (p?.visibilityState === "hide" || t.socialProfile?.visibilityState === "hide") return "hide";
+  if (p?.visibilityState === "review" || t.socialProfile?.visibilityState === "review") return "review";
+  return "show";
+}
+
+function shouldShowInPrimaryByTruth(t: SocialTarget): boolean {
+  const visibility = rowVisibilityBucket(t);
+  if (visibility !== "show") return false;
+  const state = getVerificationState(t);
+  return state !== "dead" && state !== "rejected";
+}
+
+function shouldShowInReviewByTruth(t: SocialTarget): boolean {
+  const visibility = rowVisibilityBucket(t);
+  if (visibility === "hide") return false;
+  if (visibility === "review") return true;
+  const state = getVerificationState(t);
+  return state === "dead" || state === "rejected";
+}
+
 function formatVerifiedAt(iso?: string): string {
   if (!iso) return "—";
   try {
@@ -594,18 +614,31 @@ export default function SocialTargetsTable({
     Record<string, { toHandle: string; referredCategory: ReferralCategory; note: string }>
   >({});
 
-  const targets = useMemo(() => {
-    const withRef = computeReferralCounts(baseTargets, referralEdges);
-    return withRef.map((t) => ({
-      ...t,
-      priorityScore: getEffectivePriorityScore(t),
-    }));
+  const canonicalRows = useMemo(() => {
+    const normalized = baseTargets.map((row) => normalizeSocialTarget(row));
+    const withRef = computeReferralCounts(normalized, referralEdges);
+    return withRef.map((row) => {
+      const fallbackHandle = stripAt(row.handle || row.id || "unknown");
+      return {
+        ...row,
+        handle: fallbackHandle,
+        zone: row.zone || "unknown",
+        category: row.category || "other",
+        status: row.status ?? "new",
+        activitySignal: row.activitySignal ?? "unknown",
+        verificationState: getVerificationState(row),
+        priorityScore: getEffectivePriorityScore(row),
+      };
+    });
   }, [baseTargets, referralEdges]);
 
+  const rowsForSummary = canonicalRows;
+  const rowsForTopReady = canonicalRows;
+
   const viewScopedTargets = useMemo(() => {
-    if (viewMode === "primary") return targets.filter(shouldShowTargetInPrimaryView);
-    return targets.filter(shouldShowTargetInReviewView);
-  }, [targets, viewMode]);
+    if (viewMode === "primary") return canonicalRows.filter(shouldShowInPrimaryByTruth);
+    return canonicalRows.filter(shouldShowInReviewByTruth);
+  }, [canonicalRows, viewMode]);
 
   const persistTargetsList = useCallback(async (next: SocialTarget[]) => {
     setSaveError(null);
@@ -662,61 +695,61 @@ export default function SocialTargetsTable({
 
   const zones = useMemo(() => {
     const z = new Set<string>();
-    for (const t of baseTargets) z.add(t.zone);
+    for (const t of canonicalRows) z.add(t.zone);
     return [...z].sort();
-  }, [baseTargets]);
+  }, [canonicalRows]);
 
   const categories = useMemo(() => {
     const c = new Set<string>();
-    for (const t of baseTargets) c.add(t.category);
+    for (const t of canonicalRows) c.add(t.category);
     return [...c].sort();
-  }, [baseTargets]);
+  }, [canonicalRows]);
 
   const aggregatorTypes = useMemo(() => {
     const out = new Set<string>(["unknown"]);
-    for (const t of baseTargets) {
+    for (const t of canonicalRows) {
       const agg = t.addressExpansion?.classification?.aggregatorType;
       if (agg) out.add(agg);
     }
     return [...out].sort();
-  }, [baseTargets]);
+  }, [canonicalRows]);
 
   const operatorKpis = useMemo(() => {
-    const total = baseTargets.length;
-    const activeProfiles = baseTargets.filter(isLiveVerified).length;
-    const ready = baseTargets.filter((t) => isLiveVerified(t) && shouldShowTargetInPrimaryView(t)).length;
-    const deadBroken = baseTargets.filter((t) => getVerificationState(t) === "dead").length;
-    const liveProviders = baseTargets.filter(isLiveVerified).length;
-    const primaryQueue = baseTargets.filter(shouldShowTargetInPrimaryView).length;
-    const reviewQueue = baseTargets.filter(shouldShowTargetInReviewView).length;
+    const total = rowsForSummary.length;
+    const activeProfiles = rowsForSummary.filter(isLiveVerified).length;
+    const ready = rowsForSummary.filter((t) => isLiveVerified(t) && shouldShowInPrimaryByTruth(t)).length;
+    const deadBroken = rowsForSummary.filter((t) => getVerificationState(t) === "dead").length;
+    const liveProviders = rowsForSummary.filter(isLiveVerified).length;
+    const primaryQueue = rowsForSummary.filter(shouldShowInPrimaryByTruth).length;
+    const reviewQueue = rowsForSummary.filter(shouldShowInReviewByTruth).length;
     return { total, activeProfiles, ready, deadBroken, liveProviders, primaryQueue, reviewQueue };
-  }, [baseTargets]);
+  }, [rowsForSummary]);
 
   const topReadyTargets = useMemo(() => {
-    return targets
+    return rowsForTopReady
       .filter((t) => {
         if (!isLiveVerified(t)) return false;
-        if (viewMode === "primary" && !shouldShowTargetInPrimaryView(t)) return false;
+        if (viewMode === "primary" && !shouldShowInPrimaryByTruth(t)) return false;
         return true;
       })
       .sort((a, b) => compareTargetsByOperatorRank(a, b, true))
       .slice(0, 10)
       .map((x) => x);
-  }, [targets, viewMode]);
+  }, [rowsForTopReady, viewMode]);
 
   const topReferred = useMemo(() => {
     const raw = getTopReferredHandles(referralEdges).slice(0, 5);
     if (viewMode === "review") return raw;
     return raw.filter((n) => {
-      const tgt = handleMatchesTarget(baseTargets, n.toHandle);
+      const tgt = handleMatchesTarget(canonicalRows, n.toHandle);
       if (!tgt) return true;
-      return shouldShowTargetInPrimaryView(normalizeSocialTarget(tgt));
+      return shouldShowInPrimaryByTruth(tgt);
     });
-  }, [referralEdges, viewMode, baseTargets]);
+  }, [referralEdges, viewMode, canonicalRows]);
 
   const referralSummary = useMemo(() => {
     const multi = referralEdges.filter((e) => e.confidence === "multi").length;
-    const hubs = targets.filter((t) => t.isReferralHub).length;
+    const hubs = canonicalRows.filter((t) => t.isReferralHub).length;
     const top = getTopReferredHandles(referralEdges)[0];
     return {
       totalEdges: referralEdges.length,
@@ -725,7 +758,7 @@ export default function SocialTargetsTable({
       topHandle: top?.toHandle,
       topSeen: top?.timesSeen,
     };
-  }, [referralEdges, targets]);
+  }, [referralEdges, canonicalRows]);
 
   const filteredSorted = useMemo(() => {
     let list = [...viewScopedTargets];
@@ -858,9 +891,13 @@ export default function SocialTargetsTable({
   ]);
 
   const pipelineCounts = useMemo(() => {
-    const loadedRows = targets.length;
+    const loadedRows = baseTargets.length;
+    const normalizedRows = canonicalRows.length;
+    const rowsForSummaryCount = rowsForSummary.length;
+    const rowsForTopReadyCount = rowsForTopReady.length;
+    const rowsBeforeViewFilter = canonicalRows.length;
     let stage = [...viewScopedTargets];
-    const afterViewFilter = stage.length;
+    const rowsAfterViewFilter = stage.length;
     if (zoneFilter !== "all") stage = stage.filter((t) => t.zone === zoneFilter);
     if (categoryFilter !== "all") stage = stage.filter((t) => t.category === categoryFilter);
     if (statusFilter !== "all") stage = stage.filter((t) => (t.status ?? "new") === statusFilter);
@@ -903,16 +940,40 @@ export default function SocialTargetsTable({
       });
     }
     const afterSearch = stage.length;
+    const sampleRowIds = canonicalRows.slice(0, 10).map((t) => t.id);
+    const sampleRowHandles = canonicalRows.slice(0, 10).map((t) => `@${stripAt(t.handle)}`);
+    let emptyReasonHint: string | null = null;
+    if (filteredSorted.length === 0) {
+      if (rowsAfterViewFilter === 0 && rowsBeforeViewFilter > 0) {
+        emptyReasonHint = "all rows excluded by PRIMARY/REVIEW mapping";
+      } else if (afterVerificationFilters === 0 && rowsAfterViewFilter > 0) {
+        emptyReasonHint = "all rows excluded by verification/candidate filters";
+      } else if (afterSearch === 0 && afterVerificationFilters > 0 && search.trim()) {
+        emptyReasonHint = "all rows excluded by search";
+      } else if (afterZoneCategoryStatusActivity === 0 && rowsAfterViewFilter > 0) {
+        emptyReasonHint = "all rows excluded by zone/category/status/activity filters";
+      }
+    }
     return {
       loadedRows,
-      afterViewFilter,
+      normalizedRows,
+      rowsForSummary: rowsForSummaryCount,
+      rowsForTopReady: rowsForTopReadyCount,
+      rowsBeforeViewFilter,
+      rowsAfterViewFilter,
       afterZoneCategoryStatusActivity,
       afterVerificationFilters,
       afterSearch,
       finalRenderedRows: filteredSorted.length,
+      emptyReasonHint,
+      sampleRowIds,
+      sampleRowHandles,
     };
   }, [
-    targets,
+    baseTargets.length,
+    canonicalRows,
+    rowsForSummary.length,
+    rowsForTopReady.length,
     viewScopedTargets,
     zoneFilter,
     categoryFilter,
@@ -1637,7 +1698,7 @@ export default function SocialTargetsTable({
         <div className="mt-2 grid gap-2 sm:grid-cols-4">
           <div className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 shadow-sm">
             <p className="text-[9px] font-bold uppercase tracking-wide text-neutral-500">Targets</p>
-            <p className="text-lg font-bold tabular-nums text-neutral-950">{baseTargets.length}</p>
+            <p className="text-lg font-bold tabular-nums text-neutral-950">{rowsForSummary.length}</p>
           </div>
           <div className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 shadow-sm">
             <p className="text-[9px] font-bold uppercase tracking-wide text-neutral-500">Shown</p>
@@ -2245,7 +2306,9 @@ export default function SocialTargetsTable({
 
       {process.env.NODE_ENV !== "production" ? (
         <div className="rounded-lg border border-dashed border-neutral-300 bg-neutral-50 px-2.5 py-1.5 text-[10px] text-neutral-700">
-          Pipeline: loaded {pipelineCounts.loadedRows} · view {pipelineCounts.afterViewFilter} · zone/cat/status/activity{" "}
+          Pipeline: loaded {pipelineCounts.loadedRows} · normalized {pipelineCounts.normalizedRows} · summary{" "}
+          {pipelineCounts.rowsForSummary} · top-ready {pipelineCounts.rowsForTopReady} · before-view{" "}
+          {pipelineCounts.rowsBeforeViewFilter} · after-view {pipelineCounts.rowsAfterViewFilter} · zone/cat/status/activity{" "}
           {pipelineCounts.afterZoneCategoryStatusActivity} · verification/prospect {pipelineCounts.afterVerificationFilters} · search{" "}
           {pipelineCounts.afterSearch} · render {pipelineCounts.finalRenderedRows}
         </div>
@@ -2263,7 +2326,21 @@ export default function SocialTargetsTable({
             {filteredSorted.length === 0 ? (
               <tr>
                 <td colSpan={2} className="px-3 py-8 text-center text-sm text-neutral-500">
-                  No targets match filters.
+                  <div>No targets match filters.</div>
+                  {process.env.NODE_ENV !== "production" ? (
+                    <div className="mt-2 text-[11px] text-neutral-600">
+                      <div>
+                        loaded: {pipelineCounts.loadedRows} · after view: {pipelineCounts.rowsAfterViewFilter} · after filters:{" "}
+                        {pipelineCounts.afterVerificationFilters} · final: {pipelineCounts.finalRenderedRows}
+                      </div>
+                      {pipelineCounts.emptyReasonHint ? <div>Reason: {pipelineCounts.emptyReasonHint}</div> : null}
+                      {pipelineCounts.sampleRowHandles.length > 0 ? (
+                        <div className="truncate">
+                          Sample rows: {pipelineCounts.sampleRowHandles.slice(0, 5).join(", ")}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </td>
               </tr>
             ) : (
