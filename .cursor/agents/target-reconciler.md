@@ -66,3 +66,32 @@ Return:
 3. evidence used
 4. whether to attach/promote/suppress/review
 5. operator-facing explanation in plain language
+
+## Structured output
+
+Return a concise human-readable answer, then end with this exact YAML block shape:
+
+```yaml
+stage: "target-reconciler"
+anchor_or_subject: ""
+territory_verdict: "in_territory | out_of_territory | ambiguous_territory | n/a"
+candidate_count: 0
+top_candidates:
+  - name: ""
+    platform: ""
+    url_or_handle: ""
+    status: ""
+    confidence: ""
+final_state: "confirmed_live | confirmed_real_no_social | verified_candidate | candidate_review | dead | out_of_territory | mismatch | suppressed | n/a"
+next_action: ""
+uncertainties:
+  - ""
+evidence:
+  - ""
+```
+
+Notes:
+
+Use the correct stage value for each agent
+Agents may set irrelevant fields to n/a
+Keep the existing preferred answer format text, but this YAML block is now required at the end
