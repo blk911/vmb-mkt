@@ -1,6 +1,6 @@
 import type { SocialPlatform } from "@/types/social-target";
 
-export type SourceType = "google_maps" | "yelp" | "dora" | "website";
+export type SourceType = "google_maps" | "google" | "yelp" | "dora" | "website";
 export type SourceTrustTier = "tier1" | "tier2" | "tier3";
 export type SourceLiveHint = "live" | "dead" | "unknown";
 

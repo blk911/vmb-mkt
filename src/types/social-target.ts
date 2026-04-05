@@ -53,6 +53,46 @@ export type SocialCandidate = {
   visibilityState?: SocialVisibilityState;
 };
 
+export type SocialEvidenceType =
+  | "instagram"
+  | "tiktok"
+  | "linktree"
+  | "website"
+  | "website_social"
+  | "phone_lookup"
+  | "address_lookup"
+  | "directory"
+  | "other";
+
+export type SocialEvidencePlatform = "instagram" | "tiktok" | "linktree" | "website";
+
+export type SocialEvidenceConfidence = "high" | "medium" | "low";
+
+export type SocialEvidenceItem = {
+  id: string;
+  type: SocialEvidenceType;
+  platform?: SocialEvidencePlatform;
+  url?: string;
+  title?: string;
+  snippet?: string;
+  sourceQuery: string;
+  confidence: SocialEvidenceConfidence;
+  matchSignals: {
+    nameSimilarity: number;
+    geoMatch: boolean;
+    phoneMatch?: boolean;
+    domainMatch?: boolean;
+  };
+  extracted: {
+    phone?: string;
+    email?: string;
+    handle?: string;
+  };
+  createdAt: string;
+};
+
+export type SocialResolutionStatus = "resolved" | "partial" | "unknown" | "conflict";
+
 export type SocialTargetSocialProfile = {
   platform?: SocialProfilePlatform;
   url?: string;
@@ -96,6 +136,17 @@ export type SocialTarget = {
   socialCandidates?: SocialCandidate[];
   /** v3: operator-selected featured candidate; if unset, derived automatically. */
   primaryCandidateId?: string;
+  evidence?: SocialEvidenceItem[];
+  platforms?: {
+    instagram?: string;
+    tiktok?: string;
+    linktree?: string;
+  };
+  confidenceScore?: number;
+  resolutionStatus?: SocialResolutionStatus;
+  runId?: string;
+  runType?: "validation" | "scale" | "adhoc";
+  sourceVersion?: string;
 };
 
 export type ReferralCategory = "nails" | "hair" | "lashes" | "brows" | "spa" | "other";

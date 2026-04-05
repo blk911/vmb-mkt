@@ -9,26 +9,17 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
   try {
     const { id } = await ctx.params;
-    const url = new URL(req.url);
-    const allCandidates = url.searchParams.get("all") === "1";
-
     const targets = await getMergedSocialTargets();
     const idx = targets.findIndex((t) => t.id === id);
     if (idx === -1) {
       return NextResponse.json({ ok: false, error: "target not found" }, { status: 404 });
     }
-
-    const { target: nt, outcome } = await revalidateTargetCandidates(targets[idx], {
-      mode: allCandidates ? "all" : "featured",
-    });
-    const verifiedIds = outcome.candidateOutcomes.map((x) => x.candidateId);
-
-    targets[idx] = nt;
+    const { target, outcome } = await revalidateTargetCandidates(targets[idx], { mode: "all" });
+    targets[idx] = target;
     await saveMergedSocialTargetsAsRuntime(targets);
     return NextResponse.json({
       ok: true as const,
-      target: nt,
-      verifiedCandidateIds: verifiedIds,
+      target,
       revalidation: outcome,
     });
   } catch (e: unknown) {

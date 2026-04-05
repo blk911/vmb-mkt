@@ -6,7 +6,7 @@ import { getMergedSocialTargets, saveMergedSocialTargetsAsRuntime } from "@/lib/
 import type { SourceCandidateInput } from "@/lib/social-targets/source-adapters";
 
 function isSourceType(v: unknown): v is SourceCandidateInput["sourceType"] {
-  return v === "google_maps" || v === "yelp" || v === "dora" || v === "website";
+  return v === "google_maps" || v === "google" || v === "yelp" || v === "dora" || v === "website";
 }
 
 function isTrustTier(v: unknown): v is SourceCandidateInput["sourceTrustTier"] {

@@ -6,6 +6,10 @@ import { getMergedSocialTargets, saveMergedSocialTargetsAsRuntime } from "@/lib/
 import type {
   ActivitySignal,
   ProfileHealth,
+  SocialEvidenceItem,
+  SocialEvidencePlatform,
+  SocialEvidenceType,
+  SocialResolutionStatus,
   SocialCandidate,
   SocialTarget,
   SocialTargetBooking,
@@ -16,9 +20,74 @@ const STATUSES: SocialTargetStatus[] = ["new", "contacted", "qualified", "paused
 const PROFILE_HEALTH: ProfileHealth[] = ["active", "not_found", "renamed_or_moved", "stale", "private", "unknown"];
 const ACTIVITY: ActivitySignal[] = ["hot", "warm", "cold", "unknown"];
 const BOOKINGS: SocialTargetBooking[] = ["dm", "link", "phone"];
+const EVIDENCE_TYPES: SocialEvidenceType[] = [
+  "instagram",
+  "tiktok",
+  "linktree",
+  "website",
+  "website_social",
+  "phone_lookup",
+  "address_lookup",
+  "directory",
+  "other",
+];
+const EVIDENCE_PLATFORMS: SocialEvidencePlatform[] = ["instagram", "tiktok", "linktree", "website"];
+const EVIDENCE_CONFIDENCE = ["high", "medium", "low"] as const;
+const RESOLUTION_STATUS: SocialResolutionStatus[] = ["resolved", "partial", "unknown", "conflict"];
+const RUN_TYPE = ["validation", "scale", "adhoc"] as const;
 
 function isNonEmptyString(v: unknown): v is string {
   return typeof v === "string" && v.trim().length > 0;
+}
+
+function parseEvidence(raw: unknown): SocialEvidenceItem | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  if (!isNonEmptyString(o.id) || !isNonEmptyString(o.type) || !isNonEmptyString(o.sourceQuery) || !isNonEmptyString(o.createdAt)) {
+    return null;
+  }
+  const type = o.type as SocialEvidenceType;
+  if (!EVIDENCE_TYPES.includes(type)) return null;
+  const confidence = o.confidence as (typeof EVIDENCE_CONFIDENCE)[number];
+  if (!EVIDENCE_CONFIDENCE.includes(confidence)) return null;
+  const matchSignalsRaw = o.matchSignals;
+  if (!matchSignalsRaw || typeof matchSignalsRaw !== "object") return null;
+  const ms = matchSignalsRaw as Record<string, unknown>;
+  const nameSimilarity = typeof ms.nameSimilarity === "number" && Number.isFinite(ms.nameSimilarity) ? ms.nameSimilarity : 0;
+  const geoMatch = ms.geoMatch === true;
+  const extractedRaw = o.extracted;
+  const extractedRecord = extractedRaw && typeof extractedRaw === "object" ? (extractedRaw as Record<string, unknown>) : {};
+  const item: SocialEvidenceItem = {
+    id: String(o.id).trim(),
+    type,
+    sourceQuery: String(o.sourceQuery).trim(),
+    confidence,
+    matchSignals: {
+      nameSimilarity: Math.max(0, Math.min(1, nameSimilarity)),
+      geoMatch,
+      ...(typeof ms.phoneMatch === "boolean" ? { phoneMatch: ms.phoneMatch } : {}),
+      ...(typeof ms.domainMatch === "boolean" ? { domainMatch: ms.domainMatch } : {}),
+    },
+    extracted: {
+      ...(typeof extractedRecord.phone === "string" && extractedRecord.phone.trim()
+        ? { phone: extractedRecord.phone.trim() }
+        : {}),
+      ...(typeof extractedRecord.email === "string" && extractedRecord.email.trim()
+        ? { email: extractedRecord.email.trim() }
+        : {}),
+      ...(typeof extractedRecord.handle === "string" && extractedRecord.handle.trim()
+        ? { handle: extractedRecord.handle.trim() }
+        : {}),
+    },
+    createdAt: String(o.createdAt),
+  };
+  if (typeof o.platform === "string" && EVIDENCE_PLATFORMS.includes(o.platform as SocialEvidencePlatform)) {
+    item.platform = o.platform as SocialEvidencePlatform;
+  }
+  if (typeof o.url === "string" && o.url.trim()) item.url = o.url.trim();
+  if (typeof o.title === "string" && o.title.trim()) item.title = o.title.trim();
+  if (typeof o.snippet === "string" && o.snippet.trim()) item.snippet = o.snippet.trim();
+  return item;
 }
 
 function normalizeTarget(raw: unknown): SocialTarget | null {
@@ -75,6 +144,29 @@ function normalizeTarget(raw: unknown): SocialTarget | null {
   if (typeof o.primaryCandidateId === "string" && o.primaryCandidateId.trim()) {
     row.primaryCandidateId = o.primaryCandidateId.trim();
   }
+  if (Array.isArray(o.evidence)) {
+    const evidence = o.evidence.map(parseEvidence).filter((x): x is SocialEvidenceItem => x !== null);
+    if (evidence.length) row.evidence = evidence;
+  }
+  if (o.platforms && typeof o.platforms === "object") {
+    const p = o.platforms as Record<string, unknown>;
+    row.platforms = {
+      ...(typeof p.instagram === "string" && p.instagram.trim() ? { instagram: p.instagram.trim() } : {}),
+      ...(typeof p.tiktok === "string" && p.tiktok.trim() ? { tiktok: p.tiktok.trim() } : {}),
+      ...(typeof p.linktree === "string" && p.linktree.trim() ? { linktree: p.linktree.trim() } : {}),
+    };
+  }
+  if (typeof o.confidenceScore === "number" && Number.isFinite(o.confidenceScore)) {
+    row.confidenceScore = Math.max(0, Math.min(100, Math.round(o.confidenceScore)));
+  }
+  if (typeof o.resolutionStatus === "string" && RESOLUTION_STATUS.includes(o.resolutionStatus as SocialResolutionStatus)) {
+    row.resolutionStatus = o.resolutionStatus as SocialResolutionStatus;
+  }
+  if (typeof o.runId === "string" && o.runId.trim()) row.runId = o.runId.trim();
+  if (typeof o.runType === "string" && RUN_TYPE.includes(o.runType as (typeof RUN_TYPE)[number])) {
+    row.runType = o.runType as "validation" | "scale" | "adhoc";
+  }
+  if (typeof o.sourceVersion === "string" && o.sourceVersion.trim()) row.sourceVersion = o.sourceVersion.trim();
   return normalizeSocialTarget(row);
 }
 

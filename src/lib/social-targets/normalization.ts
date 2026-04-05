@@ -4,6 +4,14 @@ import {
   ingestSourceCandidateInputs,
   mergeSocialProfileIntoPrimaryCandidate,
 } from "@/lib/social-targets/social-candidate-logic";
+import { appendEvidenceToTarget, normalizeSocialTargetRecord } from "@/lib/social-targets/evidence";
+import type { DiscoveryAnchor } from "@/lib/social-targets/google-discovery/query-generator";
+import {
+  buildGoogleDiscoveryQueries,
+  adaptQueryResultsToCandidates,
+  adaptQueryResultsToEvidence,
+  type GoogleQueryResultSet,
+} from "@/lib/social-targets/google-discovery/run-discovery";
 import { adaptSourceRecord } from "@/lib/social-targets/source-adapters";
 import {
   SOCIAL_PLATFORMS,
@@ -95,7 +103,8 @@ export function inferPlatformFromTarget(t: SocialTarget): SocialPlatform {
  * Ensure candidates exist, merge legacy `socialProfile` edits into primary, sync root `handle` + `socialProfile` from primary.
  */
 export function normalizeSocialTarget(t: SocialTarget): SocialTarget {
-  let base = ensureSocialCandidates(t);
+  let base = normalizeSocialTargetRecord(t);
+  base = ensureSocialCandidates(base);
   if (t.socialProfile) {
     base = mergeSocialProfileIntoPrimaryCandidate({ ...base, socialProfile: t.socialProfile });
   }
@@ -149,4 +158,27 @@ export function ingestNormalizedSourceCandidates(
   inputs: SourceCandidateInput[]
 ): SocialTarget {
   return ingestSourceCandidateInputs(target, inputs);
+}
+
+/**
+ * Google discovery integration hook:
+ * build query pack from anchor, adapt public search results into normalized source inputs,
+ * then ingest as unverified candidates into the existing pipeline.
+ */
+export function runGoogleDiscoveryForTarget(
+  target: SocialTarget,
+  anchor: DiscoveryAnchor,
+  googleResults: GoogleQueryResultSet[],
+  runMeta?: Pick<SocialTarget, "runId" | "runType" | "sourceVersion">
+): {
+  target: SocialTarget;
+  queries: ReturnType<typeof buildGoogleDiscoveryQueries>["queries"];
+  inputs: SourceCandidateInput[];
+} {
+  const pack = buildGoogleDiscoveryQueries(anchor);
+  const inputs = adaptQueryResultsToCandidates(googleResults, anchor);
+  const evidence = adaptQueryResultsToEvidence(googleResults, anchor);
+  const ingested = ingestSourceCandidateInputs(target, inputs);
+  const next = normalizeSocialTarget(appendEvidenceToTarget(ingested, evidence, runMeta));
+  return { target: next, queries: pack.queries, inputs };
 }

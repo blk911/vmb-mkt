@@ -263,6 +263,8 @@ function socialCandidateIdentityKeyForIntake(c: { platform?: string; handle?: st
 
 function sourceTypeBadgeLabel(sourceType: SourceCandidateInput["sourceType"]): string {
   switch (sourceType) {
+    case "google":
+      return "GOOGLE";
     case "google_maps":
       return "MAPS";
     case "yelp":
@@ -307,6 +309,24 @@ function matchesActivityFilter(t: SocialTarget, f: (typeof ACTIVITY_FILTER)[numb
   if (f === "all") return true;
   if (f === "unknown") return !t.activitySignal || t.activitySignal === "unknown";
   return t.activitySignal === f;
+}
+
+function evidenceCount(t: SocialTarget): number {
+  return Array.isArray(t.evidence) ? t.evidence.length : 0;
+}
+
+function hasEvidencePlatform(t: SocialTarget, platform: "instagram" | "tiktok" | "linktree"): boolean {
+  const fromPlatforms = Boolean(t.platforms?.[platform]);
+  if (fromPlatforms) return true;
+  return (t.evidence ?? []).some((ev) => ev.platform === platform || ev.type === platform);
+}
+
+function hasUnknownResolution(t: SocialTarget): boolean {
+  return (t.resolutionStatus ?? "unknown") === "unknown";
+}
+
+function hasMultiSignal(t: SocialTarget): boolean {
+  return evidenceCount(t) >= 3;
 }
 
 function formatVerifiedAt(iso?: string): string {
@@ -366,6 +386,19 @@ function toApiTarget(t: SocialTarget): SocialTarget {
     row.socialCandidates = n.socialCandidates.map((c) => ({ ...c }));
   }
   if (n.primaryCandidateId) row.primaryCandidateId = n.primaryCandidateId;
+  if (n.evidence?.length) {
+    row.evidence = n.evidence.map((ev) => ({
+      ...ev,
+      matchSignals: { ...ev.matchSignals },
+      extracted: { ...ev.extracted },
+    }));
+  }
+  if (n.platforms && Object.keys(n.platforms).length > 0) row.platforms = { ...n.platforms };
+  if (typeof n.confidenceScore === "number") row.confidenceScore = n.confidenceScore;
+  if (n.resolutionStatus) row.resolutionStatus = n.resolutionStatus;
+  if (n.runId) row.runId = n.runId;
+  if (n.runType) row.runType = n.runType;
+  if (n.sourceVersion) row.sourceVersion = n.sourceVersion;
   return row;
 }
 
@@ -416,6 +449,7 @@ export default function SocialTargetsTable({
   const [hideDeadProfiles, setHideDeadProfiles] = useState(true);
   const [viewMode, setViewMode] = useState<"primary" | "review">("primary");
   const [verifyBusyId, setVerifyBusyId] = useState<string | null>(null);
+  const [revalidateBusyKey, setRevalidateBusyKey] = useState<string | null>(null);
   const [sourceIntakeBusyKey, setSourceIntakeBusyKey] = useState<string | null>(null);
   const [batchIngestBusy, setBatchIngestBusy] = useState(false);
   const [batchIngestInput, setBatchIngestInput] = useState("");
@@ -423,6 +457,11 @@ export default function SocialTargetsTable({
   const [batchIngestResults, setBatchIngestResults] = useState<BatchIngestResult[] | null>(null);
   const [hotTagOnly, setHotTagOnly] = useState(false);
   const [referralHubsOnly, setReferralHubsOnly] = useState(false);
+  const [hasInstagramOnly, setHasInstagramOnly] = useState(false);
+  const [hasTikTokOnly, setHasTikTokOnly] = useState(false);
+  const [hasLinktreeOnly, setHasLinktreeOnly] = useState(false);
+  const [unknownOnly, setUnknownOnly] = useState(false);
+  const [multiSignalOnly, setMultiSignalOnly] = useState(false);
   const [sortBy, setSortBy] = useState<
     | "operatorRank"
     | "name"
@@ -431,6 +470,8 @@ export default function SocialTargetsTable({
     | "priorityScore"
     | "activitySignal"
     | "profileHealth"
+    | "confidenceScore"
+    | "evidenceCount"
   >("operatorRank");
   const [bulkBusy, setBulkBusy] = useState<string | null>(null);
   const [bulkSummary, setBulkSummary] = useState<string | null>(null);
@@ -589,6 +630,11 @@ export default function SocialTargetsTable({
     }
     if (hotTagOnly) list = list.filter(hasHotTag);
     if (referralHubsOnly) list = list.filter((t) => t.isReferralHub);
+    if (hasInstagramOnly) list = list.filter((t) => hasEvidencePlatform(t, "instagram"));
+    if (hasTikTokOnly) list = list.filter((t) => hasEvidencePlatform(t, "tiktok"));
+    if (hasLinktreeOnly) list = list.filter((t) => hasEvidencePlatform(t, "linktree"));
+    if (unknownOnly) list = list.filter(hasUnknownResolution);
+    if (multiSignalOnly) list = list.filter(hasMultiSignal);
 
     const dir = sortDesc ? -1 : 1;
     list.sort((a, b) => {
@@ -609,6 +655,14 @@ export default function SocialTargetsTable({
       } else if (sortBy === "referredByCount") {
         const va = a.referredByCount ?? 0;
         const vb = b.referredByCount ?? 0;
+        if (va !== vb) return (vb - va) * (sortDesc ? 1 : -1);
+      } else if (sortBy === "confidenceScore") {
+        const va = a.confidenceScore ?? 0;
+        const vb = b.confidenceScore ?? 0;
+        if (va !== vb) return (vb - va) * (sortDesc ? 1 : -1);
+      } else if (sortBy === "evidenceCount") {
+        const va = evidenceCount(a);
+        const vb = evidenceCount(b);
         if (va !== vb) return (vb - va) * (sortDesc ? 1 : -1);
       } else if (sortBy === "zone") {
         const c = a.zone.localeCompare(b.zone);
@@ -634,6 +688,11 @@ export default function SocialTargetsTable({
     hideDeadProfiles,
     hotTagOnly,
     referralHubsOnly,
+    hasInstagramOnly,
+    hasTikTokOnly,
+    hasLinktreeOnly,
+    unknownOnly,
+    multiSignalOnly,
     sortBy,
     sortDesc,
   ]);
@@ -700,6 +759,54 @@ export default function SocialTargetsTable({
           return;
         }
         setBulkSummary(`${label} complete: ${data.verified ?? 0} candidate checks`);
+        router.refresh();
+      } catch {
+        setSaveError(`${label} failed (network)`);
+      } finally {
+        setBulkBusy(null);
+      }
+    },
+    [router]
+  );
+
+  const runBulkRevalidate = useCallback(
+    async (
+      ids: string[],
+      opts?: {
+        mode?: "featured" | "all" | "selected" | "stale";
+        candidateId?: string;
+        label?: string;
+        staleOnly?: boolean;
+      }
+    ) => {
+      const cleanIds = [...new Set(ids.filter(Boolean))];
+      const label = opts?.label ?? "Revalidate";
+      if (!cleanIds.length && opts?.mode !== "stale") return;
+      setBulkBusy(label);
+      setBulkSummary(null);
+      setSaveError(null);
+      try {
+        const res = await fetch("/api/social-targets/revalidate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...(cleanIds.length ? { targetIds: cleanIds } : {}),
+            ...(opts?.mode ? { mode: opts.mode } : {}),
+            ...(opts?.candidateId ? { candidateId: opts.candidateId } : {}),
+            ...(opts?.staleOnly ? { staleOnly: true } : {}),
+          }),
+        });
+        const data = (await res.json().catch(() => ({}))) as {
+          ok?: boolean;
+          error?: string;
+          outcomes?: Array<{ candidateCount?: number }>;
+        };
+        if (!res.ok || data.ok !== true) {
+          setSaveError(data.error || `${label} failed (${res.status})`);
+          return;
+        }
+        const checked = (data.outcomes ?? []).reduce((sum, row) => sum + (row.candidateCount ?? 0), 0);
+        setBulkSummary(`${label} complete: ${checked} candidate checks`);
         router.refresh();
       } catch {
         setSaveError(`${label} failed (network)`);
@@ -859,6 +966,32 @@ export default function SocialTargetsTable({
         setSaveError("Verify failed (network)");
       } finally {
         setVerifyBusyId(null);
+      }
+    },
+    [router]
+  );
+
+  const runRowRevalidate = useCallback(
+    async (t: SocialTarget, mode: "featured" | "all") => {
+      const key = `${mode}:${t.id}`;
+      setRevalidateBusyKey(key);
+      setSaveError(null);
+      try {
+        const endpoint =
+          mode === "all"
+            ? `/api/social-targets/${encodeURIComponent(t.id)}/revalidate-all`
+            : `/api/social-targets/${encodeURIComponent(t.id)}/revalidate-featured`;
+        const res = await fetch(endpoint, { method: "POST" });
+        const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+        if (!res.ok || data.ok !== true) {
+          setSaveError(data.error || `Revalidate failed (${res.status})`);
+          return;
+        }
+        router.refresh();
+      } catch {
+        setSaveError("Revalidate failed (network)");
+      } finally {
+        setRevalidateBusyKey(null);
       }
     },
     [router]
@@ -1429,12 +1562,16 @@ export default function SocialTargetsTable({
                   | "priorityScore"
                   | "activitySignal"
                   | "profileHealth"
+                  | "confidenceScore"
+                  | "evidenceCount"
               )
             }
             className="mt-0.5 block max-w-[11rem] rounded border border-neutral-300 bg-white px-2 py-1 text-[11px]"
           >
             <option value="operatorRank">Operator rank</option>
             <option value="priorityScore">Priority score</option>
+            <option value="confidenceScore">Confidence</option>
+            <option value="evidenceCount">Evidence count</option>
             <option value="activitySignal">Activity</option>
             <option value="profileHealth">Profile health</option>
             <option value="name">Handle</option>
@@ -1524,6 +1661,51 @@ export default function SocialTargetsTable({
             />
             Referral hubs only
           </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={hasInstagramOnly}
+              onChange={(e) => setHasInstagramOnly(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            Has IG evidence
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={hasTikTokOnly}
+              onChange={(e) => setHasTikTokOnly(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            Has TikTok evidence
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={hasLinktreeOnly}
+              onChange={(e) => setHasLinktreeOnly(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            Has Linktree evidence
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={unknownOnly}
+              onChange={(e) => setUnknownOnly(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            Unknown only
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+            <input
+              type="checkbox"
+              checked={multiSignalOnly}
+              onChange={(e) => setMultiSignalOnly(e.target.checked)}
+              className="rounded border-neutral-300"
+            />
+            Multi-signal only
+          </label>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
@@ -1574,6 +1756,33 @@ export default function SocialTargetsTable({
               className="rounded-full border border-sky-400 bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-sky-900 hover:bg-sky-50 disabled:opacity-50"
             >
               {bulkBusy === "Verify selected (all candidates)" ? "Verifying..." : "Verify selected all"}
+            </button>
+            <button
+              type="button"
+              disabled={selectedTargets.length === 0 || bulkBusy !== null}
+              onClick={() =>
+                void runBulkRevalidate(selectedTargets.map((t) => t.id), {
+                  mode: "all",
+                  label: "Revalidate selected",
+                })
+              }
+              className="rounded-full border border-violet-300 bg-violet-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-violet-900 hover:bg-violet-100 disabled:opacity-50"
+            >
+              {bulkBusy === "Revalidate selected" ? "Revalidating..." : "Revalidate selected"}
+            </button>
+            <button
+              type="button"
+              disabled={bulkBusy !== null}
+              onClick={() =>
+                void runBulkRevalidate([], {
+                  mode: "stale",
+                  staleOnly: true,
+                  label: "Revalidate stale",
+                })
+              }
+              className="rounded-full border border-violet-300 bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-violet-900 hover:bg-violet-50 disabled:opacity-50"
+            >
+              {bulkBusy === "Revalidate stale" ? "Revalidating..." : "Revalidate stale"}
             </button>
             <button
               type="button"
@@ -1730,6 +1939,15 @@ export default function SocialTargetsTable({
                             </span>
                             <span>
                               Activity: <span className="font-semibold text-neutral-900">{t.activitySignal ?? "—"}</span>
+                            </span>
+                            <span>
+                              Resolution: <span className="font-semibold text-neutral-900">{(t.resolutionStatus ?? "unknown").replace(/_/g, " ")}</span>
+                            </span>
+                            <span>
+                              Evidence: <span className="font-semibold tabular-nums text-neutral-900">{evidenceCount(t)}</span>
+                            </span>
+                            <span>
+                              Confidence: <span className="font-semibold tabular-nums text-neutral-900">{t.confidenceScore ?? "—"}</span>
                             </span>
                             <span>
                               Score: <span className="font-bold tabular-nums text-neutral-900">{score}</span>
@@ -1948,6 +2166,22 @@ export default function SocialTargetsTable({
                                 className="rounded border border-sky-300 bg-sky-50 px-2 py-0.5 text-[9px] font-bold uppercase text-sky-900 hover:bg-sky-100 disabled:opacity-50"
                               >
                                 {verifyBusyId === t.id ? "Verifying..." : "Verify link"}
+                              </button>
+                              <button
+                                type="button"
+                                disabled={revalidateBusyKey === `featured:${t.id}` || revalidateBusyKey === `all:${t.id}`}
+                                onClick={() => void runRowRevalidate(t, "featured")}
+                                className="rounded border border-violet-300 bg-violet-50 px-2 py-0.5 text-[9px] font-bold uppercase text-violet-900 hover:bg-violet-100 disabled:opacity-50"
+                              >
+                                {revalidateBusyKey === `featured:${t.id}` ? "Revalidating..." : "Revalidate featured"}
+                              </button>
+                              <button
+                                type="button"
+                                disabled={revalidateBusyKey === `featured:${t.id}` || revalidateBusyKey === `all:${t.id}`}
+                                onClick={() => void runRowRevalidate(t, "all")}
+                                className="rounded border border-violet-300 bg-white px-2 py-0.5 text-[9px] font-bold uppercase text-violet-900 hover:bg-violet-50 disabled:opacity-50"
+                              >
+                                {revalidateBusyKey === `all:${t.id}` ? "Revalidating..." : "Revalidate all"}
                               </button>
                             </div>
 

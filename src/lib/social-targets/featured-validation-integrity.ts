@@ -3,6 +3,8 @@ import type { SocialCandidate, SocialTarget } from "@/types/social-target";
 
 export const FEATURED_VERIFICATION_FRESHNESS_DAYS = 7;
 const FEATURED_VERIFICATION_FRESHNESS_MS = FEATURED_VERIFICATION_FRESHNESS_DAYS * 24 * 60 * 60 * 1000;
+export const FEATURED_VERIFICATION_TRUST_MAX_DAYS = 30;
+const FEATURED_VERIFICATION_TRUST_MAX_MS = FEATURED_VERIFICATION_TRUST_MAX_DAYS * 24 * 60 * 60 * 1000;
 
 export type FeaturedDisplayResolveState = "live" | "dead" | "blocked" | "unknown" | "stale";
 export type FeaturedDisplayVerificationState =
@@ -34,6 +36,12 @@ function isFreshCheck(candidate: SocialCandidate): boolean {
   const ts = parseTs(candidate.lastCheckedAt) ?? parseTs(candidate.lastVerifiedAt);
   if (ts == null) return false;
   return Date.now() - ts <= FEATURED_VERIFICATION_FRESHNESS_MS;
+}
+
+function isTrustExpired(candidate: SocialCandidate): boolean {
+  const ts = parseTs(candidate.lastCheckedAt) ?? parseTs(candidate.lastVerifiedAt);
+  if (ts == null) return false;
+  return Date.now() - ts > FEATURED_VERIFICATION_TRUST_MAX_MS;
 }
 
 function isInvalidFeaturedCandidate(c: SocialCandidate | null | undefined): boolean {
@@ -124,6 +132,7 @@ export function getFeaturedValidationIntegrity(target: SocialTarget): FeaturedVa
   }
 
   if ((verification === "manual_verified" || verification === "auto_verified") && !fresh) {
+    const trustExpired = isTrustExpired(displayCandidate);
     return {
       featuredCandidateId,
       displayCandidate,
@@ -132,7 +141,9 @@ export function getFeaturedValidationIntegrity(target: SocialTarget): FeaturedVa
       displayActivityState: "stale",
       isDisplaySafe: false,
       needsRecheck: true,
-      reason: "Featured profile stale; recheck required",
+      reason: trustExpired
+        ? "Featured profile trust expired; do not treat as trusted live truth"
+        : "Featured profile stale; recheck required",
     };
   }
 
