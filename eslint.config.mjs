@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Tooling / datasets — not part of the Next.js app bundle; keeps `npm run lint` usable.
+    "backend/**",
+    "scripts/**",
+    "tools/**",
+    "data/**",
   ]),
 ]);
 
