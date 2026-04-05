@@ -1,5 +1,5 @@
 import { ensureSocialCandidates, getPrimaryCandidate } from "@/lib/social-targets/social-candidate-logic";
-import { isPrimaryLowConfidenceOnly } from "@/lib/social-targets/operator-rank";
+import { isConfirmedRealNoSocial, isPrimaryLowConfidenceOnly } from "@/lib/social-targets/operator-rank";
 import { mapProfileHealthToResolveStatus } from "@/lib/social-targets/normalization";
 import type {
   SocialTarget,
@@ -45,6 +45,7 @@ export function shouldShowTargetInPrimaryView(t: SocialTarget): boolean {
   if (shouldHideTargetBecauseDead(t)) return false;
   const p = primaryRow(t);
   if (p?.visibilityState === "review" || t.socialProfile?.visibilityState === "review") return false;
+  if (isConfirmedRealNoSocial(t)) return true;
   if (isPrimaryLowConfidenceOnly(t)) return false;
   return true;
 }

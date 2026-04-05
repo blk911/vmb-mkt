@@ -7,6 +7,7 @@ import {
   buildEvidenceTail,
   legacyHealthHint,
 } from "@/lib/social-targets/operator-evidence";
+import { isConfirmedRealNoSocial } from "@/lib/social-targets/operator-rank";
 import type { SocialTarget } from "@/types/social-target";
 
 type Props = { target: SocialTarget };
@@ -18,10 +19,14 @@ export function SocialTargetEvidence({ target }: Props) {
   const detail = buildEvidenceDetailLine(target);
   const tail = buildEvidenceTail(target);
   const hint = legacyHealthHint(target);
+  const noSocialAnchorHint = isConfirmedRealNoSocial(target)
+    ? "Real business anchor confirmed; no verified social footprint."
+    : null;
   const extra = [...(hint ? [hint] : []), ...tail];
 
   return (
     <div className="mt-1 max-w-[280px] text-[10px] leading-snug text-neutral-600">
+      {noSocialAnchorHint ? <p className="mb-0.5 text-neutral-700">{noSocialAnchorHint}</p> : null}
       <p className="text-neutral-700">{head}</p>
       {detail ? <p className="mt-0.5 text-neutral-500">{detail}</p> : null}
       {extra.length > 0 ? (

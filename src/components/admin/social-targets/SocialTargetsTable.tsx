@@ -18,6 +18,7 @@ import {
   computeOperatorDisplayRank,
   featuredWeakerThanBestAlternate,
   getPrimaryOperationalState,
+  isConfirmedRealNoSocial,
   pickBestFeaturedCandidateId,
 } from "@/lib/social-targets/operator-rank";
 import { confidenceTier } from "@/lib/social-targets/social-scoring";
@@ -234,6 +235,14 @@ function referralCategoryToTargetCategory(cat: ReferralCategory): string {
 
 function hasHotTag(t: SocialTarget): boolean {
   return Boolean(t.tags?.some((tag) => tag.toUpperCase() === "HOT"));
+}
+
+function noSocialFallbackAngle(t: SocialTarget): string {
+  const candidates = ensureSocialCandidates(t).socialCandidates ?? [];
+  const hasBookingOrWeb = candidates.some((c) => c.platform === "booking" || c.platform === "website") || t.booking === "link";
+  if (hasBookingOrWeb) return "Find live social via booking link or direct contact";
+  if (t.businessName) return "Verify operator identity via phone / website";
+  return "Check suite occupant or stylist name";
 }
 
 function matchesProfileHealthFilter(t: SocialTarget, f: (typeof PROFILE_HEALTH_FILTER)[number]): boolean {
@@ -810,6 +819,25 @@ export default function SocialTargetsTable({
     [baseTargets, getDraft, persistEdgesList, referralEdges]
   );
 
+  const onFindSocial = useCallback(
+    (t: SocialTarget) => {
+      const stamp = new Date().toISOString().slice(0, 10);
+      setBaseTargets((prev) => {
+        const next = prev.map((x) => {
+          if (x.id !== t.id) return x;
+          const seed = "Find social requested";
+          const existing = (x.verificationNote ?? "").trim();
+          const nextNote = existing.includes(seed) ? existing : existing ? `${existing} | ${seed} (${stamp})` : `${seed} (${stamp})`;
+          return { ...x, verificationNote: nextNote };
+        });
+        void persistTargetsList(next);
+        return next;
+      });
+      void runHeadVerify(t);
+    },
+    [persistTargetsList, runHeadVerify]
+  );
+
   const promoteNodeToTarget = useCallback((node: { toHandle: string; category: string }) => {
     setBaseTargets((prev) => {
       const existing = handleMatchesTarget(prev, node.toHandle);
@@ -1361,6 +1389,8 @@ export default function SocialTargetsTable({
                 const state = getPrimaryOperationalState(baseRow);
                 const rank = computeOperatorDisplayRank(baseRow);
                 const betterAlt = featuredWeakerThanBestAlternate(baseRow);
+                const confirmedNoSocial = isConfirmedRealNoSocial(baseRow);
+                const recommendedAngle = t.outreachAngle || (confirmedNoSocial ? noSocialFallbackAngle(baseRow) : "No outreach angle yet");
                 return (
                   <tr key={t.id} className="border-b border-neutral-100 align-top">
                     <td className="px-2 py-2">
@@ -1388,6 +1418,11 @@ export default function SocialTargetsTable({
                             >
                               {ready ? "READY" : state.replace(/_/g, " ")}
                             </span>
+                            {confirmedNoSocial ? (
+                              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-950">
+                                NO SOCIAL
+                              </span>
+                            ) : null}
                             {score >= 80 ? (
                               <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-950">80+</span>
                             ) : null}
@@ -1438,7 +1473,7 @@ export default function SocialTargetsTable({
                           </div>
 
                           <div className="text-[13px] font-medium text-neutral-900">
-                            {t.outreachAngle || "No outreach angle yet"}
+                            {recommendedAngle}
                           </div>
 
                           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-neutral-500">
@@ -1597,6 +1632,18 @@ export default function SocialTargetsTable({
                                 className="rounded border border-amber-300 bg-amber-50 px-2.5 py-1 text-[10px] font-bold uppercase text-amber-950 hover:bg-amber-100"
                               >
                                 Send to review
+                              </button>
+                            </div>
+                          ) : null}
+
+                          {confirmedNoSocial ? (
+                            <div className="flex flex-wrap items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => onFindSocial(t)}
+                                className="rounded border border-amber-300 bg-amber-50 px-2.5 py-1 text-[10px] font-bold uppercase text-amber-950 hover:bg-amber-100"
+                              >
+                                FIND SOCIAL
                               </button>
                             </div>
                           ) : null}

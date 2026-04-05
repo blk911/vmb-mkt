@@ -6,6 +6,7 @@ import type { SocialCandidate, SocialTarget } from "@/types/social-target";
 /** High-level bucket for operator scanning (derived, not persisted). */
 export type PrimaryOperationalState =
   | "verified_live"
+  | "confirmed_real_no_social"
   | "live_usable"
   | "live_review"
   | "not_live"
@@ -15,6 +16,13 @@ const SUPPRESS_THRESHOLD = 50;
 
 function primaryCandidate(t: SocialTarget): SocialCandidate | null {
   return getPrimaryCandidate(ensureSocialCandidates(t));
+}
+
+export function isConfirmedRealNoSocial(t: SocialTarget): boolean {
+  const hasNoSocialTag = (t.tags ?? []).some((tag) => tag.toLowerCase() === "confirmed_real_no_social");
+  if (!hasNoSocialTag) return false;
+  const p = primaryCandidate(t);
+  return !p || p.resolveStatus !== "live";
 }
 
 function activityRank(signal: SocialCandidate["activityStatus"]): number {
@@ -82,6 +90,7 @@ export function getPrimaryOperationalState(t: SocialTarget): PrimaryOperationalS
   if (rs === "dead" || p?.verificationStatus === "rejected" || p?.visibilityState === "hide") {
     return "dead_or_suppressed";
   }
+  if (isConfirmedRealNoSocial(t)) return "confirmed_real_no_social";
   const vs = p?.verificationStatus ?? "candidate";
   if (rs !== "live") return "not_live";
   if (vs === "manual_verified" || vs === "auto_verified") return "verified_live";
@@ -115,6 +124,9 @@ export function computeOperatorDisplayRank(t: SocialTarget): OperatorRankParts {
   const ar = activityRank(p?.activityStatus ?? "unknown");
   const prio = t.priorityScore ?? 0;
   const fol = typeof t.followers === "number" && t.followers >= 0 ? t.followers : 0;
+  const state = getPrimaryOperationalState(t);
+  const anchorStrengthWeight = 300_000_000;
+  const stateBoost = state === "confirmed_real_no_social" ? anchorStrengthWeight : 0;
 
   const rank =
     vr * 1_000_000_000 +
@@ -122,7 +134,8 @@ export function computeOperatorDisplayRank(t: SocialTarget): OperatorRankParts {
     tr * 10_000_000 +
     ar * 1_000_000 +
     prio * 1_000 +
-    Math.min(fol, 999);
+    Math.min(fol, 999) +
+    stateBoost;
 
   return {
     rank,
