@@ -1,8 +1,10 @@
 import {
   ensureSocialCandidates,
   getPrimaryCandidate,
+  ingestSourceCandidateInputs,
   mergeSocialProfileIntoPrimaryCandidate,
 } from "@/lib/social-targets/social-candidate-logic";
+import { adaptSourceRecord } from "@/lib/social-targets/source-adapters";
 import {
   SOCIAL_PLATFORMS,
   SOCIAL_DISCOVERY_SOURCES,
@@ -18,6 +20,7 @@ import type {
   SocialTarget,
   SocialTargetSocialProfile,
 } from "@/types/social-target";
+import type { SourceCandidateInput, SourceType } from "@/lib/social-targets/source-adapters";
 
 function clampInt(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, Math.round(n)));
@@ -125,4 +128,25 @@ export function patchSocialProfile(t: SocialTarget, patch: Partial<SocialTargetS
     ...t,
     socialProfile: { ...t.socialProfile, ...patch },
   });
+}
+
+/**
+ * Bridge helper for source adapters: normalize one raw source record into candidate inputs,
+ * then ingest into existing candidate pipeline.
+ */
+export function adaptAndIngestSourceRecord(
+  target: SocialTarget,
+  sourceType: SourceType,
+  rawRecord: unknown
+): SocialTarget {
+  const inputs = adaptSourceRecord(sourceType, rawRecord);
+  return ingestSourceCandidateInputs(target, inputs);
+}
+
+/** Ingest already-normalized source adapter inputs into the current candidate pipeline. */
+export function ingestNormalizedSourceCandidates(
+  target: SocialTarget,
+  inputs: SourceCandidateInput[]
+): SocialTarget {
+  return ingestSourceCandidateInputs(target, inputs);
 }

@@ -7,8 +7,9 @@ import {
   SOCIAL_VERIFICATION_STATUSES,
   SOCIAL_VISIBILITY_STATES,
 } from "@/lib/social-targets/social-profile-constants";
-import { buildCanonicalProfileUrl, detectPlatformFromUrl } from "@/lib/social-targets/social-normalization";
+import { buildCanonicalProfileUrl, detectPlatformFromUrl, extractHandle } from "@/lib/social-targets/social-normalization";
 import type { SocialVerificationResult } from "@/lib/social-targets/social-verification";
+import type { SourceCandidateInput } from "@/lib/social-targets/source-adapters/types";
 import type {
   ProfileHealth,
   SocialCandidate,
@@ -47,6 +48,19 @@ function inferPlatformForLegacyTarget(t: SocialTarget): SocialPlatform {
 
 function clampInt(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, Math.round(n)));
+}
+
+function sourceTrustBaseScore(tier: SourceCandidateInput["sourceTrustTier"]): number {
+  switch (tier) {
+    case "tier1":
+      return 72;
+    case "tier2":
+      return 62;
+    case "tier3":
+      return 48;
+    default:
+      return 40;
+  }
 }
 
 function isOneOf<T extends string>(v: unknown, allowed: readonly T[]): v is T {
@@ -321,4 +335,109 @@ export function ingestCandidateUrl(t: SocialTarget, url: string, source: SocialC
   };
   const scored = recomputeCandidateScores(base, ensured);
   return { ...ensured, socialCandidates: [...(ensured.socialCandidates ?? []), scored] };
+}
+
+function candidateIdentityKey(c: SocialCandidate): string {
+  const platform = c.platform || "unknown";
+  const handle = (c.handle ?? "").trim().toLowerCase();
+  const url = (c.url ?? "").trim().toLowerCase();
+  return `${platform}|${handle}|${url}`;
+}
+
+function deriveSourceCandidateId(input: SourceCandidateInput): string {
+  const seed = [
+    input.sourceType,
+    input.rawSourceId ?? "",
+    input.platform ?? "unknown",
+    (input.handle ?? "").toLowerCase(),
+    (input.profileUrl ?? "").toLowerCase(),
+    (input.domain ?? "").toLowerCase(),
+  ].join("|");
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  }
+  return `src-${input.sourceType}-${hash.toString(36)}`;
+}
+
+/**
+ * Convert normalized source-adapter input into a candidate row.
+ * This preserves ambiguity and does not verify or finalize identity.
+ */
+export function sourceCandidateInputToSocialCandidate(
+  target: SocialTarget,
+  input: SourceCandidateInput
+): SocialCandidate {
+  const platform =
+    input.platform ??
+    (input.profileUrl ? detectPlatformFromUrl(input.profileUrl) : "unknown");
+  const handle =
+    input.handle?.replace(/^@/, "").trim() ||
+    (input.profileUrl ? extractHandle(platform, input.profileUrl) : undefined);
+  const url =
+    input.profileUrl?.trim() ||
+    (platform !== "unknown" && handle ? buildCanonicalProfileUrl(platform, handle) : undefined);
+  const trustBase = sourceTrustBaseScore(input.sourceTrustTier);
+  const businessBoost = input.anchorHint ? 10 : 0;
+  const geoBoost = input.territoryHint ? 8 : 0;
+  const candidate: SocialCandidate = {
+    id: deriveSourceCandidateId(input),
+    platform,
+    handle,
+    url,
+    discoverySource:
+      input.sourceType === "google_maps"
+        ? "maps"
+        : input.sourceType === "website"
+          ? "website_scrape"
+          : "heuristic",
+    resolveStatus:
+      input.liveHint === "live" ? "live" : input.liveHint === "dead" ? "dead" : "unknown",
+    activityStatus: "unknown",
+    verificationStatus: "candidate",
+    businessMatchScore: clampInt(trustBase + businessBoost, 0, 100),
+    geoMatchScore: clampInt(trustBase + geoBoost, 0, 100),
+    categoryMatchScore: clampInt(trustBase, 0, 100),
+    activityScore: 0,
+    overallConfidenceScore: clampInt(trustBase, 0, 100),
+    evidence: [
+      ...(input.evidence ?? []),
+      `Source ${input.sourceType} (${input.sourceTrustTier})`,
+      ...(input.sourceUrl ? [`Source URL: ${input.sourceUrl}`] : []),
+    ],
+    notes: [input.sourceLabel, ...(input.notes ?? [])]
+      .filter((x): x is string => typeof x === "string" && x.trim().length > 0)
+      .join(" | "),
+    visibilityState: "show",
+  };
+  return recomputeCandidateScores(candidate, target);
+}
+
+/**
+ * Adapter integration bridge: append normalized source candidates into existing pipeline.
+ */
+export function ingestSourceCandidateInputs(
+  target: SocialTarget,
+  inputs: SourceCandidateInput[]
+): SocialTarget {
+  if (!inputs.length) return ensureSocialCandidates(target);
+  const ensured = ensureSocialCandidates(target);
+  const existing = ensured.socialCandidates ?? [];
+  const seen = new Set(existing.map(candidateIdentityKey));
+  const additions: SocialCandidate[] = [];
+
+  for (const input of inputs) {
+    const candidate = sourceCandidateInputToSocialCandidate(ensured, input);
+    const key = candidateIdentityKey(candidate);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    additions.push(candidate);
+  }
+
+  if (!additions.length) return ensured;
+  return {
+    ...ensured,
+    socialCandidates: [...existing, ...additions],
+    primaryCandidateId: ensured.primaryCandidateId ?? existing[0]?.id ?? additions[0]?.id,
+  };
 }
