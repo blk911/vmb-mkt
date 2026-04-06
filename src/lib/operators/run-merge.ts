@@ -7,6 +7,8 @@ import { loadMaster, saveMaster } from "./master-store";
 import { getOutreachTargets } from "./outreach";
 import type { SourceRecord, OperatorRecord } from "./types";
 import { normalizeName } from "./normalize";
+import { applyReviewOverlay } from "./review-store";
+import { writeReadyCoreArtifact } from "./ready-core";
 
 export async function runMergePipeline(allSources: SourceRecord[]) {
   const existing = loadMaster();
@@ -36,6 +38,8 @@ export async function runMergePipeline(allSources: SourceRecord[]) {
   const final = merged.map(assignStatus);
   console.log("STEP 4: saving master...");
   saveMaster(final);
+  const reviewOverlaid = applyReviewOverlay(final);
+  writeReadyCoreArtifact(reviewOverlaid);
   const topTargets = getOutreachTargets(final);
   const OUT_PATH = path.join(process.cwd(), "runtime-data/operator_outreach_top25.json");
   fs.writeFileSync(OUT_PATH, `${JSON.stringify(topTargets, null, 2)}\n`);

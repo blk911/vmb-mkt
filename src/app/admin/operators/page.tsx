@@ -46,6 +46,7 @@ export default function OperatorsPage({
   const quality = buildOperatorQualitySummary(filteredOperators.map((row) => row.op));
   const hot = operators.filter(({ op }) => op.status === "hot");
   const shelved = operators.filter(({ op }) => op.status === "shelved");
+  const readyCount = operators.filter(({ op }) => getReviewStateOrDefault(op.reviewState) === "ready").length;
 
   const evidenceCount = (op: OperatorRecord) => (Array.isArray(op.evidence) && op.evidence.length > 0 ? op.evidence.length : 0);
   const sourceTypeLabel = (op: OperatorRecord) => {
@@ -72,7 +73,10 @@ export default function OperatorsPage({
       <h1 style={{ fontSize: 24, fontWeight: 600 }}>Operator Console</h1>
       <div style={{ marginTop: 12 }}>
         <strong>Total:</strong> {operators.length} | <strong>Hot:</strong> {hot.length} | <strong>Shelved:</strong>{" "}
-        {shelved.length}
+        {shelved.length} |{" "}
+        <a href="/admin/operators/ready">
+          <strong>Ready Core:</strong> {readyCount}
+        </a>
       </div>
       <div style={{ marginTop: 10, display: "flex", gap: 10 }}>
         <a href="/admin/operators?filter=all" style={{ fontWeight: filter === "all" ? 700 : 400 }}>

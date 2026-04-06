@@ -46,7 +46,7 @@
     },
     "status": "hot",
     "confidenceScore": 6,
-    "lastUpdatedAt": "2026-04-06T16:05:28.757Z",
+    "lastUpdatedAt": "2026-04-06T23:05:49.493Z",
     "rank": 130
   },
   {
@@ -96,13 +96,13 @@
     },
     "status": "hot",
     "confidenceScore": 5,
-    "lastUpdatedAt": "2026-04-06T16:05:28.758Z",
+    "lastUpdatedAt": "2026-04-06T23:05:49.494Z",
     "rank": 115
   },
   {
     "id": "63650ea6c3ab21308948e3c144b600ba",
     "name": "Book A Service With Dew Salon - Denver CO | Vagaro",
-    "city": "hair",
+    "city": "spa",
     "sources": {
       "directory": {
         "name": "Eden Spa - Denver CO | Vagaro",
@@ -168,10 +168,10 @@
       }
     ],
     "canonical": {
-      "booking": "https://www.vagaro.com/3slnf8d",
+      "booking": "https://www.vagaro.com/edenspa1",
       "instagram": "https://www.instagram.com/vagaropro/",
       "website": "javascript:void(0)",
-      "phone": "6872211085"
+      "phone": "8662913579"
     },
     "validation": {
       "instagramStatus": "valid",
@@ -180,7 +180,7 @@
     },
     "status": "hot",
     "confidenceScore": 5,
-    "lastUpdatedAt": "2026-04-06T16:05:28.758Z",
+    "lastUpdatedAt": "2026-04-06T23:05:49.494Z",
     "rank": 115
   },
   {
@@ -231,7 +231,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T16:05:28.758Z",
+    "lastUpdatedAt": "2026-04-06T23:05:49.494Z",
     "rank": 75
   },
   {
@@ -338,7 +338,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T16:05:28.758Z",
+    "lastUpdatedAt": "2026-04-06T23:05:49.494Z",
     "rank": 55
   },
   {
@@ -394,7 +394,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T16:05:28.758Z",
+    "lastUpdatedAt": "2026-04-06T23:05:49.494Z",
     "rank": 55
   },
   {
@@ -460,104 +460,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T16:05:28.758Z",
-    "rank": 55
-  },
-  {
-    "id": "9da44987bcba0c917f4fb131e41224df",
-    "name": "Hi Nails & Spa",
-    "city": "Greenwood Village",
-    "category": "nails",
-    "sources": {
-      "google": {
-        "name": "Hi Nails & Spa",
-        "city": "Greenwood Village",
-        "category": "nails",
-        "address": "Greenwood Village",
-        "sourceUrl": "https://www.yelp.com/biz/hi-nails-and-spa-englewood-4",
-        "source": "google",
-        "instagram": "https://www.instagram.com/hinails_spa/"
-      },
-      "instagram": {
-        "name": "Hi Nails & Spa",
-        "city": "Greenwood Village",
-        "category": "nails",
-        "address": "Greenwood Village",
-        "sourceUrl": "https://www.yelp.com/biz/hi-nails-and-spa-englewood-4",
-        "source": "instagram",
-        "instagram": "https://www.instagram.com/hinails_spa/"
-      },
-      "directory": {
-        "name": "Business Photos",
-        "city": "Greenwood Village",
-        "category": "nails",
-        "address": "Greenwood Village",
-        "sourceUrl": "https://www.yelp.com/biz/hi-nails-and-spa-englewood-4",
-        "source": "directory",
-        "website": "https://www.yelp.com/biz/outlook-autumn-market-fundamental-catwalk-flimsy-roost-legibility-individualism-grocer-predestination-6",
-        "instagram": "https://www.instagram.com/hinails_spa/",
-        "phone": "7220946122",
-        "evidenceType": "directory_listing",
-        "extractedFromUrl": "https://www.yelp.com/biz/hi-nails-and-spa-centennial"
-      }
-    },
-    "evidence": [
-      {
-        "name": "Hi Nails & Spa",
-        "city": "Greenwood Village",
-        "category": "nails",
-        "address": "Greenwood Village",
-        "sourceUrl": "https://www.yelp.com/biz/hi-nails-and-spa-englewood-4",
-        "source": "google",
-        "instagram": "https://www.instagram.com/hinails_spa/"
-      },
-      {
-        "name": "Hi Nails & Spa",
-        "city": "Greenwood Village",
-        "category": "nails",
-        "address": "Greenwood Village",
-        "sourceUrl": "https://www.yelp.com/biz/hi-nails-and-spa-englewood-4",
-        "source": "instagram",
-        "instagram": "https://www.instagram.com/hinails_spa/"
-      },
-      {
-        "name": "yelp.com",
-        "city": "Greenwood Village",
-        "category": "nails",
-        "address": "Greenwood Village",
-        "sourceUrl": "https://www.yelp.com/biz/hi-nails-and-spa-englewood-4",
-        "source": "directory",
-        "instagram": "https://www.instagram.com/hinails_spa/",
-        "evidenceType": "directory_listing",
-        "extractedFromUrl": "https://www.yelp.com/biz/hi-nails-and-spa-englewood-4"
-      },
-      {
-        "name": "Business Photos",
-        "city": "Greenwood Village",
-        "category": "nails",
-        "address": "Greenwood Village",
-        "sourceUrl": "https://www.yelp.com/biz/hi-nails-and-spa-englewood-4",
-        "source": "directory",
-        "website": "https://www.yelp.com/biz/outlook-autumn-market-fundamental-catwalk-flimsy-roost-legibility-individualism-grocer-predestination-6",
-        "instagram": "https://www.instagram.com/hinails_spa/",
-        "phone": "7220946122",
-        "evidenceType": "directory_listing",
-        "extractedFromUrl": "https://www.yelp.com/biz/hi-nails-and-spa-centennial"
-      }
-    ],
-    "canonical": {
-      "instagram": "https://www.instagram.com/hinails_spa/",
-      "website": "https://www.yelp.com/biz/outlook-autumn-market-fundamental-catwalk-flimsy-roost-legibility-individualism-grocer-predestination-6",
-      "phone": "7220946122"
-    },
-    "validation": {
-      "instagramStatus": "valid",
-      "bookingStatus": "missing",
-      "websiteStatus": "valid"
-    },
-    "status": "hot",
-    "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T16:05:28.757Z",
+    "lastUpdatedAt": "2026-04-06T23:05:49.494Z",
     "rank": 55
   },
   {
@@ -590,7 +493,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T16:05:28.757Z",
+    "lastUpdatedAt": "2026-04-06T23:05:49.493Z",
     "rank": 55
   },
   {
@@ -623,7 +526,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T16:05:28.757Z",
+    "lastUpdatedAt": "2026-04-06T23:05:49.494Z",
     "rank": 55
   },
   {
@@ -656,7 +559,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T16:05:28.757Z",
+    "lastUpdatedAt": "2026-04-06T23:05:49.493Z",
     "rank": 55
   },
   {
@@ -689,7 +592,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T16:05:28.758Z",
+    "lastUpdatedAt": "2026-04-06T23:05:49.494Z",
     "rank": 55
   }
 ]

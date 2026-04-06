@@ -46,6 +46,7 @@ export type OperatorRecord = {
   status: "hot" | "shelved" | "discard";
   reviewState?: "unreviewed" | "ready" | "shelved_by_review";
   reviewNotes?: string;
+  preferredContactSurface?: "booking" | "instagram" | "website" | "phone" | "none";
   confidenceScore: number;
   lastUpdatedAt: string;
   outreach?: {
