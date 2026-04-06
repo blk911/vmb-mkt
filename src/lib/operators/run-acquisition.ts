@@ -9,6 +9,7 @@ const ACQUISITION_SCAN_ARTIFACT = "runtime-data/operator_acquisition_scan.json";
 export type AcquisitionScanRow = {
   sourceUrl: string;
   classifiedType: PageClassification;
+  parserUsed?: string;
   originalName?: string;
   originalCity?: string;
   extractedName?: string;
@@ -16,6 +17,7 @@ export type AcquisitionScanRow = {
   extractedInstagram?: string;
   extractedBooking?: string;
   extractedWebsite?: string;
+  childQuerySeeds?: string[];
   statusCode: number;
 };
 
@@ -30,10 +32,17 @@ function getCandidateUrl(source: SourceRecord): string | undefined {
 }
 
 function shouldScanSource(source: SourceRecord, classifiedType: PageClassification): boolean {
+  if (source.source === "directory" || source.source === "container") return true;
   if (source.booking) return true;
   if (classifiedType === "directory_listing" || classifiedType === "suite_container") return true;
   if (classifiedType === "website") return true;
   return false;
+}
+
+function sourceFromEvidenceType(evidenceType: PageClassification, fallback: SourceRecord["source"]): SourceRecord["source"] {
+  if (evidenceType === "directory_listing") return "directory";
+  if (evidenceType === "suite_container") return "container";
+  return fallback;
 }
 
 export async function runAcquisition(candidates: SourceRecord[]): Promise<AcquisitionRunOutput> {
@@ -49,22 +58,11 @@ export async function runAcquisition(candidates: SourceRecord[]): Promise<Acquis
 
     const fetched = await fetchCandidatePage(candidateUrl);
     const finalClassification = classifyPage(fetched.finalUrl || candidateUrl, fetched.html);
-    const extracted = fetched.html
-      ? extractFromPage(fetched.finalUrl || candidateUrl, fetched.html, candidate)
-      : {
-          evidenceType: finalClassification,
-          name: candidate.name,
-          city: candidate.city,
-          instagram: candidate.instagram,
-          booking: candidate.booking,
-          website: candidate.website,
-          address: candidate.address,
-          phone: candidate.phone,
-          parentContainerName: candidate.parentContainerName,
-        };
+    const extracted = extractFromPage(fetched.finalUrl || candidateUrl, fetched.html || "", candidate);
 
     const enriched: SourceRecord = {
       ...candidate,
+      source: sourceFromEvidenceType(extracted.evidenceType || finalClassification, candidate.source),
       name: extracted.name || candidate.name,
       city: extracted.city || candidate.city,
       address: extracted.address || candidate.address,
@@ -74,6 +72,7 @@ export async function runAcquisition(candidates: SourceRecord[]): Promise<Acquis
       website: extracted.website || candidate.website,
       parentContainerName: extracted.parentContainerName || candidate.parentContainerName,
       evidenceType: extracted.evidenceType || finalClassification,
+      childQuerySeeds: extracted.childQuerySeeds || candidate.childQuerySeeds,
       sourceUrl: candidateUrl,
       extractedFromUrl: fetched.finalUrl || candidateUrl,
     };
@@ -82,6 +81,7 @@ export async function runAcquisition(candidates: SourceRecord[]): Promise<Acquis
     scanRows.push({
       sourceUrl: candidateUrl,
       classifiedType: finalClassification,
+      parserUsed: extracted.parserUsed,
       originalName: candidate.name,
       originalCity: candidate.city,
       extractedName: enriched.name,
@@ -89,6 +89,7 @@ export async function runAcquisition(candidates: SourceRecord[]): Promise<Acquis
       extractedInstagram: enriched.instagram,
       extractedBooking: enriched.booking,
       extractedWebsite: enriched.website,
+      childQuerySeeds: enriched.childQuerySeeds,
       statusCode: fetched.statusCode,
     });
   }

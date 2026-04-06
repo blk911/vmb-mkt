@@ -5,6 +5,9 @@ const DIRECTORY_DOMAINS = [
   "yellowpages.com",
   "foursquare.com",
   "mapquest.com",
+  "booksy.com",
+  "vagaro.com",
+  "fresha.com",
 ];
 
 const SUITE_CONTAINER_DOMAINS = [
@@ -12,6 +15,7 @@ const SUITE_CONTAINER_DOMAINS = [
   "solasalonstudios.com",
   "mysalonsuite.com",
   "salonlofts.com",
+  "salonsuites.com",
 ];
 
 const SOCIAL_DOMAINS = [
@@ -54,13 +58,16 @@ export function classifyPage(inputUrl: string, html?: string): PageClassificatio
   const haystack = `${host}${path}`;
 
   if (domainIncludes(host, SOCIAL_DOMAINS)) return "social_profile";
-  if (domainIncludes(host, DIRECTORY_DOMAINS)) return "directory_listing";
   if (domainIncludes(host, SUITE_CONTAINER_DOMAINS)) return "suite_container";
 
   if (domainIncludes(host, BOOKING_DOMAINS)) {
-    if (/\/(directory|location|locations|marketplace|search)\b/.test(path)) return "directory_listing";
+    if (/\/(directory|location|locations|marketplace|search|categories|listings?)\b/.test(path)) return "directory_listing";
+    if (/\/(business|salon|barber|nails?|lashes?|spa|book)\b/.test(path)) return "direct_operator";
+    if (domainIncludes(host, DIRECTORY_DOMAINS)) return "directory_listing";
     return "direct_operator";
   }
+
+  if (domainIncludes(host, DIRECTORY_DOMAINS)) return "directory_listing";
 
   if (/\/(directory|listing|listings|location|locations|providers?)\b/.test(path)) {
     return "directory_listing";
@@ -73,7 +80,9 @@ export function classifyPage(inputUrl: string, html?: string): PageClassificatio
     if (text.includes("itemtype=\"http://schema.org/localbusiness\"")) return "direct_operator";
     if (text.includes("itemtype=\"https://schema.org/localbusiness\"")) return "direct_operator";
     if (text.includes("salon suites")) return "suite_container";
-    if (text.includes("find a professional") || text.includes("directory")) return "directory_listing";
+    if (text.includes("find a professional") || text.includes("directory") || text.includes("search results")) {
+      return "directory_listing";
+    }
   }
 
   return "website";

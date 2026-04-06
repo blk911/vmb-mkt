@@ -12,7 +12,7 @@ export async function runMergePipeline(allSources: SourceRecord[]) {
   const existing = loadMaster();
   const existingSources: SourceRecord[] = existing.flatMap((op) => {
     if (Array.isArray(op.evidence) && op.evidence.length > 0) return op.evidence;
-    return [op.sources.google, op.sources.instagram, op.sources.booking].filter(Boolean) as SourceRecord[];
+    return Object.values(op.sources).filter(Boolean) as SourceRecord[];
   });
   const combinedSources = [...existingSources, ...allSources];
   const filteredSources = combinedSources.filter((s) => {

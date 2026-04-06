@@ -9,14 +9,14 @@
     "Lone Tree",
     "Englewood"
   ],
-  "generatedAt": "2026-04-06T14:31:56.639Z",
+  "generatedAt": "2026-04-06T16:05:48.908Z",
   "totalRawResults": 150,
-  "totalUniqueProspects": 12,
-  "withInstagram": 11,
+  "totalUniqueProspects": 11,
+  "withInstagram": 10,
   "withBooking": 1,
-  "dmReadyCount": 8,
+  "dmReadyCount": 7,
   "operatorCount": 0,
-  "salonCount": 7,
+  "salonCount": 6,
   "ambiguousCount": 5,
   "topGeoHints": [
     {
@@ -33,7 +33,7 @@
     },
     {
       "value": "centennial",
-      "count": 3
+      "count": 2
     },
     {
       "value": "lone tree",
@@ -47,7 +47,7 @@
     },
     {
       "value": "nail tech",
-      "count": 9
+      "count": 8
     },
     {
       "value": "nail salon",
@@ -55,6 +55,51 @@
     }
   ],
   "topProspects": [
+    {
+      "id": "hp-1mqs2sw",
+      "name": "Purluxe Beauty Bar DTC",
+      "handle": "purluxebeautybar",
+      "primaryPlatform": "instagram",
+      "profileUrl": "https://www.instagram.com/purluxebeautybar/",
+      "instagramUrl": "https://www.instagram.com/purluxebeautybar/",
+      "locationLabel": "DTC",
+      "geoHints": [
+        "DTC",
+        "denver",
+        "dtc"
+      ],
+      "serviceHints": [
+        "nails",
+        "nail tech",
+        "nail salon"
+      ],
+      "sourcePlatforms": [
+        "instagram"
+      ],
+      "sourceQueries": [
+        "site:instagram.com \"nails\" \"DTC\"",
+        "site:glossgenius.com nails DTC",
+        "site:vagaro.com nails DTC",
+        "site:styleseat.com nails DTC",
+        "site:booksy.com nails DTC",
+        "site:fresha.com nails DTC",
+        "site:square.site nails DTC",
+        "site:glossgenius.com nail tech DTC",
+        "site:vagaro.com nail tech DTC",
+        "site:styleseat.com nail tech DTC",
+        "site:booksy.com nail tech DTC",
+        "site:fresha.com nail tech DTC",
+        "site:square.site nail tech DTC",
+        "Sola nails DTC",
+        "Phenix nails DTC",
+        "salon suites nail tech DTC",
+        "Yelp nail tech DTC",
+        "Yelp nail salon DTC"
+      ],
+      "candidateType": "salon",
+      "confidence": "medium",
+      "dmReady": true
+    },
     {
       "id": "hp-wafbq7",
       "name": "The Nest Nail Spa DTC",
@@ -97,13 +142,6 @@
         "salon suites nail tech DTC",
         "Yelp nail tech DTC",
         "Yelp nail salon DTC",
-        "site:instagram.com \"nails\" \"Greenwood Village\"",
-        "site:glossgenius.com nails Greenwood Village",
-        "site:vagaro.com nails Greenwood Village",
-        "site:styleseat.com nails Greenwood Village",
-        "site:booksy.com nails Greenwood Village",
-        "site:fresha.com nails Greenwood Village",
-        "site:square.site nails Greenwood Village",
         "site:glossgenius.com nail tech Greenwood Village",
         "site:vagaro.com nail tech Greenwood Village",
         "site:styleseat.com nail tech Greenwood Village",
@@ -115,12 +153,12 @@
       "dmReady": true
     },
     {
-      "id": "hp-1mqs2sw",
-      "name": "Purluxe Beauty Bar DTC",
-      "handle": "purluxebeautybar",
+      "id": "hp-wm4jwm",
+      "name": "Pearl Nail Bar",
+      "handle": "firstsight.design",
       "primaryPlatform": "instagram",
-      "profileUrl": "https://www.instagram.com/purluxebeautybar/",
-      "instagramUrl": "https://www.instagram.com/purluxebeautybar/",
+      "profileUrl": "https://www.instagram.com/firstsight.design/",
+      "instagramUrl": "https://www.instagram.com/firstsight.design/",
       "locationLabel": "DTC",
       "geoHints": [
         "DTC",
@@ -129,8 +167,7 @@
       ],
       "serviceHints": [
         "nails",
-        "nail tech",
-        "nail salon"
+        "nail tech"
       ],
       "sourcePlatforms": [
         "instagram"
@@ -148,47 +185,7 @@
         "site:styleseat.com nail tech DTC",
         "site:booksy.com nail tech DTC",
         "site:fresha.com nail tech DTC",
-        "site:square.site nail tech DTC",
-        "Phenix nails DTC",
-        "salon suites nail tech DTC",
-        "Yelp nail tech DTC",
-        "Yelp nail salon DTC"
-      ],
-      "candidateType": "salon",
-      "confidence": "medium",
-      "dmReady": true
-    },
-    {
-      "id": "hp-wrelti",
-      "name": "J&J NAILS SPA",
-      "handle": "jjnailsspa.centennial",
-      "primaryPlatform": "instagram",
-      "profileUrl": "https://www.instagram.com/jjnailsspa.centennial/",
-      "instagramUrl": "https://www.instagram.com/jjnailsspa.centennial/",
-      "locationLabel": "DTC",
-      "geoHints": [
-        "DTC",
-        "dtc",
-        "centennial"
-      ],
-      "serviceHints": [
-        "nails",
-        "nail tech",
-        "nail salon"
-      ],
-      "sourcePlatforms": [
-        "instagram"
-      ],
-      "sourceQueries": [
-        "site:instagram.com \"nails\" \"DTC\"",
-        "site:glossgenius.com nails DTC",
-        "site:vagaro.com nails DTC",
-        "site:styleseat.com nails DTC",
-        "site:booksy.com nails DTC",
-        "site:fresha.com nails DTC",
-        "site:square.site nails DTC",
-        "Yelp nail tech DTC",
-        "Yelp nail salon DTC"
+        "site:square.site nail tech DTC"
       ],
       "candidateType": "salon",
       "confidence": "medium",
@@ -227,37 +224,6 @@
       "dmReady": true
     },
     {
-      "id": "hp-wm4jwm",
-      "name": "Pearl Nail Bar",
-      "handle": "firstsight.design",
-      "primaryPlatform": "instagram",
-      "profileUrl": "https://www.instagram.com/firstsight.design/",
-      "instagramUrl": "https://www.instagram.com/firstsight.design/",
-      "locationLabel": "DTC",
-      "geoHints": [
-        "DTC",
-        "denver",
-        "dtc"
-      ],
-      "serviceHints": [
-        "nail tech"
-      ],
-      "sourcePlatforms": [
-        "instagram"
-      ],
-      "sourceQueries": [
-        "site:glossgenius.com nail tech DTC",
-        "site:vagaro.com nail tech DTC",
-        "site:styleseat.com nail tech DTC",
-        "site:booksy.com nail tech DTC",
-        "site:fresha.com nail tech DTC",
-        "site:square.site nail tech DTC"
-      ],
-      "candidateType": "salon",
-      "confidence": "medium",
-      "dmReady": true
-    },
-    {
       "id": "hp-1ml4kdw",
       "name": "AV Nail Bar (formerly B&T Nails)",
       "handle": "avnailbargv",
@@ -286,6 +252,7 @@
         "site:booksy.com nail tech DTC",
         "site:fresha.com nail tech DTC",
         "site:square.site nail tech DTC",
+        "Yelp nail tech DTC",
         "site:instagram.com \"nails\" \"Greenwood Village\"",
         "site:glossgenius.com nails Greenwood Village",
         "site:vagaro.com nails Greenwood Village",
@@ -331,6 +298,55 @@
       "candidateType": "salon",
       "confidence": "medium",
       "dmReady": true
+    },
+    {
+      "id": "hp-1ftao47",
+      "name": "Centennial Nails",
+      "handle": "nailscentennial",
+      "primaryPlatform": "instagram",
+      "profileUrl": "https://www.instagram.com/nailscentennial/",
+      "instagramUrl": "https://www.instagram.com/nailscentennial/",
+      "locationLabel": "DTC",
+      "geoHints": [
+        "DTC",
+        "greenwood village",
+        "dtc",
+        "centennial",
+        "Greenwood Village"
+      ],
+      "serviceHints": [
+        "nails",
+        "nail salon",
+        "nail tech"
+      ],
+      "sourcePlatforms": [
+        "instagram"
+      ],
+      "sourceQueries": [
+        "site:instagram.com \"nails\" \"DTC\"",
+        "site:glossgenius.com nails DTC",
+        "site:vagaro.com nails DTC",
+        "site:styleseat.com nails DTC",
+        "site:booksy.com nails DTC",
+        "site:fresha.com nails DTC",
+        "site:square.site nails DTC",
+        "Yelp nail salon DTC",
+        "site:instagram.com \"nails\" \"Greenwood Village\"",
+        "site:glossgenius.com nails Greenwood Village",
+        "site:vagaro.com nails Greenwood Village",
+        "site:styleseat.com nails Greenwood Village",
+        "site:booksy.com nails Greenwood Village",
+        "site:fresha.com nails Greenwood Village",
+        "site:square.site nails Greenwood Village",
+        "site:glossgenius.com nail tech Greenwood Village",
+        "site:vagaro.com nail tech Greenwood Village",
+        "site:styleseat.com nail tech Greenwood Village",
+        "site:booksy.com nail tech Greenwood Village",
+        "site:fresha.com nail tech Greenwood Village"
+      ],
+      "candidateType": "ambiguous",
+      "confidence": "medium",
+      "dmReady": false
     },
     {
       "id": "hp-e27y2e",
@@ -406,44 +422,6 @@
       ],
       "sourceQueries": [
         "Phenix nails DTC"
-      ],
-      "candidateType": "ambiguous",
-      "confidence": "medium",
-      "dmReady": false
-    },
-    {
-      "id": "hp-1ftao47",
-      "name": "Centennial Nails",
-      "handle": "nailscentennial",
-      "primaryPlatform": "instagram",
-      "profileUrl": "https://www.instagram.com/nailscentennial/",
-      "instagramUrl": "https://www.instagram.com/nailscentennial/",
-      "locationLabel": "Greenwood Village",
-      "geoHints": [
-        "Greenwood Village",
-        "greenwood village",
-        "centennial"
-      ],
-      "serviceHints": [
-        "nails",
-        "nail tech"
-      ],
-      "sourcePlatforms": [
-        "instagram"
-      ],
-      "sourceQueries": [
-        "site:instagram.com \"nails\" \"Greenwood Village\"",
-        "site:glossgenius.com nails Greenwood Village",
-        "site:vagaro.com nails Greenwood Village",
-        "site:styleseat.com nails Greenwood Village",
-        "site:booksy.com nails Greenwood Village",
-        "site:fresha.com nails Greenwood Village",
-        "site:square.site nails Greenwood Village",
-        "site:glossgenius.com nail tech Greenwood Village",
-        "site:vagaro.com nail tech Greenwood Village",
-        "site:styleseat.com nail tech Greenwood Village",
-        "site:booksy.com nail tech Greenwood Village",
-        "site:fresha.com nail tech Greenwood Village"
       ],
       "candidateType": "ambiguous",
       "confidence": "medium",

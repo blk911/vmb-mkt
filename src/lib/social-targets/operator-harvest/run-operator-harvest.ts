@@ -8,6 +8,7 @@ import { runMergePipeline } from "@/lib/operators/run-merge";
 import { runAcquisition } from "@/lib/operators/run-acquisition";
 import { classifyPage } from "@/lib/operators/page-classifier";
 import { writeOperatorQualitySummaryArtifact } from "@/lib/operators/quality-summary";
+import { runGoogleSearch } from "@/lib/social-targets/operator-harvest/query-executor";
 import type { SourceRecord } from "@/lib/operators/types";
 import type {
   HarvestPlatform,
@@ -166,11 +167,68 @@ function sourceRecordsFromProspects(prospects: HarvestProspect[]): SourceRecord[
 }
 
 function isAcquisitionCandidate(source: SourceRecord): boolean {
+  if (source.source === "directory" || source.source === "container") return true;
   if (source.booking) return true;
   const pageUrl = source.sourceUrl || source.website || source.booking || source.instagram;
   if (!pageUrl) return false;
   const pageType = classifyPage(pageUrl);
   return pageType === "directory_listing" || pageType === "suite_container" || pageType === "website";
+}
+
+async function ingestDomainCandidatesFromGoogle(queries: string[]): Promise<SourceRecord[]> {
+  const out: SourceRecord[] = [];
+  for (const query of queries) {
+    const rows = await runGoogleSearch(query, 8);
+    for (const row of rows) {
+      const url = row.link || "";
+      if (!url.startsWith("http")) continue;
+      const pageType = classifyPage(url);
+      if (pageType !== "directory_listing" && pageType !== "suite_container" && pageType !== "website") continue;
+      const source = pageType === "suite_container" ? "container" : pageType === "directory_listing" ? "directory" : "google";
+      out.push({
+        name: row.title,
+        city: queryPackCityHint(query),
+        category: "nails",
+        website: pageType === "website" ? url : undefined,
+        sourceUrl: url,
+        evidenceType: pageType,
+        source,
+      });
+    }
+  }
+  return out;
+}
+
+function queryPackCityHint(query: string): string | undefined {
+  const lower = query.toLowerCase();
+  if (lower.includes("greenwood village")) return "Greenwood Village";
+  if (lower.includes("dtc")) return "DTC";
+  if (lower.includes("parker")) return "Parker";
+  if (lower.includes("denver")) return "Denver";
+  return undefined;
+}
+
+function buildCurrentMarketDomainSeeds(): SourceRecord[] {
+  return [
+    {
+      name: "Sola Parker Chambers",
+      city: "Parker",
+      category: "nails",
+      source: "container",
+      sourceUrl: "https://www.solasalonstudios.com/locations/parker-chambers",
+      website: "https://www.solasalonstudios.com/locations/parker-chambers",
+      evidenceType: "suite_container",
+    },
+    {
+      name: "Booksy Denver Nails",
+      city: "Denver",
+      category: "nails",
+      source: "directory",
+      sourceUrl: "https://booksy.com/en-us/s/nail-salon/denver",
+      website: "https://booksy.com/en-us/s/nail-salon/denver",
+      evidenceType: "directory_listing",
+    },
+  ];
 }
 
 export async function runOperatorHarvest(input: OperatorHarvestRunInput): Promise<OperatorHarvestRunOutput> {
@@ -195,6 +253,14 @@ export async function runOperatorHarvest(input: OperatorHarvestRunInput): Promis
     "site:vagaro.com denver spa",
     "site:booksy.com denver barber",
   ];
+  const domainCoverageQueries = [
+    "site:solasalonstudios.com parker chambers",
+    "site:booksy.com parker chambers location",
+    "site:vagaro.com 80108 nail salon",
+    "site:fresha.com DTC nails",
+    "site:booksy.com Greenwood Village nails",
+    "site:solasalonstudios.com Denver nails",
+  ];
 
   const igRecords: SourceRecord[] = [];
   for (const q of igQueries) {
@@ -206,9 +272,17 @@ export async function runOperatorHarvest(input: OperatorHarvestRunInput): Promis
     const res = await ingestBookingFromGoogle(q);
     bookingRecords.push(...res);
   }
+  const domainCoverageRecords = await ingestDomainCandidatesFromGoogle(domainCoverageQueries);
+  const domainSeedRecords = buildCurrentMarketDomainSeeds();
 
   const googleSourceRecords = sourceRecordsFromProspects(ranked);
-  const allSourceRecords: SourceRecord[] = [...googleSourceRecords, ...igRecords, ...bookingRecords];
+  const allSourceRecords: SourceRecord[] = [
+    ...googleSourceRecords,
+    ...igRecords,
+    ...bookingRecords,
+    ...domainCoverageRecords,
+    ...domainSeedRecords,
+  ];
   const acquisitionCandidates = allSourceRecords.filter(isAcquisitionCandidate);
   const acquisitionOutput = await runAcquisition(acquisitionCandidates);
   const merged = await runMergePipeline([...allSourceRecords, ...acquisitionOutput.enrichedRecords]);

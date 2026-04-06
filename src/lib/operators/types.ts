@@ -6,6 +6,8 @@ export type PageClassification =
   | "social_profile"
   | "unknown";
 
+export type SourceKind = "google" | "instagram" | "booking" | "directory" | "container";
+
 export type SourceRecord = {
   name?: string;
   city?: string;
@@ -19,7 +21,8 @@ export type SourceRecord = {
   extractedFromUrl?: string;
   parentContainerName?: string;
   evidenceType?: PageClassification;
-  source: "google" | "instagram" | "booking";
+  childQuerySeeds?: string[];
+  source: SourceKind;
 };
 
 export type OperatorRecord = {
@@ -27,11 +30,7 @@ export type OperatorRecord = {
   name: string;
   city?: string;
   category?: string;
-  sources: {
-    google?: SourceRecord;
-    instagram?: SourceRecord;
-    booking?: SourceRecord;
-  };
+  sources: Partial<Record<SourceKind, SourceRecord>>;
   evidence?: SourceRecord[];
   canonical: {
     instagram?: string;
