@@ -1,0 +1,63 @@
+[
+  {
+    "id": "df443af793feb45e90444e536eceb7b0",
+    "name": "Solera Salon Suites",
+    "city": "DTC",
+    "category": "nails",
+    "sources": {
+      "google": {
+        "name": "Solera Salon Suites",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
+      },
+      "booking": {
+        "name": "Solera Salon Suites",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "booking",
+        "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
+      }
+    },
+    "canonical": {
+      "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
+    },
+    "validation": {
+      "instagramStatus": "missing",
+      "bookingStatus": "valid",
+      "websiteStatus": "missing"
+    },
+    "status": "hot",
+    "confidenceScore": 3,
+    "lastUpdatedAt": "2026-04-06T12:35:58.884Z",
+    "rank": 55
+  },
+  {
+    "id": "0da7730f8b093ab4a465a52dbe927fb7",
+    "name": "unknown",
+    "city": "hair",
+    "sources": {
+      "booking": {
+        "name": "unknown",
+        "city": "hair",
+        "booking": "https://denverhairsalon.glossgenius.com",
+        "source": "booking"
+      }
+    },
+    "canonical": {
+      "booking": "https://denverhairsalon.glossgenius.com"
+    },
+    "validation": {
+      "instagramStatus": "missing",
+      "bookingStatus": "valid",
+      "websiteStatus": "missing"
+    },
+    "status": "hot",
+    "confidenceScore": 3,
+    "lastUpdatedAt": "2026-04-06T12:35:58.884Z",
+    "rank": 55
+  }
+]

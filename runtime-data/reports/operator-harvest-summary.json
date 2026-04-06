@@ -9,45 +9,49 @@
     "Lone Tree",
     "Englewood"
   ],
-  "generatedAt": "2026-04-06T12:25:01.192Z",
-  "totalRawResults": 166,
-  "totalUniqueProspects": 13,
-  "withInstagram": 12,
+  "generatedAt": "2026-04-06T12:36:08.532Z",
+  "totalRawResults": 150,
+  "totalUniqueProspects": 12,
+  "withInstagram": 11,
   "withBooking": 1,
   "dmReadyCount": 8,
   "operatorCount": 0,
   "salonCount": 7,
-  "ambiguousCount": 6,
+  "ambiguousCount": 5,
   "topGeoHints": [
     {
       "value": "dtc",
-      "count": 22
+      "count": 20
     },
     {
       "value": "greenwood village",
-      "count": 12
+      "count": 10
     },
     {
       "value": "denver",
-      "count": 4
+      "count": 3
     },
     {
       "value": "centennial",
       "count": 3
+    },
+    {
+      "value": "lone tree",
+      "count": 1
     }
   ],
   "topServiceHints": [
     {
       "value": "nails",
-      "count": 11
+      "count": 9
     },
     {
       "value": "nail tech",
-      "count": 11
+      "count": 9
     },
     {
       "value": "nail salon",
-      "count": 4
+      "count": 3
     }
   ],
   "topProspects": [
@@ -156,17 +160,17 @@
       "dmReady": true
     },
     {
-      "id": "hp-wm4jwm",
-      "name": "Pearl Nail Bar",
-      "handle": "firstsight.design",
+      "id": "hp-wrelti",
+      "name": "J&J NAILS SPA",
+      "handle": "jjnailsspa.centennial",
       "primaryPlatform": "instagram",
-      "profileUrl": "https://www.instagram.com/firstsight.design/",
-      "instagramUrl": "https://www.instagram.com/firstsight.design/",
+      "profileUrl": "https://www.instagram.com/jjnailsspa.centennial/",
+      "instagramUrl": "https://www.instagram.com/jjnailsspa.centennial/",
       "locationLabel": "DTC",
       "geoHints": [
         "DTC",
-        "denver",
-        "dtc"
+        "dtc",
+        "centennial"
       ],
       "serviceHints": [
         "nails",
@@ -184,14 +188,6 @@
         "site:booksy.com nails DTC",
         "site:fresha.com nails DTC",
         "site:square.site nails DTC",
-        "site:glossgenius.com nail tech DTC",
-        "site:vagaro.com nail tech DTC",
-        "site:styleseat.com nail tech DTC",
-        "site:booksy.com nail tech DTC",
-        "site:fresha.com nail tech DTC",
-        "site:square.site nail tech DTC",
-        "Sola nails DTC",
-        "Phenix nails DTC",
         "Yelp nail tech DTC",
         "Yelp nail salon DTC"
       ],
@@ -226,6 +222,37 @@
         "site:fresha.com nail tech DTC",
         "site:square.site nail tech DTC",
         "salon suites nail tech DTC"
+      ],
+      "candidateType": "salon",
+      "confidence": "medium",
+      "dmReady": true
+    },
+    {
+      "id": "hp-wm4jwm",
+      "name": "Pearl Nail Bar",
+      "handle": "firstsight.design",
+      "primaryPlatform": "instagram",
+      "profileUrl": "https://www.instagram.com/firstsight.design/",
+      "instagramUrl": "https://www.instagram.com/firstsight.design/",
+      "locationLabel": "DTC",
+      "geoHints": [
+        "DTC",
+        "denver",
+        "dtc"
+      ],
+      "serviceHints": [
+        "nail tech"
+      ],
+      "sourcePlatforms": [
+        "instagram"
+      ],
+      "sourceQueries": [
+        "site:glossgenius.com nail tech DTC",
+        "site:vagaro.com nail tech DTC",
+        "site:styleseat.com nail tech DTC",
+        "site:booksy.com nail tech DTC",
+        "site:fresha.com nail tech DTC",
+        "site:square.site nail tech DTC"
       ],
       "candidateType": "salon",
       "confidence": "medium",
@@ -278,35 +305,6 @@
       "dmReady": true
     },
     {
-      "id": "hp-wrelti",
-      "name": "J&J NAILS SPA",
-      "handle": "jjnailsspa.centennial",
-      "primaryPlatform": "instagram",
-      "profileUrl": "https://www.instagram.com/jjnailsspa.centennial/",
-      "instagramUrl": "https://www.instagram.com/jjnailsspa.centennial/",
-      "locationLabel": "DTC",
-      "geoHints": [
-        "DTC",
-        "dtc",
-        "centennial"
-      ],
-      "serviceHints": [
-        "nail tech",
-        "nails",
-        "nail salon"
-      ],
-      "sourcePlatforms": [
-        "instagram"
-      ],
-      "sourceQueries": [
-        "Yelp nail tech DTC",
-        "Yelp nail salon DTC"
-      ],
-      "candidateType": "salon",
-      "confidence": "medium",
-      "dmReady": true
-    },
-    {
       "id": "hp-gxsha5",
       "name": "Anthony Vincé Nail Spa, Cherry Hills",
       "handle": "avnailspa",
@@ -334,53 +332,6 @@
       "candidateType": "salon",
       "confidence": "medium",
       "dmReady": true
-    },
-    {
-      "id": "hp-1xt66qt",
-      "name": "Paris Nails 15",
-      "handle": "parisnails15_",
-      "primaryPlatform": "instagram",
-      "profileUrl": "https://www.instagram.com/parisnails15_/",
-      "instagramUrl": "https://www.instagram.com/parisnails15_/",
-      "locationLabel": "DTC",
-      "geoHints": [
-        "DTC",
-        "greenwood village",
-        "dtc",
-        "Greenwood Village"
-      ],
-      "serviceHints": [
-        "nails",
-        "nail tech"
-      ],
-      "sourcePlatforms": [
-        "instagram"
-      ],
-      "sourceQueries": [
-        "site:instagram.com \"nails\" \"DTC\"",
-        "site:glossgenius.com nails DTC",
-        "site:vagaro.com nails DTC",
-        "site:styleseat.com nails DTC",
-        "site:booksy.com nails DTC",
-        "site:fresha.com nails DTC",
-        "site:square.site nails DTC",
-        "site:glossgenius.com nail tech DTC",
-        "site:vagaro.com nail tech DTC",
-        "site:styleseat.com nail tech DTC",
-        "site:booksy.com nail tech DTC",
-        "site:fresha.com nail tech DTC",
-        "site:square.site nail tech DTC",
-        "site:instagram.com \"nails\" \"Greenwood Village\"",
-        "site:glossgenius.com nails Greenwood Village",
-        "site:vagaro.com nails Greenwood Village",
-        "site:styleseat.com nails Greenwood Village",
-        "site:booksy.com nails Greenwood Village",
-        "site:fresha.com nails Greenwood Village",
-        "site:square.site nails Greenwood Village"
-      ],
-      "candidateType": "ambiguous",
-      "confidence": "medium",
-      "dmReady": false
     },
     {
       "id": "hp-e27y2e",
@@ -411,8 +362,8 @@
       "dmReady": false
     },
     {
-      "id": "hp-19cvg4a",
-      "name": "Phenix Salon Suites - Tamarac",
+      "id": "hp-vxsg9d",
+      "name": "Phenix Salon Suites - Lone Tree",
       "handle": "phenixsalonsuitesdenvermetro",
       "primaryPlatform": "instagram",
       "profileUrl": "https://www.instagram.com/phenixsalonsuitesdenvermetro/",
@@ -420,19 +371,17 @@
       "locationLabel": "DTC",
       "geoHints": [
         "DTC",
-        "denver",
-        "dtc"
+        "dtc",
+        "lone tree"
       ],
       "serviceHints": [
-        "nails",
-        "nail tech"
+        "nails"
       ],
       "sourcePlatforms": [
         "instagram"
       ],
       "sourceQueries": [
-        "Phenix nails DTC",
-        "salon suites nail tech DTC"
+        "Phenix nails DTC"
       ],
       "candidateType": "ambiguous",
       "confidence": "medium",
