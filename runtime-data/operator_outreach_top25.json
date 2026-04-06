@@ -46,7 +46,7 @@
     },
     "status": "hot",
     "confidenceScore": 6,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z",
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z",
     "rank": 130
   },
   {
@@ -96,7 +96,7 @@
     },
     "status": "hot",
     "confidenceScore": 5,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z",
+    "lastUpdatedAt": "2026-04-06T23:13:15.257Z",
     "rank": 115
   },
   {
@@ -180,7 +180,7 @@
     },
     "status": "hot",
     "confidenceScore": 5,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z",
+    "lastUpdatedAt": "2026-04-06T23:13:15.257Z",
     "rank": 115
   },
   {
@@ -231,7 +231,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z",
+    "lastUpdatedAt": "2026-04-06T23:13:15.257Z",
     "rank": 75
   },
   {
@@ -338,7 +338,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z",
+    "lastUpdatedAt": "2026-04-06T23:13:15.257Z",
     "rank": 55
   },
   {
@@ -352,7 +352,6 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
-        "sourceUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
         "source": "google",
         "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
       },
@@ -361,7 +360,6 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
-        "sourceUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
         "source": "booking",
         "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
       }
@@ -394,7 +392,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z",
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z",
     "rank": 55
   },
   {
@@ -460,7 +458,104 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z",
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z",
+    "rank": 55
+  },
+  {
+    "id": "9da44987bcba0c917f4fb131e41224df",
+    "name": "Hi Nails & Spa",
+    "city": "Greenwood Village",
+    "category": "nails",
+    "sources": {
+      "google": {
+        "name": "Hi Nails & Spa",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "address": "Greenwood Village",
+        "sourceUrl": "https://www.yelp.com/biz/hi-nails-and-spa-englewood-4",
+        "source": "google",
+        "instagram": "https://www.instagram.com/hinails_spa/"
+      },
+      "instagram": {
+        "name": "Hi Nails & Spa",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "address": "Greenwood Village",
+        "sourceUrl": "https://www.yelp.com/biz/hi-nails-and-spa-englewood-4",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/hinails_spa/"
+      },
+      "directory": {
+        "name": "Business Photos",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "address": "Greenwood Village",
+        "sourceUrl": "https://www.yelp.com/biz/hi-nails-and-spa-englewood-4",
+        "source": "directory",
+        "website": "https://www.yelp.com/biz/outlook-autumn-market-fundamental-catwalk-flimsy-roost-legibility-individualism-grocer-predestination-6",
+        "instagram": "https://www.instagram.com/hinails_spa/",
+        "phone": "7220946122",
+        "evidenceType": "directory_listing",
+        "extractedFromUrl": "https://www.yelp.com/biz/hi-nails-and-spa-centennial"
+      }
+    },
+    "evidence": [
+      {
+        "name": "Hi Nails & Spa",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "address": "Greenwood Village",
+        "sourceUrl": "https://www.yelp.com/biz/hi-nails-and-spa-englewood-4",
+        "source": "google",
+        "instagram": "https://www.instagram.com/hinails_spa/"
+      },
+      {
+        "name": "Hi Nails & Spa",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "address": "Greenwood Village",
+        "sourceUrl": "https://www.yelp.com/biz/hi-nails-and-spa-englewood-4",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/hinails_spa/"
+      },
+      {
+        "name": "yelp.com",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "address": "Greenwood Village",
+        "sourceUrl": "https://www.yelp.com/biz/hi-nails-and-spa-englewood-4",
+        "source": "directory",
+        "instagram": "https://www.instagram.com/hinails_spa/",
+        "evidenceType": "directory_listing",
+        "extractedFromUrl": "https://www.yelp.com/biz/hi-nails-and-spa-englewood-4"
+      },
+      {
+        "name": "Business Photos",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "address": "Greenwood Village",
+        "sourceUrl": "https://www.yelp.com/biz/hi-nails-and-spa-englewood-4",
+        "source": "directory",
+        "website": "https://www.yelp.com/biz/outlook-autumn-market-fundamental-catwalk-flimsy-roost-legibility-individualism-grocer-predestination-6",
+        "instagram": "https://www.instagram.com/hinails_spa/",
+        "phone": "7220946122",
+        "evidenceType": "directory_listing",
+        "extractedFromUrl": "https://www.yelp.com/biz/hi-nails-and-spa-centennial"
+      }
+    ],
+    "canonical": {
+      "instagram": "https://www.instagram.com/hinails_spa/",
+      "website": "https://www.yelp.com/biz/outlook-autumn-market-fundamental-catwalk-flimsy-roost-legibility-individualism-grocer-predestination-6",
+      "phone": "7220946122"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "valid"
+    },
+    "status": "hot",
+    "confidenceScore": 3,
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z",
     "rank": 55
   },
   {
@@ -493,7 +588,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z",
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z",
     "rank": 55
   },
   {
@@ -526,7 +621,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z",
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z",
     "rank": 55
   },
   {
@@ -559,7 +654,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z",
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z",
     "rank": 55
   },
   {
@@ -592,7 +687,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z",
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z",
     "rank": 55
   }
 ]

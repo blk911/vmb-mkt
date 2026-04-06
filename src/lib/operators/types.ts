@@ -47,6 +47,10 @@ export type OperatorRecord = {
   reviewState?: "unreviewed" | "ready" | "shelved_by_review";
   reviewNotes?: string;
   preferredContactSurface?: "booking" | "instagram" | "website" | "phone" | "none";
+  normalizedCategory?: "nails" | "lashes" | "brows" | "hair" | "spa" | "multi_service" | "unknown";
+  businessType?: "solo_tech" | "salon" | "suite_based" | "unknown";
+  contactPriority?: "high" | "medium" | "low";
+  readyBatchTag?: string;
   confidenceScore: number;
   lastUpdatedAt: string;
   outreach?: {

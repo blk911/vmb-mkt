@@ -59,7 +59,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "7a5df9c6bed8ec0352d152aa738df9c5",
@@ -114,7 +114,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "6bc76787f8b02790cf7e1c3ea7223f0c",
@@ -169,7 +169,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "7caafd5f510b50854f02c010787cdbaf",
@@ -224,7 +224,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "f1925c51f7fedd1d88d66378f1abce82",
@@ -279,7 +279,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "dda6ced8028e80934215eb869d03abef",
@@ -332,7 +332,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.492Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.254Z"
   },
   {
     "id": "83a9f5b69e0723308ffc44ef6455df30",
@@ -387,7 +387,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "2f7203254d32034cfce9a1a48774d257",
@@ -440,7 +440,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.492Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.254Z"
   },
   {
     "id": "8e995f03076d3b8ad871944d22cc9e78",
@@ -546,7 +546,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.257Z"
   },
   {
     "id": "a2197dc3ce007574b759f4c994d43226",
@@ -601,7 +601,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "4ff8e9ee714ecdde3364d90267dbdead",
@@ -656,7 +656,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "4005e32959662b31ef0786825c9ced27",
@@ -729,7 +729,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "df443af793feb45e90444e536eceb7b0",
@@ -742,7 +742,6 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
-        "sourceUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
         "source": "google",
         "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
       },
@@ -751,7 +750,6 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
-        "sourceUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
         "source": "booking",
         "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
       }
@@ -784,7 +782,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "8486ec4f1c2091340b9c77b3acdae229",
@@ -816,7 +814,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "20f6ab6cc496ec7d153f52a7a5ebe919",
@@ -848,7 +846,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "0718c14106e18ee8c23eed2087ac91f5",
@@ -880,7 +878,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "73734f8ecf5bce1921462cf9a7505994",
@@ -912,7 +910,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "2bb858085d77edcc51b28af82d11af9f",
@@ -944,7 +942,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "442faa3545bd228bcdc8e108d6e1b893",
@@ -976,7 +974,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "d45326963a8c9de9d481e8d277df2fa6",
@@ -1008,7 +1006,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "5f9358084fabd1438f67662bc3319e66",
@@ -1040,7 +1038,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "7c3479f2cbe18af5cb21dcd68300ba3d",
@@ -1072,7 +1070,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "a037df01b027a6f114b7a078de9ac0c2",
@@ -1104,7 +1102,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "ceda19a2142b2a35e61bebed3af65b45",
@@ -1136,7 +1134,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "4c5f81cfd2b78ac9b4095580626e68df",
@@ -1168,7 +1166,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "1cd9504ba50897cc4ef6f0f4de7b69d2",
@@ -1200,7 +1198,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "18020a6fc7995d7b6518f614f5f8b267",
@@ -1232,7 +1230,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "b3d96a4fa44ca4da1b325d3e55c5371d",
@@ -1264,7 +1262,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "001aab32b8325b8bf0e0f75f33e2c10e",
@@ -1313,7 +1311,7 @@
     },
     "status": "hot",
     "confidenceScore": 5,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.257Z"
   },
   {
     "id": "6224ebfea80da80bcb339bfc77b20461",
@@ -1345,7 +1343,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "93c248735704963e16ec79423c53d8a3",
@@ -1410,7 +1408,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "9470e05ecdb0281ba0f7191dc227594f",
@@ -1485,7 +1483,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "34066d7c6920e6e0db7ad90bbc7ee035",
@@ -1542,7 +1540,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "9da44987bcba0c917f4fb131e41224df",
@@ -1634,11 +1632,11 @@
     "validation": {
       "instagramStatus": "valid",
       "bookingStatus": "missing",
-      "websiteStatus": "dead"
+      "websiteStatus": "valid"
     },
-    "status": "shelved",
-    "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "status": "hot",
+    "confidenceScore": 3,
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "03a5fadc740ab980b74a15e4604022ef",
@@ -1670,7 +1668,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "214fd0ee3fe75f46e929302a4c3019a5",
@@ -1702,7 +1700,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "c93100cc942fb38d7763969eed0cc87d",
@@ -1734,7 +1732,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "0d91d624052d4e472b7c9074c187f2fa",
@@ -1766,7 +1764,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "e0788e884de3861c33792fae7387a7f4",
@@ -1798,7 +1796,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "0571602b96971a7d269995169a2cbe19",
@@ -1830,7 +1828,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "3d1af2e0c54839de1d0c2b7cb7d51ff3",
@@ -1862,7 +1860,7 @@
     },
     "status": "discard",
     "confidenceScore": 0,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "b35355a339cfabeea8d4c2e9911e8ba8",
@@ -1894,7 +1892,7 @@
     },
     "status": "discard",
     "confidenceScore": 0,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "7c35f4e9039082fa60415b25cf2b0dc5",
@@ -1926,7 +1924,7 @@
     },
     "status": "discard",
     "confidenceScore": 0,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "bdc716a558f7e4608a63135a8e50c994",
@@ -1961,7 +1959,7 @@
     },
     "status": "discard",
     "confidenceScore": 0,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.257Z"
   },
   {
     "id": "936e3a54bdf9055aa320bbebe900d433",
@@ -1996,7 +1994,7 @@
     },
     "status": "discard",
     "confidenceScore": 0,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "dc5045b03972ae488e6828a5bab4f226",
@@ -2031,7 +2029,7 @@
     },
     "status": "discard",
     "confidenceScore": 0,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.255Z"
   },
   {
     "id": "63650ea6c3ab21308948e3c144b600ba",
@@ -2114,7 +2112,7 @@
     },
     "status": "hot",
     "confidenceScore": 5,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.257Z"
   },
   {
     "id": "cd8b74174221cffdcbb01ba8f198ebd1",
@@ -2124,11 +2122,11 @@
       "directory": {
         "name": "yelp.com",
         "category": "nails",
-        "sourceUrl": "https://www.yelp.com/biz/la-bella-nails-and-spa-castle-rock",
+        "sourceUrl": "https://www.yelp.com/biz/paradise-nails-and-lashes-castle-rock-4",
         "evidenceType": "directory_listing",
         "source": "directory",
-        "phone": "6737461579",
-        "extractedFromUrl": "https://www.yelp.com/biz/la-bella-nails-and-spa-castle-rock"
+        "phone": "7580652769",
+        "extractedFromUrl": "https://www.yelp.com/biz/paradise-nails-and-lashes-castle-rock-4"
       }
     },
     "evidence": [
@@ -2159,7 +2157,7 @@
       }
     ],
     "canonical": {
-      "phone": "6737461579"
+      "phone": "7580652769"
     },
     "validation": {
       "instagramStatus": "missing",
@@ -2168,22 +2166,24 @@
     },
     "status": "discard",
     "confidenceScore": 0,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.257Z"
   },
   {
     "id": "aebedd7a93dfb397dc47b18898e897c9",
     "name": "Business Photos",
+    "city": "Greenwood Village",
     "category": "nails",
     "sources": {
       "directory": {
         "name": "Business Photos",
+        "city": "Greenwood Village",
         "category": "nails",
         "website": "https://www.yelp.com/biz/outlook-autumn-market-fundamental-catwalk-flimsy-roost-legibility-individualism-grocer-predestination-2",
-        "sourceUrl": "https://www.yelp.com/biz/paradise-nails-and-lashes-castle-rock-4",
+        "sourceUrl": "https://www.yelp.com/biz/solar-nails-greenwood-village",
         "evidenceType": "directory_listing",
         "source": "directory",
         "phone": "7220946122",
-        "extractedFromUrl": "https://www.yelp.com/biz/paradise-nails-and-lashes-castle-rock-4"
+        "extractedFromUrl": "https://www.yelp.com/biz/solar-nails-greenwood-village"
       }
     },
     "evidence": [
@@ -2196,6 +2196,27 @@
         "source": "directory",
         "phone": "7220946122",
         "extractedFromUrl": "https://www.yelp.com/biz/paradise-nails-and-lashes-castle-rock-4"
+      },
+      {
+        "name": "Business Photos",
+        "category": "nails",
+        "website": "https://www.yelp.com/biz/outlook-autumn-market-fundamental-catwalk-flimsy-roost-legibility-individualism-grocer-predestination-2",
+        "sourceUrl": "https://www.yelp.com/biz/pamper-nails-castle-rock-3",
+        "evidenceType": "directory_listing",
+        "source": "directory",
+        "phone": "7220946122",
+        "extractedFromUrl": "https://www.yelp.com/biz/pamper-nails-castle-rock-3"
+      },
+      {
+        "name": "Business Photos",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "website": "https://www.yelp.com/biz/outlook-autumn-market-fundamental-catwalk-flimsy-roost-legibility-individualism-grocer-predestination-2",
+        "sourceUrl": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+        "evidenceType": "directory_listing",
+        "source": "directory",
+        "phone": "7220946122",
+        "extractedFromUrl": "https://www.yelp.com/biz/solar-nails-greenwood-village"
       }
     ],
     "canonical": {
@@ -2205,11 +2226,11 @@
     "validation": {
       "instagramStatus": "missing",
       "bookingStatus": "missing",
-      "websiteStatus": "dead"
+      "websiteStatus": "valid"
     },
-    "status": "discard",
-    "confidenceScore": 0,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "status": "shelved",
+    "confidenceScore": 1,
+    "lastUpdatedAt": "2026-04-06T23:13:15.257Z"
   },
   {
     "id": "f26a1a06e33b04499d429831fdc9b1ba",
@@ -2246,7 +2267,7 @@
     },
     "status": "discard",
     "confidenceScore": 0,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.257Z"
   },
   {
     "id": "ad886aebd8ebbb6d5bc20137b64d2fa1",
@@ -2258,11 +2279,10 @@
         "name": "yelp.com",
         "city": "Denver",
         "category": "nails",
-        "sourceUrl": "https://www.yelp.com/biz/icon-nails-and-spa-denver",
+        "sourceUrl": "https://www.yelp.com/biz/mainstream-nails-denver-2",
         "evidenceType": "directory_listing",
         "source": "directory",
-        "phone": "2678139707",
-        "extractedFromUrl": "https://www.yelp.com/biz/icon-nails-and-spa-denver"
+        "extractedFromUrl": "https://www.yelp.com/biz/mainstream-nails-denver-2"
       }
     },
     "evidence": [
@@ -2283,11 +2303,18 @@
         "evidenceType": "directory_listing",
         "source": "directory",
         "extractedFromUrl": "https://www.yelp.com/biz/la-vogue-nails-and-spa-denver-3"
+      },
+      {
+        "name": "yelp.com",
+        "city": "Denver",
+        "category": "nails",
+        "sourceUrl": "https://www.yelp.com/biz/mainstream-nails-denver-2",
+        "evidenceType": "directory_listing",
+        "source": "directory",
+        "extractedFromUrl": "https://www.yelp.com/biz/mainstream-nails-denver-2"
       }
     ],
-    "canonical": {
-      "phone": "2678139707"
-    },
+    "canonical": {},
     "validation": {
       "instagramStatus": "missing",
       "bookingStatus": "missing",
@@ -2295,7 +2322,7 @@
     },
     "status": "discard",
     "confidenceScore": 0,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.257Z"
   },
   {
     "id": "2d3081573004ceb17bc1b26a20d0e175",
@@ -2334,7 +2361,7 @@
     },
     "status": "discard",
     "confidenceScore": 0,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.257Z"
   },
   {
     "id": "aebedd7a93dfb397dc47b18898e897c9",
@@ -2375,7 +2402,7 @@
     },
     "status": "discard",
     "confidenceScore": 0,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "85349242bf7cd22b46628649d1f20d6c",
@@ -2419,7 +2446,7 @@
     },
     "status": "discard",
     "confidenceScore": 0,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "85349242bf7cd22b46628649d1f20d6c",
@@ -2463,7 +2490,7 @@
     },
     "status": "discard",
     "confidenceScore": 0,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "4a3c8283152df1024e4a0655957d3717",
@@ -2495,7 +2522,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "1af5bb3e60c1ca341f351b3db5266266",
@@ -2527,18 +2554,27 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "b8734de81bac83dcd762fa06be2d82d7",
     "name": "mainstream nails",
     "city": "Denver",
+    "category": "nails",
     "sources": {
       "instagram": {
         "name": "mainstream nails",
         "city": "denver\"",
         "instagram": "https://www.instagram.com/mainstream_nails/",
         "source": "instagram"
+      },
+      "directory": {
+        "name": "Mainstream Nails",
+        "city": "Denver",
+        "category": "nails",
+        "sourceUrl": "https://www.yelp.com/biz/mainstream-nails-denver-2",
+        "evidenceType": "directory_listing",
+        "source": "directory"
       }
     },
     "evidence": [
@@ -2547,6 +2583,14 @@
         "city": "denver\"",
         "instagram": "https://www.instagram.com/mainstream_nails/",
         "source": "instagram"
+      },
+      {
+        "name": "Mainstream Nails",
+        "city": "Denver",
+        "category": "nails",
+        "sourceUrl": "https://www.yelp.com/biz/mainstream-nails-denver-2",
+        "evidenceType": "directory_listing",
+        "source": "directory"
       }
     ],
     "canonical": {
@@ -2559,7 +2603,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.257Z"
   },
   {
     "id": "f5e8f39fdda31c8bac4832e8adc0cea0",
@@ -2591,7 +2635,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "df7e50e12e4f6d8707d0613c308c891e",
@@ -2623,7 +2667,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "ab0a91469354806774408fa2ab5fcdc7",
@@ -2655,7 +2699,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "9716bfbfa1eae441ac973b461fe22f1e",
@@ -2704,7 +2748,7 @@
     },
     "status": "hot",
     "confidenceScore": 6,
-    "lastUpdatedAt": "2026-04-06T23:05:49.493Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "c0ede91fffee512beb42ff81004a7201",
@@ -2754,7 +2798,7 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.257Z"
   },
   {
     "id": "24e6a33021293e7fd94025f8bc5348bd",
@@ -2786,7 +2830,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "07ae3e22aceceb3b27455e04d79760bd",
@@ -2818,7 +2862,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
   },
   {
     "id": "e0519b1ad4ed9bb1abcbed5423ce749f",
@@ -2856,6 +2900,41 @@
     },
     "status": "discard",
     "confidenceScore": 0,
-    "lastUpdatedAt": "2026-04-06T23:05:49.494Z"
+    "lastUpdatedAt": "2026-04-06T23:13:15.256Z"
+  },
+  {
+    "id": "bfc47ff258933c4cfbc9cd18c566f9df",
+    "name": "Solar Nails",
+    "city": "Greenwood Village",
+    "category": "nails",
+    "sources": {
+      "directory": {
+        "name": "Solar Nails",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "sourceUrl": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+        "evidenceType": "directory_listing",
+        "source": "directory"
+      }
+    },
+    "evidence": [
+      {
+        "name": "Solar Nails",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "sourceUrl": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+        "evidenceType": "directory_listing",
+        "source": "directory"
+      }
+    ],
+    "canonical": {},
+    "validation": {
+      "instagramStatus": "missing",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "discard",
+    "confidenceScore": 0,
+    "lastUpdatedAt": "2026-04-06T23:13:15.257Z"
   }
 ]

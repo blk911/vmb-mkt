@@ -9,23 +9,23 @@
     "Lone Tree",
     "Englewood"
   ],
-  "generatedAt": "2026-04-06T23:06:09.595Z",
+  "generatedAt": "2026-04-06T23:13:36.185Z",
   "totalRawResults": 150,
-  "totalUniqueProspects": 12,
-  "withInstagram": 11,
-  "withBooking": 1,
-  "dmReadyCount": 8,
+  "totalUniqueProspects": 10,
+  "withInstagram": 10,
+  "withBooking": 0,
+  "dmReadyCount": 6,
   "operatorCount": 0,
-  "salonCount": 7,
-  "ambiguousCount": 5,
+  "salonCount": 6,
+  "ambiguousCount": 4,
   "topGeoHints": [
     {
       "value": "dtc",
-      "count": 20
+      "count": 18
     },
     {
       "value": "greenwood village",
-      "count": 12
+      "count": 10
     },
     {
       "value": "denver",
@@ -33,7 +33,7 @@
     },
     {
       "value": "centennial",
-      "count": 3
+      "count": 1
     },
     {
       "value": "lone tree",
@@ -43,7 +43,7 @@
   "topServiceHints": [
     {
       "value": "nails",
-      "count": 10
+      "count": 8
     },
     {
       "value": "nail tech",
@@ -264,38 +264,6 @@
       "dmReady": true
     },
     {
-      "id": "hp-1kdkaan",
-      "name": "M. Vincé Nail Spa Centennial",
-      "handle": "m.vincenailspa",
-      "primaryPlatform": "instagram",
-      "profileUrl": "https://www.instagram.com/m.vincenailspa/",
-      "instagramUrl": "https://www.instagram.com/m.vincenailspa/",
-      "locationLabel": "Greenwood Village",
-      "geoHints": [
-        "Greenwood Village",
-        "greenwood village",
-        "centennial"
-      ],
-      "serviceHints": [
-        "nails"
-      ],
-      "sourcePlatforms": [
-        "instagram"
-      ],
-      "sourceQueries": [
-        "site:instagram.com \"nails\" \"Greenwood Village\"",
-        "site:glossgenius.com nails Greenwood Village",
-        "site:vagaro.com nails Greenwood Village",
-        "site:styleseat.com nails Greenwood Village",
-        "site:booksy.com nails Greenwood Village",
-        "site:fresha.com nails Greenwood Village",
-        "site:square.site nails Greenwood Village"
-      ],
-      "candidateType": "salon",
-      "confidence": "medium",
-      "dmReady": true
-    },
-    {
       "id": "hp-gxsha5",
       "name": "Anthony Vincé Nail Spa, Cherry Hills",
       "handle": "avnailspa",
@@ -451,32 +419,6 @@
       "candidateType": "ambiguous",
       "confidence": "medium",
       "dmReady": false
-    },
-    {
-      "id": "hp-18lo58l",
-      "name": "Solera Salon Suites",
-      "handle": "gift",
-      "primaryPlatform": "square",
-      "profileUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
-      "bookingUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
-      "locationLabel": "DTC",
-      "geoHints": [
-        "DTC",
-        "dtc",
-        "centennial"
-      ],
-      "serviceHints": [
-        "nails"
-      ],
-      "sourcePlatforms": [
-        "square"
-      ],
-      "sourceQueries": [
-        "Sola nails DTC"
-      ],
-      "candidateType": "ambiguous",
-      "confidence": "medium",
-      "dmReady": true
     }
   ]
 }

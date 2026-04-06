@@ -10,7 +10,7 @@
     "Englewood"
   ],
   "queryCount": 30,
-  "generatedAt": "2026-04-06T23:06:09.593Z",
+  "generatedAt": "2026-04-06T23:13:36.184Z",
   "queries": [
     {
       "query": "site:instagram.com \"nails\" \"DTC\"",
@@ -702,6 +702,11 @@
       },
       "results": [
         {
+          "title": "Solar Nails",
+          "url": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+          "snippet": "9625 E Arapahoe Rd # J, Greenwood Village, CO 80112, USA"
+        },
+        {
           "title": "Sola Salons",
           "url": "https://www.instagram.com/soladenver/",
           "snippet": "6001 S Willow Dr, Greenwood Village, CO 80111, USA"
@@ -720,11 +725,6 @@
           "title": "Purluxe Beauty Bar DTC",
           "url": "https://www.instagram.com/purluxebeautybar/",
           "snippet": "4822 S Newport St, Denver, CO 80237, USA"
-        },
-        {
-          "title": "Solera Salon Suites",
-          "url": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
-          "snippet": "8770 E Arapahoe Rd, Centennial, CO 80112, USA"
         }
       ]
     },
@@ -902,9 +902,9 @@
           "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
         },
         {
-          "title": "M. Vincé Nail Spa Centennial",
-          "url": "https://www.instagram.com/m.vincenailspa/",
-          "snippet": "9611 E County Line Rd Ste. A, Centennial, CO 80112, USA"
+          "title": "Solar Nails",
+          "url": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+          "snippet": "9625 E Arapahoe Rd # J, Greenwood Village, CO 80112, USA"
         }
       ]
     },
@@ -938,9 +938,9 @@
           "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
         },
         {
-          "title": "M. Vincé Nail Spa Centennial",
-          "url": "https://www.instagram.com/m.vincenailspa/",
-          "snippet": "9611 E County Line Rd Ste. A, Centennial, CO 80112, USA"
+          "title": "Solar Nails",
+          "url": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+          "snippet": "9625 E Arapahoe Rd # J, Greenwood Village, CO 80112, USA"
         }
       ]
     },
@@ -974,9 +974,9 @@
           "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
         },
         {
-          "title": "M. Vincé Nail Spa Centennial",
-          "url": "https://www.instagram.com/m.vincenailspa/",
-          "snippet": "9611 E County Line Rd Ste. A, Centennial, CO 80112, USA"
+          "title": "Solar Nails",
+          "url": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+          "snippet": "9625 E Arapahoe Rd # J, Greenwood Village, CO 80112, USA"
         }
       ]
     },
@@ -1010,9 +1010,9 @@
           "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
         },
         {
-          "title": "M. Vincé Nail Spa Centennial",
-          "url": "https://www.instagram.com/m.vincenailspa/",
-          "snippet": "9611 E County Line Rd Ste. A, Centennial, CO 80112, USA"
+          "title": "Solar Nails",
+          "url": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+          "snippet": "9625 E Arapahoe Rd # J, Greenwood Village, CO 80112, USA"
         }
       ]
     },
@@ -1046,9 +1046,9 @@
           "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
         },
         {
-          "title": "M. Vincé Nail Spa Centennial",
-          "url": "https://www.instagram.com/m.vincenailspa/",
-          "snippet": "9611 E County Line Rd Ste. A, Centennial, CO 80112, USA"
+          "title": "Solar Nails",
+          "url": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+          "snippet": "9625 E Arapahoe Rd # J, Greenwood Village, CO 80112, USA"
         }
       ]
     },
@@ -1082,9 +1082,9 @@
           "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
         },
         {
-          "title": "M. Vincé Nail Spa Centennial",
-          "url": "https://www.instagram.com/m.vincenailspa/",
-          "snippet": "9611 E County Line Rd Ste. A, Centennial, CO 80112, USA"
+          "title": "Solar Nails",
+          "url": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+          "snippet": "9625 E Arapahoe Rd # J, Greenwood Village, CO 80112, USA"
         }
       ]
     },
@@ -1118,9 +1118,9 @@
           "snippet": "6787 S Clinton St, Greenwood Village, CO 80112, USA"
         },
         {
-          "title": "M. Vincé Nail Spa Centennial",
-          "url": "https://www.instagram.com/m.vincenailspa/",
-          "snippet": "9611 E County Line Rd Ste. A, Centennial, CO 80112, USA"
+          "title": "Solar Nails",
+          "url": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+          "snippet": "9625 E Arapahoe Rd # J, Greenwood Village, CO 80112, USA"
         }
       ]
     },

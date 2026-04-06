@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { applyReviewOverlay } from "@/lib/operators/review-store";
 import { selectReadyCoreOperators } from "@/lib/operators/ready-core";
+import { READY_CORE_EXPORT_CSV_ARTIFACT, READY_CORE_EXPORT_JSON_ARTIFACT } from "@/lib/operators/ready-export";
 import type { OperatorRecord } from "@/lib/operators/types";
 
 function loadOperators(): OperatorRecord[] {
@@ -27,12 +28,40 @@ function topCounts(values: string[]): Array<{ label: string; count: number }> {
     .map(([label, count]) => ({ label, count }));
 }
 
-export default function OperatorsReadyPage() {
-  const ready = selectReadyCoreOperators(loadOperators());
-  const withBooking = ready.filter((op) => Boolean(op.canonical.booking)).length;
-  const withInstagram = ready.filter((op) => Boolean(op.canonical.instagram)).length;
-  const byCategory = topCounts(ready.map((op) => op.normalizedCategory));
-  const byCity = topCounts(ready.map((op) => op.city || "unknown"));
+export default function OperatorsReadyPage({
+  searchParams,
+}: {
+  searchParams?: {
+    city?: string;
+    category?: string;
+    surface?: string;
+    businessType?: string;
+  };
+}) {
+  const readyAll = selectReadyCoreOperators(loadOperators());
+  const withBooking = readyAll.filter((op) => Boolean(op.canonical.booking)).length;
+  const withInstagram = readyAll.filter((op) => Boolean(op.canonical.instagram)).length;
+  const byCategory = topCounts(readyAll.map((op) => op.normalizedCategory));
+  const byCity = topCounts(readyAll.map((op) => op.city || "unknown"));
+  const byBusinessType = topCounts(readyAll.map((op) => op.businessType || "unknown"));
+  const byPreferredSurface = topCounts(readyAll.map((op) => op.preferredContactSurface || "none"));
+
+  const cityOptions = [...new Set(readyAll.map((op) => op.city || "unknown"))].sort();
+  const categoryOptions = [...new Set(readyAll.map((op) => op.normalizedCategory || "unknown"))].sort();
+  const surfaceOptions = [...new Set(readyAll.map((op) => op.preferredContactSurface || "none"))].sort();
+  const businessTypeOptions = [...new Set(readyAll.map((op) => op.businessType || "unknown"))].sort();
+
+  const cityFilter = searchParams?.city || "";
+  const categoryFilter = searchParams?.category || "";
+  const surfaceFilter = searchParams?.surface || "";
+  const businessTypeFilter = searchParams?.businessType || "";
+  const ready = readyAll.filter((op) => {
+    if (cityFilter && (op.city || "unknown") !== cityFilter) return false;
+    if (categoryFilter && (op.normalizedCategory || "unknown") !== categoryFilter) return false;
+    if (surfaceFilter && (op.preferredContactSurface || "none") !== surfaceFilter) return false;
+    if (businessTypeFilter && (op.businessType || "unknown") !== businessTypeFilter) return false;
+    return true;
+  });
 
   return (
     <div style={{ padding: 24 }}>
@@ -43,7 +72,7 @@ export default function OperatorsReadyPage() {
 
       <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: "10px 16px", fontSize: 13 }}>
         <span>
-          <strong>Total ready:</strong> {ready.length}
+          <strong>Total ready:</strong> {readyAll.length}
         </span>
         <span>
           <strong>With booking:</strong> {withBooking}
@@ -57,6 +86,70 @@ export default function OperatorsReadyPage() {
         <span>
           <strong>By city:</strong> {byCity.map((x) => `${x.label} (${x.count})`).join(", ")}
         </span>
+        <span>
+          <strong>By business type:</strong> {byBusinessType.map((x) => `${x.label} (${x.count})`).join(", ")}
+        </span>
+        <span>
+          <strong>By preferred surface:</strong> {byPreferredSurface.map((x) => `${x.label} (${x.count})`).join(", ")}
+        </span>
+      </div>
+
+      <form method="get" style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 10, fontSize: 13 }}>
+        <label>
+          <strong>City:</strong>{" "}
+          <select name="city" defaultValue={cityFilter}>
+            <option value="">all</option>
+            {cityOptions.map((x) => (
+              <option key={x} value={x}>
+                {x}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <strong>Category:</strong>{" "}
+          <select name="category" defaultValue={categoryFilter}>
+            <option value="">all</option>
+            {categoryOptions.map((x) => (
+              <option key={x} value={x}>
+                {x}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <strong>Preferred surface:</strong>{" "}
+          <select name="surface" defaultValue={surfaceFilter}>
+            <option value="">all</option>
+            {surfaceOptions.map((x) => (
+              <option key={x} value={x}>
+                {x}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <strong>Business type:</strong>{" "}
+          <select name="businessType" defaultValue={businessTypeFilter}>
+            <option value="">all</option>
+            {businessTypeOptions.map((x) => (
+              <option key={x} value={x}>
+                {x}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="submit">Apply</button>
+        <a href="/admin/operators/ready">Reset</a>
+      </form>
+
+      <div style={{ marginTop: 12, fontSize: 13 }}>
+        <div>
+          <strong>JSON export:</strong> <code>{READY_CORE_EXPORT_JSON_ARTIFACT}</code>
+        </div>
+        <div>
+          <strong>CSV export:</strong> <code>{READY_CORE_EXPORT_CSV_ARTIFACT}</code>
+        </div>
       </div>
 
       <table
@@ -71,10 +164,12 @@ export default function OperatorsReadyPage() {
             <th align="left">Name</th>
             <th align="left">City</th>
             <th align="left">Category</th>
+            <th align="left">Business type</th>
             <th align="left">Preferred contact surface</th>
             <th>Booking</th>
             <th>IG</th>
             <th>Website</th>
+            <th>Contact QA</th>
             <th align="left">Review notes</th>
             <th>Evidence count</th>
           </tr>
@@ -85,6 +180,7 @@ export default function OperatorsReadyPage() {
               <td>{op.name}</td>
               <td>{op.city || "-"}</td>
               <td>{op.normalizedCategory}</td>
+              <td>{op.businessType}</td>
               <td>{op.preferredContactSurface}</td>
               <td>
                 {op.canonical.booking ? (
@@ -113,6 +209,7 @@ export default function OperatorsReadyPage() {
                   "-"
                 )}
               </td>
+              <td>{!op.canonical.booking && !op.canonical.instagram ? "weak contact" : "-"}</td>
               <td>{op.reviewNotes || "-"}</td>
               <td>{evidenceCount(op)}</td>
             </tr>

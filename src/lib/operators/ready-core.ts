@@ -1,12 +1,16 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { OperatorRecord } from "./types";
+import { writeReadyCoreExportArtifacts } from "./ready-export";
 
 export type NormalizedCategory = "nails" | "lashes" | "brows" | "hair" | "spa" | "multi_service" | "unknown";
 
 export type ReadyCoreOperator = OperatorRecord & {
   preferredContactSurface: "booking" | "instagram" | "website" | "phone" | "none";
   normalizedCategory: NormalizedCategory;
+  businessType: "solo_tech" | "salon" | "suite_based" | "unknown";
+  contactPriority: "high" | "medium" | "low";
+  readyBatchTag: string;
 };
 
 export const READY_CORE_ARTIFACT = "runtime-data/operator_ready_core.json";
@@ -63,14 +67,53 @@ function contactSurfaceRank(surface: ReadyCoreOperator["preferredContactSurface"
   return 1;
 }
 
+function normalizeCityForBatchTag(city?: string): string {
+  const text = (city || "unknown").toLowerCase().trim();
+  if (!text) return "unknown";
+  return text.replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "unknown";
+}
+
+function hasSuiteEvidence(operator: OperatorRecord): boolean {
+  return (operator.evidence || []).some((row) => row.evidenceType === "suite_container" || row.source === "container");
+}
+
+function deriveBusinessType(operator: OperatorRecord, normalizedCategory: NormalizedCategory): ReadyCoreOperator["businessType"] {
+  if (hasSuiteEvidence(operator)) return "suite_based";
+  const text = [operator.name || "", operator.category || ""].join(" ").toLowerCase();
+  if (containsAny(text, ["salon", "studio", "spa", "barber"])) return "salon";
+  if (normalizedCategory !== "unknown" && !containsAny(text, ["salon", "spa", "studio"])) return "solo_tech";
+  return "unknown";
+}
+
+function deriveContactPriority(operator: OperatorRecord): ReadyCoreOperator["contactPriority"] {
+  const hasBooking = Boolean(operator.canonical.booking);
+  const hasInstagram = Boolean(operator.canonical.instagram);
+  const hasWebsite = Boolean(operator.canonical.website);
+  const hasPhone = Boolean(operator.canonical.phone);
+  if (hasBooking && hasInstagram) return "high";
+  if (hasBooking || hasInstagram) return "medium";
+  if (hasWebsite || hasPhone) return "low";
+  return "low";
+}
+
 export function selectReadyCoreOperators(operators: OperatorRecord[]): ReadyCoreOperator[] {
   const ready = operators
     .filter((op) => op.reviewState === "ready")
-    .map((op) => ({
-      ...op,
-      preferredContactSurface: derivePreferredContactSurface(op),
-      normalizedCategory: normalizeOperatorCategory(op),
-    }));
+    .map((op) => {
+      const preferredContactSurface = derivePreferredContactSurface(op);
+      const normalizedCategory = normalizeOperatorCategory(op);
+      const businessType = deriveBusinessType(op, normalizedCategory);
+      const contactPriority = deriveContactPriority(op);
+      const readyBatchTag = `${normalizeCityForBatchTag(op.city)}_${normalizedCategory}`;
+      return {
+        ...op,
+        preferredContactSurface,
+        normalizedCategory,
+        businessType,
+        contactPriority,
+        readyBatchTag,
+      };
+    });
 
   return ready.sort((a, b) => {
     const surfaceDiff = contactSurfaceRank(b.preferredContactSurface) - contactSurfaceRank(a.preferredContactSurface);
@@ -85,6 +128,7 @@ export function writeReadyCoreArtifact(operators: OperatorRecord[]): string {
   const outPath = path.join(process.cwd(), READY_CORE_ARTIFACT);
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, `${JSON.stringify(ready, null, 2)}\n`);
+  writeReadyCoreExportArtifacts(ready);
   return READY_CORE_ARTIFACT;
 }
 
