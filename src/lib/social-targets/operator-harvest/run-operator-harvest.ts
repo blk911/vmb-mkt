@@ -5,6 +5,8 @@ import { adaptHarvestQueryResultsToProspects } from "@/lib/social-targets/operat
 import { ingestInstagramFromGoogle } from "@/lib/operators/ingest-instagram";
 import { ingestBookingFromGoogle } from "@/lib/operators/ingest-booking";
 import { runMergePipeline } from "@/lib/operators/run-merge";
+import { runAcquisition } from "@/lib/operators/run-acquisition";
+import { classifyPage } from "@/lib/operators/page-classifier";
 import type { SourceRecord } from "@/lib/operators/types";
 import type {
   HarvestPlatform,
@@ -132,6 +134,7 @@ function sourceRecordsFromProspects(prospects: HarvestProspect[]): SourceRecord[
       city: prospect.geoHints[0],
       category: "nails",
       address: prospect.locationLabel,
+      sourceUrl: prospect.profileUrl,
     };
     out.push({
       ...base,
@@ -159,6 +162,14 @@ function sourceRecordsFromProspects(prospects: HarvestProspect[]): SourceRecord[
     }
   }
   return out;
+}
+
+function isAcquisitionCandidate(source: SourceRecord): boolean {
+  if (source.booking) return true;
+  const pageUrl = source.sourceUrl || source.website || source.booking || source.instagram;
+  if (!pageUrl) return false;
+  const pageType = classifyPage(pageUrl);
+  return pageType === "directory_listing" || pageType === "suite_container" || pageType === "website";
 }
 
 export async function runOperatorHarvest(input: OperatorHarvestRunInput): Promise<OperatorHarvestRunOutput> {
@@ -197,7 +208,9 @@ export async function runOperatorHarvest(input: OperatorHarvestRunInput): Promis
 
   const googleSourceRecords = sourceRecordsFromProspects(ranked);
   const allSourceRecords: SourceRecord[] = [...googleSourceRecords, ...igRecords, ...bookingRecords];
-  await runMergePipeline(allSourceRecords);
+  const acquisitionCandidates = allSourceRecords.filter(isAcquisitionCandidate);
+  const acquisitionOutput = await runAcquisition(acquisitionCandidates);
+  await runMergePipeline([...allSourceRecords, ...acquisitionOutput.enrichedRecords]);
   const summary = summarize(resultSet, ranked);
 
   await writeJsonFilePretty(RAW_ARTIFACT, {

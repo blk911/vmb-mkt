@@ -1,3 +1,11 @@
+export type PageClassification =
+  | "direct_operator"
+  | "directory_listing"
+  | "suite_container"
+  | "website"
+  | "social_profile"
+  | "unknown";
+
 export type SourceRecord = {
   name?: string;
   city?: string;
@@ -7,6 +15,10 @@ export type SourceRecord = {
   instagram?: string;
   booking?: string;
   address?: string;
+  sourceUrl?: string;
+  extractedFromUrl?: string;
+  parentContainerName?: string;
+  evidenceType?: PageClassification;
   source: "google" | "instagram" | "booking";
 };
 
@@ -20,6 +32,7 @@ export type OperatorRecord = {
     instagram?: SourceRecord;
     booking?: SourceRecord;
   };
+  evidence?: SourceRecord[];
   canonical: {
     instagram?: string;
     booking?: string;

@@ -11,14 +11,18 @@ import { normalizeName } from "./normalize";
 export async function runMergePipeline(allSources: SourceRecord[]) {
   const existing = loadMaster();
   const existingSources: SourceRecord[] = existing.flatMap((op) => {
+    if (Array.isArray(op.evidence) && op.evidence.length > 0) return op.evidence;
     return [op.sources.google, op.sources.instagram, op.sources.booking].filter(Boolean) as SourceRecord[];
   });
   const combinedSources = [...existingSources, ...allSources];
   const filteredSources = combinedSources.filter((s) => {
-    if (!s.name) return false;
-    if (s.name.toLowerCase() === "unknown") return false;
-    if (!normalizeName(s.name)) return false;
-    return true;
+    const normalized = normalizeName(s.name);
+    if (normalized) return true;
+    // Keep valid directory/container evidence even when title-level names are unknown.
+    if ((s.evidenceType === "directory_listing" || s.evidenceType === "suite_container") && (s.sourceUrl || s.website || s.booking)) {
+      return true;
+    }
+    return false;
   });
   console.log("STEP 1: merging sources...");
   const merged: OperatorRecord[] = mergeSources(filteredSources);
