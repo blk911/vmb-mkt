@@ -1,29 +1,29 @@
 import fs from "node:fs";
 import path from "node:path";
+import type { OperatorRecord } from "@/lib/operators/types";
+import { getOutreachEligibility } from "@/lib/operators/outreach-eligibility";
+import OperatorOutreachPanel from "@/components/admin/operators/OperatorOutreachPanel";
 
-type Operator = {
-  id: string;
-  name: string;
-  city?: string;
-  canonical: {
-    instagram?: string;
-    booking?: string;
-    website?: string;
-  };
-  status: "hot" | "shelved" | "discard";
-  confidenceScore: number;
-};
-
-function loadOperators(): Operator[] {
+function loadOperators(): OperatorRecord[] {
   const filePath = path.join(process.cwd(), "runtime-data/operator_master.v1.json");
   if (!fs.existsSync(filePath)) return [];
   return JSON.parse(fs.readFileSync(filePath, "utf-8"));
 }
 
 export default function OperatorsPage() {
-  const operators = loadOperators();
-  const hot = operators.filter((o) => o.status === "hot");
-  const shelved = operators.filter((o) => o.status === "shelved");
+  const operators = loadOperators()
+    .map((op) => ({ op, outreach: getOutreachEligibility(op) }))
+    .sort((a, b) => {
+      if (a.outreach.eligible !== b.outreach.eligible) return a.outreach.eligible ? -1 : 1;
+      if (a.op.status !== b.op.status) {
+        if (a.op.status === "hot") return -1;
+        if (b.op.status === "hot") return 1;
+      }
+      if (a.op.confidenceScore !== b.op.confidenceScore) return b.op.confidenceScore - a.op.confidenceScore;
+      return (a.op.name || "").localeCompare(b.op.name || "");
+    });
+  const hot = operators.filter(({ op }) => op.status === "hot");
+  const shelved = operators.filter(({ op }) => op.status === "shelved");
 
   return (
     <div style={{ padding: 24 }}>
@@ -48,10 +48,14 @@ export default function OperatorsPage() {
             <th>Booking</th>
             <th>Status</th>
             <th>Score</th>
+            <th>Channel</th>
+            <th>Outreach</th>
+            <th>Reason</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {operators.map((op) => (
+          {operators.map(({ op, outreach }) => (
             <tr key={op.id} style={{ borderTop: "1px solid #eee" }}>
               <td>{op.name}</td>
               <td>{op.city}</td>
@@ -79,6 +83,12 @@ export default function OperatorsPage() {
                 </span>
               </td>
               <td>{op.confidenceScore}</td>
+              <td>{outreach.preferredChannel}</td>
+              <td>{outreach.eligible ? "ready" : "blocked"}</td>
+              <td>{outreach.reason}</td>
+              <td>
+                {outreach.eligible ? <OperatorOutreachPanel operatorId={op.id} /> : <span style={{ color: "#888" }}>not ready</span>}
+              </td>
             </tr>
           ))}
         </tbody>

@@ -34,4 +34,9 @@ export type OperatorRecord = {
   status: "hot" | "shelved" | "discard";
   confidenceScore: number;
   lastUpdatedAt: string;
+  outreach?: {
+    eligible?: boolean;
+    reason?: "ok" | "needs_identity_cleanup" | "needs_surface_validation" | "needs_geo_cleanup";
+    preferredChannel?: "instagram" | "booking" | "website" | "none";
+  };
 };
