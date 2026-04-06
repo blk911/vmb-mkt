@@ -2,6 +2,8 @@ import { writeJsonFilePretty } from "@/lib/social-targets/json-file";
 import { buildOperatorHarvestQueryPack } from "@/lib/social-targets/operator-harvest/query-generator";
 import { executeHarvestQueriesLive } from "@/lib/social-targets/operator-harvest/query-executor";
 import { adaptHarvestQueryResultsToProspects } from "@/lib/social-targets/operator-harvest/result-adapter";
+import { runMergePipeline } from "@/lib/operators/run-merge";
+import type { SourceRecord } from "@/lib/operators/types";
 import type {
   HarvestPlatform,
   HarvestProspect,
@@ -120,6 +122,43 @@ function normalizeProspectSurface(prospect: HarvestProspect): HarvestProspect {
   };
 }
 
+function sourceRecordsFromProspects(prospects: HarvestProspect[]): SourceRecord[] {
+  const out: SourceRecord[] = [];
+  for (const prospect of prospects) {
+    const base = {
+      name: prospect.name,
+      city: prospect.geoHints[0],
+      category: "nails",
+      address: prospect.locationLabel,
+    };
+    out.push({
+      ...base,
+      source: "google",
+      website:
+        !prospect.instagramUrl && !prospect.bookingUrl && prospect.profileUrl.startsWith("http")
+          ? prospect.profileUrl
+          : undefined,
+      instagram: prospect.instagramUrl,
+      booking: prospect.bookingUrl,
+    });
+    if (prospect.instagramUrl) {
+      out.push({
+        ...base,
+        source: "instagram",
+        instagram: prospect.instagramUrl,
+      });
+    }
+    if (prospect.bookingUrl) {
+      out.push({
+        ...base,
+        source: "booking",
+        booking: prospect.bookingUrl,
+      });
+    }
+  }
+  return out;
+}
+
 export async function runOperatorHarvest(input: OperatorHarvestRunInput): Promise<OperatorHarvestRunOutput> {
   const queryPack = buildOperatorHarvestQueryPack({
     category: input.category,
@@ -130,6 +169,8 @@ export async function runOperatorHarvest(input: OperatorHarvestRunInput): Promis
   const adapted = adaptHarvestQueryResultsToProspects(resultSet).map(normalizeProspectSurface);
   const filtered = adapted.filter((p) => isLikelyRelevantProspect(p, queryPack.geoLabels));
   const ranked = rankProspects(filtered);
+  const allSourceRecords = sourceRecordsFromProspects(ranked);
+  await runMergePipeline(allSourceRecords);
   const summary = summarize(resultSet, ranked);
 
   await writeJsonFilePretty(RAW_ARTIFACT, {

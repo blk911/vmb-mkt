@@ -1,0 +1,457 @@
+[
+  {
+    "id": "9c9826798f781df99e5599f2d11b9e14",
+    "name": "The Nest Nail Spa DTC",
+    "city": "DTC",
+    "category": "nails",
+    "sources": {
+      "google": {
+        "name": "The Nest Nail Spa DTC",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/thenestnailspa/"
+      },
+      "instagram": {
+        "name": "The Nest Nail Spa DTC",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/thenestnailspa/"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/thenestnailspa/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+  },
+  {
+    "id": "7a5df9c6bed8ec0352d152aa738df9c5",
+    "name": "Purluxe Beauty Bar DTC",
+    "city": "DTC",
+    "category": "nails",
+    "sources": {
+      "google": {
+        "name": "Purluxe Beauty Bar DTC",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/purluxebeautybar/"
+      },
+      "instagram": {
+        "name": "Purluxe Beauty Bar DTC",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/purluxebeautybar/"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/purluxebeautybar/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+  },
+  {
+    "id": "6bc76787f8b02790cf7e1c3ea7223f0c",
+    "name": "Pearl Nail Bar",
+    "city": "DTC",
+    "category": "nails",
+    "sources": {
+      "google": {
+        "name": "Pearl Nail Bar",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/firstsight.design/"
+      },
+      "instagram": {
+        "name": "Pearl Nail Bar",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/firstsight.design/"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/firstsight.design/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+  },
+  {
+    "id": "7caafd5f510b50854f02c010787cdbaf",
+    "name": "I Capelli Salon",
+    "city": "DTC",
+    "category": "nails",
+    "sources": {
+      "google": {
+        "name": "I Capelli Salon",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/wix/"
+      },
+      "instagram": {
+        "name": "I Capelli Salon",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/wix/"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/wix/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+  },
+  {
+    "id": "f1925c51f7fedd1d88d66378f1abce82",
+    "name": "AV Nail Bar (formerly B&T Nails)",
+    "city": "DTC",
+    "category": "nails",
+    "sources": {
+      "google": {
+        "name": "AV Nail Bar (formerly B&T Nails)",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/avnailbargv/"
+      },
+      "instagram": {
+        "name": "AV Nail Bar (formerly B&T Nails)",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/avnailbargv/"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/avnailbargv/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+  },
+  {
+    "id": "dda6ced8028e80934215eb869d03abef",
+    "name": "J&J NAILS SPA",
+    "city": "DTC",
+    "category": "nails",
+    "sources": {
+      "google": {
+        "name": "J&J NAILS SPA",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/jjnailsspa.centennial/"
+      },
+      "instagram": {
+        "name": "J&J NAILS SPA",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/jjnailsspa.centennial/"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/jjnailsspa.centennial/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+  },
+  {
+    "id": "83a9f5b69e0723308ffc44ef6455df30",
+    "name": "Anthony Vincé Nail Spa, Cherry Hills",
+    "city": "Greenwood Village",
+    "category": "nails",
+    "sources": {
+      "google": {
+        "name": "Anthony Vincé Nail Spa, Cherry Hills",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "address": "Greenwood Village",
+        "source": "google",
+        "instagram": "https://www.instagram.com/avnailspa/"
+      },
+      "instagram": {
+        "name": "Anthony Vincé Nail Spa, Cherry Hills",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "address": "Greenwood Village",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/avnailspa/"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/avnailspa/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+  },
+  {
+    "id": "2f7203254d32034cfce9a1a48774d257",
+    "name": "Paris Nails 15",
+    "city": "DTC",
+    "category": "nails",
+    "sources": {
+      "google": {
+        "name": "Paris Nails 15",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/parisnails15_/"
+      },
+      "instagram": {
+        "name": "Paris Nails 15",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/parisnails15_/"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/parisnails15_/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+  },
+  {
+    "id": "8e995f03076d3b8ad871944d22cc9e78",
+    "name": "Sola Salons",
+    "city": "DTC",
+    "category": "nails",
+    "sources": {
+      "google": {
+        "name": "Sola Salons",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/soladenver/"
+      },
+      "instagram": {
+        "name": "Sola Salons",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/soladenver/"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/soladenver/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+  },
+  {
+    "id": "1700bbb9d6a30b5c5589f73fb4a5b6b9",
+    "name": "Phenix Salon Suites - Tamarac",
+    "city": "DTC",
+    "category": "nails",
+    "sources": {
+      "google": {
+        "name": "Phenix Salon Suites - Tamarac",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/phenixsalonsuitesdenvermetro/"
+      },
+      "instagram": {
+        "name": "Phenix Salon Suites - Tamarac",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/phenixsalonsuitesdenvermetro/"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/phenixsalonsuitesdenvermetro/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+  },
+  {
+    "id": "4ff8e9ee714ecdde3364d90267dbdead",
+    "name": "Phenix Salon Suites - Parker",
+    "city": "DTC",
+    "category": "nails",
+    "sources": {
+      "google": {
+        "name": "Phenix Salon Suites - Parker",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/hairbymaribelosal/"
+      },
+      "instagram": {
+        "name": "Phenix Salon Suites - Parker",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/hairbymaribelosal/"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/hairbymaribelosal/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+  },
+  {
+    "id": "4005e32959662b31ef0786825c9ced27",
+    "name": "Centennial Nails",
+    "city": "Greenwood Village",
+    "category": "nails",
+    "sources": {
+      "google": {
+        "name": "Centennial Nails",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "address": "Greenwood Village",
+        "source": "google",
+        "instagram": "https://www.instagram.com/nailscentennial/"
+      },
+      "instagram": {
+        "name": "Centennial Nails",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "address": "Greenwood Village",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/nailscentennial/"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/nailscentennial/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+  },
+  {
+    "id": "df443af793feb45e90444e536eceb7b0",
+    "name": "Solera Salon Suites",
+    "city": "DTC",
+    "category": "nails",
+    "sources": {
+      "google": {
+        "name": "Solera Salon Suites",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
+      },
+      "booking": {
+        "name": "Solera Salon Suites",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "booking",
+        "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
+      }
+    },
+    "canonical": {
+      "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
+    },
+    "validation": {
+      "instagramStatus": "missing",
+      "bookingStatus": "valid",
+      "websiteStatus": "missing"
+    },
+    "status": "hot",
+    "confidenceScore": 3,
+    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+  }
+]
