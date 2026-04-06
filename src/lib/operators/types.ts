@@ -6,7 +6,7 @@ export type PageClassification =
   | "social_profile"
   | "unknown";
 
-export type SourceKind = "google" | "instagram" | "booking" | "directory" | "container";
+export type SourceKind = "dora" | "google" | "instagram" | "booking" | "directory" | "container" | "website";
 
 export type SourceRecord = {
   name?: string;

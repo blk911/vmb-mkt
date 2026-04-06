@@ -9,6 +9,9 @@ import { runAcquisition } from "@/lib/operators/run-acquisition";
 import { classifyPage } from "@/lib/operators/page-classifier";
 import { writeOperatorQualitySummaryArtifact } from "@/lib/operators/quality-summary";
 import { runGoogleSearch } from "@/lib/social-targets/operator-harvest/query-executor";
+import { appendEvidence } from "@/lib/evidence/store";
+import { sourceRecordsToEvidence } from "@/lib/evidence/ingest";
+import { runResolver } from "@/lib/resolver/run-resolver";
 import type { SourceRecord } from "@/lib/operators/types";
 import type {
   HarvestPlatform,
@@ -166,6 +169,34 @@ function sourceRecordsFromProspects(prospects: HarvestProspect[]): SourceRecord[
   return out;
 }
 
+function sourceRecordsFromRawResults(resultSet: HarvestQueryResultSet[]): SourceRecord[] {
+  const out: SourceRecord[] = [];
+  for (const group of resultSet) {
+    for (const row of group.results) {
+      const url = row.url || "";
+      if (!url.startsWith("http")) continue;
+      const pageType = classifyPage(url);
+      const source: SourceRecord["source"] =
+        pageType === "suite_container" ? "container" : pageType === "directory_listing" ? "directory" : "google";
+      out.push({
+        source,
+        sourceUrl: url,
+        name: row.title,
+        city: group.query.geoLabel,
+        website: pageType === "website" ? url : undefined,
+        evidenceType:
+          pageType === "direct_operator" ||
+          pageType === "directory_listing" ||
+          pageType === "suite_container" ||
+          pageType === "social_profile"
+            ? pageType
+            : undefined,
+      });
+    }
+  }
+  return out;
+}
+
 function isAcquisitionCandidate(source: SourceRecord): boolean {
   if (source.source === "directory" || source.source === "container") return true;
   if (source.booking) return true;
@@ -274,6 +305,7 @@ export async function runOperatorHarvest(input: OperatorHarvestRunInput): Promis
   }
   const domainCoverageRecords = await ingestDomainCandidatesFromGoogle(domainCoverageQueries);
   const domainSeedRecords = buildCurrentMarketDomainSeeds();
+  const rawResultRecords = sourceRecordsFromRawResults(resultSet);
 
   const googleSourceRecords = sourceRecordsFromProspects(ranked);
   const allSourceRecords: SourceRecord[] = [
@@ -285,7 +317,10 @@ export async function runOperatorHarvest(input: OperatorHarvestRunInput): Promis
   ];
   const acquisitionCandidates = allSourceRecords.filter(isAcquisitionCandidate);
   const acquisitionOutput = await runAcquisition(acquisitionCandidates);
-  const merged = await runMergePipeline([...allSourceRecords, ...acquisitionOutput.enrichedRecords]);
+  const allEvidence = sourceRecordsToEvidence([...rawResultRecords, ...allSourceRecords, ...acquisitionOutput.enrichedRecords]);
+  appendEvidence(allEvidence);
+  runResolver();
+  const merged = await runMergePipeline([]);
   await writeOperatorQualitySummaryArtifact(merged);
   const summary = summarize(resultSet, ranked);
 
