@@ -14,12 +14,10 @@
         "instagram": "https://www.instagram.com/thenestnailspa/"
       },
       "instagram": {
-        "name": "The Nest Nail Spa DTC",
-        "city": "DTC",
-        "category": "nails",
-        "address": "DTC",
-        "source": "instagram",
-        "instagram": "https://www.instagram.com/thenestnailspa/"
+        "name": "thenestnailspa",
+        "city": "denver\"",
+        "instagram": "https://www.instagram.com/thenestnailspa/",
+        "source": "instagram"
       }
     },
     "canonical": {
@@ -32,7 +30,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
   },
   {
     "id": "7a5df9c6bed8ec0352d152aa738df9c5",
@@ -67,7 +65,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
   },
   {
     "id": "6bc76787f8b02790cf7e1c3ea7223f0c",
@@ -102,7 +100,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
   },
   {
     "id": "7caafd5f510b50854f02c010787cdbaf",
@@ -137,7 +135,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
   },
   {
     "id": "f1925c51f7fedd1d88d66378f1abce82",
@@ -172,7 +170,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
   },
   {
     "id": "dda6ced8028e80934215eb869d03abef",
@@ -207,7 +205,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
   },
   {
     "id": "83a9f5b69e0723308ffc44ef6455df30",
@@ -242,7 +240,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
   },
   {
     "id": "2f7203254d32034cfce9a1a48774d257",
@@ -277,7 +275,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
   },
   {
     "id": "8e995f03076d3b8ad871944d22cc9e78",
@@ -312,7 +310,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
   },
   {
     "id": "1700bbb9d6a30b5c5589f73fb4a5b6b9",
@@ -347,7 +345,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
   },
   {
     "id": "4ff8e9ee714ecdde3364d90267dbdead",
@@ -382,7 +380,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
   },
   {
     "id": "4005e32959662b31ef0786825c9ced27",
@@ -417,7 +415,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
   },
   {
     "id": "df443af793feb45e90444e536eceb7b0",
@@ -452,6 +450,318 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T12:16:25.181Z"
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
+  },
+  {
+    "id": "304e74643ce1a61d9a5e49d6dbb2162e",
+    "name": "skynailsandlash",
+    "city": "denver\"",
+    "sources": {
+      "instagram": {
+        "name": "skynailsandlash",
+        "city": "denver\"",
+        "instagram": "https://www.instagram.com/skynailsandlash/",
+        "source": "instagram"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/skynailsandlash/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
+  },
+  {
+    "id": "a653114e70b8eb223a38fd3bec9baed8",
+    "name": "washparknails",
+    "city": "denver\"",
+    "sources": {
+      "instagram": {
+        "name": "washparknails",
+        "city": "denver\"",
+        "instagram": "https://www.instagram.com/washparknails/",
+        "source": "instagram"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/washparknails/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
+  },
+  {
+    "id": "1c273f9ad1030dca8be818543e45357e",
+    "name": "fancynailspadenver",
+    "city": "denver\"",
+    "sources": {
+      "instagram": {
+        "name": "fancynailspadenver",
+        "city": "denver\"",
+        "instagram": "https://www.instagram.com/fancynailspadenver/",
+        "source": "instagram"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/fancynailspadenver/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
+  },
+  {
+    "id": "59eb2793b6a6e6c402117f3aede887b8",
+    "name": "lavoguenailsandspa",
+    "city": "denver\"",
+    "sources": {
+      "instagram": {
+        "name": "lavoguenailsandspa",
+        "city": "denver\"",
+        "instagram": "https://www.instagram.com/lavoguenailsandspa/",
+        "source": "instagram"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/lavoguenailsandspa/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
+  },
+  {
+    "id": "3abe677cf8629c345c673862415ac0de",
+    "name": "dekalashcherrycreek",
+    "city": "lashes\"",
+    "sources": {
+      "instagram": {
+        "name": "dekalashcherrycreek",
+        "city": "lashes\"",
+        "instagram": "https://www.instagram.com/dekalashcherrycreek/",
+        "source": "instagram"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/dekalashcherrycreek/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
+  },
+  {
+    "id": "2d874e912c4e18e793614c55cd4776f0",
+    "name": "dekalashes",
+    "city": "lashes\"",
+    "sources": {
+      "instagram": {
+        "name": "dekalashes",
+        "city": "lashes\"",
+        "instagram": "https://www.instagram.com/dekalashes/",
+        "source": "instagram"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/dekalashes/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
+  },
+  {
+    "id": "164453614577c8a4efea59f922c21c9e",
+    "name": "midnightlashandbeauty",
+    "city": "lashes\"",
+    "sources": {
+      "instagram": {
+        "name": "midnightlashandbeauty",
+        "city": "lashes\"",
+        "instagram": "https://www.instagram.com/midnightlashandbeauty/",
+        "source": "instagram"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/midnightlashandbeauty/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
+  },
+  {
+    "id": "9c10e9c63081d1da590e244f1598ae9d",
+    "name": "midnightlashesdenver",
+    "city": "lashes\"",
+    "sources": {
+      "instagram": {
+        "name": "midnightlashesdenver",
+        "city": "lashes\"",
+        "instagram": "https://www.instagram.com/midnightlashesdenver/",
+        "source": "instagram"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/midnightlashesdenver/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
+  },
+  {
+    "id": "f7c5733db4c3194edc4f8e2380c65c3c",
+    "name": "alexasluxelashes",
+    "city": "lashes\"",
+    "sources": {
+      "instagram": {
+        "name": "alexasluxelashes",
+        "city": "lashes\"",
+        "instagram": "https://www.instagram.com/alexasluxelashes/",
+        "source": "instagram"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/alexasluxelashes/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
+  },
+  {
+    "id": "15838ed8c273e62b53624c26bb63105c",
+    "name": "lashologybeauty",
+    "city": "lashes\"",
+    "sources": {
+      "instagram": {
+        "name": "lashologybeauty",
+        "city": "lashes\"",
+        "instagram": "https://www.instagram.com/lashologybeauty/",
+        "source": "instagram"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/lashologybeauty/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
+  },
+  {
+    "id": "28ebdb5248adfe55b9bb6f8cc9ea6312",
+    "name": "healingvibesesthetics",
+    "city": "esthetician\"",
+    "sources": {
+      "instagram": {
+        "name": "healingvibesesthetics",
+        "city": "esthetician\"",
+        "instagram": "https://www.instagram.com/healingvibesesthetics/",
+        "source": "instagram"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/healingvibesesthetics/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
+  },
+  {
+    "id": "570300cc54562f335a3dbfb17d37fc95",
+    "name": "sesenskinbodywellness",
+    "city": "esthetician\"",
+    "sources": {
+      "instagram": {
+        "name": "sesenskinbodywellness",
+        "city": "esthetician\"",
+        "instagram": "https://www.instagram.com/sesenskinbodywellness/",
+        "source": "instagram"
+      }
+    },
+    "canonical": {
+      "instagram": "https://www.instagram.com/sesenskinbodywellness/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
+  },
+  {
+    "id": "0da7730f8b093ab4a465a52dbe927fb7",
+    "name": "unknown",
+    "city": "hair",
+    "sources": {
+      "booking": {
+        "name": "unknown",
+        "city": "hair",
+        "booking": "https://denverhairsalon.glossgenius.com",
+        "source": "booking"
+      }
+    },
+    "canonical": {
+      "booking": "https://denverhairsalon.glossgenius.com"
+    },
+    "validation": {
+      "instagramStatus": "missing",
+      "bookingStatus": "valid",
+      "websiteStatus": "missing"
+    },
+    "status": "hot",
+    "confidenceScore": 3,
+    "lastUpdatedAt": "2026-04-06T12:24:50.882Z"
   }
 ]

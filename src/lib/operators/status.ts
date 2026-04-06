@@ -1,4 +1,4 @@
-import type { OperatorRecord } from "@/lib/operators/types";
+import type { OperatorRecord } from "./types";
 
 export function assignStatus(op: OperatorRecord): OperatorRecord {
   const { instagramStatus, bookingStatus, websiteStatus } = op.validation;

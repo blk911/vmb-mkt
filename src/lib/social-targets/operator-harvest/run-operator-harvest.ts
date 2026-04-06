@@ -2,6 +2,8 @@ import { writeJsonFilePretty } from "@/lib/social-targets/json-file";
 import { buildOperatorHarvestQueryPack } from "@/lib/social-targets/operator-harvest/query-generator";
 import { executeHarvestQueriesLive } from "@/lib/social-targets/operator-harvest/query-executor";
 import { adaptHarvestQueryResultsToProspects } from "@/lib/social-targets/operator-harvest/result-adapter";
+import { ingestInstagramFromGoogle } from "@/lib/operators/ingest-instagram";
+import { ingestBookingFromGoogle } from "@/lib/operators/ingest-booking";
 import { runMergePipeline } from "@/lib/operators/run-merge";
 import type { SourceRecord } from "@/lib/operators/types";
 import type {
@@ -169,7 +171,32 @@ export async function runOperatorHarvest(input: OperatorHarvestRunInput): Promis
   const adapted = adaptHarvestQueryResultsToProspects(resultSet).map(normalizeProspectSurface);
   const filtered = adapted.filter((p) => isLikelyRelevantProspect(p, queryPack.geoLabels));
   const ranked = rankProspects(filtered);
-  const allSourceRecords = sourceRecordsFromProspects(ranked);
+
+  const igQueries = [
+    'site:instagram.com "nails denver"',
+    'site:instagram.com "denver lashes"',
+    'site:instagram.com "denver esthetician"',
+  ];
+  const bookingQueries = [
+    "site:glossgenius.com denver nails",
+    "site:styleseat.com denver hair",
+    "site:vagaro.com denver spa",
+    "site:booksy.com denver barber",
+  ];
+
+  const igRecords: SourceRecord[] = [];
+  for (const q of igQueries) {
+    const res = await ingestInstagramFromGoogle(q);
+    igRecords.push(...res);
+  }
+  const bookingRecords: SourceRecord[] = [];
+  for (const q of bookingQueries) {
+    const res = await ingestBookingFromGoogle(q);
+    bookingRecords.push(...res);
+  }
+
+  const googleSourceRecords = sourceRecordsFromProspects(ranked);
+  const allSourceRecords: SourceRecord[] = [...googleSourceRecords, ...igRecords, ...bookingRecords];
   await runMergePipeline(allSourceRecords);
   const summary = summarize(resultSet, ranked);
 

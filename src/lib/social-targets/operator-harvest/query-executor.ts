@@ -14,6 +14,12 @@ type PlaceDetailsResult = {
   url?: string;
 };
 
+export type GoogleSearchResult = {
+  title?: string;
+  link: string;
+  snippet?: string;
+};
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -146,6 +152,70 @@ function detailToRawResult(detail: PlaceDetailsResult, url: string): HarvestRawR
   };
 }
 
+async function searchPlacesForQuery(
+  query: string,
+  apiKey: string,
+  resultsPerQuery: number,
+  detailsCache: Map<string, PlaceDetailsResult | null>,
+  websiteLinksCache: Map<string, string[]>
+): Promise<HarvestRawResult[]> {
+  const normalized = normalizeSearchQuery(query);
+  const textResults = await googlePlaceTextSearch(apiKey, normalized).catch(() => []);
+  const rows: HarvestRawResult[] = [];
+  const seenUrls = new Set<string>();
+  for (const place of textResults) {
+    const placeId = (place.place_id ?? "").trim();
+    if (!placeId) continue;
+    const details = detailsCache.has(placeId)
+      ? (detailsCache.get(placeId) ?? null)
+      : await googlePlaceDetails(apiKey, placeId).catch(() => null);
+    detailsCache.set(placeId, details ?? null);
+    if (!details) continue;
+    const directCandidates = [normalizeUrl(details.website), normalizeUrl(details.url)].filter(
+      (value): value is string => Boolean(value)
+    );
+    for (const candidateUrl of directCandidates) {
+      if (!isHarvestSurface(candidateUrl)) continue;
+      const normalizedSurface = normalizeSurfaceUrl(candidateUrl);
+      if (!normalizedSurface) continue;
+      if (seenUrls.has(normalizedSurface.toLowerCase())) continue;
+      seenUrls.add(normalizedSurface.toLowerCase());
+      rows.push(detailToRawResult(details, normalizedSurface));
+    }
+
+    const website = normalizeUrl(details.website);
+    if (website) {
+      const websiteLinks = websiteLinksCache.has(website)
+        ? (websiteLinksCache.get(website) ?? [])
+        : await fetchWebsiteHarvestLinks(website);
+      websiteLinksCache.set(website, websiteLinks);
+      for (const link of websiteLinks) {
+        const normalizedSurface = normalizeSurfaceUrl(link);
+        if (!normalizedSurface) continue;
+        if (seenUrls.has(normalizedSurface.toLowerCase())) continue;
+        seenUrls.add(normalizedSurface.toLowerCase());
+        rows.push(detailToRawResult(details, normalizedSurface));
+        if (rows.length >= resultsPerQuery) break;
+      }
+    }
+    if (rows.length >= resultsPerQuery) break;
+  }
+  return rows.slice(0, resultsPerQuery);
+}
+
+export async function runGoogleSearch(query: string, limit = 8): Promise<GoogleSearchResult[]> {
+  const apiKey = (process.env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_MAPS_API_KEY || "").trim();
+  if (!apiKey) return [];
+  const detailsCache = new Map<string, PlaceDetailsResult | null>();
+  const websiteLinksCache = new Map<string, string[]>();
+  const rows = await searchPlacesForQuery(query, apiKey, Math.max(1, Math.min(12, limit)), detailsCache, websiteLinksCache);
+  return rows.map((row) => ({
+    title: row.title,
+    link: row.url,
+    snippet: row.snippet,
+  }));
+}
+
 export async function executeHarvestQueriesLive(
   queries: HarvestQuery[],
   opts?: { resultsPerQuery?: number; requestDelayMs?: number }
@@ -160,48 +230,7 @@ export async function executeHarvestQueriesLive(
   const out: HarvestQueryResultSet[] = [];
   for (let i = 0; i < queries.length; i += 1) {
     const query = queries[i];
-    const normalized = normalizeSearchQuery(query.query);
-    const textResults = await googlePlaceTextSearch(apiKey, normalized).catch(() => []);
-    const rows: HarvestRawResult[] = [];
-    const seenUrls = new Set<string>();
-    for (const place of textResults) {
-      const placeId = (place.place_id ?? "").trim();
-      if (!placeId) continue;
-      const details = detailsCache.has(placeId)
-        ? (detailsCache.get(placeId) ?? null)
-        : await googlePlaceDetails(apiKey, placeId).catch(() => null);
-      detailsCache.set(placeId, details ?? null);
-      if (!details) continue;
-      const directCandidates = [normalizeUrl(details.website), normalizeUrl(details.url)].filter(
-        (value): value is string => Boolean(value)
-      );
-      for (const candidateUrl of directCandidates) {
-        if (!isHarvestSurface(candidateUrl)) continue;
-        const normalizedSurface = normalizeSurfaceUrl(candidateUrl);
-        if (!normalizedSurface) continue;
-        if (seenUrls.has(normalizedSurface.toLowerCase())) continue;
-        seenUrls.add(normalizedSurface.toLowerCase());
-        rows.push(detailToRawResult(details, normalizedSurface));
-      }
-
-      const website = normalizeUrl(details.website);
-      if (website) {
-        const websiteLinks = websiteLinksCache.has(website)
-          ? (websiteLinksCache.get(website) ?? [])
-          : await fetchWebsiteHarvestLinks(website);
-        websiteLinksCache.set(website, websiteLinks);
-        for (const link of websiteLinks) {
-          const normalizedSurface = normalizeSurfaceUrl(link);
-          if (!normalizedSurface) continue;
-          if (seenUrls.has(normalizedSurface.toLowerCase())) continue;
-          seenUrls.add(normalizedSurface.toLowerCase());
-          rows.push(detailToRawResult(details, normalizedSurface));
-          if (rows.length >= resultsPerQuery) break;
-        }
-      }
-      if (rows.length >= resultsPerQuery) break;
-    }
-    const results = rows.slice(0, resultsPerQuery);
+    const results = await searchPlacesForQuery(query.query, apiKey, resultsPerQuery, detailsCache, websiteLinksCache);
     out.push({ query, results });
     if (i < queries.length - 1 && requestDelayMs > 0) await sleep(requestDelayMs);
   }

@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { OperatorRecord } from "@/lib/operators/types";
+import type { OperatorRecord } from "./types";
 
 const FILE_PATH = path.join(process.cwd(), "runtime-data/operator_master.v1.json");
 

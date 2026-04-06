@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import type { OperatorRecord, SourceRecord } from "@/lib/operators/types";
+import type { OperatorRecord, SourceRecord } from "./types";
 
 function normalize(str?: string) {
   return (str || "").toLowerCase().replace(/\s+/g, "").trim();
