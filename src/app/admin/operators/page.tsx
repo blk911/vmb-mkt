@@ -3,15 +3,29 @@ import path from "node:path";
 import type { OperatorRecord } from "@/lib/operators/types";
 import { getOutreachEligibility } from "@/lib/operators/outreach-eligibility";
 import { buildOperatorQualitySummary } from "@/lib/operators/quality-summary";
-import OperatorOutreachPanel from "@/components/admin/operators/OperatorOutreachPanel";
+import { applyReviewOverlay, getReviewStateOrDefault } from "@/lib/operators/review-store";
+import HotTargetReviewPanel from "@/components/admin/operators/HotTargetReviewPanel";
 
 function loadOperators(): OperatorRecord[] {
   const filePath = path.join(process.cwd(), "runtime-data/operator_master.v1.json");
   if (!fs.existsSync(filePath)) return [];
-  return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+  const rows = JSON.parse(fs.readFileSync(filePath, "utf-8")) as OperatorRecord[];
+  return applyReviewOverlay(rows);
 }
 
-export default function OperatorsPage() {
+type FilterMode = "all" | "hot" | "ready" | "shelved_by_review";
+
+function normalizeFilter(raw?: string): FilterMode {
+  if (raw === "hot" || raw === "ready" || raw === "shelved_by_review") return raw;
+  return "all";
+}
+
+export default function OperatorsPage({
+  searchParams,
+}: {
+  searchParams?: { filter?: string };
+}) {
+  const filter = normalizeFilter(searchParams?.filter);
   const operators = loadOperators()
     .map((op) => ({ op, outreach: getOutreachEligibility(op) }))
     .sort((a, b) => {
@@ -23,7 +37,13 @@ export default function OperatorsPage() {
       if (a.op.confidenceScore !== b.op.confidenceScore) return b.op.confidenceScore - a.op.confidenceScore;
       return (a.op.name || "").localeCompare(b.op.name || "");
     });
-  const quality = buildOperatorQualitySummary(operators.map((row) => row.op));
+  const filteredOperators = operators.filter(({ op }) => {
+    if (filter === "hot") return op.status === "hot";
+    if (filter === "ready") return getReviewStateOrDefault(op.reviewState) === "ready";
+    if (filter === "shelved_by_review") return getReviewStateOrDefault(op.reviewState) === "shelved_by_review";
+    return true;
+  });
+  const quality = buildOperatorQualitySummary(filteredOperators.map((row) => row.op));
   const hot = operators.filter(({ op }) => op.status === "hot");
   const shelved = operators.filter(({ op }) => op.status === "shelved");
 
@@ -39,6 +59,13 @@ export default function OperatorsPage() {
     }
     return [...tags].join(" / ");
   };
+  const evidenceTypeLabel = (op: OperatorRecord) => {
+    const tags = new Set<string>();
+    for (const row of op.evidence || []) {
+      if (row.evidenceType) tags.add(row.evidenceType);
+    }
+    return [...tags].join(" / ");
+  };
 
   return (
     <div style={{ padding: 24 }}>
@@ -46,6 +73,23 @@ export default function OperatorsPage() {
       <div style={{ marginTop: 12 }}>
         <strong>Total:</strong> {operators.length} | <strong>Hot:</strong> {hot.length} | <strong>Shelved:</strong>{" "}
         {shelved.length}
+      </div>
+      <div style={{ marginTop: 10, display: "flex", gap: 10 }}>
+        <a href="/admin/operators?filter=all" style={{ fontWeight: filter === "all" ? 700 : 400 }}>
+          all
+        </a>
+        <a href="/admin/operators?filter=hot" style={{ fontWeight: filter === "hot" ? 700 : 400 }}>
+          hot
+        </a>
+        <a href="/admin/operators?filter=ready" style={{ fontWeight: filter === "ready" ? 700 : 400 }}>
+          ready
+        </a>
+        <a
+          href="/admin/operators?filter=shelved_by_review"
+          style={{ fontWeight: filter === "shelved_by_review" ? 700 : 400 }}
+        >
+          shelved by review
+        </a>
       </div>
       <div
         style={{
@@ -103,6 +147,7 @@ export default function OperatorsPage() {
             <th>IG</th>
             <th>Booking</th>
             <th>Status</th>
+            <th>Review</th>
             <th>Score</th>
             <th>Channel</th>
             <th>Outreach</th>
@@ -113,7 +158,7 @@ export default function OperatorsPage() {
           </tr>
         </thead>
         <tbody>
-          {operators.map(({ op, outreach }) => (
+          {filteredOperators.map(({ op, outreach }) => (
             <tr key={op.id} style={{ borderTop: "1px solid #eee" }}>
               <td>{op.name}</td>
               <td>{op.city}</td>
@@ -140,6 +185,7 @@ export default function OperatorsPage() {
                   {op.status}
                 </span>
               </td>
+              <td>{getReviewStateOrDefault(op.reviewState)}</td>
               <td>{op.confidenceScore}</td>
               <td>{outreach.preferredChannel}</td>
               <td>{outreach.eligible ? "ready" : "blocked"}</td>
@@ -147,7 +193,23 @@ export default function OperatorsPage() {
               <td>{evidenceCount(op)}</td>
               <td style={{ fontSize: 12, color: "#555" }}>{sourceTypeLabel(op)}</td>
               <td>
-                {outreach.eligible ? <OperatorOutreachPanel operatorId={op.id} /> : <span style={{ color: "#888" }}>not ready</span>}
+                {op.status === "hot" ? (
+                  <HotTargetReviewPanel
+                    operatorId={op.id}
+                    canonicalName={op.name}
+                    city={op.city}
+                    instagram={op.canonical.instagram}
+                    booking={op.canonical.booking}
+                    website={op.canonical.website}
+                    evidenceCount={evidenceCount(op)}
+                    sourceTypes={sourceTypeLabel(op)}
+                    evidenceTypes={evidenceTypeLabel(op)}
+                    reviewState={getReviewStateOrDefault(op.reviewState)}
+                    reviewNotes={op.reviewNotes}
+                  />
+                ) : (
+                  <span style={{ color: "#888", fontSize: 12 }}>hot-only review</span>
+                )}
               </td>
             </tr>
           ))}

@@ -44,6 +44,8 @@ export type OperatorRecord = {
     websiteStatus: "valid" | "dead" | "missing";
   };
   status: "hot" | "shelved" | "discard";
+  reviewState?: "unreviewed" | "ready" | "shelved_by_review";
+  reviewNotes?: string;
   confidenceScore: number;
   lastUpdatedAt: string;
   outreach?: {
