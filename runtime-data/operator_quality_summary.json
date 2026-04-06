@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-04-06T14:31:56.636Z",
+  "totalOperators": 31,
+  "hotCount": 3,
+  "shelvedCount": 28,
+  "discardCount": 0,
+  "withInstagramCount": 29,
+  "withBookingCount": 3,
+  "withWebsiteCount": 1,
+  "withInstagramAndBookingCount": 1,
+  "withDirectoryEvidenceCount": 0,
+  "withContainerEvidenceCount": 0,
+  "unknownNameCount": 0,
+  "suspiciousCityCount": 0,
+  "extractedNameImprovementCount": 0,
+  "extractedCityImprovementCount": 0
+}

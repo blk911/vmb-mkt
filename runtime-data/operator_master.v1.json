@@ -2,7 +2,7 @@
   {
     "id": "9c9826798f781df99e5599f2d11b9e14",
     "name": "The Nest Nail Spa DTC",
-    "city": "DTC",
+    "city": "Denver",
     "category": "nails",
     "sources": {
       "google": {
@@ -10,16 +10,45 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/thenestnailspa/",
         "source": "google",
         "instagram": "https://www.instagram.com/thenestnailspa/"
       },
       "instagram": {
+        "name": "The Nest Nail Spa DTC",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/thenestnailspa/",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/thenestnailspa/"
+      }
+    },
+    "evidence": [
+      {
+        "name": "The Nest Nail Spa DTC",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/thenestnailspa/"
+      },
+      {
         "name": "thenestnailspa",
         "city": "denver\"",
         "instagram": "https://www.instagram.com/thenestnailspa/",
         "source": "instagram"
+      },
+      {
+        "name": "The Nest Nail Spa DTC",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/thenestnailspa/",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/thenestnailspa/"
       }
-    },
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/thenestnailspa/"
     },
@@ -30,7 +59,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
     "id": "7a5df9c6bed8ec0352d152aa738df9c5",
@@ -43,6 +72,7 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/purluxebeautybar/",
         "source": "google",
         "instagram": "https://www.instagram.com/purluxebeautybar/"
       },
@@ -51,10 +81,29 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/purluxebeautybar/",
         "source": "instagram",
         "instagram": "https://www.instagram.com/purluxebeautybar/"
       }
     },
+    "evidence": [
+      {
+        "name": "Purluxe Beauty Bar DTC",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/purluxebeautybar/"
+      },
+      {
+        "name": "Purluxe Beauty Bar DTC",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/purluxebeautybar/"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/purluxebeautybar/"
     },
@@ -65,7 +114,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
     "id": "6bc76787f8b02790cf7e1c3ea7223f0c",
@@ -78,6 +127,7 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/firstsight.design/",
         "source": "google",
         "instagram": "https://www.instagram.com/firstsight.design/"
       },
@@ -86,10 +136,29 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/firstsight.design/",
         "source": "instagram",
         "instagram": "https://www.instagram.com/firstsight.design/"
       }
     },
+    "evidence": [
+      {
+        "name": "Pearl Nail Bar",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/firstsight.design/"
+      },
+      {
+        "name": "Pearl Nail Bar",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/firstsight.design/"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/firstsight.design/"
     },
@@ -100,7 +169,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
     "id": "7caafd5f510b50854f02c010787cdbaf",
@@ -113,6 +182,7 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/wix/",
         "source": "google",
         "instagram": "https://www.instagram.com/wix/"
       },
@@ -121,10 +191,29 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/wix/",
         "source": "instagram",
         "instagram": "https://www.instagram.com/wix/"
       }
     },
+    "evidence": [
+      {
+        "name": "I Capelli Salon",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/wix/"
+      },
+      {
+        "name": "I Capelli Salon",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/wix/"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/wix/"
     },
@@ -135,7 +224,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
     "id": "f1925c51f7fedd1d88d66378f1abce82",
@@ -148,6 +237,7 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/avnailbargv/",
         "source": "google",
         "instagram": "https://www.instagram.com/avnailbargv/"
       },
@@ -156,10 +246,29 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/avnailbargv/",
         "source": "instagram",
         "instagram": "https://www.instagram.com/avnailbargv/"
       }
     },
+    "evidence": [
+      {
+        "name": "AV Nail Bar (formerly B&T Nails)",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/avnailbargv/"
+      },
+      {
+        "name": "AV Nail Bar (formerly B&T Nails)",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/avnailbargv/"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/avnailbargv/"
     },
@@ -170,7 +279,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
     "id": "dda6ced8028e80934215eb869d03abef",
@@ -183,6 +292,7 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/jjnailsspa.centennial/",
         "source": "google",
         "instagram": "https://www.instagram.com/jjnailsspa.centennial/"
       },
@@ -191,10 +301,29 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/jjnailsspa.centennial/",
         "source": "instagram",
         "instagram": "https://www.instagram.com/jjnailsspa.centennial/"
       }
     },
+    "evidence": [
+      {
+        "name": "J&J NAILS SPA",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/jjnailsspa.centennial/"
+      },
+      {
+        "name": "J&J NAILS SPA",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/jjnailsspa.centennial/"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/jjnailsspa.centennial/"
     },
@@ -205,7 +334,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
     "id": "83a9f5b69e0723308ffc44ef6455df30",
@@ -218,6 +347,7 @@
         "city": "Greenwood Village",
         "category": "nails",
         "address": "Greenwood Village",
+        "sourceUrl": "https://www.instagram.com/avnailspa/",
         "source": "google",
         "instagram": "https://www.instagram.com/avnailspa/"
       },
@@ -226,10 +356,29 @@
         "city": "Greenwood Village",
         "category": "nails",
         "address": "Greenwood Village",
+        "sourceUrl": "https://www.instagram.com/avnailspa/",
         "source": "instagram",
         "instagram": "https://www.instagram.com/avnailspa/"
       }
     },
+    "evidence": [
+      {
+        "name": "Anthony Vincé Nail Spa, Cherry Hills",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "address": "Greenwood Village",
+        "source": "google",
+        "instagram": "https://www.instagram.com/avnailspa/"
+      },
+      {
+        "name": "Anthony Vincé Nail Spa, Cherry Hills",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "address": "Greenwood Village",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/avnailspa/"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/avnailspa/"
     },
@@ -240,7 +389,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
     "id": "2f7203254d32034cfce9a1a48774d257",
@@ -265,6 +414,24 @@
         "instagram": "https://www.instagram.com/parisnails15_/"
       }
     },
+    "evidence": [
+      {
+        "name": "Paris Nails 15",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/parisnails15_/"
+      },
+      {
+        "name": "Paris Nails 15",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/parisnails15_/"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/parisnails15_/"
     },
@@ -275,7 +442,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.976Z"
   },
   {
     "id": "8e995f03076d3b8ad871944d22cc9e78",
@@ -288,6 +455,7 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/soladenver/",
         "source": "google",
         "instagram": "https://www.instagram.com/soladenver/"
       },
@@ -296,10 +464,29 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/soladenver/",
         "source": "instagram",
         "instagram": "https://www.instagram.com/soladenver/"
       }
     },
+    "evidence": [
+      {
+        "name": "Sola Salons",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/soladenver/"
+      },
+      {
+        "name": "Sola Salons",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/soladenver/"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/soladenver/"
     },
@@ -310,7 +497,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
     "id": "a2197dc3ce007574b759f4c994d43226",
@@ -323,6 +510,7 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/phenixsalonsuitesdenvermetro/",
         "source": "google",
         "instagram": "https://www.instagram.com/phenixsalonsuitesdenvermetro/"
       },
@@ -331,10 +519,29 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/phenixsalonsuitesdenvermetro/",
         "source": "instagram",
         "instagram": "https://www.instagram.com/phenixsalonsuitesdenvermetro/"
       }
     },
+    "evidence": [
+      {
+        "name": "Phenix Salon Suites - Lone Tree",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/phenixsalonsuitesdenvermetro/"
+      },
+      {
+        "name": "Phenix Salon Suites - Lone Tree",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/phenixsalonsuitesdenvermetro/"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/phenixsalonsuitesdenvermetro/"
     },
@@ -345,7 +552,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
     "id": "4ff8e9ee714ecdde3364d90267dbdead",
@@ -358,6 +565,7 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/hairbymaribelosal/",
         "source": "google",
         "instagram": "https://www.instagram.com/hairbymaribelosal/"
       },
@@ -366,10 +574,29 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://www.instagram.com/hairbymaribelosal/",
         "source": "instagram",
         "instagram": "https://www.instagram.com/hairbymaribelosal/"
       }
     },
+    "evidence": [
+      {
+        "name": "Phenix Salon Suites - Parker",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "instagram": "https://www.instagram.com/hairbymaribelosal/"
+      },
+      {
+        "name": "Phenix Salon Suites - Parker",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/hairbymaribelosal/"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/hairbymaribelosal/"
     },
@@ -380,7 +607,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
     "id": "4005e32959662b31ef0786825c9ced27",
@@ -393,6 +620,7 @@
         "city": "Greenwood Village",
         "category": "nails",
         "address": "Greenwood Village",
+        "sourceUrl": "https://www.instagram.com/nailscentennial/",
         "source": "google",
         "instagram": "https://www.instagram.com/nailscentennial/"
       },
@@ -401,10 +629,29 @@
         "city": "Greenwood Village",
         "category": "nails",
         "address": "Greenwood Village",
+        "sourceUrl": "https://www.instagram.com/nailscentennial/",
         "source": "instagram",
         "instagram": "https://www.instagram.com/nailscentennial/"
       }
     },
+    "evidence": [
+      {
+        "name": "Centennial Nails",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "address": "Greenwood Village",
+        "source": "google",
+        "instagram": "https://www.instagram.com/nailscentennial/"
+      },
+      {
+        "name": "Centennial Nails",
+        "city": "Greenwood Village",
+        "category": "nails",
+        "address": "Greenwood Village",
+        "source": "instagram",
+        "instagram": "https://www.instagram.com/nailscentennial/"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/nailscentennial/"
     },
@@ -415,7 +662,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
     "id": "df443af793feb45e90444e536eceb7b0",
@@ -428,6 +675,7 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
         "source": "google",
         "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
       },
@@ -436,10 +684,29 @@
         "city": "DTC",
         "category": "nails",
         "address": "DTC",
+        "sourceUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
         "source": "booking",
         "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
       }
     },
+    "evidence": [
+      {
+        "name": "Solera Salon Suites",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "google",
+        "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
+      },
+      {
+        "name": "Solera Salon Suites",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "source": "booking",
+        "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
+      }
+    ],
     "canonical": {
       "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
     },
@@ -450,10 +717,10 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
-    "id": "304e74643ce1a61d9a5e49d6dbb2162e",
+    "id": "8486ec4f1c2091340b9c77b3acdae229",
     "name": "skynailsandlash",
     "city": "Denver",
     "sources": {
@@ -464,6 +731,14 @@
         "source": "instagram"
       }
     },
+    "evidence": [
+      {
+        "name": "skynailsandlash",
+        "city": "denver\"",
+        "instagram": "https://www.instagram.com/skynailsandlash/",
+        "source": "instagram"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/skynailsandlash/"
     },
@@ -474,10 +749,10 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.976Z"
   },
   {
-    "id": "a653114e70b8eb223a38fd3bec9baed8",
+    "id": "20f6ab6cc496ec7d153f52a7a5ebe919",
     "name": "washparknails",
     "city": "Denver",
     "sources": {
@@ -488,6 +763,14 @@
         "source": "instagram"
       }
     },
+    "evidence": [
+      {
+        "name": "washparknails",
+        "city": "denver\"",
+        "instagram": "https://www.instagram.com/washparknails/",
+        "source": "instagram"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/washparknails/"
     },
@@ -498,10 +781,10 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
-    "id": "1c273f9ad1030dca8be818543e45357e",
+    "id": "0718c14106e18ee8c23eed2087ac91f5",
     "name": "fancynailspadenver",
     "city": "Denver",
     "sources": {
@@ -512,6 +795,14 @@
         "source": "instagram"
       }
     },
+    "evidence": [
+      {
+        "name": "fancynailspadenver",
+        "city": "denver\"",
+        "instagram": "https://www.instagram.com/fancynailspadenver/",
+        "source": "instagram"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/fancynailspadenver/"
     },
@@ -522,10 +813,10 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
-    "id": "59eb2793b6a6e6c402117f3aede887b8",
+    "id": "73734f8ecf5bce1921462cf9a7505994",
     "name": "lavoguenailsandspa",
     "city": "Denver",
     "sources": {
@@ -536,6 +827,14 @@
         "source": "instagram"
       }
     },
+    "evidence": [
+      {
+        "name": "lavoguenailsandspa",
+        "city": "denver\"",
+        "instagram": "https://www.instagram.com/lavoguenailsandspa/",
+        "source": "instagram"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/lavoguenailsandspa/"
     },
@@ -546,10 +845,10 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.976Z"
   },
   {
-    "id": "3abe677cf8629c345c673862415ac0de",
+    "id": "2bb858085d77edcc51b28af82d11af9f",
     "name": "dekalashcherrycreek",
     "city": "lashes",
     "sources": {
@@ -560,6 +859,14 @@
         "source": "instagram"
       }
     },
+    "evidence": [
+      {
+        "name": "dekalashcherrycreek",
+        "city": "lashes\"",
+        "instagram": "https://www.instagram.com/dekalashcherrycreek/",
+        "source": "instagram"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/dekalashcherrycreek/"
     },
@@ -570,10 +877,10 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
-    "id": "2d874e912c4e18e793614c55cd4776f0",
+    "id": "442faa3545bd228bcdc8e108d6e1b893",
     "name": "dekalashes",
     "city": "lashes",
     "sources": {
@@ -584,6 +891,14 @@
         "source": "instagram"
       }
     },
+    "evidence": [
+      {
+        "name": "dekalashes",
+        "city": "lashes\"",
+        "instagram": "https://www.instagram.com/dekalashes/",
+        "source": "instagram"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/dekalashes/"
     },
@@ -594,10 +909,10 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
-    "id": "164453614577c8a4efea59f922c21c9e",
+    "id": "d45326963a8c9de9d481e8d277df2fa6",
     "name": "midnightlashandbeauty",
     "city": "lashes",
     "sources": {
@@ -608,6 +923,14 @@
         "source": "instagram"
       }
     },
+    "evidence": [
+      {
+        "name": "midnightlashandbeauty",
+        "city": "lashes\"",
+        "instagram": "https://www.instagram.com/midnightlashandbeauty/",
+        "source": "instagram"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/midnightlashandbeauty/"
     },
@@ -618,10 +941,10 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
-    "id": "9c10e9c63081d1da590e244f1598ae9d",
+    "id": "5f9358084fabd1438f67662bc3319e66",
     "name": "midnightlashesdenver",
     "city": "lashes",
     "sources": {
@@ -632,6 +955,14 @@
         "source": "instagram"
       }
     },
+    "evidence": [
+      {
+        "name": "midnightlashesdenver",
+        "city": "lashes\"",
+        "instagram": "https://www.instagram.com/midnightlashesdenver/",
+        "source": "instagram"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/midnightlashesdenver/"
     },
@@ -642,10 +973,10 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.976Z"
   },
   {
-    "id": "f7c5733db4c3194edc4f8e2380c65c3c",
+    "id": "7c3479f2cbe18af5cb21dcd68300ba3d",
     "name": "alexasluxelashes",
     "city": "lashes",
     "sources": {
@@ -656,6 +987,14 @@
         "source": "instagram"
       }
     },
+    "evidence": [
+      {
+        "name": "alexasluxelashes",
+        "city": "lashes\"",
+        "instagram": "https://www.instagram.com/alexasluxelashes/",
+        "source": "instagram"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/alexasluxelashes/"
     },
@@ -666,10 +1005,10 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
-    "id": "15838ed8c273e62b53624c26bb63105c",
+    "id": "a037df01b027a6f114b7a078de9ac0c2",
     "name": "lashologybeauty",
     "city": "lashes",
     "sources": {
@@ -680,6 +1019,14 @@
         "source": "instagram"
       }
     },
+    "evidence": [
+      {
+        "name": "lashologybeauty",
+        "city": "lashes\"",
+        "instagram": "https://www.instagram.com/lashologybeauty/",
+        "source": "instagram"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/lashologybeauty/"
     },
@@ -690,10 +1037,10 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.976Z"
   },
   {
-    "id": "28ebdb5248adfe55b9bb6f8cc9ea6312",
+    "id": "ceda19a2142b2a35e61bebed3af65b45",
     "name": "healingvibesesthetics",
     "city": "esthetician",
     "sources": {
@@ -704,6 +1051,14 @@
         "source": "instagram"
       }
     },
+    "evidence": [
+      {
+        "name": "healingvibesesthetics",
+        "city": "esthetician\"",
+        "instagram": "https://www.instagram.com/healingvibesesthetics/",
+        "source": "instagram"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/healingvibesesthetics/"
     },
@@ -714,10 +1069,10 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   },
   {
-    "id": "570300cc54562f335a3dbfb17d37fc95",
+    "id": "4c5f81cfd2b78ac9b4095580626e68df",
     "name": "sesenskinbodywellness",
     "city": "esthetician",
     "sources": {
@@ -728,6 +1083,14 @@
         "source": "instagram"
       }
     },
+    "evidence": [
+      {
+        "name": "sesenskinbodywellness",
+        "city": "esthetician\"",
+        "instagram": "https://www.instagram.com/sesenskinbodywellness/",
+        "source": "instagram"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/sesenskinbodywellness/"
     },
@@ -738,11 +1101,11 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.976Z"
   },
   {
-    "id": "c0e3c24519617f6e0f0760c8ebc4cc22",
-    "name": "lashboutique_co",
+    "id": "1cd9504ba50897cc4ef6f0f4de7b69d2",
+    "name": "lashboutique co",
     "city": "lashes",
     "sources": {
       "instagram": {
@@ -752,6 +1115,14 @@
         "source": "instagram"
       }
     },
+    "evidence": [
+      {
+        "name": "lashboutique co",
+        "city": "lashes\"",
+        "instagram": "https://www.instagram.com/lashboutique_co/",
+        "source": "instagram"
+      }
+    ],
     "canonical": {
       "instagram": "https://www.instagram.com/lashboutique_co/"
     },
@@ -762,6 +1133,216 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
+  },
+  {
+    "id": "18020a6fc7995d7b6518f614f5f8b267",
+    "name": "pearlstreetnailsheadspaandhair",
+    "city": "Denver",
+    "sources": {
+      "instagram": {
+        "name": "pearlstreetnailsheadspaandhair",
+        "city": "denver\"",
+        "instagram": "https://www.instagram.com/pearlstreetnailsheadspaandhair/",
+        "source": "instagram"
+      }
+    },
+    "evidence": [
+      {
+        "name": "pearlstreetnailsheadspaandhair",
+        "city": "denver\"",
+        "instagram": "https://www.instagram.com/pearlstreetnailsheadspaandhair/",
+        "source": "instagram"
+      }
+    ],
+    "canonical": {
+      "instagram": "https://www.instagram.com/pearlstreetnailsheadspaandhair/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
+  },
+  {
+    "id": "b3d96a4fa44ca4da1b325d3e55c5371d",
+    "name": "aesthetics by design cofps",
+    "city": "esthetician",
+    "sources": {
+      "instagram": {
+        "name": "aesthetics by design cofps",
+        "city": "esthetician\"",
+        "instagram": "https://www.instagram.com/aesthetics_by_design_cofps/",
+        "source": "instagram"
+      }
+    },
+    "evidence": [
+      {
+        "name": "aesthetics by design cofps",
+        "city": "esthetician\"",
+        "instagram": "https://www.instagram.com/aesthetics_by_design_cofps/",
+        "source": "instagram"
+      }
+    ],
+    "canonical": {
+      "instagram": "https://www.instagram.com/aesthetics_by_design_cofps/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
+  },
+  {
+    "id": "001aab32b8325b8bf0e0f75f33e2c10e",
+    "name": "Denver Hair Salon",
+    "city": "glendale",
+    "sources": {
+      "booking": {
+        "name": "Denver Hair Salon",
+        "city": "glendale",
+        "booking": "https://denverhairsalon.glossgenius.com/",
+        "source": "booking",
+        "address": "4340 E Kentucky Ave Suite 129, Glendale, CO",
+        "phone": "+17206607769",
+        "instagram": "https://www.instagram.com/denverhairsalon",
+        "website": "https://yelp.com/biz/denver-hair-salon-glendale",
+        "evidenceType": "direct_operator",
+        "sourceUrl": "https://denverhairsalon.glossgenius.com",
+        "extractedFromUrl": "https://denverhairsalon.glossgenius.com/"
+      }
+    },
+    "evidence": [
+      {
+        "name": "Denver Hair Salon",
+        "city": "glendale",
+        "booking": "https://denverhairsalon.glossgenius.com/",
+        "source": "booking",
+        "address": "4340 E Kentucky Ave Suite 129, Glendale, CO",
+        "phone": "+17206607769",
+        "instagram": "https://www.instagram.com/denverhairsalon",
+        "website": "https://yelp.com/biz/denver-hair-salon-glendale",
+        "evidenceType": "direct_operator",
+        "sourceUrl": "https://denverhairsalon.glossgenius.com",
+        "extractedFromUrl": "https://denverhairsalon.glossgenius.com/"
+      }
+    ],
+    "canonical": {
+      "booking": "https://denverhairsalon.glossgenius.com/",
+      "instagram": "https://www.instagram.com/denverhairsalon",
+      "website": "https://yelp.com/biz/denver-hair-salon-glendale",
+      "phone": "+17206607769"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "valid",
+      "websiteStatus": "valid"
+    },
+    "status": "hot",
+    "confidenceScore": 6,
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
+  },
+  {
+    "id": "6224ebfea80da80bcb339bfc77b20461",
+    "name": "sbmadenver",
+    "city": "esthetician",
+    "sources": {
+      "instagram": {
+        "name": "sbmadenver",
+        "city": "esthetician\"",
+        "instagram": "https://www.instagram.com/sbmadenver/",
+        "source": "instagram"
+      }
+    },
+    "evidence": [
+      {
+        "name": "sbmadenver",
+        "city": "esthetician\"",
+        "instagram": "https://www.instagram.com/sbmadenver/",
+        "source": "instagram"
+      }
+    ],
+    "canonical": {
+      "instagram": "https://www.instagram.com/sbmadenver/"
+    },
+    "validation": {
+      "instagramStatus": "valid",
+      "bookingStatus": "missing",
+      "websiteStatus": "missing"
+    },
+    "status": "shelved",
+    "confidenceScore": 2,
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
+  },
+  {
+    "id": "93c248735704963e16ec79423c53d8a3",
+    "name": "Order Solera Salon eGift Cards",
+    "city": "DTC",
+    "category": "nails",
+    "sources": {
+      "google": {
+        "name": "Order Solera Salon eGift Cards",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "sourceUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
+        "source": "google",
+        "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
+        "evidenceType": "website",
+        "extractedFromUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
+      },
+      "booking": {
+        "name": "Order Solera Salon eGift Cards",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "sourceUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
+        "source": "booking",
+        "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
+        "evidenceType": "website",
+        "extractedFromUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
+      }
+    },
+    "evidence": [
+      {
+        "name": "Order Solera Salon eGift Cards",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "sourceUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
+        "source": "google",
+        "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
+        "evidenceType": "website",
+        "extractedFromUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
+      },
+      {
+        "name": "Order Solera Salon eGift Cards",
+        "city": "DTC",
+        "category": "nails",
+        "address": "DTC",
+        "sourceUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
+        "source": "booking",
+        "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
+        "evidenceType": "website",
+        "extractedFromUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
+      }
+    ],
+    "canonical": {
+      "booking": "https://squareup.com/gift/Y6Z819M68JE0Z/order"
+    },
+    "validation": {
+      "instagramStatus": "missing",
+      "bookingStatus": "valid",
+      "websiteStatus": "missing"
+    },
+    "status": "hot",
+    "confidenceScore": 3,
+    "lastUpdatedAt": "2026-04-06T14:31:45.977Z"
   }
 ]

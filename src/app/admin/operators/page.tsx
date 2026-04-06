@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { OperatorRecord } from "@/lib/operators/types";
 import { getOutreachEligibility } from "@/lib/operators/outreach-eligibility";
+import { buildOperatorQualitySummary } from "@/lib/operators/quality-summary";
 import OperatorOutreachPanel from "@/components/admin/operators/OperatorOutreachPanel";
 
 function loadOperators(): OperatorRecord[] {
@@ -22,8 +23,22 @@ export default function OperatorsPage() {
       if (a.op.confidenceScore !== b.op.confidenceScore) return b.op.confidenceScore - a.op.confidenceScore;
       return (a.op.name || "").localeCompare(b.op.name || "");
     });
+  const quality = buildOperatorQualitySummary(operators.map((row) => row.op));
   const hot = operators.filter(({ op }) => op.status === "hot");
   const shelved = operators.filter(({ op }) => op.status === "shelved");
+
+  const evidenceCount = (op: OperatorRecord) => (Array.isArray(op.evidence) && op.evidence.length > 0 ? op.evidence.length : 0);
+  const sourceTypeLabel = (op: OperatorRecord) => {
+    const tags = new Set<string>();
+    if (op.sources.google) tags.add("google");
+    if (op.sources.instagram) tags.add("instagram");
+    if (op.sources.booking) tags.add("booking");
+    for (const row of op.evidence || []) {
+      if (row.evidenceType === "directory_listing") tags.add("directory");
+      if (row.evidenceType === "suite_container") tags.add("container");
+    }
+    return [...tags].join(" / ");
+  };
 
   return (
     <div style={{ padding: 24 }}>
@@ -31,6 +46,47 @@ export default function OperatorsPage() {
       <div style={{ marginTop: 12 }}>
         <strong>Total:</strong> {operators.length} | <strong>Hot:</strong> {hot.length} | <strong>Shelved:</strong>{" "}
         {shelved.length}
+      </div>
+      <div
+        style={{
+          marginTop: 10,
+          fontSize: 13,
+          color: "#333",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "10px 16px",
+        }}
+      >
+        <span>
+          <strong>Total:</strong> {quality.totalOperators}
+        </span>
+        <span>
+          <strong>Hot:</strong> {quality.hotCount}
+        </span>
+        <span>
+          <strong>Shelved:</strong> {quality.shelvedCount}
+        </span>
+        <span>
+          <strong>With IG:</strong> {quality.withInstagramCount}
+        </span>
+        <span>
+          <strong>With Booking:</strong> {quality.withBookingCount}
+        </span>
+        <span>
+          <strong>IG + Booking:</strong> {quality.withInstagramAndBookingCount}
+        </span>
+        <span>
+          <strong>Directory evidence:</strong> {quality.withDirectoryEvidenceCount}
+        </span>
+        <span>
+          <strong>Container evidence:</strong> {quality.withContainerEvidenceCount}
+        </span>
+        <span>
+          <strong>Unknown names:</strong> {quality.unknownNameCount}
+        </span>
+        <span>
+          <strong>Suspicious cities:</strong> {quality.suspiciousCityCount}
+        </span>
       </div>
 
       <table
@@ -51,6 +107,8 @@ export default function OperatorsPage() {
             <th>Channel</th>
             <th>Outreach</th>
             <th>Reason</th>
+            <th>Evidence</th>
+            <th>Source Types</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -86,6 +144,8 @@ export default function OperatorsPage() {
               <td>{outreach.preferredChannel}</td>
               <td>{outreach.eligible ? "ready" : "blocked"}</td>
               <td>{outreach.reason}</td>
+              <td>{evidenceCount(op)}</td>
+              <td style={{ fontSize: 12, color: "#555" }}>{sourceTypeLabel(op)}</td>
               <td>
                 {outreach.eligible ? <OperatorOutreachPanel operatorId={op.id} /> : <span style={{ color: "#888" }}>not ready</span>}
               </td>

@@ -10,7 +10,7 @@
     "Englewood"
   ],
   "queryCount": 30,
-  "generatedAt": "2026-04-06T13:14:26.609Z",
+  "generatedAt": "2026-04-06T14:31:56.637Z",
   "queries": [
     {
       "query": "site:instagram.com \"nails\" \"DTC\"",
@@ -702,6 +702,11 @@
       },
       "results": [
         {
+          "title": "Solar Nails",
+          "url": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+          "snippet": "9625 E Arapahoe Rd # J, Greenwood Village, CO 80112, USA"
+        },
+        {
           "title": "Sola Salons",
           "url": "https://www.instagram.com/soladenver/",
           "snippet": "6001 S Willow Dr, Greenwood Village, CO 80111, USA"
@@ -715,11 +720,6 @@
           "title": "The Nest Nail Spa DTC",
           "url": "https://www.instagram.com/thenestnailspa/",
           "snippet": "4950 S Newport St, Denver, CO 80237, USA"
-        },
-        {
-          "title": "Purluxe Beauty Bar DTC",
-          "url": "https://www.instagram.com/purluxebeautybar/",
-          "snippet": "4822 S Newport St, Denver, CO 80237, USA"
         },
         {
           "title": "Solera Salon Suites",

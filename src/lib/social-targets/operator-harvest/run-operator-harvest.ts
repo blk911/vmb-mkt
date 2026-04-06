@@ -7,6 +7,7 @@ import { ingestBookingFromGoogle } from "@/lib/operators/ingest-booking";
 import { runMergePipeline } from "@/lib/operators/run-merge";
 import { runAcquisition } from "@/lib/operators/run-acquisition";
 import { classifyPage } from "@/lib/operators/page-classifier";
+import { writeOperatorQualitySummaryArtifact } from "@/lib/operators/quality-summary";
 import type { SourceRecord } from "@/lib/operators/types";
 import type {
   HarvestPlatform,
@@ -210,7 +211,8 @@ export async function runOperatorHarvest(input: OperatorHarvestRunInput): Promis
   const allSourceRecords: SourceRecord[] = [...googleSourceRecords, ...igRecords, ...bookingRecords];
   const acquisitionCandidates = allSourceRecords.filter(isAcquisitionCandidate);
   const acquisitionOutput = await runAcquisition(acquisitionCandidates);
-  await runMergePipeline([...allSourceRecords, ...acquisitionOutput.enrichedRecords]);
+  const merged = await runMergePipeline([...allSourceRecords, ...acquisitionOutput.enrichedRecords]);
+  await writeOperatorQualitySummaryArtifact(merged);
   const summary = summarize(resultSet, ranked);
 
   await writeJsonFilePretty(RAW_ARTIFACT, {

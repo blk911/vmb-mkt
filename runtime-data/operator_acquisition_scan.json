@@ -1,0 +1,39 @@
+{
+  "generatedAt": "2026-04-06T14:31:45.974Z",
+  "totalCandidates": 3,
+  "scannedPages": 3,
+  "scans": [
+    {
+      "sourceUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
+      "classifiedType": "website",
+      "originalName": "Solera Salon Suites",
+      "originalCity": "DTC",
+      "extractedName": "Order Solera Salon eGift Cards",
+      "extractedCity": "DTC",
+      "extractedBooking": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
+      "statusCode": 200
+    },
+    {
+      "sourceUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
+      "classifiedType": "website",
+      "originalName": "Solera Salon Suites",
+      "originalCity": "DTC",
+      "extractedName": "Order Solera Salon eGift Cards",
+      "extractedCity": "DTC",
+      "extractedBooking": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
+      "statusCode": 200
+    },
+    {
+      "sourceUrl": "https://denverhairsalon.glossgenius.com",
+      "classifiedType": "direct_operator",
+      "originalName": "unknown",
+      "originalCity": "hair",
+      "extractedName": "Denver Hair Salon",
+      "extractedCity": "glendale",
+      "extractedInstagram": "https://www.instagram.com/denverhairsalon",
+      "extractedBooking": "https://denverhairsalon.glossgenius.com/",
+      "extractedWebsite": "https://yelp.com/biz/denver-hair-salon-glendale",
+      "statusCode": 200
+    }
+  ]
+}

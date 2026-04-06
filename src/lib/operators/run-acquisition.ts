@@ -9,6 +9,8 @@ const ACQUISITION_SCAN_ARTIFACT = "runtime-data/operator_acquisition_scan.json";
 export type AcquisitionScanRow = {
   sourceUrl: string;
   classifiedType: PageClassification;
+  originalName?: string;
+  originalCity?: string;
   extractedName?: string;
   extractedCity?: string;
   extractedInstagram?: string;
@@ -80,6 +82,8 @@ export async function runAcquisition(candidates: SourceRecord[]): Promise<Acquis
     scanRows.push({
       sourceUrl: candidateUrl,
       classifiedType: finalClassification,
+      originalName: candidate.name,
+      originalCity: candidate.city,
       extractedName: enriched.name,
       extractedCity: enriched.city,
       extractedInstagram: enriched.instagram,
