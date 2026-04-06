@@ -30,7 +30,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "7a5df9c6bed8ec0352d152aa738df9c5",
@@ -65,7 +65,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "6bc76787f8b02790cf7e1c3ea7223f0c",
@@ -100,7 +100,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "7caafd5f510b50854f02c010787cdbaf",
@@ -135,7 +135,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "f1925c51f7fedd1d88d66378f1abce82",
@@ -170,7 +170,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "dda6ced8028e80934215eb869d03abef",
@@ -205,7 +205,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "83a9f5b69e0723308ffc44ef6455df30",
@@ -240,7 +240,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "2f7203254d32034cfce9a1a48774d257",
@@ -275,7 +275,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "8e995f03076d3b8ad871944d22cc9e78",
@@ -310,11 +310,11 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
-    "id": "1700bbb9d6a30b5c5589f73fb4a5b6b9",
-    "name": "Phenix Salon Suites - Tamarac",
+    "id": "a2197dc3ce007574b759f4c994d43226",
+    "name": "Phenix Salon Suites - Lone Tree",
     "city": "DTC",
     "category": "nails",
     "sources": {
@@ -345,7 +345,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "4ff8e9ee714ecdde3364d90267dbdead",
@@ -380,7 +380,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "4005e32959662b31ef0786825c9ced27",
@@ -415,7 +415,7 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "df443af793feb45e90444e536eceb7b0",
@@ -450,12 +450,12 @@
     },
     "status": "hot",
     "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "304e74643ce1a61d9a5e49d6dbb2162e",
     "name": "skynailsandlash",
-    "city": "denver\"",
+    "city": "Denver",
     "sources": {
       "instagram": {
         "name": "skynailsandlash",
@@ -474,12 +474,12 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "a653114e70b8eb223a38fd3bec9baed8",
     "name": "washparknails",
-    "city": "denver\"",
+    "city": "Denver",
     "sources": {
       "instagram": {
         "name": "washparknails",
@@ -498,12 +498,12 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "1c273f9ad1030dca8be818543e45357e",
     "name": "fancynailspadenver",
-    "city": "denver\"",
+    "city": "Denver",
     "sources": {
       "instagram": {
         "name": "fancynailspadenver",
@@ -522,12 +522,12 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "59eb2793b6a6e6c402117f3aede887b8",
     "name": "lavoguenailsandspa",
-    "city": "denver\"",
+    "city": "Denver",
     "sources": {
       "instagram": {
         "name": "lavoguenailsandspa",
@@ -546,12 +546,12 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "3abe677cf8629c345c673862415ac0de",
     "name": "dekalashcherrycreek",
-    "city": "lashes\"",
+    "city": "lashes",
     "sources": {
       "instagram": {
         "name": "dekalashcherrycreek",
@@ -570,12 +570,12 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "2d874e912c4e18e793614c55cd4776f0",
     "name": "dekalashes",
-    "city": "lashes\"",
+    "city": "lashes",
     "sources": {
       "instagram": {
         "name": "dekalashes",
@@ -594,12 +594,12 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "164453614577c8a4efea59f922c21c9e",
     "name": "midnightlashandbeauty",
-    "city": "lashes\"",
+    "city": "lashes",
     "sources": {
       "instagram": {
         "name": "midnightlashandbeauty",
@@ -618,12 +618,12 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "9c10e9c63081d1da590e244f1598ae9d",
     "name": "midnightlashesdenver",
-    "city": "lashes\"",
+    "city": "lashes",
     "sources": {
       "instagram": {
         "name": "midnightlashesdenver",
@@ -642,12 +642,12 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "f7c5733db4c3194edc4f8e2380c65c3c",
     "name": "alexasluxelashes",
-    "city": "lashes\"",
+    "city": "lashes",
     "sources": {
       "instagram": {
         "name": "alexasluxelashes",
@@ -666,12 +666,12 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "15838ed8c273e62b53624c26bb63105c",
     "name": "lashologybeauty",
-    "city": "lashes\"",
+    "city": "lashes",
     "sources": {
       "instagram": {
         "name": "lashologybeauty",
@@ -690,12 +690,12 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "28ebdb5248adfe55b9bb6f8cc9ea6312",
     "name": "healingvibesesthetics",
-    "city": "esthetician\"",
+    "city": "esthetician",
     "sources": {
       "instagram": {
         "name": "healingvibesesthetics",
@@ -714,12 +714,12 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "570300cc54562f335a3dbfb17d37fc95",
     "name": "sesenskinbodywellness",
-    "city": "esthetician\"",
+    "city": "esthetician",
     "sources": {
       "instagram": {
         "name": "sesenskinbodywellness",
@@ -738,39 +738,15 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
-  },
-  {
-    "id": "0da7730f8b093ab4a465a52dbe927fb7",
-    "name": "unknown",
-    "city": "hair",
-    "sources": {
-      "booking": {
-        "name": "unknown",
-        "city": "hair",
-        "booking": "https://denverhairsalon.glossgenius.com",
-        "source": "booking"
-      }
-    },
-    "canonical": {
-      "booking": "https://denverhairsalon.glossgenius.com"
-    },
-    "validation": {
-      "instagramStatus": "missing",
-      "bookingStatus": "valid",
-      "websiteStatus": "missing"
-    },
-    "status": "hot",
-    "confidenceScore": 3,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   },
   {
     "id": "c0e3c24519617f6e0f0760c8ebc4cc22",
     "name": "lashboutique_co",
-    "city": "lashes\"",
+    "city": "lashes",
     "sources": {
       "instagram": {
-        "name": "lashboutique_co",
+        "name": "lashboutique co",
         "city": "lashes\"",
         "instagram": "https://www.instagram.com/lashboutique_co/",
         "source": "instagram"
@@ -786,6 +762,6 @@
     },
     "status": "shelved",
     "confidenceScore": 2,
-    "lastUpdatedAt": "2026-04-06T12:35:58.884Z"
+    "lastUpdatedAt": "2026-04-06T13:14:21.550Z"
   }
 ]

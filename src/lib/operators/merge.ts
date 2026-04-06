@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import type { OperatorRecord, SourceRecord } from "./types";
+import { normalizeCity, normalizeName } from "./normalize";
 
 function normalize(str?: string) {
   return (str || "").toLowerCase().replace(/\s+/g, "").trim();
@@ -28,8 +29,8 @@ export function mergeSources(sources: SourceRecord[]): OperatorRecord[] {
       const id = generateId(src.name || "unknown", src.city);
       existing = {
         id,
-        name: src.name || "unknown",
-        city: src.city,
+        name: normalizeName(src.name) || "unknown",
+        city: normalizeCity(src.city),
         category: src.category,
         sources: {},
         canonical: {},

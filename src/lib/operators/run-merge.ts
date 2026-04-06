@@ -6,6 +6,7 @@ import { assignStatus } from "./status";
 import { loadMaster, saveMaster } from "./master-store";
 import { getOutreachTargets } from "./outreach";
 import type { SourceRecord, OperatorRecord } from "./types";
+import { normalizeName } from "./normalize";
 
 export async function runMergePipeline(allSources: SourceRecord[]) {
   const existing = loadMaster();
@@ -13,8 +14,14 @@ export async function runMergePipeline(allSources: SourceRecord[]) {
     return [op.sources.google, op.sources.instagram, op.sources.booking].filter(Boolean) as SourceRecord[];
   });
   const combinedSources = [...existingSources, ...allSources];
+  const filteredSources = combinedSources.filter((s) => {
+    if (!s.name) return false;
+    if (s.name.toLowerCase() === "unknown") return false;
+    if (!normalizeName(s.name)) return false;
+    return true;
+  });
   console.log("STEP 1: merging sources...");
-  const merged: OperatorRecord[] = mergeSources(combinedSources);
+  const merged: OperatorRecord[] = mergeSources(filteredSources);
   console.log("STEP 2: validating...");
   for (const op of merged) {
     op.validation.instagramStatus = await validateInstagram(op.canonical.instagram);

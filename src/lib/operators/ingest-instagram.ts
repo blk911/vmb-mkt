@@ -18,8 +18,12 @@ export async function ingestInstagramFromGoogle(query: string): Promise<SourceRe
 }
 
 function extractNameFromIG(url: string): string {
-  const parts = url.split("/");
-  return parts[3] || "unknown";
+  const handle = url.split("/")[3];
+  if (!handle) return "unknown";
+  return handle
+    .replace(/[._]/g, " ")
+    .replace(/\d+/g, "")
+    .trim();
 }
 
 function extractCityFromQuery(query: string): string {
