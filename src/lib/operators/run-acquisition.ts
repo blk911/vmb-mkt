@@ -80,6 +80,12 @@ export async function runAcquisition(
       childQuerySeeds: extracted.childQuerySeeds || candidate.childQuerySeeds,
       sourceUrl: candidateUrl,
       extractedFromUrl: fetched.finalUrl || candidateUrl,
+      raw: candidate.raw,
+      extracted: {
+        ...(candidate.extracted && typeof candidate.extracted === "object" ? (candidate.extracted as Record<string, unknown>) : {}),
+        parserUsed: extracted.parserUsed,
+        internalDetailLinks: extracted.internalDetailLinks,
+      },
     };
 
     enrichedRecords.push(enriched);

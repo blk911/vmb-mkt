@@ -9,19 +9,19 @@
     "Lone Tree",
     "Englewood"
   ],
-  "generatedAt": "2026-04-07T13:16:32.842Z",
+  "generatedAt": "2026-04-07T16:54:15.762Z",
   "totalRawResults": 150,
-  "totalUniqueProspects": 12,
-  "withInstagram": 11,
+  "totalUniqueProspects": 13,
+  "withInstagram": 12,
   "withBooking": 1,
   "dmReadyCount": 8,
   "operatorCount": 0,
   "salonCount": 7,
-  "ambiguousCount": 5,
+  "ambiguousCount": 6,
   "topGeoHints": [
     {
       "value": "dtc",
-      "count": 20
+      "count": 22
     },
     {
       "value": "greenwood village",
@@ -29,7 +29,7 @@
     },
     {
       "value": "denver",
-      "count": 3
+      "count": 4
     },
     {
       "value": "centennial",
@@ -42,11 +42,11 @@
   ],
   "topServiceHints": [
     {
-      "value": "nails",
-      "count": 9
+      "value": "nail tech",
+      "count": 10
     },
     {
-      "value": "nail tech",
+      "value": "nails",
       "count": 9
     },
     {
@@ -323,10 +323,9 @@
         "instagram"
       ],
       "sourceQueries": [
-        "site:glossgenius.com nail tech Greenwood Village",
+        "site:vagaro.com nail tech Greenwood Village",
         "site:styleseat.com nail tech Greenwood Village",
-        "site:booksy.com nail tech Greenwood Village",
-        "site:fresha.com nail tech Greenwood Village"
+        "site:booksy.com nail tech Greenwood Village"
       ],
       "candidateType": "salon",
       "confidence": "medium",
@@ -406,6 +405,32 @@
       ],
       "sourceQueries": [
         "Phenix nails DTC"
+      ],
+      "candidateType": "ambiguous",
+      "confidence": "medium",
+      "dmReady": false
+    },
+    {
+      "id": "hp-16nk9ep",
+      "name": "the MODERN SalonStudios",
+      "handle": "the.modern.salonstudios",
+      "primaryPlatform": "instagram",
+      "profileUrl": "https://www.instagram.com/the.modern.salonstudios/",
+      "instagramUrl": "https://www.instagram.com/the.modern.salonstudios/",
+      "locationLabel": "DTC",
+      "geoHints": [
+        "DTC",
+        "denver",
+        "dtc"
+      ],
+      "serviceHints": [
+        "nail tech"
+      ],
+      "sourcePlatforms": [
+        "instagram"
+      ],
+      "sourceQueries": [
+        "salon suites nail tech DTC"
       ],
       "candidateType": "ambiguous",
       "confidence": "medium",

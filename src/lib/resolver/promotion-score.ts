@@ -1,4 +1,5 @@
 import type { ResolverOperator } from "./types";
+import { classifyPromotionLane } from "./promotion-lanes";
 
 function isStrongName(name?: string): boolean {
   const value = (name || "").trim();
@@ -48,6 +49,21 @@ export function scorePromotionCandidate(operator: ResolverOperator): { score: nu
   if (operator.sources.length >= 2) {
     score += 10;
     reasons.push("multi_evidence");
+  }
+
+  const lane = classifyPromotionLane(operator);
+  if (lane === "website_backed") {
+    score += 35;
+    reasons.push("lane_website_backed");
+  } else if (lane === "directory_backed") {
+    score += 30;
+    reasons.push("lane_directory_backed");
+  } else if (lane === "container_adjacent") {
+    score += 18;
+    reasons.push("lane_container_adjacent");
+  } else {
+    score += 8;
+    reasons.push("lane_identity_only");
   }
 
   return { score, reasons };

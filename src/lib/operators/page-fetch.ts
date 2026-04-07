@@ -5,6 +5,11 @@ export type FetchedPage = {
   contentType: string;
 };
 
+export type FetchCandidatePageOptions = {
+  timeoutMs?: number;
+  referrer?: string;
+};
+
 const SUPPORTED_DOMAIN_HINTS = [
   "instagram.com",
   "yelp.com",
@@ -36,7 +41,14 @@ function hostIsSupported(hostname: string): boolean {
   return !host.includes("google.");
 }
 
-export async function fetchCandidatePage(url: string, timeoutMs = 12000): Promise<FetchedPage> {
+function normalizeFetchOptions(input?: number | FetchCandidatePageOptions): FetchCandidatePageOptions {
+  if (typeof input === "number") return { timeoutMs: input };
+  return input || {};
+}
+
+export async function fetchCandidatePage(url: string, options?: number | FetchCandidatePageOptions): Promise<FetchedPage> {
+  const resolved = normalizeFetchOptions(options);
+  const timeoutMs = resolved.timeoutMs ?? 12000;
   const parsed = parseHttpUrl(url);
   if (!parsed || !hostIsSupported(parsed.hostname)) {
     return {
@@ -57,6 +69,7 @@ export async function fetchCandidatePage(url: string, timeoutMs = 12000): Promis
       headers: {
         "user-agent": "vmb-operator-acquisition/1.0",
         accept: "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
+        ...(resolved.referrer ? { referer: resolved.referrer } : {}),
       },
     });
 

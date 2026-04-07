@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-04-07T16:53:33.872Z",
+  "batchLimit": 50,
+  "laneCountsEnumeratedPool": {
+    "website_backed": 0,
+    "directory_backed": 414,
+    "container_adjacent": 68,
+    "identity_only": 1583
+  },
+  "laneCountsAttempted": {
+    "website_backed": 0,
+    "directory_backed": 17,
+    "container_adjacent": 14,
+    "identity_only": 19
+  },
+  "laneEvidenceAdded": {
+    "website_backed": 0,
+    "directory_backed": 0,
+    "container_adjacent": 40,
+    "identity_only": 0
+  },
+  "lanePromotedCounts": {
+    "website_backed": 0,
+    "directory_backed": 0,
+    "container_adjacent": 0,
+    "identity_only": 0
+  }
+}

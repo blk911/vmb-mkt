@@ -21,6 +21,7 @@ export function saveResolverSummary(input: {
   operators: ResolverOperator[];
 }): void {
   const { evidenceCount, operators } = input;
+  const childOperators = operators.filter((x) => !x.isContainer && Boolean(x.parentContainerId));
   const summary = {
     generatedAt: new Date().toISOString(),
     evidenceCount,
@@ -29,6 +30,11 @@ export function saveResolverSummary(input: {
     enrichedCount: operators.filter((x) => x.status === "enriched").length,
     enumeratedCount: operators.filter((x) => x.status === "enumerated").length,
     containerCount: operators.filter((x) => x.isContainer).length,
+    childOperatorCount: childOperators.length,
+    childWithBookingCount: childOperators.filter((x) => Boolean(x.canonicalBooking)).length,
+    childWithInstagramCount: childOperators.filter((x) => Boolean(x.canonicalInstagram)).length,
+    childWithWebsiteCount: childOperators.filter((x) => Boolean(x.canonicalWebsite)).length,
+    childWeakCount: childOperators.filter((x) => !x.canonicalBooking && !x.canonicalInstagram && !x.canonicalWebsite).length,
   };
   fs.writeFileSync(SUMMARY_PATH, `${JSON.stringify(summary, null, 2)}\n`);
 }

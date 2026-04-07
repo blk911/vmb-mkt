@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-04-07T13:12:47.827Z",
-  "totalCandidates": 9,
-  "scannedPages": 9,
+  "generatedAt": "2026-04-07T16:42:03.031Z",
+  "totalCandidates": 12,
+  "scannedPages": 12,
   "scans": [
     {
       "sourceUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
@@ -39,12 +39,27 @@
       "statusCode": 200
     },
     {
+      "sourceUrl": "https://www.vagaro.com/theblakedenver/book-now",
+      "classifiedType": "direct_operator",
+      "parserUsed": "vagaro",
+      "originalName": "theblakedenver",
+      "originalCity": "hair",
+      "extractedName": "Book A Service With The Blake Denver - Denver CO | Vagaro",
+      "extractedCity": "hair",
+      "extractedInstagram": "https://www.instagram.com/vagaropro/",
+      "extractedBooking": "https://www.vagaro.com/theblakedenver/book-now",
+      "extractedWebsite": "javascript:void(0)",
+      "hasDirectSurface": true,
+      "statusCode": 200
+    },
+    {
       "sourceUrl": "https://www.yelp.com/biz/pamper-nails-castle-rock-3",
       "classifiedType": "directory_listing",
       "originalName": "Pamper Nails & Lashes",
-      "extractedName": "yelp.com",
-      "hasDirectSurface": false,
-      "statusCode": 403
+      "extractedName": "Business Photos",
+      "extractedWebsite": "https://www.yelp.com/biz/outlook-autumn-market-fundamental-catwalk-flimsy-roost-legibility-individualism-grocer-predestination-9",
+      "hasDirectSurface": true,
+      "statusCode": 200
     },
     {
       "sourceUrl": "https://www.yelp.com/biz/paradise-nails-and-lashes-castle-rock-4",
@@ -65,14 +80,35 @@
       "statusCode": 403
     },
     {
-      "sourceUrl": "https://www.yelp.com/biz/modern-nails-and-lash-golden",
+      "sourceUrl": "https://www.yelp.com/biz/solar-nails-greenwood-village",
       "classifiedType": "directory_listing",
-      "originalName": "Modern Nails & Lash",
+      "originalName": "Solar Nails",
+      "originalCity": "Greenwood Village",
+      "extractedName": "Business Photos",
+      "extractedCity": "Greenwood Village",
+      "extractedWebsite": "https://www.yelp.com/biz/outlook-autumn-market-fundamental-catwalk-flimsy-roost-legibility-individualism-grocer-predestination-1",
+      "hasDirectSurface": true,
+      "statusCode": 200
+    },
+    {
+      "sourceUrl": "https://www.yelp.com/biz/icon-nails-and-spa-denver",
+      "classifiedType": "directory_listing",
+      "originalName": "ICON Nails and Spa",
       "originalCity": "Denver",
-      "extractedName": "Modern Nails &amp; Lash - Golden, CO",
+      "extractedName": "yelp.com",
       "extractedCity": "Denver",
       "hasDirectSurface": false,
-      "statusCode": 200
+      "statusCode": 403
+    },
+    {
+      "sourceUrl": "https://www.yelp.com/biz/la-vogue-nails-and-spa-denver-3",
+      "classifiedType": "directory_listing",
+      "originalName": "La Vogue Nail & Spa Denver",
+      "originalCity": "Denver",
+      "extractedName": "yelp.com",
+      "extractedCity": "Denver",
+      "hasDirectSurface": false,
+      "statusCode": 403
     },
     {
       "sourceUrl": "https://www.solasalonstudios.com/locations/parker-chambers",
