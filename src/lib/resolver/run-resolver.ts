@@ -130,9 +130,20 @@ function assignStatus(op: ResolverOperator): ResolverOperator["status"] {
   if (op.isContainer) return "shelved";
   const hasBooking = Boolean(op.canonicalBooking);
   const hasStrongIG = Boolean(op.canonicalInstagram && op.canonicalName && op.canonicalCity);
+  const hasPromotionDirectEvidence = op.sources.some((row) => {
+    const fromPromotion =
+      row.raw && typeof row.raw === "object" && "from" in (row.raw as Record<string, unknown>)
+        ? (row.raw as Record<string, unknown>).from === "promotion"
+        : false;
+    if (!fromPromotion) return false;
+    return Boolean(row.booking || row.instagram || row.website);
+  });
   if (hasBooking || hasStrongIG) return "hot";
+  if (hasPromotionDirectEvidence && op.canonicalBooking) return "hot";
+  if (hasPromotionDirectEvidence && op.canonicalInstagram && op.canonicalName && op.canonicalCity) return "hot";
   const hasIdentity = Boolean(op.canonicalName && (op.canonicalCity || op.canonicalAddress));
   if (hasIdentity && (op.canonicalWebsite || op.canonicalPhone || op.sources.length >= 3)) return "enriched";
+  if (hasPromotionDirectEvidence && hasIdentity && op.canonicalWebsite) return "enriched";
   return "enumerated";
 }
 

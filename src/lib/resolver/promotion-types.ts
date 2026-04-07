@@ -19,6 +19,10 @@ export type PromotionResult = {
 export type PromotionSummary = {
   attemptedOperators: number;
   evidenceAdded: number;
+  extractedEvidenceAdded: number;
+  operatorsWithNewBooking: number;
+  operatorsWithNewInstagram: number;
+  operatorsWithNewWebsite: number;
   promotedToEnriched: number;
   promotedToHot: number;
   unchanged: number;

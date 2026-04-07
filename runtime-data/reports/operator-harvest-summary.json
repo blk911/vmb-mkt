@@ -9,7 +9,7 @@
     "Lone Tree",
     "Englewood"
   ],
-  "generatedAt": "2026-04-07T12:57:11.681Z",
+  "generatedAt": "2026-04-07T13:16:32.842Z",
   "totalRawResults": 150,
   "totalUniqueProspects": 12,
   "withInstagram": 11,
@@ -324,7 +324,9 @@
       ],
       "sourceQueries": [
         "site:glossgenius.com nail tech Greenwood Village",
-        "site:vagaro.com nail tech Greenwood Village"
+        "site:styleseat.com nail tech Greenwood Village",
+        "site:booksy.com nail tech Greenwood Village",
+        "site:fresha.com nail tech Greenwood Village"
       ],
       "candidateType": "salon",
       "confidence": "medium",

@@ -1,7 +1,11 @@
 {
-  "generatedAt": "2026-04-07T12:56:56.778Z",
+  "generatedAt": "2026-04-07T13:16:13.900Z",
   "attemptedOperators": 50,
-  "evidenceAdded": 645,
+  "evidenceAdded": 0,
+  "extractedEvidenceAdded": 0,
+  "operatorsWithNewBooking": 0,
+  "operatorsWithNewInstagram": 0,
+  "operatorsWithNewWebsite": 0,
   "promotedToEnriched": 0,
   "promotedToHot": 0,
   "unchanged": 50

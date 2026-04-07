@@ -17,6 +17,7 @@ export type AcquisitionScanRow = {
   extractedInstagram?: string;
   extractedBooking?: string;
   extractedWebsite?: string;
+  hasDirectSurface?: boolean;
   childQuerySeeds?: string[];
   statusCode: number;
 };
@@ -45,9 +46,13 @@ function sourceFromEvidenceType(evidenceType: PageClassification, fallback: Sour
   return fallback;
 }
 
-export async function runAcquisition(candidates: SourceRecord[]): Promise<AcquisitionRunOutput> {
+export async function runAcquisition(
+  candidates: SourceRecord[],
+  opts?: { artifactPath?: string }
+): Promise<AcquisitionRunOutput> {
   const enrichedRecords: SourceRecord[] = [];
   const scanRows: AcquisitionScanRow[] = [];
+  const artifactPath = opts?.artifactPath || ACQUISITION_SCAN_ARTIFACT;
 
   for (const candidate of candidates) {
     const candidateUrl = getCandidateUrl(candidate);
@@ -89,12 +94,13 @@ export async function runAcquisition(candidates: SourceRecord[]): Promise<Acquis
       extractedInstagram: enriched.instagram,
       extractedBooking: enriched.booking,
       extractedWebsite: enriched.website,
+      hasDirectSurface: Boolean(enriched.instagram || enriched.booking || enriched.website),
       childQuerySeeds: enriched.childQuerySeeds,
       statusCode: fetched.statusCode,
     });
   }
 
-  await writeJsonFilePretty(ACQUISITION_SCAN_ARTIFACT, {
+  await writeJsonFilePretty(artifactPath, {
     generatedAt: new Date().toISOString(),
     totalCandidates: candidates.length,
     scannedPages: scanRows.length,
@@ -104,7 +110,7 @@ export async function runAcquisition(candidates: SourceRecord[]): Promise<Acquis
   return {
     enrichedRecords,
     scanRows,
-    artifactPath: ACQUISITION_SCAN_ARTIFACT,
+    artifactPath,
   };
 }
 

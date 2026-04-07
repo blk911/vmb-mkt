@@ -1,0 +1,190 @@
+{
+  "generatedAt": "2026-04-07T13:15:31.255Z",
+  "totalCandidates": 201,
+  "scannedPages": 18,
+  "scans": [
+    {
+      "sourceUrl": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+      "classifiedType": "directory_listing",
+      "originalName": "AV Nail Bar (formerly B&T Nails)",
+      "originalCity": "Greenwood Village",
+      "extractedName": "Lotus Nail Bar - Centennial, CO",
+      "extractedCity": "Greenwood Village",
+      "hasDirectSurface": false,
+      "statusCode": 200
+    },
+    {
+      "sourceUrl": "https://www.yelp.com/biz/b-and-t-nails-greenwood-village",
+      "classifiedType": "directory_listing",
+      "originalName": "AV Nail Bar (formerly B&T Nails)",
+      "originalCity": "Greenwood Village",
+      "extractedName": "yelp.com",
+      "extractedCity": "Greenwood Village",
+      "hasDirectSurface": false,
+      "statusCode": 403
+    },
+    {
+      "sourceUrl": "https://www.yelp.com/biz/adore-nails-and-beaute-denver",
+      "classifiedType": "directory_listing",
+      "originalName": "ADORE Nails & Beaute",
+      "originalCity": "Denver",
+      "extractedName": "yelp.com",
+      "extractedCity": "Denver",
+      "hasDirectSurface": false,
+      "statusCode": 403
+    },
+    {
+      "sourceUrl": "https://www.yelp.com/biz/adore-nails-and-beaute-denver",
+      "classifiedType": "directory_listing",
+      "originalName": "ADORE Nails & Beaute",
+      "originalCity": "Denver",
+      "extractedName": "yelp.com",
+      "extractedCity": "Denver",
+      "hasDirectSurface": false,
+      "statusCode": 403
+    },
+    {
+      "sourceUrl": "https://www.yelp.com/biz/the-corner-office-denver",
+      "classifiedType": "directory_listing",
+      "originalName": "The Corner Office Restaurant + Martini Bar",
+      "originalCity": "Denver",
+      "extractedName": "yelp.com",
+      "extractedCity": "Denver",
+      "hasDirectSurface": false,
+      "statusCode": 403
+    },
+    {
+      "sourceUrl": "https://app.squareup.com/gift/MLNZ0GVQ1NCZT/order",
+      "classifiedType": "website",
+      "originalName": "Safta",
+      "originalCity": "Denver",
+      "extractedName": "Order Safta eGift Cards",
+      "extractedCity": "Denver",
+      "hasDirectSurface": false,
+      "statusCode": 200
+    },
+    {
+      "sourceUrl": "https://www.yelp.com/biz/beyond-nails-englewood",
+      "classifiedType": "directory_listing",
+      "originalName": "Beyond Nails",
+      "originalCity": "DTC",
+      "extractedName": "yelp.com",
+      "extractedCity": "DTC",
+      "hasDirectSurface": false,
+      "statusCode": 403
+    },
+    {
+      "sourceUrl": "https://www.yelp.com/biz/beyond-nails-englewood",
+      "classifiedType": "directory_listing",
+      "originalName": "Beyond Nails",
+      "originalCity": "DTC",
+      "extractedName": "yelp.com",
+      "extractedCity": "DTC",
+      "hasDirectSurface": false,
+      "statusCode": 403
+    },
+    {
+      "sourceUrl": "https://www.yelp.com/biz/icon-nails-and-spa-denver",
+      "classifiedType": "directory_listing",
+      "originalName": "ICON Nails and Spa",
+      "originalCity": "Denver",
+      "extractedName": "yelp.com",
+      "extractedCity": "Denver",
+      "hasDirectSurface": false,
+      "statusCode": 403
+    },
+    {
+      "sourceUrl": "https://www.yelp.com/biz/icon-nails-and-spa-denver",
+      "classifiedType": "directory_listing",
+      "originalName": "ICON Nails and Spa",
+      "originalCity": "Denver",
+      "extractedName": "Business Photos",
+      "extractedCity": "Denver",
+      "extractedWebsite": "https://www.yelp.com/biz/outlook-autumn-market-fundamental-catwalk-flimsy-roost-legibility-individualism-grocer-predestination-2",
+      "hasDirectSurface": true,
+      "statusCode": 200
+    },
+    {
+      "sourceUrl": "https://www.yelp.com/biz/la-vogue-nails-and-spa-denver-3",
+      "classifiedType": "directory_listing",
+      "originalName": "La Vogue Nail & Spa Denver",
+      "originalCity": "Denver",
+      "extractedName": "yelp.com",
+      "extractedCity": "Denver",
+      "hasDirectSurface": false,
+      "statusCode": 403
+    },
+    {
+      "sourceUrl": "https://www.yelp.com/biz/la-vogue-nails-and-spa-denver-3",
+      "classifiedType": "directory_listing",
+      "originalName": "La Vogue Nail & Spa Denver",
+      "originalCity": "Denver",
+      "extractedName": "yelp.com",
+      "extractedCity": "Denver",
+      "hasDirectSurface": false,
+      "statusCode": 403
+    },
+    {
+      "sourceUrl": "https://www.yelp.com/biz/modern-nails-and-lash-golden",
+      "classifiedType": "directory_listing",
+      "originalName": "Modern Nails & Lash",
+      "originalCity": "Denver",
+      "extractedName": "yelp.com",
+      "extractedCity": "Denver",
+      "hasDirectSurface": false,
+      "statusCode": 403
+    },
+    {
+      "sourceUrl": "https://www.yelp.com/biz/modern-nails-and-lash-golden",
+      "classifiedType": "directory_listing",
+      "originalName": "Modern Nails & Lash",
+      "originalCity": "Denver",
+      "extractedName": "yelp.com",
+      "extractedCity": "Denver",
+      "hasDirectSurface": false,
+      "statusCode": 403
+    },
+    {
+      "sourceUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
+      "classifiedType": "website",
+      "originalName": "Solera Salon Suites",
+      "originalCity": "DTC",
+      "extractedName": "Order Solera Salon eGift Cards",
+      "extractedCity": "DTC",
+      "hasDirectSurface": false,
+      "statusCode": 200
+    },
+    {
+      "sourceUrl": "https://www.yelp.com/biz/la-vogue-nails-and-spa-denver-3",
+      "classifiedType": "directory_listing",
+      "originalName": "La Vogue Nail & Spa Denver",
+      "originalCity": "Denver",
+      "extractedName": "Business Photos",
+      "extractedCity": "Denver",
+      "extractedWebsite": "https://www.yelp.com/biz/outlook-autumn-market-fundamental-catwalk-flimsy-roost-legibility-individualism-grocer-predestination-1",
+      "hasDirectSurface": true,
+      "statusCode": 200
+    },
+    {
+      "sourceUrl": "https://www.yelp.com/biz/la-vogue-nails-and-spa-denver-3",
+      "classifiedType": "directory_listing",
+      "originalName": "La Vogue Nail & Spa Denver",
+      "originalCity": "Denver",
+      "extractedName": "yelp.com",
+      "extractedCity": "Denver",
+      "hasDirectSurface": false,
+      "statusCode": 403
+    },
+    {
+      "sourceUrl": "https://www.yelp.com/biz/la-vogue-nails-and-spa-denver-3",
+      "classifiedType": "directory_listing",
+      "originalName": "La Vogue Nail & Spa Denver",
+      "originalCity": "Denver",
+      "extractedName": "Business Photos",
+      "extractedCity": "Denver",
+      "extractedWebsite": "https://www.yelp.com/biz/outlook-autumn-market-fundamental-catwalk-flimsy-roost-legibility-individualism-grocer-predestination-4",
+      "hasDirectSurface": true,
+      "statusCode": 200
+    }
+  ]
+}
