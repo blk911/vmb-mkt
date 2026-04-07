@@ -51,6 +51,16 @@ export function expandContainerEvidence(evidence: EvidenceRecord[]): EvidenceRec
     const seeds = Array.isArray(extracted?.childQuerySeeds)
       ? (extracted?.childQuerySeeds as unknown[]).filter((x): x is string => typeof x === "string" && x.trim().length > 0)
       : [];
+    if (seeds.length > 0) {
+      expanded.push({
+        ...row,
+        id: childId(row.id, "seed-preserve", tenants.length + seeds.length),
+        source: "container",
+        childQuerySeeds: seeds,
+        raw: { ...(row.raw && typeof row.raw === "object" ? (row.raw as Record<string, unknown>) : {}), generatedFrom: "container_seed_preserve" },
+        createdAt,
+      });
+    }
     seeds.forEach((seed, index) => {
       expanded.push({
         id: childId(row.id, seed, index + tenants.length),
@@ -58,6 +68,7 @@ export function expandContainerEvidence(evidence: EvidenceRecord[]): EvidenceRec
         sourceUrl: row.sourceUrl,
         name: seed,
         city: row.city,
+        childQuerySeeds: [seed],
         parentContainerName: row.name || row.parentContainerName,
         parentContainerAddress: row.address || row.parentContainerAddress,
         evidenceType: "directory_listing",

@@ -42,11 +42,31 @@ export function scoreEvidenceMatch(operator: ResolverOperator, evidence: Evidenc
   ].filter(Boolean);
   if (domains.some((a) => evidenceDomains.some((b) => a === b))) score += 20;
 
+  const opInstagram = normalizeName((operator.canonicalInstagram || "").split("/").filter(Boolean).pop());
+  const evInstagram = normalizeName((evidence.instagram || "").split("/").filter(Boolean).pop());
+  if (opInstagram && evInstagram && opInstagram === evInstagram) score += 20;
+
+  const opBooking = normalizeDomain(operator.canonicalBooking);
+  const evBooking = normalizeDomain(evidence.booking);
+  if (opBooking && evBooking && opBooking === evBooking) score += 10;
+
   if ((operator.canonicalCity || "").toLowerCase() && (evidence.city || "").toLowerCase()) {
     if (operator.canonicalCity?.toLowerCase() === evidence.city?.toLowerCase()) score += 10;
   }
 
   return score;
+}
+
+export function evaluateEvidenceMatch(
+  operator: ResolverOperator,
+  evidence: EvidenceRecord
+): { score: number; matched: boolean } {
+  const score = scoreEvidenceMatch(operator, evidence);
+  let matched = false;
+  if (hasPhoneAnchor(operator, evidence)) matched = score >= 40;
+  else if (hasDomainAnchor(operator, evidence)) matched = score >= 45;
+  else matched = score >= 70;
+  return { score, matched };
 }
 
 function hasPhoneAnchor(operator: ResolverOperator, evidence: EvidenceRecord): boolean {
@@ -71,9 +91,6 @@ function hasDomainAnchor(operator: ResolverOperator, evidence: EvidenceRecord): 
 }
 
 export function isEvidenceMatch(operator: ResolverOperator, evidence: EvidenceRecord): boolean {
-  const score = scoreEvidenceMatch(operator, evidence);
-  if (hasPhoneAnchor(operator, evidence)) return score >= 40;
-  if (hasDomainAnchor(operator, evidence)) return score >= 45;
-  return score >= 70;
+  return evaluateEvidenceMatch(operator, evidence).matched;
 }
 
