@@ -86,6 +86,8 @@ export type OperatorHarvestRunInput = {
   resultsPerQuery?: number;
   requestDelayMs?: number;
   queryResultsByQuery?: Record<string, HarvestRawResult[]>;
+  runPromotion?: boolean;
+  promotionBatchLimit?: number;
 };
 
 export type OperatorHarvestRunOutput = {

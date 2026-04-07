@@ -117,6 +117,8 @@ async function main() {
   const maxQueries = Number(parseArg("maxQueries", "30"));
   const resultsPerQuery = Number(parseArg("resultsPerQuery", "5"));
   const requestDelayMs = Number(parseArg("requestDelayMs", "350"));
+  const runPromotion = process.argv.includes("--runPromotion");
+  const promotionBatchLimit = Number(parseArg("promotionBatchLimit", "50"));
 
   const pack = buildOperatorHarvestQueryPack({ category, geoLabels, maxQueries });
   const input = {
@@ -125,6 +127,7 @@ async function main() {
     maxQueries,
     resultsPerQuery,
     requestDelayMs,
+    ...(runPromotion ? { runPromotion: true, promotionBatchLimit } : {}),
     ...(useFixtures ? { queryResultsByQuery: buildFixtureResultsByQuery(pack.queries), useLiveIntake: false } : { useLiveIntake: true }),
   };
   const output = await runOperatorHarvest(input);

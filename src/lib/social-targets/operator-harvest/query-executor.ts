@@ -24,7 +24,7 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function normalizeSearchQuery(raw: string): string {
+export function normalizeSearchQuery(raw: string): string {
   return raw
     .replace(/\bsite:[^\s]+/gi, "")
     .replace(/"/g, "")

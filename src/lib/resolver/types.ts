@@ -15,6 +15,13 @@ export type ResolverOperator = {
   status: "enumerated" | "enriched" | "hot" | "ready" | "shelved";
   isContainer?: boolean;
   parentContainerId?: string;
+  reviewState?: "unreviewed" | "ready" | "shelved_by_review";
+  reviewNotes?: string;
+  preferredContactSurface?: "booking" | "instagram" | "website" | "phone" | "none";
+  normalizedCategory?: "nails" | "lashes" | "brows" | "hair" | "spa" | "multi_service" | "unknown";
+  promotionScore?: number;
+  promotionReasons?: string[];
+  promotionState?: "untried" | "attempted" | "promoted_enriched" | "promoted_hot" | "unchanged";
   createdAt: number;
   updatedAt: number;
 };

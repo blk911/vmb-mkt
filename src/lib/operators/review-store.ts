@@ -2,6 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import type { OperatorRecord } from "./types";
 import type { OperatorReviewRecord, OperatorReviewState } from "./review-types";
+import { loadResolverRegistry } from "@/lib/resolver/registry-store";
+import type { ResolverOperator } from "@/lib/resolver/types";
 
 const REVIEW_FILE_PATH = path.join(process.cwd(), "runtime-data/operator_review_states.json");
 
@@ -64,6 +66,77 @@ export function applyReviewOverlay(operators: OperatorRecord[]): OperatorRecord[
       reviewNotes: review.reviewNotes,
     };
   });
+}
+
+export function resolverOperatorToOperatorRecord(op: ResolverOperator): OperatorRecord {
+  const sources: OperatorRecord["sources"] = {};
+  for (const row of op.sources || []) {
+    sources[row.source] = {
+      source: row.source,
+      sourceUrl: row.sourceUrl,
+      name: row.name,
+      city: row.city,
+      category: row.category,
+      address: row.address,
+      phone: row.phone,
+      website: row.website,
+      instagram: row.instagram,
+      booking: row.booking,
+      parentContainerName: row.parentContainerName,
+      evidenceType: row.evidenceType,
+      childQuerySeeds: row.childQuerySeeds,
+      raw: row.raw,
+      extracted: row.extracted,
+    };
+  }
+  return {
+    id: op.id,
+    name: op.canonicalName || "unknown",
+    city: op.canonicalCity,
+    category: op.category,
+    sources,
+    evidence: op.sources.map((row) => ({
+      source: row.source,
+      sourceUrl: row.sourceUrl,
+      name: row.name,
+      city: row.city,
+      category: row.category,
+      address: row.address,
+      phone: row.phone,
+      website: row.website,
+      instagram: row.instagram,
+      booking: row.booking,
+      parentContainerName: row.parentContainerName,
+      evidenceType: row.evidenceType,
+      childQuerySeeds: row.childQuerySeeds,
+      raw: row.raw,
+      extracted: row.extracted,
+    })),
+    canonical: {
+      instagram: op.canonicalInstagram,
+      booking: op.canonicalBooking,
+      website: op.canonicalWebsite,
+      phone: op.canonicalPhone,
+    },
+    validation: {
+      instagramStatus: op.canonicalInstagram ? "valid" : "missing",
+      bookingStatus: op.canonicalBooking ? "valid" : "missing",
+      websiteStatus: op.canonicalWebsite ? "valid" : "missing",
+    },
+    status: op.status === "hot" || op.status === "ready" ? "hot" : op.status === "shelved" ? "shelved" : "discard",
+    reviewState: op.reviewState,
+    reviewNotes: op.reviewNotes,
+    preferredContactSurface: op.preferredContactSurface,
+    normalizedCategory: op.normalizedCategory,
+    confidenceScore: op.confidenceScore,
+    lastUpdatedAt: new Date(op.updatedAt).toISOString(),
+  };
+}
+
+export function loadResolverBackedOperatorsWithReview(): OperatorRecord[] {
+  const resolverOperators = loadResolverRegistry();
+  const mapped = resolverOperators.map(resolverOperatorToOperatorRecord);
+  return applyReviewOverlay(mapped);
 }
 
 export function getReviewStateOrDefault(state?: OperatorReviewState): OperatorReviewState {

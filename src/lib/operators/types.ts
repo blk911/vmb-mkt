@@ -22,6 +22,8 @@ export type SourceRecord = {
   parentContainerName?: string;
   evidenceType?: PageClassification;
   childQuerySeeds?: string[];
+  raw?: unknown;
+  extracted?: unknown;
   source: SourceKind;
 };
 

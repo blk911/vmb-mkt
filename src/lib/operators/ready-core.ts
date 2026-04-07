@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { OperatorRecord } from "./types";
 import { writeReadyCoreExportArtifacts } from "./ready-export";
+import { loadResolverBackedOperatorsWithReview } from "./review-store";
 
 export type NormalizedCategory = "nails" | "lashes" | "brows" | "hair" | "spa" | "multi_service" | "unknown";
 
@@ -123,8 +124,13 @@ export function selectReadyCoreOperators(operators: OperatorRecord[]): ReadyCore
   });
 }
 
-export function writeReadyCoreArtifact(operators: OperatorRecord[]): string {
-  const ready = selectReadyCoreOperators(operators);
+export function loadReadyCoreSourceOperators(): OperatorRecord[] {
+  return loadResolverBackedOperatorsWithReview();
+}
+
+export function writeReadyCoreArtifact(operators?: OperatorRecord[]): string {
+  const source = operators || loadReadyCoreSourceOperators();
+  const ready = selectReadyCoreOperators(source);
   const outPath = path.join(process.cwd(), READY_CORE_ARTIFACT);
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, `${JSON.stringify(ready, null, 2)}\n`);

@@ -1,8 +1,28 @@
 {
-  "generatedAt": "2026-04-06T23:49:24.067Z",
+  "generatedAt": "2026-04-07T12:50:27.057Z",
   "totalCandidates": 10,
   "scannedPages": 10,
   "scans": [
+    {
+      "sourceUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
+      "classifiedType": "website",
+      "originalName": "Solera Salon Suites",
+      "originalCity": "DTC",
+      "extractedName": "Order Solera Salon eGift Cards",
+      "extractedCity": "DTC",
+      "extractedBooking": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
+      "statusCode": 200
+    },
+    {
+      "sourceUrl": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
+      "classifiedType": "website",
+      "originalName": "Solera Salon Suites",
+      "originalCity": "DTC",
+      "extractedName": "Order Solera Salon eGift Cards",
+      "extractedCity": "DTC",
+      "extractedBooking": "https://squareup.com/gift/Y6Z819M68JE0Z/order",
+      "statusCode": 200
+    },
     {
       "sourceUrl": "https://denverhairsalon.glossgenius.com",
       "classifiedType": "direct_operator",
@@ -16,31 +36,11 @@
       "statusCode": 200
     },
     {
-      "sourceUrl": "https://www.vagaro.com/edenspa1",
-      "classifiedType": "directory_listing",
-      "parserUsed": "vagaro",
-      "originalName": "edenspa1",
-      "originalCity": "spa",
-      "extractedName": "Eden Spa - Denver CO | Vagaro",
-      "extractedCity": "spa",
-      "extractedInstagram": "https://www.instagram.com/vagaropro/",
-      "extractedBooking": "https://www.vagaro.com/edenspa1",
-      "extractedWebsite": "javascript:void(0)",
-      "statusCode": 200
-    },
-    {
       "sourceUrl": "https://www.yelp.com/biz/pamper-nails-castle-rock-3",
       "classifiedType": "directory_listing",
       "originalName": "Pamper Nails & Lashes",
-      "extractedName": "yelp.com",
-      "statusCode": 403
-    },
-    {
-      "sourceUrl": "https://www.yelp.com/biz/la-bella-nails-and-spa-castle-rock",
-      "classifiedType": "directory_listing",
-      "originalName": "La Bella Nails & Spa",
-      "extractedName": "yelp.com",
-      "statusCode": 403
+      "extractedName": "Pamper Nails - Castle Rock, CO",
+      "statusCode": 200
     },
     {
       "sourceUrl": "https://www.yelp.com/biz/paradise-nails-and-lashes-castle-rock-4",
@@ -59,18 +59,19 @@
       "statusCode": 403
     },
     {
-      "sourceUrl": "https://www.yelp.com/biz/solar-nails-greenwood-village",
+      "sourceUrl": "https://www.yelp.com/biz/icon-nails-and-spa-denver",
       "classifiedType": "directory_listing",
-      "originalName": "Solar Nails",
-      "originalCity": "Greenwood Village",
-      "extractedName": "yelp.com",
-      "extractedCity": "Greenwood Village",
-      "statusCode": 403
+      "originalName": "ICON Nails and Spa",
+      "originalCity": "Denver",
+      "extractedName": "Business Photos",
+      "extractedCity": "Denver",
+      "extractedWebsite": "https://www.yelp.com/biz/outlook-autumn-market-fundamental-catwalk-flimsy-roost-legibility-individualism-grocer-predestination-3",
+      "statusCode": 200
     },
     {
-      "sourceUrl": "https://www.yelp.com/biz/mainstream-nails-denver-2",
+      "sourceUrl": "https://www.yelp.com/biz/la-vogue-nails-and-spa-denver-3",
       "classifiedType": "directory_listing",
-      "originalName": "Mainstream Nails",
+      "originalName": "La Vogue Nail & Spa Denver",
       "originalCity": "Denver",
       "extractedName": "yelp.com",
       "extractedCity": "Denver",

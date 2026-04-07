@@ -13,9 +13,11 @@ export type EvidenceRecord = {
   website?: string;
   instagram?: string;
   booking?: string;
+  category?: string;
   parentContainerName?: string;
   parentContainerAddress?: string;
   evidenceType?: EvidenceType;
+  childQuerySeeds?: string[];
   raw?: unknown;
   extracted?: unknown;
   createdAt: number;

@@ -3,14 +3,13 @@ import path from "node:path";
 import type { OperatorRecord } from "@/lib/operators/types";
 import { getOutreachEligibility } from "@/lib/operators/outreach-eligibility";
 import { buildOperatorQualitySummary } from "@/lib/operators/quality-summary";
-import { applyReviewOverlay, getReviewStateOrDefault } from "@/lib/operators/review-store";
+import { getReviewStateOrDefault, loadResolverBackedOperatorsWithReview } from "@/lib/operators/review-store";
 import HotTargetReviewPanel from "@/components/admin/operators/HotTargetReviewPanel";
 
 function loadOperators(): OperatorRecord[] {
-  const filePath = path.join(process.cwd(), "runtime-data/operator_master.v1.json");
-  if (!fs.existsSync(filePath)) return [];
-  const rows = JSON.parse(fs.readFileSync(filePath, "utf-8")) as OperatorRecord[];
-  return applyReviewOverlay(rows);
+  const resolverPath = path.join(process.cwd(), "runtime-data/resolver_registry.v1.json");
+  if (!fs.existsSync(resolverPath)) return [];
+  return loadResolverBackedOperatorsWithReview();
 }
 
 type FilterMode = "all" | "hot" | "ready" | "shelved_by_review";

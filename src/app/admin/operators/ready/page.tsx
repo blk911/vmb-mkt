@@ -1,15 +1,17 @@
 import fs from "node:fs";
 import path from "node:path";
-import { applyReviewOverlay } from "@/lib/operators/review-store";
-import { selectReadyCoreOperators } from "@/lib/operators/ready-core";
+import { loadResolverBackedOperatorsWithReview } from "@/lib/operators/review-store";
+import { loadReadyCoreSourceOperators, selectReadyCoreOperators } from "@/lib/operators/ready-core";
 import { READY_CORE_EXPORT_CSV_ARTIFACT, READY_CORE_EXPORT_JSON_ARTIFACT } from "@/lib/operators/ready-export";
 import type { OperatorRecord } from "@/lib/operators/types";
 
 function loadOperators(): OperatorRecord[] {
-  const filePath = path.join(process.cwd(), "runtime-data/operator_master.v1.json");
-  if (!fs.existsSync(filePath)) return [];
-  const rows = JSON.parse(fs.readFileSync(filePath, "utf-8")) as OperatorRecord[];
-  return applyReviewOverlay(rows);
+  const resolverPath = path.join(process.cwd(), "runtime-data/resolver_registry.v1.json");
+  if (!fs.existsSync(resolverPath)) return [];
+  // keep ready-core sourcing aligned with resolver registry as system-of-record
+  const source = loadReadyCoreSourceOperators();
+  if (source.length > 0) return source;
+  return loadResolverBackedOperatorsWithReview();
 }
 
 function evidenceCount(op: OperatorRecord): number {

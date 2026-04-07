@@ -10,11 +10,15 @@ export function loadEvidence(): EvidenceRecord[] {
   return Array.isArray(parsed) ? (parsed as EvidenceRecord[]) : [];
 }
 
+export function writeEvidence(records: EvidenceRecord[]): void {
+  fs.mkdirSync(path.dirname(EVIDENCE_LAKE_PATH), { recursive: true });
+  fs.writeFileSync(EVIDENCE_LAKE_PATH, `${JSON.stringify(records, null, 2)}\n`);
+}
+
 export function appendEvidence(records: EvidenceRecord[]): void {
   if (!records.length) return;
   const existing = loadEvidence();
   const next = [...existing, ...records];
-  fs.mkdirSync(path.dirname(EVIDENCE_LAKE_PATH), { recursive: true });
-  fs.writeFileSync(EVIDENCE_LAKE_PATH, `${JSON.stringify(next, null, 2)}\n`);
+  writeEvidence(next);
 }
 

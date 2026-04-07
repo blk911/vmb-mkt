@@ -12,6 +12,7 @@ import { runGoogleSearch } from "@/lib/social-targets/operator-harvest/query-exe
 import { appendEvidence } from "@/lib/evidence/store";
 import { sourceRecordsToEvidence } from "@/lib/evidence/ingest";
 import { runResolver } from "@/lib/resolver/run-resolver";
+import { runPromotion } from "@/lib/resolver/run-promotion";
 import type { SourceRecord } from "@/lib/operators/types";
 import type {
   HarvestPlatform,
@@ -320,6 +321,9 @@ export async function runOperatorHarvest(input: OperatorHarvestRunInput): Promis
   const allEvidence = sourceRecordsToEvidence([...rawResultRecords, ...allSourceRecords, ...acquisitionOutput.enrichedRecords]);
   appendEvidence(allEvidence);
   runResolver();
+  if (input.runPromotion === true) {
+    await runPromotion({ batchLimit: input.promotionBatchLimit });
+  }
   const merged = await runMergePipeline([]);
   await writeOperatorQualitySummaryArtifact(merged);
   const summary = summarize(resultSet, ranked);
