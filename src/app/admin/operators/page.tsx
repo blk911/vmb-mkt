@@ -1,15 +1,12 @@
-import fs from "node:fs";
-import path from "node:path";
 import type { OperatorRecord } from "@/lib/operators/types";
 import { getOutreachEligibility } from "@/lib/operators/outreach-eligibility";
 import { buildOperatorQualitySummary } from "@/lib/operators/quality-summary";
-import { getReviewStateOrDefault, loadResolverBackedOperatorsWithReview } from "@/lib/operators/review-store";
+import { getReviewStateOrDefault } from "@/lib/operators/review-store";
+import { loadOperatorsFromResolverRegistry } from "@/lib/operators/loadOperators";
 import HotTargetReviewPanel from "@/components/admin/operators/HotTargetReviewPanel";
 
 function loadOperators(): OperatorRecord[] {
-  const resolverPath = path.join(process.cwd(), "runtime-data/resolver_registry.v1.json");
-  if (!fs.existsSync(resolverPath)) return [];
-  return loadResolverBackedOperatorsWithReview();
+  return loadOperatorsFromResolverRegistry();
 }
 
 type FilterMode = "all" | "hot" | "ready" | "shelved_by_review";
@@ -19,13 +16,35 @@ function normalizeFilter(raw?: string): FilterMode {
   return "all";
 }
 
+function flagOn(value?: string): boolean {
+  return value === "1";
+}
+
+function isProvisionalChild(op: OperatorRecord): boolean {
+  const hasParent = (op.evidence || []).some((row) => Boolean(row.parentContainerName));
+  if (!hasParent) return false;
+  const name = (op.name || "").toLowerCase();
+  if (!name.trim()) return true;
+  if (!name.includes(" ")) return true;
+  return /(profile|provider|staff|member|artist|book|booking|detail|services?)/.test(name);
+}
+
 export default function OperatorsPage({
   searchParams,
 }: {
-  searchParams?: { filter?: string; showContainers?: string };
+  searchParams?: {
+    filter?: string;
+    showContainers?: string;
+    showDiscard?: string;
+    showProvisionalChildren?: string;
+    showLowSignal?: string;
+  };
 }) {
   const filter = normalizeFilter(searchParams?.filter);
   const showContainers = searchParams?.showContainers === "1";
+  const showDiscard = flagOn(searchParams?.showDiscard);
+  const showProvisionalChildren = flagOn(searchParams?.showProvisionalChildren);
+  const showLowSignal = flagOn(searchParams?.showLowSignal);
   const isPureContainerParent = (op: OperatorRecord): boolean => {
     const hasDirectSurface = Boolean(op.canonical.booking || op.canonical.instagram || op.canonical.website);
     if (hasDirectSurface) return false;
@@ -49,7 +68,15 @@ export default function OperatorsPage({
     if (filter === "ready") return getReviewStateOrDefault(op.reviewState) === "ready";
     if (filter === "shelved_by_review") return getReviewStateOrDefault(op.reviewState) === "shelved_by_review";
     return true;
-  }).filter(({ op }) => (showContainers ? true : !isPureContainerParent(op)));
+  }).filter(({ op }) => {
+    const hasSurface = Boolean(op.canonical.booking || op.canonical.instagram || op.canonical.website);
+    const lowSignal = op.confidenceScore <= 1 && !hasSurface;
+    if (!showContainers && isPureContainerParent(op)) return false;
+    if (!showDiscard && op.status === "discard") return false;
+    if (!showProvisionalChildren && isProvisionalChild(op)) return false;
+    if (!showLowSignal && lowSignal) return false;
+    return true;
+  });
   const quality = buildOperatorQualitySummary(filteredOperators.map((row) => row.op));
   const hot = operators.filter(({ op }) => op.status === "hot");
   const shelved = operators.filter(({ op }) => op.status === "shelved");
@@ -58,9 +85,12 @@ export default function OperatorsPage({
   const evidenceCount = (op: OperatorRecord) => (Array.isArray(op.evidence) && op.evidence.length > 0 ? op.evidence.length : 0);
   const sourceTypeLabel = (op: OperatorRecord) => {
     const tags = new Set<string>();
+    if (op.sources.website) tags.add("website");
     if (op.sources.google) tags.add("google");
     if (op.sources.instagram) tags.add("instagram");
     if (op.sources.booking) tags.add("booking");
+    if (op.sources.directory) tags.add("directory");
+    if (op.sources.container) tags.add("container");
     for (const row of op.evidence || []) {
       if (row.evidenceType === "directory_listing") tags.add("directory");
       if (row.evidenceType === "suite_container") tags.add("container");
@@ -93,8 +123,8 @@ export default function OperatorsPage({
     <div style={{ padding: "18px 20px", maxWidth: 1400 }}>
       <h1 style={{ fontSize: 24, fontWeight: 600 }}>Operator Console</h1>
       <div style={{ marginTop: 12 }}>
-        <strong>Total:</strong> {operators.length} | <strong>Hot:</strong> {hot.length} | <strong>Shelved:</strong>{" "}
-        {shelved.length} |{" "}
+        <strong>Resolver operators:</strong> {operators.length} | <strong>Rendered:</strong> {filteredOperators.length} |{" "}
+        <strong>Hot:</strong> {hot.length} | <strong>Shelved:</strong> {shelved.length} |{" "}
         <a href="/admin/operators/ready">
           <strong>Ready Core:</strong> {readyCount}
         </a>
@@ -120,6 +150,24 @@ export default function OperatorsPage({
           style={{ fontWeight: 500 }}
         >
           {showContainers ? "hide containers" : "show containers"}
+        </a>
+        <a
+          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showDiscard=${showDiscard ? "0" : "1"}&showProvisionalChildren=${showProvisionalChildren ? "1" : "0"}&showLowSignal=${showLowSignal ? "1" : "0"}`}
+          style={{ fontWeight: 500 }}
+        >
+          {showDiscard ? "hide discard" : "show discard"}
+        </a>
+        <a
+          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showDiscard=${showDiscard ? "1" : "0"}&showProvisionalChildren=${showProvisionalChildren ? "0" : "1"}&showLowSignal=${showLowSignal ? "1" : "0"}`}
+          style={{ fontWeight: 500 }}
+        >
+          {showProvisionalChildren ? "hide provisional child" : "show provisional child"}
+        </a>
+        <a
+          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showDiscard=${showDiscard ? "1" : "0"}&showProvisionalChildren=${showProvisionalChildren ? "1" : "0"}&showLowSignal=${showLowSignal ? "0" : "1"}`}
+          style={{ fontWeight: 500 }}
+        >
+          {showLowSignal ? "hide low signal" : "show low signal"}
         </a>
       </div>
       <div
@@ -168,7 +216,7 @@ export default function OperatorsPage({
       <table
         style={{
           width: "100%",
-          minWidth: 1200,
+          minWidth: 1450,
           borderCollapse: "collapse",
           tableLayout: "fixed",
         }}
@@ -187,12 +235,13 @@ export default function OperatorsPage({
             <th style={{ width: "9%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Reason</th>
             <th style={{ width: "5%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Evidence</th>
             <th style={{ width: "10%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Source Types</th>
-            <th style={{ width: "18%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Action</th>
+            <th style={{ width: "12%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Action</th>
+            <th style={{ width: "20%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Evidence Details</th>
           </tr>
         </thead>
         <tbody>
-          {filteredOperators.map(({ op, outreach }) => (
-            <tr key={op.id}>
+          {filteredOperators.map(({ op, outreach }, idx) => (
+            <tr key={`${op.id}-${idx}`}>
               <td style={cell} title={op.name}>
                 <span style={truncate}>{op.name}</span>
               </td>
@@ -255,6 +304,27 @@ export default function OperatorsPage({
                 ) : (
                   <span style={{ color: "#888", fontSize: 12 }}>hot-only review</span>
                 )}
+              </td>
+              <td style={{ ...cell, fontSize: 11 }}>
+                <details>
+                  <summary style={{ cursor: "pointer" }}>expand ({evidenceCount(op)})</summary>
+                  <div style={{ marginTop: 6, maxHeight: 220, overflowY: "auto", border: "1px solid #eee", padding: 6 }}>
+                    {(op.evidence || []).map((row, idx) => {
+                      const raw = row.raw && typeof row.raw === "object" ? (row.raw as Record<string, unknown>) : undefined;
+                      const promotionMethod = raw && "promotionMethod" in raw ? String(raw.promotionMethod || "") : undefined;
+                      const createdAt = raw && "createdAt" in raw ? Number(raw.createdAt || 0) : 0;
+                      return (
+                        <div key={`${op.id}-evidence-${idx}`} style={{ borderBottom: "1px solid #f0f0f0", padding: "4px 0" }}>
+                          <div><strong>source:</strong> {row.source}</div>
+                          <div><strong>url:</strong> {row.sourceUrl || "-"}</div>
+                          <div><strong>type:</strong> {row.evidenceType || "-"}</div>
+                          <div><strong>promotionMethod:</strong> {promotionMethod || "-"}</div>
+                          <div><strong>timestamp:</strong> {createdAt ? new Date(createdAt).toISOString() : op.lastUpdatedAt}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </details>
               </td>
             </tr>
           ))}

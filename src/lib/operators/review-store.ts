@@ -85,7 +85,10 @@ export function resolverOperatorToOperatorRecord(op: ResolverOperator): Operator
       parentContainerName: row.parentContainerName,
       evidenceType: row.evidenceType,
       childQuerySeeds: row.childQuerySeeds,
-      raw: row.raw,
+      raw:
+        row.raw && typeof row.raw === "object"
+          ? { ...(row.raw as Record<string, unknown>), createdAt: row.createdAt }
+          : { createdAt: row.createdAt },
       extracted: row.extracted,
     };
   }
@@ -109,7 +112,10 @@ export function resolverOperatorToOperatorRecord(op: ResolverOperator): Operator
       parentContainerName: row.parentContainerName,
       evidenceType: row.evidenceType,
       childQuerySeeds: row.childQuerySeeds,
-      raw: row.raw,
+      raw:
+        row.raw && typeof row.raw === "object"
+          ? { ...(row.raw as Record<string, unknown>), createdAt: row.createdAt }
+          : { createdAt: row.createdAt },
       extracted: row.extracted,
     })),
     canonical: {
