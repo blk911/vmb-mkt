@@ -1,14 +1,17 @@
 {
-  "generatedAt": "2026-04-07T17:14:38.514Z",
+  "generatedAt": "2026-04-07T17:39:02.905Z",
   "evidenceCount": 2883,
-  "operatorCount": 2210,
-  "hotCount": 45,
-  "enrichedCount": 9,
-  "enumeratedCount": 2125,
-  "containerCount": 31,
-  "childOperatorCount": 128,
+  "operatorCount": 150,
+  "hotCount": 35,
+  "enrichedCount": 39,
+  "enumeratedCount": 74,
+  "containerCount": 2,
+  "childOperatorCount": 59,
   "childWithBookingCount": 0,
   "childWithInstagramCount": 0,
   "childWithWebsiteCount": 0,
-  "childWeakCount": 128
+  "childWeakCount": 59,
+  "preCompactionOperatorCount": 2210,
+  "postCompactionOperatorCount": 150,
+  "compactedDuplicateCount": 2060
 }

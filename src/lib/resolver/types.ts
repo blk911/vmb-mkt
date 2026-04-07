@@ -23,6 +23,7 @@ export type ResolverOperator = {
   promotionReasons?: string[];
   promotionState?: "untried" | "attempted" | "promoted_enriched" | "promoted_hot" | "unchanged";
   promotionLane?: "website_backed" | "directory_backed" | "container_adjacent" | "identity_only";
+  compactedFromCount?: number;
   createdAt: number;
   updatedAt: number;
 };

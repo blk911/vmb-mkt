@@ -22,9 +22,17 @@ function normalizeFilter(raw?: string): FilterMode {
 export default function OperatorsPage({
   searchParams,
 }: {
-  searchParams?: { filter?: string };
+  searchParams?: { filter?: string; showContainers?: string };
 }) {
   const filter = normalizeFilter(searchParams?.filter);
+  const showContainers = searchParams?.showContainers === "1";
+  const isPureContainerParent = (op: OperatorRecord): boolean => {
+    const hasDirectSurface = Boolean(op.canonical.booking || op.canonical.instagram || op.canonical.website);
+    if (hasDirectSurface) return false;
+    const hasContainerEvidence = (op.evidence || []).some((row) => row.evidenceType === "suite_container" || row.source === "container");
+    const hasDirectEvidence = (op.evidence || []).some((row) => row.evidenceType === "direct_operator");
+    return hasContainerEvidence && !hasDirectEvidence;
+  };
   const operators = loadOperators()
     .map((op) => ({ op, outreach: getOutreachEligibility(op) }))
     .sort((a, b) => {
@@ -41,7 +49,7 @@ export default function OperatorsPage({
     if (filter === "ready") return getReviewStateOrDefault(op.reviewState) === "ready";
     if (filter === "shelved_by_review") return getReviewStateOrDefault(op.reviewState) === "shelved_by_review";
     return true;
-  });
+  }).filter(({ op }) => (showContainers ? true : !isPureContainerParent(op)));
   const quality = buildOperatorQualitySummary(filteredOperators.map((row) => row.op));
   const hot = operators.filter(({ op }) => op.status === "hot");
   const shelved = operators.filter(({ op }) => op.status === "shelved");
@@ -106,6 +114,12 @@ export default function OperatorsPage({
           style={{ fontWeight: filter === "shelved_by_review" ? 700 : 400 }}
         >
           shelved by review
+        </a>
+        <a
+          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "0" : "1"}`}
+          style={{ fontWeight: 500 }}
+        >
+          {showContainers ? "hide containers" : "show containers"}
         </a>
       </div>
       <div

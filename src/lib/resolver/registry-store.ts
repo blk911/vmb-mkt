@@ -19,6 +19,9 @@ export function saveResolverRegistry(operators: ResolverOperator[]): void {
 export function saveResolverSummary(input: {
   evidenceCount: number;
   operators: ResolverOperator[];
+  preCompactionOperatorCount?: number;
+  postCompactionOperatorCount?: number;
+  compactedDuplicateCount?: number;
 }): void {
   const { evidenceCount, operators } = input;
   const childOperators = operators.filter((x) => !x.isContainer && Boolean(x.parentContainerId));
@@ -35,6 +38,9 @@ export function saveResolverSummary(input: {
     childWithInstagramCount: childOperators.filter((x) => Boolean(x.canonicalInstagram)).length,
     childWithWebsiteCount: childOperators.filter((x) => Boolean(x.canonicalWebsite)).length,
     childWeakCount: childOperators.filter((x) => !x.canonicalBooking && !x.canonicalInstagram && !x.canonicalWebsite).length,
+    preCompactionOperatorCount: input.preCompactionOperatorCount ?? operators.length,
+    postCompactionOperatorCount: input.postCompactionOperatorCount ?? operators.length,
+    compactedDuplicateCount: input.compactedDuplicateCount ?? 0,
   };
   fs.writeFileSync(SUMMARY_PATH, `${JSON.stringify(summary, null, 2)}\n`);
 }

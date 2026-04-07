@@ -7,6 +7,7 @@ import { normalizeAddress, normalizeCity, normalizeDomain, normalizeName, normal
 import { loadResolverRegistry, saveResolverRegistry, saveResolverSummary } from "./registry-store";
 import type { ResolverOperator } from "./types";
 import { loadOperatorReviews } from "@/lib/operators/review-store";
+import { compactResolverOperators } from "./compaction";
 
 function parentContainerIdFromEvidence(e: EvidenceRecord): string | undefined {
   return e.parentContainerName
@@ -277,14 +278,30 @@ export function runResolverFromEvidence(inputEvidence?: EvidenceRecord[]): Resol
     op.updatedAt = now;
   }
 
-  const withReviews = overlayReviews(operators).map((op) => {
+  const compacted = compactResolverOperators(operators);
+  for (const op of compacted.operators) {
+    updateCanonical(op);
+    op.confidenceScore = Math.max(op.confidenceScore, scoreOperator(op));
+    op.normalizedCategory = deriveNormalizedCategory(op);
+    op.preferredContactSurface = derivePreferredContactSurface(op);
+    op.status = assignStatus(op);
+    op.updatedAt = now;
+  }
+
+  const withReviews = overlayReviews(compacted.operators).map((op) => {
     if (op.reviewState === "ready") return { ...op, status: "ready" as const };
     if (op.reviewState === "shelved_by_review") return { ...op, status: "shelved" as const };
     return op;
   });
   const withPromotion = overlayPromotionFields(withReviews);
   saveResolverRegistry(withPromotion);
-  saveResolverSummary({ evidenceCount: rawEvidence.length, operators: withPromotion });
+  saveResolverSummary({
+    evidenceCount: rawEvidence.length,
+    operators: withPromotion,
+    preCompactionOperatorCount: compacted.summary.preCompactionOperatorCount,
+    postCompactionOperatorCount: compacted.summary.postCompactionOperatorCount,
+    compactedDuplicateCount: compacted.summary.compactedDuplicateCount,
+  });
   return withPromotion;
 }
 
