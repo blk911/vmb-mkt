@@ -67,9 +67,23 @@ export default function OperatorsPage({
     }
     return [...tags].join(" / ");
   };
+  const cell = {
+    padding: "8px 6px",
+    verticalAlign: "top",
+    fontSize: 12,
+    lineHeight: 1.3,
+    borderTop: "1px solid #eee",
+  };
+  const truncate = {
+    display: "inline-block",
+    maxWidth: "100%",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  };
 
   return (
-    <div style={{ padding: 24 }}>
+    <div style={{ padding: "18px 20px", maxWidth: 1400 }}>
       <h1 style={{ fontSize: 24, fontWeight: 600 }}>Operator Console</h1>
       <div style={{ marginTop: 12 }}>
         <strong>Total:</strong> {operators.length} | <strong>Hot:</strong> {hot.length} | <strong>Shelved:</strong>{" "}
@@ -137,50 +151,56 @@ export default function OperatorsPage({
         </span>
       </div>
 
+      <div style={{ width: "100%", overflowX: "auto", marginTop: 20 }}>
       <table
         style={{
           width: "100%",
-          marginTop: 20,
+          minWidth: 1200,
           borderCollapse: "collapse",
+          tableLayout: "fixed",
         }}
       >
         <thead>
           <tr>
-            <th align="left">Name</th>
-            <th align="left">City</th>
-            <th>IG</th>
-            <th>Booking</th>
-            <th>Status</th>
-            <th>Review</th>
-            <th>Score</th>
-            <th>Channel</th>
-            <th>Outreach</th>
-            <th>Reason</th>
-            <th>Evidence</th>
-            <th>Source Types</th>
-            <th>Action</th>
+            <th align="left" style={{ width: "20%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Name</th>
+            <th align="left" style={{ width: "8%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>City</th>
+            <th style={{ width: "4%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>IG</th>
+            <th style={{ width: "6%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Booking</th>
+            <th style={{ width: "6%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Status</th>
+            <th style={{ width: "8%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Review</th>
+            <th style={{ width: "4%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Score</th>
+            <th style={{ width: "6%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Channel</th>
+            <th style={{ width: "6%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Outreach</th>
+            <th style={{ width: "9%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Reason</th>
+            <th style={{ width: "5%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Evidence</th>
+            <th style={{ width: "10%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Source Types</th>
+            <th style={{ width: "18%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Action</th>
           </tr>
         </thead>
         <tbody>
           {filteredOperators.map(({ op, outreach }) => (
-            <tr key={op.id} style={{ borderTop: "1px solid #eee" }}>
-              <td>{op.name}</td>
-              <td>{op.city}</td>
-              <td>
+            <tr key={op.id}>
+              <td style={cell} title={op.name}>
+                <span style={truncate}>{op.name}</span>
+              </td>
+              <td style={cell} title={op.city}>
+                <span style={truncate}>{op.city || "-"}</span>
+              </td>
+              <td style={cell}>
                 {op.canonical.instagram && (
                   <a href={op.canonical.instagram} target="_blank" rel="noreferrer">
                     IG
                   </a>
                 )}
               </td>
-              <td>
+              <td style={cell}>
                 {op.canonical.booking && (
                   <a href={op.canonical.booking} target="_blank" rel="noreferrer">
                     Book
                   </a>
                 )}
               </td>
-              <td>
+              <td style={cell}>
                 <span
                   style={{
                     color: op.status === "hot" ? "green" : op.status === "shelved" ? "orange" : "gray",
@@ -189,14 +209,22 @@ export default function OperatorsPage({
                   {op.status}
                 </span>
               </td>
-              <td>{getReviewStateOrDefault(op.reviewState)}</td>
-              <td>{op.confidenceScore}</td>
-              <td>{outreach.preferredChannel}</td>
-              <td>{outreach.eligible ? "ready" : "blocked"}</td>
-              <td>{outreach.reason}</td>
-              <td>{evidenceCount(op)}</td>
-              <td style={{ fontSize: 12, color: "#555" }}>{sourceTypeLabel(op)}</td>
-              <td>
+              <td style={cell} title={getReviewStateOrDefault(op.reviewState)}>
+                <span style={truncate}>{getReviewStateOrDefault(op.reviewState)}</span>
+              </td>
+              <td style={cell}>{op.confidenceScore}</td>
+              <td style={cell} title={outreach.preferredChannel}>
+                <span style={truncate}>{outreach.preferredChannel}</span>
+              </td>
+              <td style={cell}>{outreach.eligible ? "ready" : "blocked"}</td>
+              <td style={cell} title={outreach.reason}>
+                <span style={truncate}>{outreach.reason}</span>
+              </td>
+              <td style={cell}>{evidenceCount(op)}</td>
+              <td style={{ ...cell, color: "#555" }} title={sourceTypeLabel(op)}>
+                <span style={truncate}>{sourceTypeLabel(op)}</span>
+              </td>
+              <td style={cell}>
                 {op.status === "hot" ? (
                   <HotTargetReviewPanel
                     operatorId={op.id}
@@ -219,6 +247,7 @@ export default function OperatorsPage({
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

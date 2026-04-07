@@ -28,6 +28,7 @@ export default function HotTargetReviewPanel(props: HotTargetReviewPanelProps) {
   const [loading, setLoading] = useState(false);
   const [note, setNote] = useState(props.reviewNotes || "");
   const [message, setMessage] = useState<string>("");
+  const [open, setOpen] = useState(false);
 
   async function submit(action: "markReady" | "shelveByReview" | "addReviewNote") {
     setLoading(true);
@@ -57,15 +58,20 @@ export default function HotTargetReviewPanel(props: HotTargetReviewPanelProps) {
   }
 
   return (
-    <div style={{ border: "1px solid #e5e5e5", borderRadius: 8, padding: 10, maxWidth: 420, background: "#fafafa" }}>
-      <div style={{ fontWeight: 600, marginBottom: 6 }}>{props.canonicalName}</div>
-      <div style={{ fontSize: 12, color: "#444", marginBottom: 4 }}>City: {props.city || "-"}</div>
-      <div style={{ fontSize: 12, color: "#444", marginBottom: 4 }}>Review: {props.reviewState}</div>
-      <div style={{ fontSize: 12, color: "#444", marginBottom: 4 }}>Evidence count: {props.evidenceCount}</div>
-      <div style={{ fontSize: 12, color: "#444", marginBottom: 4 }}>Source types: {props.sourceTypes || "-"}</div>
-      <div style={{ fontSize: 12, color: "#444", marginBottom: 8 }}>Evidence types: {props.evidenceTypes || "-"}</div>
+    <div style={{ border: "1px solid #e5e5e5", borderRadius: 8, padding: 8, maxWidth: 260, background: "#fafafa" }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: 6, flexWrap: "wrap" }}>
+        <button disabled={loading} onClick={() => submit("markReady")} style={{ fontSize: 12 }}>
+          Ready
+        </button>
+        <button disabled={loading} onClick={() => submit("shelveByReview")} style={{ fontSize: 12 }}>
+          Shelve
+        </button>
+        <button onClick={() => setOpen((v) => !v)} style={{ fontSize: 12 }}>
+          {open ? "Hide" : "Review"}
+        </button>
+      </div>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: open ? 8 : 0, fontSize: 12 }}>
         {props.instagram ? (
           <a href={props.instagram} target="_blank" rel="noreferrer">
             IG
@@ -83,27 +89,30 @@ export default function HotTargetReviewPanel(props: HotTargetReviewPanelProps) {
         ) : null}
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-        <button disabled={loading} onClick={() => submit("markReady")}>
-          Approve Ready
-        </button>
-        <button disabled={loading} onClick={() => submit("shelveByReview")}>
-          Shelve
-        </button>
-      </div>
-
-      <div style={{ display: "grid", gap: 6 }}>
-        <textarea
-          rows={2}
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder="Review note"
-          style={{ width: "100%" }}
-        />
-        <button disabled={loading} onClick={() => submit("addReviewNote")}>
-          Save note
-        </button>
-      </div>
+      {open ? (
+        <>
+          <div style={{ fontSize: 11, color: "#444", marginBottom: 6 }}>Review: {props.reviewState}</div>
+          <div style={{ fontSize: 11, color: "#444", marginBottom: 6 }}>Evidence: {props.evidenceCount}</div>
+          <div style={{ fontSize: 11, color: "#444", marginBottom: 6 }} title={props.sourceTypes}>
+            Source: {props.sourceTypes || "-"}
+          </div>
+          <div style={{ fontSize: 11, color: "#444", marginBottom: 8 }} title={props.evidenceTypes}>
+            Evidence: {props.evidenceTypes || "-"}
+          </div>
+          <div style={{ display: "grid", gap: 6 }}>
+            <textarea
+              rows={2}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Review note"
+              style={{ width: "100%", fontSize: 12 }}
+            />
+            <button disabled={loading} onClick={() => submit("addReviewNote")} style={{ fontSize: 12 }}>
+              Save note
+            </button>
+          </div>
+        </>
+      ) : null}
 
       {message ? <div style={{ marginTop: 8, fontSize: 12, color: "#555" }}>{message}</div> : null}
     </div>
