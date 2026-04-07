@@ -2,10 +2,10 @@ import type { OperatorRecord } from "@/lib/operators/types";
 import { getOutreachEligibility } from "@/lib/operators/outreach-eligibility";
 import { buildOperatorQualitySummary } from "@/lib/operators/quality-summary";
 import { getReviewStateOrDefault } from "@/lib/operators/review-store";
-import { loadOperatorsFromResolverRegistry } from "@/lib/operators/loadOperators";
+import { loadOperatorsFromResolverRegistry, type OperatorConsoleRow } from "@/lib/operators/loadOperators";
 import HotTargetReviewPanel from "@/components/admin/operators/HotTargetReviewPanel";
 
-function loadOperators(): OperatorRecord[] {
+function loadOperators(): OperatorConsoleRow[] {
   return loadOperatorsFromResolverRegistry();
 }
 
@@ -20,15 +20,6 @@ function flagOn(value?: string): boolean {
   return value === "1";
 }
 
-function isProvisionalChild(op: OperatorRecord): boolean {
-  const hasParent = (op.evidence || []).some((row) => Boolean(row.parentContainerName));
-  if (!hasParent) return false;
-  const name = (op.name || "").toLowerCase();
-  if (!name.trim()) return true;
-  if (!name.includes(" ")) return true;
-  return /(profile|provider|staff|member|artist|book|booking|detail|services?)/.test(name);
-}
-
 export default function OperatorsPage({
   searchParams,
 }: {
@@ -36,6 +27,7 @@ export default function OperatorsPage({
     filter?: string;
     showContainers?: string;
     showDiscard?: string;
+    showEnumerated?: string;
     showProvisionalChildren?: string;
     showLowSignal?: string;
   };
@@ -43,12 +35,16 @@ export default function OperatorsPage({
   const filter = normalizeFilter(searchParams?.filter);
   const showContainers = searchParams?.showContainers === "1";
   const showDiscard = flagOn(searchParams?.showDiscard);
+  const showEnumerated = flagOn(searchParams?.showEnumerated);
   const showProvisionalChildren = flagOn(searchParams?.showProvisionalChildren);
   const showLowSignal = flagOn(searchParams?.showLowSignal);
-  const isPureContainerParent = (op: OperatorRecord): boolean => {
+  const isPureContainerParent = (op: OperatorConsoleRow): boolean => {
     const hasDirectSurface = Boolean(op.canonical.booking || op.canonical.instagram || op.canonical.website);
     if (hasDirectSurface) return false;
-    const hasContainerEvidence = (op.evidence || []).some((row) => row.evidenceType === "suite_container" || row.source === "container");
+    if (!op.isContainer) return false;
+    const hasContainerEvidence = (op.evidence || []).some(
+      (row) => row.evidenceType === "suite_container" || row.source === "container"
+    );
     const hasDirectEvidence = (op.evidence || []).some((row) => row.evidenceType === "direct_operator");
     return hasContainerEvidence && !hasDirectEvidence;
   };
@@ -56,30 +52,34 @@ export default function OperatorsPage({
     .map((op) => ({ op, outreach: getOutreachEligibility(op) }))
     .sort((a, b) => {
       if (a.outreach.eligible !== b.outreach.eligible) return a.outreach.eligible ? -1 : 1;
-      if (a.op.status !== b.op.status) {
-        if (a.op.status === "hot") return -1;
-        if (b.op.status === "hot") return 1;
+      if (a.op.resolverStatus !== b.op.resolverStatus) {
+        if (a.op.resolverStatus === "hot") return -1;
+        if (b.op.resolverStatus === "hot") return 1;
       }
       if (a.op.confidenceScore !== b.op.confidenceScore) return b.op.confidenceScore - a.op.confidenceScore;
       return (a.op.name || "").localeCompare(b.op.name || "");
     });
   const filteredOperators = operators.filter(({ op }) => {
-    if (filter === "hot") return op.status === "hot";
+    if (filter === "hot") return op.resolverStatus === "hot";
     if (filter === "ready") return getReviewStateOrDefault(op.reviewState) === "ready";
     if (filter === "shelved_by_review") return getReviewStateOrDefault(op.reviewState) === "shelved_by_review";
     return true;
   }).filter(({ op }) => {
     const hasSurface = Boolean(op.canonical.booking || op.canonical.instagram || op.canonical.website);
     const lowSignal = op.confidenceScore <= 1 && !hasSurface;
+    const defaultTierVisible =
+      op.resolverStatus === "hot" || op.resolverStatus === "enriched" || op.childState === "resolved_child";
     if (!showContainers && isPureContainerParent(op)) return false;
-    if (!showDiscard && op.status === "discard") return false;
-    if (!showProvisionalChildren && isProvisionalChild(op)) return false;
+    if (!showDiscard && op.resolverStatus === "shelved") return false;
+    if (!showEnumerated && !defaultTierVisible) return false;
+    if (!showProvisionalChildren && op.childState === "provisional_child") return false;
     if (!showLowSignal && lowSignal) return false;
     return true;
   });
   const quality = buildOperatorQualitySummary(filteredOperators.map((row) => row.op));
-  const hot = operators.filter(({ op }) => op.status === "hot");
-  const shelved = operators.filter(({ op }) => op.status === "shelved");
+  const hot = operators.filter(({ op }) => op.resolverStatus === "hot");
+  const enriched = operators.filter(({ op }) => op.resolverStatus === "enriched");
+  const enumerated = operators.filter(({ op }) => op.resolverStatus === "enumerated");
   const readyCount = operators.filter(({ op }) => getReviewStateOrDefault(op.reviewState) === "ready").length;
 
   const evidenceCount = (op: OperatorRecord) => (Array.isArray(op.evidence) && op.evidence.length > 0 ? op.evidence.length : 0);
@@ -124,9 +124,14 @@ export default function OperatorsPage({
       <h1 style={{ fontSize: 24, fontWeight: 600 }}>Operator Console</h1>
       <div style={{ marginTop: 12 }}>
         <strong>Resolver operators:</strong> {operators.length} | <strong>Rendered:</strong> {filteredOperators.length} |{" "}
-        <strong>Hot:</strong> {hot.length} | <strong>Shelved:</strong> {shelved.length} |{" "}
+        <strong>Hot:</strong> {hot.length} | <strong>Enriched:</strong> {enriched.length} |{" "}
+        <strong>Enumerated:</strong> {enumerated.length} |{" "}
         <a href="/admin/operators/ready">
           <strong>Ready Core:</strong> {readyCount}
+        </a>
+        {" | "}
+        <a href="/admin/operators/surface-recovery">
+          <strong>Surface Recovery</strong>
         </a>
       </div>
       <div style={{ marginTop: 10, display: "flex", gap: 10 }}>
@@ -152,19 +157,25 @@ export default function OperatorsPage({
           {showContainers ? "hide containers" : "show containers"}
         </a>
         <a
-          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showDiscard=${showDiscard ? "0" : "1"}&showProvisionalChildren=${showProvisionalChildren ? "1" : "0"}&showLowSignal=${showLowSignal ? "1" : "0"}`}
+          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showDiscard=${showDiscard ? "0" : "1"}&showEnumerated=${showEnumerated ? "1" : "0"}&showProvisionalChildren=${showProvisionalChildren ? "1" : "0"}&showLowSignal=${showLowSignal ? "1" : "0"}`}
           style={{ fontWeight: 500 }}
         >
-          {showDiscard ? "hide discard" : "show discard"}
+          {showDiscard ? "hide discard/shelved" : "show discard/shelved"}
         </a>
         <a
-          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showDiscard=${showDiscard ? "1" : "0"}&showProvisionalChildren=${showProvisionalChildren ? "0" : "1"}&showLowSignal=${showLowSignal ? "1" : "0"}`}
+          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showDiscard=${showDiscard ? "1" : "0"}&showEnumerated=${showEnumerated ? "0" : "1"}&showProvisionalChildren=${showProvisionalChildren ? "1" : "0"}&showLowSignal=${showLowSignal ? "1" : "0"}`}
+          style={{ fontWeight: 500 }}
+        >
+          {showEnumerated ? "hide enumerated" : "show enumerated"}
+        </a>
+        <a
+          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showDiscard=${showDiscard ? "1" : "0"}&showEnumerated=${showEnumerated ? "1" : "0"}&showProvisionalChildren=${showProvisionalChildren ? "0" : "1"}&showLowSignal=${showLowSignal ? "1" : "0"}`}
           style={{ fontWeight: 500 }}
         >
           {showProvisionalChildren ? "hide provisional child" : "show provisional child"}
         </a>
         <a
-          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showDiscard=${showDiscard ? "1" : "0"}&showProvisionalChildren=${showProvisionalChildren ? "1" : "0"}&showLowSignal=${showLowSignal ? "0" : "1"}`}
+          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showDiscard=${showDiscard ? "1" : "0"}&showEnumerated=${showEnumerated ? "1" : "0"}&showProvisionalChildren=${showProvisionalChildren ? "1" : "0"}&showLowSignal=${showLowSignal ? "0" : "1"}`}
           style={{ fontWeight: 500 }}
         >
           {showLowSignal ? "hide low signal" : "show low signal"}
@@ -240,8 +251,8 @@ export default function OperatorsPage({
           </tr>
         </thead>
         <tbody>
-          {filteredOperators.map(({ op, outreach }, idx) => (
-            <tr key={`${op.id}-${idx}`}>
+          {filteredOperators.map(({ op, outreach }) => (
+            <tr key={op.id}>
               <td style={cell} title={op.name}>
                 <span style={truncate}>{op.name}</span>
               </td>
@@ -265,10 +276,17 @@ export default function OperatorsPage({
               <td style={cell}>
                 <span
                   style={{
-                    color: op.status === "hot" ? "green" : op.status === "shelved" ? "orange" : "gray",
+                    color:
+                      op.resolverStatus === "hot"
+                        ? "green"
+                        : op.resolverStatus === "enriched"
+                          ? "#2255cc"
+                          : op.resolverStatus === "shelved"
+                            ? "orange"
+                            : "gray",
                   }}
                 >
-                  {op.status}
+                  {op.resolverStatus}
                 </span>
               </td>
               <td style={cell} title={getReviewStateOrDefault(op.reviewState)}>
@@ -287,7 +305,7 @@ export default function OperatorsPage({
                 <span style={truncate}>{sourceTypeLabel(op)}</span>
               </td>
               <td style={cell}>
-                {op.status === "hot" ? (
+                {op.resolverStatus === "hot" ? (
                   <HotTargetReviewPanel
                     operatorId={op.id}
                     canonicalName={op.name}

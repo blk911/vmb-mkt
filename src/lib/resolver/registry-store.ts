@@ -4,6 +4,7 @@ import type { ResolverOperator } from "./types";
 
 const REGISTRY_PATH = path.join(process.cwd(), "runtime-data/resolver_registry.v1.json");
 const SUMMARY_PATH = path.join(process.cwd(), "runtime-data/resolver_summary.json");
+const SURFACE_RECOVERY_QUEUE_PATH = path.join(process.cwd(), "runtime-data/operator_surface_recovery_queue.json");
 
 export function loadResolverRegistry(): ResolverOperator[] {
   if (!fs.existsSync(REGISTRY_PATH)) return [];
@@ -43,5 +44,11 @@ export function saveResolverSummary(input: {
     compactedDuplicateCount: input.compactedDuplicateCount ?? 0,
   };
   fs.writeFileSync(SUMMARY_PATH, `${JSON.stringify(summary, null, 2)}\n`);
+}
+
+export function writeSurfaceRecoveryQueueArtifact(queue: unknown): string {
+  fs.mkdirSync(path.dirname(SURFACE_RECOVERY_QUEUE_PATH), { recursive: true });
+  fs.writeFileSync(SURFACE_RECOVERY_QUEUE_PATH, `${JSON.stringify(queue, null, 2)}\n`);
+  return "runtime-data/operator_surface_recovery_queue.json";
 }
 
