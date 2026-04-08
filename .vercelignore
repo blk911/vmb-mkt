@@ -23,5 +23,8 @@ data/socialTargets/*
 !data/socialTargets/social_targets_v1.json
 !data/socialTargets/referral_edges_v1.json
 
-# Runtime artifacts are large and local-only; excluding avoids deployment bundle blowups.
+# Runtime artifacts are mostly local-only; keep minimal operator-console artifacts in deployment.
 runtime-data/*
+!runtime-data/resolver_registry.v1.json
+!runtime-data/resolver_summary.json
+!runtime-data/operator_review_states.json

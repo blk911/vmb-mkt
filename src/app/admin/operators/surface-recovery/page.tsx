@@ -13,7 +13,13 @@ function topCounts(values: string[]): Array<{ label: string; count: number }> {
 export default function SurfaceRecoveryPage() {
   const operators = loadOperatorsFromResolverRegistry();
   const queue = selectSurfaceRecoveryQueue(operators);
-  const artifactPath = writeSurfaceRecoveryQueue(queue);
+  const artifactPath = (() => {
+    try {
+      return writeSurfaceRecoveryQueue(queue);
+    } catch {
+      return "runtime-data/operator_surface_recovery_queue.json";
+    }
+  })();
   const byStatus = topCounts(queue.map((x) => x.status));
   const byChildState = topCounts(queue.map((x) => x.childState));
   const bySourceMix = topCounts(queue.map((x) => x.sourceTypeSummary || "none"));
