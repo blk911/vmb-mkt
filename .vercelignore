@@ -22,3 +22,6 @@ data/markets/*
 data/socialTargets/*
 !data/socialTargets/social_targets_v1.json
 !data/socialTargets/referral_edges_v1.json
+
+# Runtime artifacts are large and local-only; excluding avoids deployment bundle blowups.
+runtime-data/*
