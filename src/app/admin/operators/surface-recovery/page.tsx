@@ -65,7 +65,10 @@ export default function SurfaceRecoveryPage() {
               <td>{row.childState}</td>
               <td>{row.evidenceCount}</td>
               <td>{row.sourceTypeSummary || "-"}</td>
-              <td>{row.recoveryPriority}</td>
+              <td>
+                <div>{row.recoveryPriority}</div>
+                <div style={{ fontSize: 11, color: "#666" }}>{row.recoveryReasons.slice(0, 3).join(" • ")}</div>
+              </td>
               <td>{row.reviewState || "unreviewed"}</td>
               <td>{row.reviewNotes || "-"}</td>
             </tr>

@@ -25,6 +25,8 @@ export type ResolverOperator = {
   promotionLane?: "website_backed" | "directory_backed" | "container_adjacent" | "identity_only";
   compactedFromCount?: number;
   childState?: "not_child" | "provisional_child" | "resolved_child";
+  recoveryPriority?: number;
+  recoveryReasons?: string[];
   createdAt: number;
   updatedAt: number;
 };

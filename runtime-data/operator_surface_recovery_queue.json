@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-04-07T20:47:27.470Z",
-  "total": 66,
+  "generatedAt": "2026-04-08T11:38:21.327Z",
+  "total": 37,
   "queue": [
     {
       "id": "2ecf7bf50bc50a0ec23719466b2dbd86",
@@ -16,278 +16,17 @@
         "instagram"
       ],
       "sourceTypeSummary": "directory / google / instagram",
-      "recoveryPriority": 63
-    },
-    {
-      "id": "2ecf7bf50bc50a0ec23719466b2dbd86",
-      "name": "AV Nail Bar (formerly B&T Nails)",
-      "city": "DTC",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 157,
-      "sourceTypes": [
-        "google",
-        "directory",
-        "instagram"
-      ],
-      "sourceTypeSummary": "google / directory / instagram",
-      "recoveryPriority": 63
-    },
-    {
-      "id": "19c9f1544efc141dc567d8a38a0fc74e",
-      "name": "Solar Nails",
-      "city": "Greenwood Village",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 23,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 63
-    },
-    {
-      "id": "b06cc796823aa5636f35afd76b162b6a",
-      "name": "La Vogue Nail & Spa Denver",
-      "city": "Denver",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 19,
-      "sourceTypes": [
-        "directory",
-        "instagram"
-      ],
-      "sourceTypeSummary": "directory / instagram",
-      "recoveryPriority": 62
-    },
-    {
-      "id": "f664036d8073c58132bb3292e80938f4",
-      "name": "Beyond Nails",
-      "city": "DTC",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 18,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 61
-    },
-    {
-      "id": "d7cd1c8c7d626416ce4be4cfbde2f661",
-      "name": "yelp.com",
-      "city": "Greenwood Village",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 13,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 59
-    },
-    {
-      "id": "7bf01a400ca0102bd724b9a58a8c80b2",
-      "name": "yelp.com",
-      "city": "Denver",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 13,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 59
-    },
-    {
-      "id": "d3e5caabe76a5294d320983b45af7799",
-      "name": "The Nest Nail Spa DTC",
-      "city": "DTC",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 190,
-      "sourceTypes": [
-        "google",
-        "instagram"
-      ],
-      "sourceTypeSummary": "google / instagram",
-      "recoveryPriority": 57
-    },
-    {
-      "id": "c0e56d2f5c7da5f9514defb54aa69f8a",
-      "name": "Pearl Nail Bar",
-      "city": "DTC",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 85,
-      "sourceTypes": [
-        "google",
-        "instagram"
-      ],
-      "sourceTypeSummary": "google / instagram",
-      "recoveryPriority": 57
-    },
-    {
-      "id": "f42598269677538ee87d6898e2862d82",
-      "name": "Centennial Nails",
-      "city": "DTC",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 32,
-      "sourceTypes": [
-        "google"
-      ],
-      "sourceTypeSummary": "google",
-      "recoveryPriority": 57
-    },
-    {
-      "id": "e55911d8fb0c58a4f2d265c4de320a87",
-      "name": "I Capelli Salon",
-      "city": "DTC",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 70,
-      "sourceTypes": [
-        "google"
-      ],
-      "sourceTypeSummary": "google",
-      "recoveryPriority": 57
-    },
-    {
-      "id": "345cbe9cb5dc66162ae5fc734cb6b505",
-      "name": "Sola Salons",
-      "city": "DTC",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 34,
-      "sourceTypes": [
-        "google"
-      ],
-      "sourceTypeSummary": "google",
-      "recoveryPriority": 57
-    },
-    {
-      "id": "d81c8532ed8aa2bc6155a7ea7073a193",
-      "name": "Phenix Salon Suites - Parker",
-      "city": "DTC",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 20,
-      "sourceTypes": [
-        "google"
-      ],
-      "sourceTypeSummary": "google",
-      "recoveryPriority": 57
-    },
-    {
-      "id": "f42598269677538ee87d6898e2862d82",
-      "name": "Centennial Nails",
-      "city": "Greenwood Village",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 206,
-      "sourceTypes": [
-        "google"
-      ],
-      "sourceTypeSummary": "google",
-      "recoveryPriority": 57
-    },
-    {
-      "id": "d3e5caabe76a5294d320983b45af7799",
-      "name": "The Nest Nail Spa DTC",
-      "city": "Greenwood Village",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 94,
-      "sourceTypes": [
-        "google"
-      ],
-      "sourceTypeSummary": "google",
-      "recoveryPriority": 57
-    },
-    {
-      "id": "86df55a4151cec644122be6a5bdc719e",
-      "name": "J&J NAILS SPA",
-      "city": "DTC",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 189,
-      "sourceTypes": [
-        "google"
-      ],
-      "sourceTypeSummary": "google",
-      "recoveryPriority": 57
-    },
-    {
-      "id": "d81c8532ed8aa2bc6155a7ea7073a193",
-      "name": "Phenix Salon Suites - Parker",
-      "city": "0",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 39,
-      "sourceTypes": [
-        "instagram"
-      ],
-      "sourceTypeSummary": "instagram",
-      "recoveryPriority": 57
-    },
-    {
-      "id": "345cbe9cb5dc66162ae5fc734cb6b505",
-      "name": "Sola Salons",
-      "city": "0",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 101,
-      "sourceTypes": [
-        "instagram"
-      ],
-      "sourceTypeSummary": "instagram",
-      "recoveryPriority": 57
-    },
-    {
-      "id": "4af5c194481ffac5e7e7b73c53158a20",
-      "name": "My Salon Suite Southlands",
-      "city": "0",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 82,
-      "sourceTypes": [
-        "instagram"
-      ],
-      "sourceTypeSummary": "instagram",
-      "recoveryPriority": 57
-    },
-    {
-      "id": "abd3042d99c4e85b2c3bef7f424a5de3",
-      "name": "Bar Nails and Spa",
-      "city": "DTC",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 33,
-      "sourceTypes": [
-        "instagram"
-      ],
-      "sourceTypeSummary": "instagram",
-      "recoveryPriority": 57
+      "recoveryPriority": 108,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "directory-backed",
+        "google + directory mix",
+        "possible website hint",
+        "possible instagram hint"
+      ]
     },
     {
       "id": "91dc1518990d3517345e51ad8f7cb43c",
@@ -302,11 +41,67 @@
         "instagram"
       ],
       "sourceTypeSummary": "directory / instagram",
-      "recoveryPriority": 56
+      "recoveryPriority": 100,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "directory-backed",
+        "possible website hint",
+        "possible instagram hint"
+      ]
     },
     {
-      "id": "e49a57cb30263bd5f3ea907724097cd9",
-      "name": "ICON Nails and Spa",
+      "id": "b06cc796823aa5636f35afd76b162b6a",
+      "name": "La Vogue Nail & Spa Denver",
+      "city": "Denver",
+      "status": "enriched",
+      "childState": "not_child",
+      "reviewState": "unreviewed",
+      "evidenceCount": 19,
+      "sourceTypes": [
+        "directory",
+        "instagram"
+      ],
+      "sourceTypeSummary": "directory / instagram",
+      "recoveryPriority": 100,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "directory-backed",
+        "possible website hint",
+        "possible instagram hint"
+      ]
+    },
+    {
+      "id": "d7cd1c8c7d626416ce4be4cfbde2f661",
+      "name": "yelp.com",
+      "city": "Greenwood Village",
+      "status": "enriched",
+      "childState": "not_child",
+      "reviewState": "unreviewed",
+      "evidenceCount": 13,
+      "sourceTypes": [
+        "directory"
+      ],
+      "sourceTypeSummary": "directory",
+      "recoveryPriority": 96,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "phone present",
+        "directory-backed",
+        "possible website hint"
+      ]
+    },
+    {
+      "id": "7bf01a400ca0102bd724b9a58a8c80b2",
+      "name": "yelp.com",
       "city": "Denver",
       "status": "enriched",
       "childState": "not_child",
@@ -316,105 +111,128 @@
         "directory"
       ],
       "sourceTypeSummary": "directory",
-      "recoveryPriority": 56
+      "recoveryPriority": 96,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "phone present",
+        "directory-backed",
+        "possible website hint"
+      ]
     },
     {
-      "id": "b12c1ddf499fa52e3bcd29bb1f2b955d",
-      "name": "My Salon Suite",
-      "city": "0",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 15,
-      "sourceTypes": [
-        "instagram"
-      ],
-      "sourceTypeSummary": "instagram",
-      "recoveryPriority": 52
-    },
-    {
-      "id": "7fed25091f69afe8a86a4a269c30ab6b",
-      "name": "Paris Nails 15",
+      "id": "d3e5caabe76a5294d320983b45af7799",
+      "name": "The Nest Nail Spa DTC",
       "city": "DTC",
       "status": "enriched",
       "childState": "not_child",
       "reviewState": "unreviewed",
-      "evidenceCount": 14,
+      "evidenceCount": 190,
+      "sourceTypes": [
+        "google",
+        "instagram"
+      ],
+      "sourceTypeSummary": "google / instagram",
+      "recoveryPriority": 88,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
+    },
+    {
+      "id": "c0e56d2f5c7da5f9514defb54aa69f8a",
+      "name": "Pearl Nail Bar",
+      "city": "DTC",
+      "status": "enriched",
+      "childState": "not_child",
+      "reviewState": "unreviewed",
+      "evidenceCount": 85,
+      "sourceTypes": [
+        "google",
+        "instagram"
+      ],
+      "sourceTypeSummary": "google / instagram",
+      "recoveryPriority": 88,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
+    },
+    {
+      "id": "f42598269677538ee87d6898e2862d82",
+      "name": "Centennial Nails",
+      "city": "DTC",
+      "status": "enriched",
+      "childState": "not_child",
+      "reviewState": "unreviewed",
+      "evidenceCount": 32,
       "sourceTypes": [
         "google"
       ],
       "sourceTypeSummary": "google",
-      "recoveryPriority": 51
+      "recoveryPriority": 88,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
     },
     {
-      "id": "dd60ac0acae3fd1dc3dc39211ab0c4f2",
-      "name": "Av's Nails & Spa Salon",
+      "id": "e55911d8fb0c58a4f2d265c4de320a87",
+      "name": "I Capelli Salon",
       "city": "DTC",
       "status": "enriched",
       "childState": "not_child",
       "reviewState": "unreviewed",
-      "evidenceCount": 11,
+      "evidenceCount": 70,
       "sourceTypes": [
-        "instagram"
+        "google"
       ],
-      "sourceTypeSummary": "instagram",
-      "recoveryPriority": 48
+      "sourceTypeSummary": "google",
+      "recoveryPriority": 88,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
     },
     {
-      "id": "5d1bc0bdabb11575023b34e8d1b3975b",
-      "name": "Sandy Pham",
-      "city": "0",
-      "status": "enriched",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 7,
-      "sourceTypes": [
-        "container"
-      ],
-      "sourceTypeSummary": "container",
-      "recoveryPriority": 48
-    },
-    {
-      "id": "7d2a732c0fb9dcff8a03907b066b75dc",
-      "name": "Laurie Warwick",
-      "city": "0",
-      "status": "enriched",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 7,
-      "sourceTypes": [
-        "container"
-      ],
-      "sourceTypeSummary": "container",
-      "recoveryPriority": 48
-    },
-    {
-      "id": "1dcdef2278051de4af7f3dd52e4081bc",
-      "name": "Teresa Palomares",
-      "city": "0",
-      "status": "enriched",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 7,
-      "sourceTypes": [
-        "container"
-      ],
-      "sourceTypeSummary": "container",
-      "recoveryPriority": 48
-    },
-    {
-      "id": "907ef2e36d70c8fac8fb1914c8dd936e",
-      "name": "Modern Nails &amp; Lash - Golden, CO",
-      "city": "Denver",
+      "id": "345cbe9cb5dc66162ae5fc734cb6b505",
+      "name": "Sola Salons",
+      "city": "DTC",
       "status": "enriched",
       "childState": "not_child",
       "reviewState": "unreviewed",
-      "evidenceCount": 1,
+      "evidenceCount": 34,
       "sourceTypes": [
-        "directory"
+        "google"
       ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 47
+      "sourceTypeSummary": "google",
+      "recoveryPriority": 88,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
     },
     {
       "id": "d9d9cf963b612482bfa0ddc6e7587b42",
@@ -428,7 +246,235 @@
         "google"
       ],
       "sourceTypeSummary": "google",
-      "recoveryPriority": 46
+      "recoveryPriority": 88,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
+    },
+    {
+      "id": "d81c8532ed8aa2bc6155a7ea7073a193",
+      "name": "Phenix Salon Suites - Parker",
+      "city": "DTC",
+      "status": "enriched",
+      "childState": "not_child",
+      "reviewState": "unreviewed",
+      "evidenceCount": 20,
+      "sourceTypes": [
+        "google"
+      ],
+      "sourceTypeSummary": "google",
+      "recoveryPriority": 88,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
+    },
+    {
+      "id": "f664036d8073c58132bb3292e80938f4",
+      "name": "Beyond Nails",
+      "city": "DTC",
+      "status": "enriched",
+      "childState": "not_child",
+      "reviewState": "unreviewed",
+      "evidenceCount": 18,
+      "sourceTypes": [
+        "directory"
+      ],
+      "sourceTypeSummary": "directory",
+      "recoveryPriority": 88,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "directory-backed",
+        "possible website hint"
+      ]
+    },
+    {
+      "id": "19c9f1544efc141dc567d8a38a0fc74e",
+      "name": "Solar Nails",
+      "city": "Greenwood Village",
+      "status": "enriched",
+      "childState": "not_child",
+      "reviewState": "unreviewed",
+      "evidenceCount": 23,
+      "sourceTypes": [
+        "directory"
+      ],
+      "sourceTypeSummary": "directory",
+      "recoveryPriority": 88,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "directory-backed",
+        "possible website hint"
+      ]
+    },
+    {
+      "id": "e49a57cb30263bd5f3ea907724097cd9",
+      "name": "ICON Nails and Spa",
+      "city": "Denver",
+      "status": "enriched",
+      "childState": "not_child",
+      "reviewState": "unreviewed",
+      "evidenceCount": 13,
+      "sourceTypes": [
+        "directory"
+      ],
+      "sourceTypeSummary": "directory",
+      "recoveryPriority": 88,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "directory-backed",
+        "possible website hint"
+      ]
+    },
+    {
+      "id": "7fed25091f69afe8a86a4a269c30ab6b",
+      "name": "Paris Nails 15",
+      "city": "DTC",
+      "status": "enriched",
+      "childState": "not_child",
+      "reviewState": "unreviewed",
+      "evidenceCount": 14,
+      "sourceTypes": [
+        "google"
+      ],
+      "sourceTypeSummary": "google",
+      "recoveryPriority": 88,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
+    },
+    {
+      "id": "86df55a4151cec644122be6a5bdc719e",
+      "name": "J&J NAILS SPA",
+      "city": "DTC",
+      "status": "enriched",
+      "childState": "not_child",
+      "reviewState": "unreviewed",
+      "evidenceCount": 189,
+      "sourceTypes": [
+        "google"
+      ],
+      "sourceTypeSummary": "google",
+      "recoveryPriority": 88,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
+    },
+    {
+      "id": "b12c1ddf499fa52e3bcd29bb1f2b955d",
+      "name": "My Salon Suite",
+      "city": "0",
+      "status": "enriched",
+      "childState": "not_child",
+      "reviewState": "unreviewed",
+      "evidenceCount": 15,
+      "sourceTypes": [
+        "instagram"
+      ],
+      "sourceTypeSummary": "instagram",
+      "recoveryPriority": 88,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
+    },
+    {
+      "id": "4af5c194481ffac5e7e7b73c53158a20",
+      "name": "My Salon Suite Southlands",
+      "city": "0",
+      "status": "enriched",
+      "childState": "not_child",
+      "reviewState": "unreviewed",
+      "evidenceCount": 82,
+      "sourceTypes": [
+        "instagram"
+      ],
+      "sourceTypeSummary": "instagram",
+      "recoveryPriority": 88,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
+    },
+    {
+      "id": "abd3042d99c4e85b2c3bef7f424a5de3",
+      "name": "Bar Nails and Spa",
+      "city": "DTC",
+      "status": "enriched",
+      "childState": "not_child",
+      "reviewState": "unreviewed",
+      "evidenceCount": 33,
+      "sourceTypes": [
+        "instagram"
+      ],
+      "sourceTypeSummary": "instagram",
+      "recoveryPriority": 88,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
+    },
+    {
+      "id": "dd60ac0acae3fd1dc3dc39211ab0c4f2",
+      "name": "Av's Nails & Spa Salon",
+      "city": "DTC",
+      "status": "enriched",
+      "childState": "not_child",
+      "reviewState": "unreviewed",
+      "evidenceCount": 11,
+      "sourceTypes": [
+        "instagram"
+      ],
+      "sourceTypeSummary": "instagram",
+      "recoveryPriority": 88,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
     },
     {
       "id": "ab42f12d02b550cf578ab9c9861d2750",
@@ -442,7 +488,81 @@
         "google"
       ],
       "sourceTypeSummary": "google",
-      "recoveryPriority": 41
+      "recoveryPriority": 86,
+      "recoveryReasons": [
+        "enriched status",
+        "mid evidence count",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible booking hint"
+      ]
+    },
+    {
+      "id": "5d1bc0bdabb11575023b34e8d1b3975b",
+      "name": "Sandy Pham",
+      "city": "0",
+      "status": "enriched",
+      "childState": "resolved_child",
+      "reviewState": "unreviewed",
+      "evidenceCount": 7,
+      "sourceTypes": [
+        "container"
+      ],
+      "sourceTypeSummary": "container",
+      "recoveryPriority": 86,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "container-linked",
+        "possible website hint"
+      ]
+    },
+    {
+      "id": "7d2a732c0fb9dcff8a03907b066b75dc",
+      "name": "Laurie Warwick",
+      "city": "0",
+      "status": "enriched",
+      "childState": "resolved_child",
+      "reviewState": "unreviewed",
+      "evidenceCount": 7,
+      "sourceTypes": [
+        "container"
+      ],
+      "sourceTypeSummary": "container",
+      "recoveryPriority": 86,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "container-linked",
+        "possible website hint"
+      ]
+    },
+    {
+      "id": "1dcdef2278051de4af7f3dd52e4081bc",
+      "name": "Teresa Palomares",
+      "city": "0",
+      "status": "enriched",
+      "childState": "resolved_child",
+      "reviewState": "unreviewed",
+      "evidenceCount": 7,
+      "sourceTypes": [
+        "container"
+      ],
+      "sourceTypeSummary": "container",
+      "recoveryPriority": 86,
+      "recoveryReasons": [
+        "enriched status",
+        "high evidence count",
+        "strong name",
+        "city present",
+        "container-linked",
+        "possible website hint"
+      ]
     },
     {
       "id": "5893c1ad3e85efe896e07c67d4cce6cd",
@@ -456,7 +576,15 @@
         "instagram"
       ],
       "sourceTypeSummary": "instagram",
-      "recoveryPriority": 41
+      "recoveryPriority": 82,
+      "recoveryReasons": [
+        "enriched status",
+        "mid evidence count",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
     },
     {
       "id": "b807ad0ad83045887c2914e34be67796",
@@ -470,7 +598,15 @@
         "instagram"
       ],
       "sourceTypeSummary": "instagram",
-      "recoveryPriority": 41
+      "recoveryPriority": 82,
+      "recoveryReasons": [
+        "enriched status",
+        "mid evidence count",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
     },
     {
       "id": "7822cff0ebc790ed8cda2604b98c07ad",
@@ -484,35 +620,15 @@
         "google"
       ],
       "sourceTypeSummary": "google",
-      "recoveryPriority": 41
-    },
-    {
-      "id": "235da6386a5503778416f6574fa8805c",
-      "name": "Phenix Salon Suites",
-      "city": "0",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 3,
-      "sourceTypes": [
-        "instagram"
-      ],
-      "sourceTypeSummary": "instagram",
-      "recoveryPriority": 40
-    },
-    {
-      "id": "0b818613cf4a451e36b63851e1730568",
-      "name": "Room for Friends ... a wine bar!",
-      "city": "Denver",
-      "status": "enriched",
-      "childState": "not_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 3,
-      "sourceTypes": [
-        "instagram"
-      ],
-      "sourceTypeSummary": "instagram",
-      "recoveryPriority": 40
+      "recoveryPriority": 82,
+      "recoveryReasons": [
+        "enriched status",
+        "mid evidence count",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
     },
     {
       "id": "4be083497f9bf480ec15061bee6d519f",
@@ -526,7 +642,15 @@
         "google"
       ],
       "sourceTypeSummary": "google",
-      "recoveryPriority": 40
+      "recoveryPriority": 80,
+      "recoveryReasons": [
+        "enriched status",
+        "some evidence depth",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible booking hint"
+      ]
     },
     {
       "id": "c03386491bc2c595cfedf35d8f2ad71c",
@@ -540,7 +664,15 @@
         "google"
       ],
       "sourceTypeSummary": "google",
-      "recoveryPriority": 40
+      "recoveryPriority": 80,
+      "recoveryReasons": [
+        "enriched status",
+        "some evidence depth",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible booking hint"
+      ]
     },
     {
       "id": "19829e8d0fd7c9c7ebc3328c36b9a9e3",
@@ -554,7 +686,16 @@
         "directory"
       ],
       "sourceTypeSummary": "directory",
-      "recoveryPriority": 35
+      "recoveryPriority": 80,
+      "recoveryReasons": [
+        "resolved child",
+        "some evidence depth",
+        "strong name",
+        "city present",
+        "directory-backed",
+        "container-linked",
+        "possible website hint"
+      ]
     },
     {
       "id": "9427f05319353b034a428b2db9e2c869",
@@ -568,7 +709,16 @@
         "directory"
       ],
       "sourceTypeSummary": "directory",
-      "recoveryPriority": 35
+      "recoveryPriority": 80,
+      "recoveryReasons": [
+        "resolved child",
+        "some evidence depth",
+        "strong name",
+        "city present",
+        "directory-backed",
+        "container-linked",
+        "possible website hint"
+      ]
     },
     {
       "id": "b6a0f76c307a46ed3783e7023dabebeb",
@@ -582,7 +732,16 @@
         "directory"
       ],
       "sourceTypeSummary": "directory",
-      "recoveryPriority": 35
+      "recoveryPriority": 80,
+      "recoveryReasons": [
+        "resolved child",
+        "some evidence depth",
+        "strong name",
+        "city present",
+        "directory-backed",
+        "container-linked",
+        "possible website hint"
+      ]
     },
     {
       "id": "2b1ef4c73551e09696f678a474abf02c",
@@ -596,343 +755,83 @@
         "directory"
       ],
       "sourceTypeSummary": "directory",
-      "recoveryPriority": 35
+      "recoveryPriority": 80,
+      "recoveryReasons": [
+        "resolved child",
+        "some evidence depth",
+        "strong name",
+        "city present",
+        "directory-backed",
+        "container-linked",
+        "possible website hint"
+      ]
     },
     {
-      "id": "19829e8d0fd7c9c7ebc3328c36b9a9e3",
-      "name": "Denise Gonzales - At Sola Salons Parker Rd. and Chambers, Hair, Nails 0 nails",
+      "id": "235da6386a5503778416f6574fa8805c",
+      "name": "Phenix Salon Suites",
       "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
+      "status": "enriched",
+      "childState": "not_child",
       "reviewState": "unreviewed",
-      "evidenceCount": 2,
+      "evidenceCount": 3,
       "sourceTypes": [
-        "directory"
+        "instagram"
       ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 35
+      "sourceTypeSummary": "instagram",
+      "recoveryPriority": 76,
+      "recoveryReasons": [
+        "enriched status",
+        "some evidence depth",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
     },
     {
-      "id": "9427f05319353b034a428b2db9e2c869",
-      "name": "Sandy Pham - At Sola Salons Parker Rd. and Chambers, Nails, Waxing 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
+      "id": "0b818613cf4a451e36b63851e1730568",
+      "name": "Room for Friends ... a wine bar!",
+      "city": "Denver",
+      "status": "enriched",
+      "childState": "not_child",
       "reviewState": "unreviewed",
-      "evidenceCount": 2,
+      "evidenceCount": 3,
       "sourceTypes": [
-        "directory"
+        "instagram"
       ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 35
+      "sourceTypeSummary": "instagram",
+      "recoveryPriority": 76,
+      "recoveryReasons": [
+        "enriched status",
+        "some evidence depth",
+        "strong name",
+        "city present",
+        "possible website hint",
+        "possible instagram hint"
+      ]
     },
     {
-      "id": "b6a0f76c307a46ed3783e7023dabebeb",
-      "name": "Laurie - At Sola Salons Parker Rd. and Chambers, Hair 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 2,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 35
-    },
-    {
-      "id": "2b1ef4c73551e09696f678a474abf02c",
-      "name": "Cardoza Hair Stylists LLC - At Sola Salons Parker Rd. and Chambers, Hair 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 2,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 35
-    },
-    {
-      "id": "19829e8d0fd7c9c7ebc3328c36b9a9e3",
-      "name": "Denise Gonzales - At Sola Salons Parker Rd. and Chambers, Hair, Nails 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
+      "id": "907ef2e36d70c8fac8fb1914c8dd936e",
+      "name": "Modern Nails &amp; Lash - Golden, CO",
+      "city": "Denver",
+      "status": "enriched",
+      "childState": "not_child",
       "reviewState": "unreviewed",
       "evidenceCount": 1,
       "sourceTypes": [
         "directory"
       ],
       "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "9427f05319353b034a428b2db9e2c869",
-      "name": "Sandy Pham - At Sola Salons Parker Rd. and Chambers, Nails, Waxing 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "b6a0f76c307a46ed3783e7023dabebeb",
-      "name": "Laurie - At Sola Salons Parker Rd. and Chambers, Hair 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "2b1ef4c73551e09696f678a474abf02c",
-      "name": "Cardoza Hair Stylists LLC - At Sola Salons Parker Rd. and Chambers, Hair 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "19829e8d0fd7c9c7ebc3328c36b9a9e3",
-      "name": "Denise Gonzales - At Sola Salons Parker Rd. and Chambers, Hair, Nails 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "9427f05319353b034a428b2db9e2c869",
-      "name": "Sandy Pham - At Sola Salons Parker Rd. and Chambers, Nails, Waxing 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "b6a0f76c307a46ed3783e7023dabebeb",
-      "name": "Laurie - At Sola Salons Parker Rd. and Chambers, Hair 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "2b1ef4c73551e09696f678a474abf02c",
-      "name": "Cardoza Hair Stylists LLC - At Sola Salons Parker Rd. and Chambers, Hair 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "19829e8d0fd7c9c7ebc3328c36b9a9e3",
-      "name": "Denise Gonzales - At Sola Salons Parker Rd. and Chambers, Hair, Nails 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "19829e8d0fd7c9c7ebc3328c36b9a9e3",
-      "name": "Denise Gonzales - At Sola Salons Parker Rd. and Chambers, Hair, Nails 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "9427f05319353b034a428b2db9e2c869",
-      "name": "Sandy Pham - At Sola Salons Parker Rd. and Chambers, Nails, Waxing 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "9427f05319353b034a428b2db9e2c869",
-      "name": "Sandy Pham - At Sola Salons Parker Rd. and Chambers, Nails, Waxing 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "b6a0f76c307a46ed3783e7023dabebeb",
-      "name": "Laurie - At Sola Salons Parker Rd. and Chambers, Hair 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "b6a0f76c307a46ed3783e7023dabebeb",
-      "name": "Laurie - At Sola Salons Parker Rd. and Chambers, Hair 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "2b1ef4c73551e09696f678a474abf02c",
-      "name": "Cardoza Hair Stylists LLC - At Sola Salons Parker Rd. and Chambers, Hair 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "2b1ef4c73551e09696f678a474abf02c",
-      "name": "Cardoza Hair Stylists LLC - At Sola Salons Parker Rd. and Chambers, Hair 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "19829e8d0fd7c9c7ebc3328c36b9a9e3",
-      "name": "Denise Gonzales - At Sola Salons Parker Rd. and Chambers, Hair, Nails 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "9427f05319353b034a428b2db9e2c869",
-      "name": "Sandy Pham - At Sola Salons Parker Rd. and Chambers, Nails, Waxing 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "b6a0f76c307a46ed3783e7023dabebeb",
-      "name": "Laurie - At Sola Salons Parker Rd. and Chambers, Hair 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
-    },
-    {
-      "id": "2b1ef4c73551e09696f678a474abf02c",
-      "name": "Cardoza Hair Stylists LLC - At Sola Salons Parker Rd. and Chambers, Hair 0 nails",
-      "city": "0",
-      "status": "enumerated",
-      "childState": "resolved_child",
-      "reviewState": "unreviewed",
-      "evidenceCount": 1,
-      "sourceTypes": [
-        "directory"
-      ],
-      "sourceTypeSummary": "directory",
-      "recoveryPriority": 34
+      "recoveryPriority": 66,
+      "recoveryReasons": [
+        "enriched status",
+        "strong name",
+        "city present",
+        "phone present",
+        "directory-backed",
+        "possible website hint",
+        "single-evidence penalty"
+      ]
     }
   ]
 }
