@@ -1,4 +1,7 @@
+import fs from "node:fs";
+import path from "node:path";
 import type { HarvestQuery, HarvestQueryResultSet, HarvestRawResult } from "@/lib/social-targets/operator-harvest/types";
+import type { RuntimeTraceLogger } from "@/lib/resolver/runtime-trace";
 
 type PlaceTextSearchResult = {
   place_id?: string;
@@ -14,11 +17,27 @@ type PlaceDetailsResult = {
   url?: string;
 };
 
+export type GoogleSearchIntent = "directory_backed_surface_promotion" | "sola_child_surface_recovery";
+
+export type GoogleSearchResultMeta = {
+  query: string;
+  normalizedQuery: string;
+  strictQuery: boolean;
+  intent?: GoogleSearchIntent;
+  operatorId?: string;
+  candidateStrength?: number;
+  resultRank: number;
+};
+
 export type GoogleSearchResult = {
   title?: string;
   link: string;
   snippet?: string;
+  meta?: GoogleSearchResultMeta;
 };
+
+const SEARCH_DIAGNOSTICS_PATH = path.join(process.cwd(), "runtime-data/search_query_diagnostics.jsonl");
+const QUERY_FETCH_TIMEOUT_MS = 8000;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -101,9 +120,27 @@ function parseLinksFromHtml(html: string, baseUrl: string): string[] {
   return links;
 }
 
-async function fetchWebsiteHarvestLinks(websiteUrl: string): Promise<string[]> {
+async function fetchWebsiteHarvestLinks(
+  websiteUrl: string,
+  traceLogger?: RuntimeTraceLogger,
+  traceContext?: {
+    operatorId?: string;
+    operatorName?: string;
+    query?: string;
+    intent?: GoogleSearchIntent;
+    candidateStrength?: number;
+  }
+): Promise<string[]> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8000);
+  const startedAt = Date.now();
+  const timer = setTimeout(() => controller.abort(), QUERY_FETCH_TIMEOUT_MS);
+  traceLogger?.log({
+    ...traceContext,
+    stage: "website_surface_fetch",
+    status: "start",
+    url: websiteUrl,
+    note: `timeoutMs=${QUERY_FETCH_TIMEOUT_MS}`,
+  });
   try {
     const res = await fetch(websiteUrl, {
       method: "GET",
@@ -113,35 +150,163 @@ async function fetchWebsiteHarvestLinks(websiteUrl: string): Promise<string[]> {
         Accept: "text/html,application/xhtml+xml",
       },
     });
-    if (!res.ok) return [];
+    if (!res.ok) {
+      traceLogger?.log({
+        ...traceContext,
+        stage: "website_surface_fetch",
+        status: "error",
+        elapsedMs: Date.now() - startedAt,
+        url: websiteUrl,
+        note: `status=${res.status}`,
+      });
+      return [];
+    }
     const html = await res.text();
+    traceLogger?.log({
+      ...traceContext,
+      stage: "website_surface_fetch",
+      status: "success",
+      elapsedMs: Date.now() - startedAt,
+      url: websiteUrl,
+      note: "parsed_links",
+    });
     return parseLinksFromHtml(html, websiteUrl).filter(isHarvestSurface);
-  } catch {
+  } catch (error: unknown) {
+    traceLogger?.log({
+      ...traceContext,
+      stage: "website_surface_fetch",
+      status: error instanceof Error && error.name === "AbortError" ? "timeout" : "error",
+      elapsedMs: Date.now() - startedAt,
+      url: websiteUrl,
+      note: error instanceof Error ? error.message : "unknown_fetch_error",
+    });
     return [];
   } finally {
     clearTimeout(timer);
   }
 }
 
-async function googlePlaceTextSearch(apiKey: string, query: string): Promise<PlaceTextSearchResult[]> {
+async function googlePlaceTextSearch(
+  apiKey: string,
+  query: string,
+  traceLogger?: RuntimeTraceLogger,
+  traceContext?: {
+    operatorId?: string;
+    operatorName?: string;
+    query?: string;
+    intent?: GoogleSearchIntent;
+    candidateStrength?: number;
+  }
+): Promise<PlaceTextSearchResult[]> {
   const url = new URL("https://maps.googleapis.com/maps/api/place/textsearch/json");
   url.searchParams.set("key", apiKey);
   url.searchParams.set("query", query);
-  const res = await fetch(url.toString());
-  if (!res.ok) return [];
-  const json = (await res.json()) as { results?: PlaceTextSearchResult[] };
-  return Array.isArray(json.results) ? json.results : [];
+  const controller = new AbortController();
+  const startedAt = Date.now();
+  const timer = setTimeout(() => controller.abort(), QUERY_FETCH_TIMEOUT_MS);
+  traceLogger?.log({
+    ...traceContext,
+    stage: "google_places_text_search",
+    status: "start",
+    note: `timeoutMs=${QUERY_FETCH_TIMEOUT_MS}`,
+  });
+  try {
+    const res = await fetch(url.toString(), { signal: controller.signal });
+    if (!res.ok) {
+      traceLogger?.log({
+        ...traceContext,
+        stage: "google_places_text_search",
+        status: "error",
+        elapsedMs: Date.now() - startedAt,
+        note: `status=${res.status}`,
+      });
+      return [];
+    }
+    const json = (await res.json()) as { results?: PlaceTextSearchResult[] };
+    traceLogger?.log({
+      ...traceContext,
+      stage: "google_places_text_search",
+      status: "success",
+      elapsedMs: Date.now() - startedAt,
+      note: `results=${Array.isArray(json.results) ? json.results.length : 0}`,
+    });
+    return Array.isArray(json.results) ? json.results : [];
+  } catch (error: unknown) {
+    traceLogger?.log({
+      ...traceContext,
+      stage: "google_places_text_search",
+      status: error instanceof Error && error.name === "AbortError" ? "timeout" : "error",
+      elapsedMs: Date.now() - startedAt,
+      note: error instanceof Error ? error.message : "unknown_fetch_error",
+    });
+    return [];
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
-async function googlePlaceDetails(apiKey: string, placeId: string): Promise<PlaceDetailsResult | null> {
+async function googlePlaceDetails(
+  apiKey: string,
+  placeId: string,
+  traceLogger?: RuntimeTraceLogger,
+  traceContext?: {
+    operatorId?: string;
+    operatorName?: string;
+    query?: string;
+    intent?: GoogleSearchIntent;
+    candidateStrength?: number;
+  }
+): Promise<PlaceDetailsResult | null> {
   const url = new URL("https://maps.googleapis.com/maps/api/place/details/json");
   url.searchParams.set("key", apiKey);
   url.searchParams.set("place_id", placeId);
   url.searchParams.set("fields", ["place_id", "name", "formatted_address", "website", "url"].join(","));
-  const res = await fetch(url.toString());
-  if (!res.ok) return null;
-  const json = (await res.json()) as { result?: PlaceDetailsResult };
-  return json.result ?? null;
+  const controller = new AbortController();
+  const startedAt = Date.now();
+  const timer = setTimeout(() => controller.abort(), QUERY_FETCH_TIMEOUT_MS);
+  traceLogger?.log({
+    ...traceContext,
+    stage: "google_place_details",
+    status: "start",
+    url: placeId,
+    note: `timeoutMs=${QUERY_FETCH_TIMEOUT_MS}`,
+  });
+  try {
+    const res = await fetch(url.toString(), { signal: controller.signal });
+    if (!res.ok) {
+      traceLogger?.log({
+        ...traceContext,
+        stage: "google_place_details",
+        status: "error",
+        elapsedMs: Date.now() - startedAt,
+        url: placeId,
+        note: `status=${res.status}`,
+      });
+      return null;
+    }
+    const json = (await res.json()) as { result?: PlaceDetailsResult };
+    traceLogger?.log({
+      ...traceContext,
+      stage: "google_place_details",
+      status: "success",
+      elapsedMs: Date.now() - startedAt,
+      url: placeId,
+      note: json.result?.website ? "has_website" : "no_website",
+    });
+    return json.result ?? null;
+  } catch (error: unknown) {
+    traceLogger?.log({
+      ...traceContext,
+      stage: "google_place_details",
+      status: error instanceof Error && error.name === "AbortError" ? "timeout" : "error",
+      elapsedMs: Date.now() - startedAt,
+      url: placeId,
+      note: error instanceof Error ? error.message : "unknown_fetch_error",
+    });
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function detailToRawResult(detail: PlaceDetailsResult, url: string): HarvestRawResult {
@@ -157,10 +322,18 @@ async function searchPlacesForQuery(
   apiKey: string,
   resultsPerQuery: number,
   detailsCache: Map<string, PlaceDetailsResult | null>,
-  websiteLinksCache: Map<string, string[]>
+  websiteLinksCache: Map<string, string[]>,
+  traceLogger?: RuntimeTraceLogger,
+  traceContext?: {
+    operatorId?: string;
+    operatorName?: string;
+    query?: string;
+    intent?: GoogleSearchIntent;
+    candidateStrength?: number;
+  }
 ): Promise<HarvestRawResult[]> {
   const normalized = normalizeSearchQuery(query);
-  const textResults = await googlePlaceTextSearch(apiKey, normalized).catch(() => []);
+  const textResults = await googlePlaceTextSearch(apiKey, normalized, traceLogger, traceContext).catch(() => []);
   const rows: HarvestRawResult[] = [];
   const seenUrls = new Set<string>();
   for (const place of textResults) {
@@ -168,7 +341,7 @@ async function searchPlacesForQuery(
     if (!placeId) continue;
     const details = detailsCache.has(placeId)
       ? (detailsCache.get(placeId) ?? null)
-      : await googlePlaceDetails(apiKey, placeId).catch(() => null);
+      : await googlePlaceDetails(apiKey, placeId, traceLogger, traceContext).catch(() => null);
     detailsCache.set(placeId, details ?? null);
     if (!details) continue;
     const directCandidates = [normalizeUrl(details.website), normalizeUrl(details.url)].filter(
@@ -187,7 +360,7 @@ async function searchPlacesForQuery(
     if (website) {
       const websiteLinks = websiteLinksCache.has(website)
         ? (websiteLinksCache.get(website) ?? [])
-        : await fetchWebsiteHarvestLinks(website);
+        : await fetchWebsiteHarvestLinks(website, traceLogger, traceContext);
       websiteLinksCache.set(website, websiteLinks);
       for (const link of websiteLinks) {
         const normalizedSurface = normalizeSurfaceUrl(link);
@@ -203,19 +376,64 @@ async function searchPlacesForQuery(
   return rows.slice(0, resultsPerQuery);
 }
 
+function appendSearchDiagnostic(input: {
+  query: string;
+  normalizedQuery: string;
+  strictQuery: boolean;
+  intent?: GoogleSearchIntent;
+  operatorId?: string;
+  candidateStrength?: number;
+  resultCount: number;
+  topLinks: string[];
+}): void {
+  fs.mkdirSync(path.dirname(SEARCH_DIAGNOSTICS_PATH), { recursive: true });
+  fs.appendFileSync(
+    SEARCH_DIAGNOSTICS_PATH,
+    `${JSON.stringify({
+      generatedAt: new Date().toISOString(),
+      ...input,
+    })}\n`
+  );
+}
+
 export async function runGoogleSearch(
   query: string,
   limit = 8,
   opts?: {
     strictQuery?: boolean;
-    intent?: "directory_backed_surface_promotion" | "sola_child_surface_recovery";
+    intent?: GoogleSearchIntent;
     operatorId?: string;
     candidateStrength?: number;
+    operatorName?: string;
+    traceLogger?: RuntimeTraceLogger;
   }
 ): Promise<GoogleSearchResult[]> {
   const apiKey = (process.env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_MAPS_API_KEY || "").trim();
-  if (!apiKey) return [];
+  if (!apiKey) {
+    opts?.traceLogger?.log({
+      operatorId: opts?.operatorId,
+      operatorName: opts?.operatorName,
+      query,
+      stage: "query_execution",
+      status: "skipped",
+      intent: opts?.intent,
+      candidateStrength: opts?.candidateStrength,
+      note: "missing_google_api_key",
+    });
+    return [];
+  }
   const normalizedQuery = opts?.strictQuery ? query.replace(/\s+/g, " ").trim() : query;
+  const startedAt = Date.now();
+  opts?.traceLogger?.log({
+    operatorId: opts?.operatorId,
+    operatorName: opts?.operatorName,
+    query,
+    stage: "query_execution",
+    status: "start",
+    intent: opts?.intent,
+    candidateStrength: opts?.candidateStrength,
+    note: `limit=${limit}`,
+  });
   const detailsCache = new Map<string, PlaceDetailsResult | null>();
   const websiteLinksCache = new Map<string, string[]>();
   const rows = await searchPlacesForQuery(
@@ -223,13 +441,52 @@ export async function runGoogleSearch(
     apiKey,
     Math.max(1, Math.min(12, limit)),
     detailsCache,
-    websiteLinksCache
+    websiteLinksCache,
+    opts?.traceLogger,
+    {
+      operatorId: opts?.operatorId,
+      operatorName: opts?.operatorName,
+      query,
+      intent: opts?.intent,
+      candidateStrength: opts?.candidateStrength,
+    }
   );
-  return rows.map((row) => ({
+  const results = rows.map((row, index) => ({
     title: row.title,
     link: row.url,
     snippet: row.snippet,
+    meta: {
+      query,
+      normalizedQuery,
+      strictQuery: opts?.strictQuery === true,
+      intent: opts?.intent,
+      operatorId: opts?.operatorId,
+      candidateStrength: opts?.candidateStrength,
+      resultRank: index + 1,
+    },
   }));
+  appendSearchDiagnostic({
+    query,
+    normalizedQuery,
+    strictQuery: opts?.strictQuery === true,
+    intent: opts?.intent,
+    operatorId: opts?.operatorId,
+    candidateStrength: opts?.candidateStrength,
+    resultCount: results.length,
+    topLinks: results.slice(0, 5).map((row) => row.link),
+  });
+  opts?.traceLogger?.log({
+    operatorId: opts?.operatorId,
+    operatorName: opts?.operatorName,
+    query,
+    stage: "query_execution",
+    status: "success",
+    elapsedMs: Date.now() - startedAt,
+    intent: opts?.intent,
+    candidateStrength: opts?.candidateStrength,
+    note: `results=${results.length}`,
+  });
+  return results;
 }
 
 export async function executeHarvestQueriesLive(

@@ -1,0 +1,23 @@
+{
+  "status": "bounded_runtime_validated_partial",
+  "reason": "missing_google_api_key_and_resolver_canonical_resolution_timeout",
+  "generatedAt": "2026-04-08T22:56:47.886Z",
+  "selectorState": {
+    "candidateCount": 8,
+    "candidateThreshold": 4,
+    "candidateHardAnchorCount": 18
+  },
+  "validationRun": {
+    "candidateCount": 3,
+    "queriesExecuted": 9,
+    "searchHitsSeen": 0,
+    "acceptedEvidenceCount": 0,
+    "promotions": 0,
+    "dominantSlowStage": "resolver_rerun",
+    "resolverTimedOut": true,
+    "resolverDominantSlowPhase": "canonical_resolution",
+    "queryExecutionStatus": "skipped_missing_google_api_key"
+  },
+  "livePromotionRunCompleted": true,
+  "comparisonReadyForRealLiftMeasurement": false
+}

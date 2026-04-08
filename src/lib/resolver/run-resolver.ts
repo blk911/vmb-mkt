@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import crypto from "node:crypto";
 import type { EvidenceRecord } from "@/lib/evidence/types";
 import { loadEvidence } from "@/lib/evidence/store";
@@ -8,6 +10,146 @@ import { loadResolverRegistry, saveResolverRegistry, saveResolverSummary } from 
 import type { ResolverOperator } from "./types";
 import { loadOperatorReviews } from "@/lib/operators/review-store";
 import { compactResolverOperators } from "./compaction";
+import { RuntimeTraceLogger } from "./runtime-trace";
+
+const RESOLVER_RUNTIME_TRACE_PATH = path.join(process.cwd(), "runtime-data/resolver_runtime_trace.jsonl");
+const RESOLVER_RUNTIME_SUMMARY_PATH = path.join(process.cwd(), "runtime-data/resolver_runtime_summary.json");
+
+type ResolverRunOptions = {
+  traceRuntime?: boolean;
+  safeRuntime?: boolean;
+  totalBudgetMs?: number;
+  phaseBudgetMs?: number;
+  heartbeatEvery?: number;
+  persistOutputs?: boolean;
+};
+
+type ResolverRuntimeSummary = {
+  generatedAt: string;
+  status: "completed" | "timed_out" | "error";
+  completed: boolean;
+  timedOut: boolean;
+  totalElapsedMs: number;
+  dominantSlowPhase: string;
+  phaseTimings: Record<string, number>;
+  phaseCounts: Record<string, number>;
+  phaseBudgetExceeded: string[];
+  errorPhase?: string;
+  error?: string;
+};
+
+class ResolverPhaseTimeout extends Error {
+  readonly phase: string;
+
+  constructor(phase: string, message: string) {
+    super(message);
+    this.name = "ResolverPhaseTimeout";
+    this.phase = phase;
+  }
+}
+
+function writeResolverRuntimeSummary(summary: ResolverRuntimeSummary): void {
+  fs.mkdirSync(path.dirname(RESOLVER_RUNTIME_SUMMARY_PATH), { recursive: true });
+  fs.writeFileSync(RESOLVER_RUNTIME_SUMMARY_PATH, `${JSON.stringify(summary, null, 2)}\n`);
+}
+
+function buildResolverRuntimeTools(opts?: ResolverRunOptions): {
+  enabled: boolean;
+  traceLogger?: RuntimeTraceLogger;
+  startedAt: number;
+  phaseTimings: Map<string, number>;
+  phaseCounts: Map<string, number>;
+  phaseBudgetExceeded: Set<string>;
+  heartbeatEvery: number;
+  totalBudgetMs: number;
+  phaseBudgetMs: number;
+} {
+  const enabled = opts?.traceRuntime === true || opts?.safeRuntime === true;
+  return {
+    enabled,
+    traceLogger: enabled
+      ? new RuntimeTraceLogger({
+          outputPath: RESOLVER_RUNTIME_TRACE_PATH,
+          slowStageThresholdMs: opts?.phaseBudgetMs ?? 5000,
+        })
+      : undefined,
+    startedAt: Date.now(),
+    phaseTimings: new Map<string, number>(),
+    phaseCounts: new Map<string, number>(),
+    phaseBudgetExceeded: new Set<string>(),
+    heartbeatEvery: Math.max(25, opts?.heartbeatEvery ?? 250),
+    totalBudgetMs: Math.max(1000, opts?.totalBudgetMs ?? 15000),
+    phaseBudgetMs: Math.max(250, opts?.phaseBudgetMs ?? 5000),
+  };
+}
+
+function recordPhaseCount(runtime: ReturnType<typeof buildResolverRuntimeTools>, phase: string, count: number): void {
+  runtime.phaseCounts.set(phase, count);
+}
+
+function startPhase(
+  runtime: ReturnType<typeof buildResolverRuntimeTools>,
+  phase: string,
+  note?: string
+): number {
+  runtime.traceLogger?.log({
+    stage: phase,
+    status: "start",
+    note,
+  });
+  return Date.now();
+}
+
+function finishPhase(
+  runtime: ReturnType<typeof buildResolverRuntimeTools>,
+  phase: string,
+  phaseStartedAt: number,
+  count?: number,
+  note?: string
+): void {
+  const elapsedMs = Date.now() - phaseStartedAt;
+  runtime.phaseTimings.set(phase, elapsedMs);
+  if (typeof count === "number") recordPhaseCount(runtime, phase, count);
+  if (elapsedMs > runtime.phaseBudgetMs) runtime.phaseBudgetExceeded.add(phase);
+  runtime.traceLogger?.log({
+    stage: phase,
+    status: "success",
+    elapsedMs,
+    note: note || (typeof count === "number" ? `count=${count}` : undefined),
+  });
+}
+
+function heartbeat(
+  runtime: ReturnType<typeof buildResolverRuntimeTools>,
+  phase: string,
+  processed: number,
+  total: number,
+  note?: string
+): void {
+  runtime.traceLogger?.log({
+    stage: `${phase}_heartbeat`,
+    status: "success",
+    elapsedMs: Date.now() - runtime.startedAt,
+    note: note || `processed=${processed}/${total}`,
+  });
+}
+
+function checkResolverBudget(
+  runtime: ReturnType<typeof buildResolverRuntimeTools>,
+  phase: string,
+  phaseStartedAt: number
+): void {
+  if (!runtime.enabled) return;
+  if (Date.now() - runtime.startedAt > runtime.totalBudgetMs) {
+    runtime.traceLogger?.log({
+      stage: phase,
+      status: "timeout",
+      elapsedMs: Date.now() - phaseStartedAt,
+      note: `resolverBudgetMs=${runtime.totalBudgetMs}`,
+    });
+    throw new ResolverPhaseTimeout(phase, `Resolver budget exceeded in ${phase}`);
+  }
+}
 
 function operatorTypeFromEvidence(e: EvidenceRecord): "operator" | "container" | "child_operator" | undefined {
   const extractedType =
@@ -316,77 +458,208 @@ function overlayPromotionFields(operators: ResolverOperator[]): ResolverOperator
   });
 }
 
-export function runResolverFromEvidence(inputEvidence?: EvidenceRecord[]): ResolverOperator[] {
+export function runResolverFromEvidence(inputEvidence?: EvidenceRecord[], opts?: ResolverRunOptions): ResolverOperator[] {
   const now = Date.now();
-  const rawEvidence = inputEvidence || loadEvidence();
-  const evidence = expandContainerEvidence(rawEvidence.map(normalizeEvidence));
+  const runtime = buildResolverRuntimeTools(opts);
+  const phaseCounts: Record<string, number> = {};
+  let errorPhase: string | undefined;
+  let errorMessage: string | undefined;
+  let timedOut = false;
+  let result: ResolverOperator[] = [];
 
-  const operators: ResolverOperator[] = [];
+  runtime.traceLogger?.log({
+    stage: "resolver_start",
+    status: "start",
+    note: `safeRuntime=${opts?.safeRuntime === true}`,
+  });
 
-  for (const row of evidence) {
-    let bestMatch: ResolverOperator | undefined;
-    let bestScore = -1;
-    for (const op of operators) {
-      if (shouldSkipParentContainerMerge(op, row)) continue;
-      const evaluation = evaluateEvidenceMatch(op, row);
-      if (evaluation.score > bestScore) {
-        bestScore = evaluation.score;
-        bestMatch = op;
+  try {
+    const inputLoadStartedAt = startPhase(runtime, "input_load");
+    const rawEvidence = inputEvidence || loadEvidence();
+    finishPhase(runtime, "input_load", inputLoadStartedAt, rawEvidence.length);
+    phaseCounts.input_load = rawEvidence.length;
+
+    const evidencePrepStartedAt = startPhase(runtime, "evidence_indexing");
+    const evidence = expandContainerEvidence(rawEvidence.map(normalizeEvidence));
+    finishPhase(runtime, "evidence_indexing", evidencePrepStartedAt, evidence.length);
+    phaseCounts.evidence_indexing = evidence.length;
+
+    const operators: ResolverOperator[] = [];
+    let evidenceComparisons = 0;
+    const canonicalResolutionStartedAt = startPhase(runtime, "canonical_resolution", `evidence=${evidence.length}`);
+    for (let i = 0; i < evidence.length; i += 1) {
+      const row = evidence[i];
+      let bestMatch: ResolverOperator | undefined;
+      let bestScore = -1;
+      let bestMatched = false;
+      for (const op of operators) {
+        if (shouldSkipParentContainerMerge(op, row)) continue;
+        const evaluation = evaluateEvidenceMatch(op, row);
+        evidenceComparisons += 1;
+        if (runtime.enabled && evidenceComparisons % 10000 === 0) {
+          runtime.phaseTimings.set("canonical_resolution", Date.now() - canonicalResolutionStartedAt);
+          phaseCounts.canonical_resolution = evidenceComparisons;
+          checkResolverBudget(runtime, "canonical_resolution", canonicalResolutionStartedAt);
+        }
+        if (evaluation.score > bestScore) {
+          bestScore = evaluation.score;
+          bestMatch = op;
+          bestMatched = evaluation.matched;
+        }
+      }
+
+      if (bestMatch && bestMatched) {
+        bestMatch.sources.push(row);
+        if (!bestMatch.parentContainerId) bestMatch.parentContainerId = parentContainerIdFromEvidence(row);
+        if (!bestMatch.parentContainerName && row.parentContainerName) bestMatch.parentContainerName = row.parentContainerName;
+        if (!bestMatch.operatorType) bestMatch.operatorType = operatorTypeFromEvidence(row);
+        bestMatch.confidenceScore = Math.max(bestMatch.confidenceScore, Math.floor(bestScore / 10));
+        bestMatch.updatedAt = now;
+      } else {
+        operators.push(createOperatorFromEvidence(row, now));
+      }
+
+      if ((i + 1) % runtime.heartbeatEvery === 0 || i === evidence.length - 1) {
+        runtime.phaseTimings.set("canonical_resolution", Date.now() - canonicalResolutionStartedAt);
+        phaseCounts.canonical_resolution = evidenceComparisons;
+        heartbeat(runtime, "canonical_resolution", i + 1, evidence.length, `operators=${operators.length}; comparisons=${evidenceComparisons}`);
+        checkResolverBudget(runtime, "canonical_resolution", canonicalResolutionStartedAt);
       }
     }
+    finishPhase(runtime, "canonical_resolution", canonicalResolutionStartedAt, evidenceComparisons, `operators=${operators.length}`);
+    phaseCounts.canonical_resolution = evidenceComparisons;
 
-    if (bestMatch && evaluateEvidenceMatch(bestMatch, row).matched) {
-      bestMatch.sources.push(row);
-      if (!bestMatch.parentContainerId) bestMatch.parentContainerId = parentContainerIdFromEvidence(row);
-      if (!bestMatch.parentContainerName && row.parentContainerName) bestMatch.parentContainerName = row.parentContainerName;
-      if (!bestMatch.operatorType) bestMatch.operatorType = operatorTypeFromEvidence(row);
-      bestMatch.confidenceScore = Math.max(bestMatch.confidenceScore, Math.floor(bestScore / 10));
-      bestMatch.updatedAt = now;
-      continue;
+    const scoringPreStartedAt = startPhase(runtime, "status_scoring_pre_compaction", `operators=${operators.length}`);
+    for (let i = 0; i < operators.length; i += 1) {
+      const op = operators[i];
+      op.operatorType = op.operatorType || (op.isContainer ? "container" : op.parentContainerId ? "child_operator" : "operator");
+      updateCanonical(op);
+      op.confidenceScore = Math.max(op.confidenceScore, scoreOperator(op));
+      op.normalizedCategory = deriveNormalizedCategory(op);
+      op.preferredContactSurface = derivePreferredContactSurface(op);
+      op.status = assignStatus(op);
+      op.updatedAt = now;
+      if ((i + 1) % runtime.heartbeatEvery === 0 || i === operators.length - 1) {
+        heartbeat(runtime, "status_scoring_pre_compaction", i + 1, operators.length);
+        checkResolverBudget(runtime, "status_scoring_pre_compaction", scoringPreStartedAt);
+      }
+    }
+    finishPhase(runtime, "status_scoring_pre_compaction", scoringPreStartedAt, operators.length);
+    phaseCounts.status_scoring_pre_compaction = operators.length;
+
+    const duplicateMergeStartedAt = startPhase(runtime, "duplicate_merge_pass", `operators=${operators.length}`);
+    const compacted = compactResolverOperators(operators);
+    finishPhase(
+      runtime,
+      "duplicate_merge_pass",
+      duplicateMergeStartedAt,
+      compacted.summary.compactedDuplicateCount,
+      `post=${compacted.summary.postCompactionOperatorCount}`
+    );
+    phaseCounts.duplicate_merge_pass = compacted.summary.compactedDuplicateCount;
+
+    const scoringPostStartedAt = startPhase(runtime, "status_scoring_post_compaction", `operators=${compacted.operators.length}`);
+    for (let i = 0; i < compacted.operators.length; i += 1) {
+      const op = compacted.operators[i];
+      op.operatorType = op.operatorType || (op.isContainer ? "container" : op.parentContainerId ? "child_operator" : "operator");
+      updateCanonical(op);
+      op.confidenceScore = Math.max(op.confidenceScore, scoreOperator(op));
+      op.normalizedCategory = deriveNormalizedCategory(op);
+      op.preferredContactSurface = derivePreferredContactSurface(op);
+      op.status = assignStatus(op);
+      op.updatedAt = now;
+      if ((i + 1) % runtime.heartbeatEvery === 0 || i === compacted.operators.length - 1) {
+        heartbeat(runtime, "status_scoring_post_compaction", i + 1, compacted.operators.length);
+        checkResolverBudget(runtime, "status_scoring_post_compaction", scoringPostStartedAt);
+      }
+    }
+    finishPhase(runtime, "status_scoring_post_compaction", scoringPostStartedAt, compacted.operators.length);
+    phaseCounts.status_scoring_post_compaction = compacted.operators.length;
+
+    const childPassStartedAt = startPhase(runtime, "child_operator_pass");
+    const childLinkedCount = compacted.operators.filter((op) => Boolean(op.parentContainerId)).length;
+    finishPhase(runtime, "child_operator_pass", childPassStartedAt, childLinkedCount);
+    phaseCounts.child_operator_pass = childLinkedCount;
+
+    const reviewPhaseStartedAt = startPhase(runtime, "promotion_evaluation", `operators=${compacted.operators.length}`);
+    const withReviews = overlayReviews(compacted.operators).map((op) => {
+      if (op.reviewState === "ready") return { ...op, status: "ready" as const };
+      if (op.reviewState === "shelved_by_review") return { ...op, status: "shelved" as const };
+      return op;
+    });
+    const withPromotion = overlayPromotionFields(withReviews);
+    finishPhase(runtime, "promotion_evaluation", reviewPhaseStartedAt, withPromotion.length);
+    phaseCounts.promotion_evaluation = withPromotion.length;
+
+    if (opts?.persistOutputs !== false) {
+      const registryWriteStartedAt = startPhase(runtime, "output_materialization", `operators=${withPromotion.length}`);
+      saveResolverRegistry(withPromotion);
+      finishPhase(runtime, "output_materialization", registryWriteStartedAt, withPromotion.length);
+      phaseCounts.output_materialization = withPromotion.length;
+
+      const summaryWriteStartedAt = startPhase(runtime, "file_writes");
+      saveResolverSummary({
+        evidenceCount: rawEvidence.length,
+        operators: withPromotion,
+        preCompactionOperatorCount: compacted.summary.preCompactionOperatorCount,
+        postCompactionOperatorCount: compacted.summary.postCompactionOperatorCount,
+        compactedDuplicateCount: compacted.summary.compactedDuplicateCount,
+      });
+      finishPhase(runtime, "file_writes", summaryWriteStartedAt, 2);
+      phaseCounts.file_writes = 2;
+    } else {
+      const summaryWriteStartedAt = startPhase(runtime, "file_writes");
+      finishPhase(runtime, "file_writes", summaryWriteStartedAt, 0, "persistOutputs=false");
+      phaseCounts.file_writes = 0;
     }
 
-    operators.push(createOperatorFromEvidence(row, now));
+    result = withPromotion;
+  } catch (error: unknown) {
+    if (error instanceof ResolverPhaseTimeout) {
+      timedOut = true;
+      errorPhase = error.phase;
+      errorMessage = error.message;
+    } else {
+      errorPhase = "unknown";
+      errorMessage = error instanceof Error ? error.message : "unknown_resolver_error";
+    }
+    runtime.traceLogger?.log({
+      stage: errorPhase || "resolver_error",
+      status: timedOut ? "timeout" : "error",
+      elapsedMs: Date.now() - runtime.startedAt,
+      note: errorMessage,
+    });
   }
 
-  for (const op of operators) {
-    op.operatorType = op.operatorType || (op.isContainer ? "container" : op.parentContainerId ? "child_operator" : "operator");
-    updateCanonical(op);
-    op.confidenceScore = Math.max(op.confidenceScore, scoreOperator(op));
-    op.normalizedCategory = deriveNormalizedCategory(op);
-    op.preferredContactSurface = derivePreferredContactSurface(op);
-    op.status = assignStatus(op);
-    op.updatedAt = now;
-  }
-
-  const compacted = compactResolverOperators(operators);
-  for (const op of compacted.operators) {
-    op.operatorType = op.operatorType || (op.isContainer ? "container" : op.parentContainerId ? "child_operator" : "operator");
-    updateCanonical(op);
-    op.confidenceScore = Math.max(op.confidenceScore, scoreOperator(op));
-    op.normalizedCategory = deriveNormalizedCategory(op);
-    op.preferredContactSurface = derivePreferredContactSurface(op);
-    op.status = assignStatus(op);
-    op.updatedAt = now;
-  }
-
-  const withReviews = overlayReviews(compacted.operators).map((op) => {
-    if (op.reviewState === "ready") return { ...op, status: "ready" as const };
-    if (op.reviewState === "shelved_by_review") return { ...op, status: "shelved" as const };
-    return op;
+  const dominantSlowPhase =
+    (timedOut && errorPhase) ||
+    [...runtime.phaseTimings.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ||
+    errorPhase ||
+    "none";
+  const summary: ResolverRuntimeSummary = {
+    generatedAt: new Date().toISOString(),
+    status: timedOut ? "timed_out" : errorMessage ? "error" : "completed",
+    completed: !timedOut && !errorMessage,
+    timedOut,
+    totalElapsedMs: Date.now() - runtime.startedAt,
+    dominantSlowPhase,
+    phaseTimings: Object.fromEntries(runtime.phaseTimings.entries()),
+    phaseCounts,
+    phaseBudgetExceeded: [...runtime.phaseBudgetExceeded.values()],
+    errorPhase,
+    error: errorMessage,
+  };
+  writeResolverRuntimeSummary(summary);
+  runtime.traceLogger?.log({
+    stage: "resolver_complete",
+    status: timedOut ? "timeout" : errorMessage ? "error" : "success",
+    elapsedMs: summary.totalElapsedMs,
+    note: `dominantSlowPhase=${dominantSlowPhase}`,
   });
-  const withPromotion = overlayPromotionFields(withReviews);
-  saveResolverRegistry(withPromotion);
-  saveResolverSummary({
-    evidenceCount: rawEvidence.length,
-    operators: withPromotion,
-    preCompactionOperatorCount: compacted.summary.preCompactionOperatorCount,
-    postCompactionOperatorCount: compacted.summary.postCompactionOperatorCount,
-    compactedDuplicateCount: compacted.summary.compactedDuplicateCount,
-  });
-  return withPromotion;
+  return result;
 }
 
-export function runResolver(): ResolverOperator[] {
-  return runResolverFromEvidence();
+export function runResolver(opts?: ResolverRunOptions): ResolverOperator[] {
+  return runResolverFromEvidence(undefined, opts);
 }
 

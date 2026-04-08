@@ -56,33 +56,66 @@ export function buildDirectoryBackedSurfacePromotionQueries(
   operator: ResolverOperator,
   opts?: { maxQueries?: number }
 ): string[] {
-  const maxQueries = Math.max(1, Math.min(8, opts?.maxQueries ?? 8));
+  const maxQueries = Math.max(1, Math.min(6, opts?.maxQueries ?? 6));
   const name = clean(operator.canonicalName);
   const city = clean(operator.canonicalCity);
   const address = clean(operator.canonicalAddress);
   const phone = clean(operator.canonicalPhone);
   const website = clean(operator.canonicalWebsite);
+  const booking = clean(operator.canonicalBooking);
+  const hasWebsite = Boolean(website);
+  const hasInstagram = Boolean(clean(operator.canonicalInstagram));
+  const hasBooking = Boolean(booking);
   if (!name) return [];
 
   const queries = new Set<string>();
-  if (city) {
+
+  if (city && hasWebsite && (!hasInstagram || !hasBooking)) {
+    if (!hasInstagram) pushIf(queries, `${name} ${city} instagram`);
+    if (!hasBooking) {
+      pushIf(queries, `${name} ${city} glossgenius`);
+      pushIf(queries, `${name} ${city} vagaro`);
+      pushIf(queries, `${name} ${city} booksy`);
+      pushIf(queries, `${name} ${city} fresha`);
+    }
+  }
+
+  if (city && hasBooking && !hasWebsite) {
+    pushIf(queries, `${name} ${city} website`);
+    if (phone) pushIf(queries, `${name} ${phone}`);
+    if (address) pushIf(queries, `${name} ${address} ${city}`);
+    try {
+      const bookingBrand = new URL(booking).hostname.replace(/^www\./, "").split(".")[0];
+      pushIf(queries, `${bookingBrand} ${name}`);
+    } catch {
+      // ignore invalid booking urls
+    }
+  }
+
+  if (city && !hasWebsite && !hasInstagram && !hasBooking) {
+    pushIf(queries, `${name} ${city} website`);
     pushIf(queries, `${name} ${city} instagram`);
     pushIf(queries, `${name} ${city} booking`);
-    pushIf(queries, `${name} ${city} glossgenius`);
-    pushIf(queries, `${name} ${city} vagaro`);
-    pushIf(queries, `${name} ${city} booksy`);
-    pushIf(queries, `${name} ${city} styleseat`);
-    pushIf(queries, `${name} ${city} square appointments`);
-    pushIf(queries, `${name} ${city} fresha`);
+    if (phone) pushIf(queries, `${name} ${phone}`);
+  }
+
+  if (city && !hasInstagram && !queries.has(`${name} ${city} instagram`)) {
+    pushIf(queries, `${name} ${city} instagram`);
+  }
+  if (city && !hasBooking && queries.size < maxQueries) {
+    pushIf(queries, `${name} ${city} booking`);
+  }
+  if (city && !hasWebsite && queries.size < maxQueries) {
     pushIf(queries, `${name} ${city} website`);
   }
-  if (phone) pushIf(queries, `${name} ${phone}`);
-  if (address && city) pushIf(queries, `${name} ${address} ${city}`);
+
+  if (phone && queries.size < maxQueries) pushIf(queries, `${name} ${phone}`);
+  if (address && city && queries.size < maxQueries) pushIf(queries, `${name} ${address} ${city}`);
   if (website) {
     try {
       const domain = new URL(website).hostname.replace(/^www\./, "");
-      pushIf(queries, `${domain} instagram`);
-      pushIf(queries, `${domain} booking`);
+      if (!hasInstagram && queries.size < maxQueries) pushIf(queries, `${domain} instagram`);
+      if (!hasBooking && queries.size < maxQueries) pushIf(queries, `${domain} booking`);
     } catch {
       // ignore invalid website urls
     }

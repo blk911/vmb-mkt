@@ -1,14 +1,27 @@
+import type { RuntimeTraceLogger } from "@/lib/resolver/runtime-trace";
+
 export type FetchedPage = {
   finalUrl: string;
   statusCode: number;
   html: string;
   contentType: string;
+  elapsedMs?: number;
+  timedOut?: boolean;
+  error?: string;
 };
 
 export type FetchCandidatePageOptions = {
   timeoutMs?: number;
   referrer?: string;
   userAgent?: string;
+  traceLogger?: RuntimeTraceLogger;
+  traceContext?: {
+    operatorId?: string;
+    operatorName?: string;
+    query?: string;
+    intent?: string;
+    candidateStrength?: number;
+  };
 };
 
 const SUPPORTED_DOMAIN_HINTS = [
@@ -51,18 +64,36 @@ export async function fetchCandidatePage(url: string, options?: number | FetchCa
   const resolved = normalizeFetchOptions(options);
   const timeoutMs = resolved.timeoutMs ?? 12000;
   const userAgent = resolved.userAgent || "vmb-operator-acquisition/1.0";
+  const startedAt = Date.now();
   const parsed = parseHttpUrl(url);
   if (!parsed || !hostIsSupported(parsed.hostname)) {
+    resolved.traceLogger?.log({
+      ...resolved.traceContext,
+      stage: "fetch",
+      status: "skipped",
+      elapsedMs: Date.now() - startedAt,
+      url,
+      note: "unsupported_or_invalid_host",
+    });
     return {
       finalUrl: url,
       statusCode: 0,
       html: "",
       contentType: "",
+      elapsedMs: Date.now() - startedAt,
+      error: "unsupported_or_invalid_host",
     };
   }
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  resolved.traceLogger?.log({
+    ...resolved.traceContext,
+    stage: "fetch",
+    status: "start",
+    url: parsed.toString(),
+    note: `timeoutMs=${timeoutMs}`,
+  });
   try {
     const response = await fetch(parsed.toString(), {
       method: "GET",
@@ -79,19 +110,42 @@ export async function fetchCandidatePage(url: string, options?: number | FetchCa
     const body = contentType.includes("text/html") || contentType.includes("application/ld+json")
       ? (await response.text()).slice(0, 500_000)
       : "";
+    const elapsedMs = Date.now() - startedAt;
+    resolved.traceLogger?.log({
+      ...resolved.traceContext,
+      stage: "fetch",
+      status: "success",
+      elapsedMs,
+      url: response.url || parsed.toString(),
+      note: `status=${response.status}`,
+    });
 
     return {
       finalUrl: response.url || parsed.toString(),
       statusCode: response.status,
       html: body,
       contentType,
+      elapsedMs,
     };
-  } catch {
+  } catch (error: unknown) {
+    const elapsedMs = Date.now() - startedAt;
+    const timedOut = error instanceof Error && error.name === "AbortError";
+    resolved.traceLogger?.log({
+      ...resolved.traceContext,
+      stage: "fetch",
+      status: timedOut ? "timeout" : "error",
+      elapsedMs,
+      url: parsed.toString(),
+      note: error instanceof Error ? error.message : "unknown_fetch_error",
+    });
     return {
       finalUrl: parsed.toString(),
       statusCode: 0,
       html: "",
       contentType: "",
+      elapsedMs,
+      timedOut,
+      error: error instanceof Error ? error.message : "unknown_fetch_error",
     };
   } finally {
     clearTimeout(timeout);

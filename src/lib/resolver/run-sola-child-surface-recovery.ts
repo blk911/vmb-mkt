@@ -12,6 +12,19 @@ import type { ResolverOperator } from "./types";
 
 const SUMMARY_PATH = path.join(process.cwd(), "runtime-data/sola_child_surface_recovery_summary.json");
 // Diagnostic-only runner: Sola helps identity/linkage validation, not primary surface enrichment.
+// Sola-derived child records are valuable for operator identity discovery and geo-linked tenant
+// extraction, but they are not a reliable direct-source lane for website/booking/social recovery.
+
+export type SolaChildSurfaceRecoverySummary = {
+  generatedAt: string;
+  attemptedChildren: number;
+  evidenceAdded: number;
+  upgradedWithInstagram: number;
+  upgradedWithBooking: number;
+  upgradedWithWebsite: number;
+  promotedToHot: number;
+  promotedToEnriched: number;
+};
 
 function isProvisionalName(value?: string): boolean {
   const text = (value || "").toLowerCase().trim();
@@ -77,15 +90,9 @@ function writeSummary(data: unknown): void {
   fs.writeFileSync(SUMMARY_PATH, `${JSON.stringify(data, null, 2)}\n`);
 }
 
-export async function runSolaChildSurfaceRecovery(opts?: { childLimit?: number; queryLimitPerChild?: number }): Promise<{
-  attemptedChildren: number;
-  evidenceAdded: number;
-  upgradedWithInstagram: number;
-  upgradedWithBooking: number;
-  upgradedWithWebsite: number;
-  promotedToHot: number;
-  promotedToEnriched: number;
-}> {
+export async function runSolaChildSurfaceRecovery(
+  opts?: { childLimit?: number; queryLimitPerChild?: number }
+): Promise<SolaChildSurfaceRecoverySummary> {
   const childLimit = Math.max(1, Math.min(120, opts?.childLimit ?? 40));
   const queryLimitPerChild = Math.max(1, Math.min(5, opts?.queryLimitPerChild ?? 5));
   const before = loadResolverRegistry();
@@ -140,7 +147,7 @@ export async function runSolaChildSurfaceRecovery(opts?: { childLimit?: number; 
     if ((pre.status === "enumerated" || pre.status === "shelved") && post.status === "enriched") promotedToEnriched += 1;
   }
 
-  const summary = {
+  const summary: SolaChildSurfaceRecoverySummary = {
     generatedAt: new Date().toISOString(),
     attemptedChildren: targets.length,
     evidenceAdded: evidenceRows.length,

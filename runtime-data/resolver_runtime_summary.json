@@ -1,0 +1,21 @@
+{
+  "generatedAt": "2026-04-08T22:56:47.886Z",
+  "status": "timed_out",
+  "completed": false,
+  "timedOut": true,
+  "totalElapsedMs": 10080,
+  "dominantSlowPhase": "canonical_resolution",
+  "phaseTimings": {
+    "input_load": 44,
+    "evidence_indexing": 11,
+    "canonical_resolution": 10024
+  },
+  "phaseCounts": {
+    "input_load": 2942,
+    "evidence_indexing": 3177,
+    "canonical_resolution": 2470000
+  },
+  "phaseBudgetExceeded": [],
+  "errorPhase": "canonical_resolution",
+  "error": "Resolver budget exceeded in canonical_resolution"
+}

@@ -12,7 +12,9 @@ import { runGoogleSearch } from "@/lib/social-targets/operator-harvest/query-exe
 import { appendEvidence } from "@/lib/evidence/store";
 import { sourceRecordsToEvidence } from "@/lib/evidence/ingest";
 import { runResolver } from "@/lib/resolver/run-resolver";
-import { runPromotion } from "@/lib/resolver/run-promotion";
+import { writePromotionLaneComparisonSummary } from "@/lib/resolver/promotion-lane-comparison";
+import { runDirectoryBackedSurfacePromotion } from "@/lib/resolver/run-directory-backed-surface-promotion";
+import { runSolaChildSurfaceRecovery } from "@/lib/resolver/run-sola-child-surface-recovery";
 import type { SourceRecord } from "@/lib/operators/types";
 import type {
   HarvestPlatform,
@@ -321,8 +323,36 @@ export async function runOperatorHarvest(input: OperatorHarvestRunInput): Promis
   const allEvidence = sourceRecordsToEvidence([...rawResultRecords, ...allSourceRecords, ...acquisitionOutput.enrichedRecords]);
   appendEvidence(allEvidence);
   runResolver();
-  if (input.runPromotion === true) {
-    await runPromotion({ batchLimit: input.promotionBatchLimit });
+  // The directory-backed lane is now the default promotion path because live testing
+  // showed Sola-derived child records are better for identity discovery than direct
+  // surface recovery. Default promotion therefore focuses on hard-anchor convertibility.
+  const shouldRunDirectoryBackedPromotion = input.runDirectoryBackedPromotion ?? input.runPromotion ?? true;
+  const includeSolaDiagnostic = input.includeSolaDiagnostic === true;
+  const promotionLimit = input.promotionBatchLimit;
+
+  let directorySummary:
+    | Awaited<ReturnType<typeof runDirectoryBackedSurfacePromotion>>
+    | undefined;
+  if (shouldRunDirectoryBackedPromotion) {
+    directorySummary = await runDirectoryBackedSurfacePromotion({
+      limit: promotionLimit,
+      safeRuntime: input.directoryPromotionSafeRuntime,
+    });
+  }
+
+  let solaSummary:
+    | Awaited<ReturnType<typeof runSolaChildSurfaceRecovery>>
+    | undefined;
+  if (includeSolaDiagnostic) {
+    solaSummary = await runSolaChildSurfaceRecovery();
+  }
+
+  if (directorySummary) {
+    writePromotionLaneComparisonSummary({
+      directorySummary,
+      solaSummary,
+      includeSolaDiagnostic,
+    });
   }
   const merged = await runMergePipeline([]);
   await writeOperatorQualitySummaryArtifact(merged);

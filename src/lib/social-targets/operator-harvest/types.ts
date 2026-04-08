@@ -86,8 +86,11 @@ export type OperatorHarvestRunInput = {
   resultsPerQuery?: number;
   requestDelayMs?: number;
   queryResultsByQuery?: Record<string, HarvestRawResult[]>;
+  runDirectoryBackedPromotion?: boolean;
   runPromotion?: boolean;
   promotionBatchLimit?: number;
+  directoryPromotionSafeRuntime?: boolean;
+  includeSolaDiagnostic?: boolean;
 };
 
 export type OperatorHarvestRunOutput = {
