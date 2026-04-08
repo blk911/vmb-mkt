@@ -1,4 +1,4 @@
-import { loadResolverRegistry } from "@/lib/resolver/registry-store";
+import { loadResolverRegistryForUi } from "@/lib/resolver/registry-store";
 import type { ResolverOperator } from "@/lib/resolver/types";
 import { applyReviewOverlay, resolverOperatorToOperatorRecord } from "./review-store";
 import type { OperatorRecord } from "./types";
@@ -24,7 +24,7 @@ function deriveChildState(op: ResolverOperator): ChildState {
 }
 
 export function loadOperatorsFromResolverRegistry(): OperatorConsoleRow[] {
-  const resolverRows = loadResolverRegistry();
+  const resolverRows = loadResolverRegistryForUi();
   const mapped = resolverRows.map((row) => {
     const operator = resolverOperatorToOperatorRecord(row);
     return {
