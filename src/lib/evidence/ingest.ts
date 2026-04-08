@@ -60,6 +60,8 @@ export function sourceRecordsToEvidence(records: SourceRecord[]): EvidenceRecord
       extracted: {
         ...(src.extracted && typeof src.extracted === "object" ? (src.extracted as Record<string, unknown>) : {}),
         childQuerySeeds: src.childQuerySeeds,
+        operatorType: src.operatorType,
+        parentContainerId: src.parentContainerId,
       },
       createdAt: now,
     };

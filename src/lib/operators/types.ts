@@ -12,6 +12,7 @@ export type SourceRecord = {
   name?: string;
   city?: string;
   category?: string;
+  operatorType?: "operator" | "container" | "child_operator";
   website?: string;
   phone?: string;
   instagram?: string;
@@ -20,6 +21,7 @@ export type SourceRecord = {
   sourceUrl?: string;
   extractedFromUrl?: string;
   parentContainerName?: string;
+  parentContainerId?: string;
   evidenceType?: PageClassification;
   childQuerySeeds?: string[];
   raw?: unknown;

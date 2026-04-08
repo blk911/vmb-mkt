@@ -9,7 +9,36 @@ import type { ResolverOperator } from "./types";
 import { loadOperatorReviews } from "@/lib/operators/review-store";
 import { compactResolverOperators } from "./compaction";
 
+function operatorTypeFromEvidence(e: EvidenceRecord): "operator" | "container" | "child_operator" | undefined {
+  const extractedType =
+    e.extracted && typeof e.extracted === "object" && "operatorType" in (e.extracted as Record<string, unknown>)
+      ? (e.extracted as Record<string, unknown>).operatorType
+      : undefined;
+  const rawType =
+    e.raw && typeof e.raw === "object" && "operatorType" in (e.raw as Record<string, unknown>)
+      ? (e.raw as Record<string, unknown>).operatorType
+      : undefined;
+  const value = (extractedType || rawType || "").toString();
+  if (value === "container" || value === "child_operator" || value === "operator") return value;
+  return undefined;
+}
+
+function explicitParentContainerId(e: EvidenceRecord): string | undefined {
+  const extractedId =
+    e.extracted && typeof e.extracted === "object" && "parentContainerId" in (e.extracted as Record<string, unknown>)
+      ? (e.extracted as Record<string, unknown>).parentContainerId
+      : undefined;
+  const rawId =
+    e.raw && typeof e.raw === "object" && "parentContainerId" in (e.raw as Record<string, unknown>)
+      ? (e.raw as Record<string, unknown>).parentContainerId
+      : undefined;
+  const id = (extractedId || rawId || "").toString().trim();
+  return id || undefined;
+}
+
 function parentContainerIdFromEvidence(e: EvidenceRecord): string | undefined {
+  const explicit = explicitParentContainerId(e);
+  if (explicit) return explicit;
   return e.parentContainerName
     ? crypto.createHash("md5").update(normalizeName(e.parentContainerName)).digest("hex")
     : undefined;
@@ -56,6 +85,9 @@ function normalizeEvidence(e: EvidenceRecord): EvidenceRecord {
 
 function createOperatorFromEvidence(e: EvidenceRecord, now: number): ResolverOperator {
   const parentContainerId = parentContainerIdFromEvidence(e);
+  const operatorType = operatorTypeFromEvidence(e);
+  const isContainerEvidence = e.evidenceType === "suite_container" || e.source === "container";
+  const isContainer = operatorType === "container" || (isContainerEvidence && !parentContainerId);
   return {
     id: operatorIdFromEvidence(e),
     canonicalName: e.name,
@@ -69,7 +101,7 @@ function createOperatorFromEvidence(e: EvidenceRecord, now: number): ResolverOpe
     sources: [e],
     confidenceScore: 1,
     status: "enumerated",
-    isContainer: e.evidenceType === "suite_container",
+    isContainer,
     parentContainerId,
     createdAt: now,
     updatedAt: now,
@@ -174,6 +206,7 @@ function shouldSkipParentContainerMerge(op: ResolverOperator, evidence: Evidence
 }
 
 function scoreOperator(op: ResolverOperator): number {
+  if (op.isContainer) return 0;
   let score = 0;
   if (op.canonicalBooking) score += 5;
   if (op.canonicalInstagram) score += 4;

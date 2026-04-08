@@ -1,4 +1,5 @@
 import { writeJsonFilePretty } from "@/lib/social-targets/json-file";
+import { runContainerExtraction } from "@/lib/containers/run-container-extraction";
 import { classifyPage } from "./page-classifier";
 import { extractFromPage } from "./page-extract";
 import { fetchCandidatePage } from "./page-fetch";
@@ -10,6 +11,7 @@ export type AcquisitionScanRow = {
   sourceUrl: string;
   classifiedType: PageClassification;
   parserUsed?: string;
+  parentContainerId?: string;
   originalName?: string;
   originalCity?: string;
   extractedName?: string;
@@ -17,6 +19,8 @@ export type AcquisitionScanRow = {
   extractedInstagram?: string;
   extractedBooking?: string;
   extractedWebsite?: string;
+  extractedTenantCount?: number;
+  followOnDetailUrls?: string[];
   hasDirectSurface?: boolean;
   childQuerySeeds?: string[];
   statusCode: number;
@@ -62,11 +66,58 @@ export async function runAcquisition(
     if (!shouldScanSource(candidate, urlClassification)) continue;
 
     const fetched = await fetchCandidatePage(candidateUrl);
-    const finalClassification = classifyPage(fetched.finalUrl || candidateUrl, fetched.html);
-    const extracted = extractFromPage(fetched.finalUrl || candidateUrl, fetched.html || "", candidate);
+    const resolvedUrl = fetched.finalUrl || candidateUrl;
+    const finalClassification = classifyPage(resolvedUrl, fetched.html);
+    const containerExtraction = runContainerExtraction({
+      sourceUrl: resolvedUrl,
+      html: fetched.html || "",
+      candidate,
+    });
+    if (containerExtraction.detected) {
+      const containerInfrastructure: SourceRecord = {
+        ...candidate,
+        source: "container",
+        operatorType: "container",
+        parentContainerId: containerExtraction.parentContainerId,
+        parentContainerName: containerExtraction.parentContainerName || candidate.parentContainerName || candidate.name,
+        evidenceType: "suite_container",
+        sourceUrl: resolvedUrl,
+        extractedFromUrl: resolvedUrl,
+        extracted: {
+          ...(candidate.extracted && typeof candidate.extracted === "object" ? (candidate.extracted as Record<string, unknown>) : {}),
+          parserUsed: `container:${containerExtraction.strategy || "generic"}`,
+          followOnDetailUrls: containerExtraction.followOnDetailUrls,
+          parentContainerId: containerExtraction.parentContainerId,
+          extractedTenantCount: containerExtraction.tenantCandidates.length,
+        },
+      };
+      enrichedRecords.push(containerInfrastructure);
+      enrichedRecords.push(...containerExtraction.tenantCandidates);
+      scanRows.push({
+        sourceUrl: candidateUrl,
+        classifiedType: "suite_container",
+        parserUsed: `container:${containerExtraction.strategy || "generic"}`,
+        parentContainerId: containerExtraction.parentContainerId,
+        originalName: candidate.name,
+        originalCity: candidate.city,
+        extractedName: containerExtraction.parentContainerName || candidate.name,
+        extractedCity: candidate.city,
+        extractedTenantCount: containerExtraction.tenantCandidates.length,
+        followOnDetailUrls: containerExtraction.followOnDetailUrls.slice(0, 10),
+        extractedInstagram: undefined,
+        extractedBooking: undefined,
+        extractedWebsite: candidate.website,
+        hasDirectSurface: false,
+        childQuerySeeds: candidate.childQuerySeeds,
+        statusCode: fetched.statusCode,
+      });
+      continue;
+    }
+    const extracted = extractFromPage(resolvedUrl, fetched.html || "", candidate);
 
     const enriched: SourceRecord = {
       ...candidate,
+      operatorType: candidate.operatorType || "operator",
       source: sourceFromEvidenceType(extracted.evidenceType || finalClassification, candidate.source),
       name: extracted.name || candidate.name,
       city: extracted.city || candidate.city,
@@ -76,15 +127,18 @@ export async function runAcquisition(
       booking: extracted.booking || candidate.booking,
       website: extracted.website || candidate.website,
       parentContainerName: extracted.parentContainerName || candidate.parentContainerName,
+      parentContainerId: candidate.parentContainerId,
       evidenceType: extracted.evidenceType || finalClassification,
       childQuerySeeds: extracted.childQuerySeeds || candidate.childQuerySeeds,
       sourceUrl: candidateUrl,
-      extractedFromUrl: fetched.finalUrl || candidateUrl,
+      extractedFromUrl: resolvedUrl,
       raw: candidate.raw,
       extracted: {
         ...(candidate.extracted && typeof candidate.extracted === "object" ? (candidate.extracted as Record<string, unknown>) : {}),
         parserUsed: extracted.parserUsed,
         internalDetailLinks: extracted.internalDetailLinks,
+        operatorType: candidate.operatorType || "operator",
+        parentContainerId: candidate.parentContainerId,
       },
     };
 
