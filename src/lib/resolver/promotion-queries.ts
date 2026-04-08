@@ -38,3 +38,55 @@ export function buildPromotionQueries(operator: ResolverOperator): string[] {
   return [...queries].slice(0, 5);
 }
 
+export function buildSolaChildSurfaceRecoveryQueries(operator: ResolverOperator): string[] {
+  const name = clean(operator.canonicalName);
+  const city = clean(operator.canonicalCity);
+  if (!name || !city) return [];
+  const queries = [
+    `${name} ${city} instagram`,
+    `${name} ${city} glossgenius`,
+    `${name} ${city} vagaro`,
+    `${name} ${city} booksy`,
+    `${name} ${city} website`,
+  ];
+  return [...new Set(queries.map(clean).filter(Boolean))].slice(0, 5);
+}
+
+export function buildDirectoryBackedSurfacePromotionQueries(
+  operator: ResolverOperator,
+  opts?: { maxQueries?: number }
+): string[] {
+  const maxQueries = Math.max(1, Math.min(8, opts?.maxQueries ?? 8));
+  const name = clean(operator.canonicalName);
+  const city = clean(operator.canonicalCity);
+  const address = clean(operator.canonicalAddress);
+  const phone = clean(operator.canonicalPhone);
+  const website = clean(operator.canonicalWebsite);
+  if (!name) return [];
+
+  const queries = new Set<string>();
+  if (city) {
+    pushIf(queries, `${name} ${city} instagram`);
+    pushIf(queries, `${name} ${city} booking`);
+    pushIf(queries, `${name} ${city} glossgenius`);
+    pushIf(queries, `${name} ${city} vagaro`);
+    pushIf(queries, `${name} ${city} booksy`);
+    pushIf(queries, `${name} ${city} styleseat`);
+    pushIf(queries, `${name} ${city} square appointments`);
+    pushIf(queries, `${name} ${city} fresha`);
+    pushIf(queries, `${name} ${city} website`);
+  }
+  if (phone) pushIf(queries, `${name} ${phone}`);
+  if (address && city) pushIf(queries, `${name} ${address} ${city}`);
+  if (website) {
+    try {
+      const domain = new URL(website).hostname.replace(/^www\./, "");
+      pushIf(queries, `${domain} instagram`);
+      pushIf(queries, `${domain} booking`);
+    } catch {
+      // ignore invalid website urls
+    }
+  }
+  return [...queries].slice(0, maxQueries);
+}
+

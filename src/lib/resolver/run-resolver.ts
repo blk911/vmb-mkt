@@ -90,6 +90,8 @@ function createOperatorFromEvidence(e: EvidenceRecord, now: number): ResolverOpe
   const isContainer = operatorType === "container" || (isContainerEvidence && !parentContainerId);
   return {
     id: operatorIdFromEvidence(e),
+    operatorType: operatorType || (parentContainerId ? "child_operator" : isContainer ? "container" : "operator"),
+    parentContainerName: e.parentContainerName,
     canonicalName: e.name,
     canonicalAddress: e.address,
     canonicalCity: e.city,
@@ -168,10 +170,27 @@ function isProvisionalName(value?: string): boolean {
 
 function evidenceStrength(row: EvidenceRecord): number {
   let score = sourcePriority(row.source) * 10;
+  const fromSolaRecovery =
+    row.raw && typeof row.raw === "object" && "from" in (row.raw as Record<string, unknown>)
+      ? (row.raw as Record<string, unknown>).from === "sola_child_surface_recovery"
+      : false;
+  const fromDirectoryBackedPromotion =
+    row.raw && typeof row.raw === "object" && "from" in (row.raw as Record<string, unknown>)
+      ? (row.raw as Record<string, unknown>).from === "directory_backed_surface_promotion"
+      : false;
+  const deepExtractor =
+    row.extracted && typeof row.extracted === "object" && "parserUsed" in (row.extracted as Record<string, unknown>)
+      ? String((row.extracted as Record<string, unknown>).parserUsed || "")
+      : "";
+  const isSolaDeep = deepExtractor === "sola-deep";
   if (row.evidenceType === "direct_operator") score += 20;
   if (row.booking) score += 8;
   if (row.instagram) score += 6;
   if (row.website) score += 5;
+  if (row.phone) score += 4;
+  if (isSolaDeep) score += 16;
+  if (fromSolaRecovery) score += 14;
+  if (fromDirectoryBackedPromotion) score += 20;
   if (row.name && !isProvisionalName(row.name)) score += 6;
   return score;
 }
@@ -194,6 +213,7 @@ function updateCanonical(op: ResolverOperator): void {
   }
   op.canonicalAddress = (pick("address") as string | undefined) || op.canonicalAddress;
   op.canonicalCity = (pick("city") as string | undefined) || op.canonicalCity;
+  op.parentContainerName = (pick("parentContainerName") as string | undefined) || op.parentContainerName;
 }
 
 function shouldSkipParentContainerMerge(op: ResolverOperator, evidence: EvidenceRecord): boolean {
@@ -229,14 +249,38 @@ function assignStatus(op: ResolverOperator): ResolverOperator["status"] {
     if (!fromPromotion) return false;
     return Boolean(row.booking || row.instagram || row.website);
   });
+  const hasSolaRecoveryDirectEvidence = op.sources.some((row) => {
+    const fromSola =
+      row.raw && typeof row.raw === "object" && "from" in (row.raw as Record<string, unknown>)
+        ? (row.raw as Record<string, unknown>).from === "sola_child_surface_recovery"
+        : false;
+    if (!fromSola) return false;
+    return Boolean(row.booking || row.instagram || row.website || row.phone);
+  });
+  const hasDirectoryBackedPromotionDirectEvidence = op.sources.some((row) => {
+    const fromDirectoryBacked =
+      row.raw && typeof row.raw === "object" && "from" in (row.raw as Record<string, unknown>)
+        ? (row.raw as Record<string, unknown>).from === "directory_backed_surface_promotion"
+        : false;
+    if (!fromDirectoryBacked) return false;
+    return Boolean(row.booking || row.instagram || row.website || row.phone);
+  });
   if (hasBooking || hasStrongIG) return "hot";
   if (hasPromotionDirectEvidence && op.canonicalBooking) return "hot";
   if (hasPromotionDirectEvidence && op.canonicalInstagram && op.canonicalName && op.canonicalCity) return "hot";
   if (hasPromotionDirectEvidence && isChildOperator && op.canonicalBooking) return "hot";
+  if (hasDirectoryBackedPromotionDirectEvidence && (op.canonicalBooking || hasStrongIG)) return "hot";
+  if (hasSolaRecoveryDirectEvidence && isChildOperator && (op.canonicalBooking || op.canonicalInstagram)) return "hot";
   const hasIdentity = Boolean(op.canonicalName && (op.canonicalCity || op.canonicalAddress));
   if (hasIdentity && (op.canonicalWebsite || op.canonicalPhone || op.sources.length >= 3)) return "enriched";
   if (hasPromotionDirectEvidence && hasIdentity && op.canonicalWebsite) return "enriched";
   if (hasPromotionDirectEvidence && isChildOperator && (op.canonicalWebsite || op.canonicalInstagram || op.sources.length >= 2)) {
+    return "enriched";
+  }
+  if (hasDirectoryBackedPromotionDirectEvidence && hasIdentity && (op.canonicalWebsite || op.canonicalInstagram || op.canonicalPhone)) {
+    return "enriched";
+  }
+  if (hasSolaRecoveryDirectEvidence && isChildOperator && (op.canonicalWebsite || op.canonicalPhone || op.sources.length >= 2)) {
     return "enriched";
   }
   return "enumerated";
@@ -294,6 +338,8 @@ export function runResolverFromEvidence(inputEvidence?: EvidenceRecord[]): Resol
     if (bestMatch && evaluateEvidenceMatch(bestMatch, row).matched) {
       bestMatch.sources.push(row);
       if (!bestMatch.parentContainerId) bestMatch.parentContainerId = parentContainerIdFromEvidence(row);
+      if (!bestMatch.parentContainerName && row.parentContainerName) bestMatch.parentContainerName = row.parentContainerName;
+      if (!bestMatch.operatorType) bestMatch.operatorType = operatorTypeFromEvidence(row);
       bestMatch.confidenceScore = Math.max(bestMatch.confidenceScore, Math.floor(bestScore / 10));
       bestMatch.updatedAt = now;
       continue;
@@ -303,6 +349,7 @@ export function runResolverFromEvidence(inputEvidence?: EvidenceRecord[]): Resol
   }
 
   for (const op of operators) {
+    op.operatorType = op.operatorType || (op.isContainer ? "container" : op.parentContainerId ? "child_operator" : "operator");
     updateCanonical(op);
     op.confidenceScore = Math.max(op.confidenceScore, scoreOperator(op));
     op.normalizedCategory = deriveNormalizedCategory(op);
@@ -313,6 +360,7 @@ export function runResolverFromEvidence(inputEvidence?: EvidenceRecord[]): Resol
 
   const compacted = compactResolverOperators(operators);
   for (const op of compacted.operators) {
+    op.operatorType = op.operatorType || (op.isContainer ? "container" : op.parentContainerId ? "child_operator" : "operator");
     updateCanonical(op);
     op.confidenceScore = Math.max(op.confidenceScore, scoreOperator(op));
     op.normalizedCategory = deriveNormalizedCategory(op);

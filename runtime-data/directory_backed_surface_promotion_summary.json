@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-04-08T19:47:30.605Z",
+  "candidateCount": 0,
+  "queriesGenerated": 0,
+  "queriesExecuted": 0,
+  "searchHitsSeen": 0,
+  "acceptedEvidenceCount": 0,
+  "upgradedWithInstagram": 0,
+  "upgradedWithBooking": 0,
+  "upgradedWithWebsite": 0,
+  "promotedToEnriched": 0,
+  "promotedToHot": 0,
+  "rejectedWeakHits": 0,
+  "skippedAlreadyEnriched": 78,
+  "skippedSolaOnly": 28,
+  "topPromotions": []
+}

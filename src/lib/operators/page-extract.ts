@@ -1,5 +1,6 @@
 import { classifyPage } from "./page-classifier";
 import { normalizeCity, normalizeName } from "./normalize";
+import { deepExtractFromSolaChildPage, isSolaChildDetailUrl } from "@/lib/containers/sola-deep-extract";
 import { parseBooksy } from "./domain-parsers/booksy";
 import { parseFresha } from "./domain-parsers/fresha";
 import { parseSola } from "./domain-parsers/sola";
@@ -23,6 +24,7 @@ export type ExtractedPageFields = {
   address?: string;
   city?: string;
   phone?: string;
+  email?: string;
   website?: string;
   instagram?: string;
   booking?: string;
@@ -201,6 +203,7 @@ export function extractFromPage(url: string, html: string, preliminary: SourceRe
         : undefined;
   const internalDetailLinks = extractInternalDetailLinks(html, url, parserOutput);
   const categoryHint = inferCategoryHint(html, title, headingName);
+  const deepSola = isSolaChildDetailUrl(url) ? deepExtractFromSolaChildPage({ url, html }) : undefined;
 
   const resolvedName = looksDetailPage
     ? headingName || jsonName || normalizeName(ogTitle) || parserOutput?.name || title || normalizeName(preliminary.name)
@@ -208,18 +211,19 @@ export function extractFromPage(url: string, html: string, preliminary: SourceRe
 
   return {
     evidenceType: parserOutput?.evidenceType || evidenceType,
-    parserUsed: parser?.name,
-    name: resolvedName,
+    parserUsed: deepSola?.extractionSignals?.length ? "sola-deep" : parser?.name,
+    name: deepSola?.name || resolvedName,
     address: parserOutput?.address || address || preliminary.address,
     city: parserOutput?.city || city || normalizeCity(preliminary.city),
-    phone: phone || phoneFromHref || phoneFromBody || preliminary.phone,
-    website: parserOutput?.website || website || preliminary.website,
-    instagram: parserOutput?.instagram || instagram || preliminary.instagram,
-    booking: parserOutput?.booking || booking || preliminary.booking,
-    category: categoryHint || preliminary.category,
-    parentContainerName: parserOutput?.parentContainerName || parentContainerName || preliminary.parentContainerName,
+    phone: deepSola?.phone || phone || phoneFromHref || phoneFromBody || preliminary.phone,
+    email: deepSola?.email,
+    website: deepSola?.website || parserOutput?.website || website || preliminary.website,
+    instagram: deepSola?.instagram || parserOutput?.instagram || instagram || preliminary.instagram,
+    booking: deepSola?.booking || parserOutput?.booking || booking || preliminary.booking,
+    category: deepSola?.category || categoryHint || preliminary.category,
+    parentContainerName: deepSola?.parentContainerName || parserOutput?.parentContainerName || parentContainerName || preliminary.parentContainerName,
     childQuerySeeds: parserOutput?.childQuerySeeds,
-    internalDetailLinks,
+    internalDetailLinks: deepSola?.internalDetailLinks?.length ? deepSola.internalDetailLinks : internalDetailLinks,
   };
 }
 

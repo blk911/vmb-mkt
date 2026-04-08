@@ -68,7 +68,7 @@ export async function runAcquisition(
     const fetched = await fetchCandidatePage(candidateUrl);
     const resolvedUrl = fetched.finalUrl || candidateUrl;
     const finalClassification = classifyPage(resolvedUrl, fetched.html);
-    const containerExtraction = runContainerExtraction({
+    const containerExtraction = await runContainerExtraction({
       sourceUrl: resolvedUrl,
       html: fetched.html || "",
       candidate,

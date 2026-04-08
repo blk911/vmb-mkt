@@ -8,8 +8,10 @@ import type { SourceRecord } from "../operators/types";
 import { loadResolverRegistry } from "./registry-store";
 import { runResolver } from "./run-resolver";
 import { writeChildOperatorAudit } from "./child-audit";
+import { deepExtractFromSolaChildPage, isSolaChildDetailUrl } from "../containers/sola-deep-extract";
 
 const CHILD_STRENGTHENING_SUMMARY_PATH = path.join(process.cwd(), "runtime-data/child_strengthening_summary.json");
+const SOLA_CHILD_STRENGTHENING_SUMMARY_PATH = path.join(process.cwd(), "runtime-data/sola_child_strengthening_summary.json");
 const DETAIL_HINT = /(profile|provider|professional|staff|artist|detail|book|booking|service|team|tenant|member|technician)/i;
 
 type ChildStrengtheningResult = {
@@ -41,6 +43,15 @@ function isWeakChild(op: ReturnType<typeof loadResolverRegistry>[number]): boole
   return !op.canonicalBooking && !op.canonicalInstagram && !op.canonicalWebsite;
 }
 
+function isSolaChild(op: ReturnType<typeof loadResolverRegistry>[number]): boolean {
+  if (!op.parentContainerId) return false;
+  const parentHint = [op.parentContainerName || "", ...op.sources.map((row) => row.parentContainerName || "")]
+    .join(" ")
+    .toLowerCase();
+  if (parentHint.includes("sola")) return true;
+  return op.sources.some((row) => isSolaChildDetailUrl(row.sourceUrl || ""));
+}
+
 function inferSourceKind(url: string): SourceRecord["source"] {
   const lower = url.toLowerCase();
   if (lower.includes("instagram.com")) return "instagram";
@@ -56,12 +67,22 @@ function writeSummary(data: unknown): void {
 export async function runChildStrengtheningPass(opts?: { childLimit?: number }): Promise<ChildStrengtheningResult> {
   const childLimit = Math.max(1, Math.min(200, opts?.childLimit ?? 80));
   const registry = loadResolverRegistry();
-  const candidates = registry.filter(isWeakChild).slice(0, childLimit);
+  const weakChildren = registry.filter(isWeakChild);
+  const solaWeakChildren = weakChildren.filter(isSolaChild);
+  const nonSolaWeakChildren = weakChildren.filter((row) => !isSolaChild(row));
+  const candidates = [...solaWeakChildren, ...nonSolaWeakChildren].slice(0, childLimit);
 
   const enrichedSources: SourceRecord[] = [];
   let urlsScanned = 0;
+  let solaChildrenAttempted = 0;
+  const solaAttemptedIds = new Set<string>();
 
   for (const child of candidates) {
+    const childIsSola = isSolaChild(child);
+    if (childIsSola && !solaAttemptedIds.has(child.id)) {
+      solaAttemptedIds.add(child.id);
+      solaChildrenAttempted += 1;
+    }
     const detailUrls = collectKnownDetailUrls(child.sources);
     if (!detailUrls.length) continue;
     for (const detailUrl of detailUrls) {
@@ -82,28 +103,47 @@ export async function runChildStrengtheningPass(opts?: { childLimit?: number }):
         parentContainerName: child.sources.find((row) => row.parentContainerName)?.parentContainerName,
         evidenceType: "direct_operator",
       });
+      const deepSola = isSolaChildDetailUrl(fetched.finalUrl || detailUrl)
+        ? deepExtractFromSolaChildPage({ url: fetched.finalUrl || detailUrl, html: fetched.html })
+        : undefined;
       const strengthened: SourceRecord = {
-        source: inferSourceKind(detailUrl),
+        source: deepSola?.booking
+          ? "booking"
+          : deepSola?.instagram
+            ? "instagram"
+            : deepSola?.website
+              ? "website"
+              : inferSourceKind(detailUrl),
+        operatorType: "child_operator",
         sourceUrl: detailUrl,
         extractedFromUrl: fetched.finalUrl || detailUrl,
-        name: extracted.name || child.canonicalName,
+        name: deepSola?.name || extracted.name || child.canonicalName,
         city: extracted.city || child.canonicalCity,
         address: extracted.address || child.canonicalAddress,
-        phone: extracted.phone || child.canonicalPhone,
-        website: extracted.website || child.canonicalWebsite,
-        booking: extracted.booking || child.canonicalBooking,
-        instagram: extracted.instagram || child.canonicalInstagram,
-        category: extracted.category || child.category,
-        parentContainerName: extracted.parentContainerName || child.sources.find((row) => row.parentContainerName)?.parentContainerName,
+        phone: deepSola?.phone || extracted.phone || child.canonicalPhone,
+        website: deepSola?.website || extracted.website || child.canonicalWebsite,
+        booking: deepSola?.booking || extracted.booking || child.canonicalBooking,
+        instagram: deepSola?.instagram || extracted.instagram || child.canonicalInstagram,
+        category: deepSola?.category || extracted.category || child.category,
+        parentContainerName:
+          deepSola?.parentContainerName ||
+          extracted.parentContainerName ||
+          child.sources.find((row) => row.parentContainerName)?.parentContainerName,
+        parentContainerId: child.parentContainerId,
         evidenceType: extracted.evidenceType,
         raw: {
           from: "child_strengthening",
           childOperatorId: child.id,
           parentContainerId: child.parentContainerId,
+          deepExtractor: deepSola?.extractionSignals?.length ? "sola" : undefined,
         },
         extracted: {
-          parserUsed: extracted.parserUsed,
-          internalDetailLinks: extracted.internalDetailLinks,
+          parserUsed: deepSola?.extractionSignals?.length ? "sola-deep" : extracted.parserUsed,
+          internalDetailLinks: deepSola?.internalDetailLinks || extracted.internalDetailLinks,
+          extractionSignals: deepSola?.extractionSignals,
+          email: deepSola?.email || extracted.email,
+          operatorType: "child_operator",
+          parentContainerId: child.parentContainerId,
         },
       };
       enrichedSources.push(strengthened);
@@ -112,8 +152,27 @@ export async function runChildStrengtheningPass(opts?: { childLimit?: number }):
 
   const evidenceRows = sourceRecordsToEvidence(enrichedSources);
   appendEvidence(evidenceRows);
+  const preRegistry = registry;
   const operators = runResolver();
   const auditPath = writeChildOperatorAudit(operators);
+
+  const preSola = preRegistry.filter((row) => isSolaChild(row));
+  const postSola = operators.filter((row) => isSolaChild(row));
+  const preMap = new Map(preSola.map((row) => [row.id, row]));
+  let upgradedWithWebsite = 0;
+  let upgradedWithInstagram = 0;
+  let upgradedWithBooking = 0;
+  for (const row of postSola) {
+    const prior = preMap.get(row.id);
+    if (!prior) continue;
+    if (!prior.canonicalWebsite && row.canonicalWebsite) upgradedWithWebsite += 1;
+    if (!prior.canonicalInstagram && row.canonicalInstagram) upgradedWithInstagram += 1;
+    if (!prior.canonicalBooking && row.canonicalBooking) upgradedWithBooking += 1;
+  }
+  const preProvisionalCount = preSola.filter((row) => !row.canonicalName || !row.canonicalName.includes(" ")).length;
+  const postProvisionalCount = postSola.filter((row) => !row.canonicalName || !row.canonicalName.includes(" ")).length;
+  const preResolvedCount = preSola.length - preProvisionalCount;
+  const postResolvedCount = postSola.length - postProvisionalCount;
 
   writeSummary({
     generatedAt: new Date().toISOString(),
@@ -122,6 +181,26 @@ export async function runChildStrengtheningPass(opts?: { childLimit?: number }):
     evidenceAdded: evidenceRows.length,
     auditPath,
   });
+
+  fs.mkdirSync(path.dirname(SOLA_CHILD_STRENGTHENING_SUMMARY_PATH), { recursive: true });
+  fs.writeFileSync(
+    SOLA_CHILD_STRENGTHENING_SUMMARY_PATH,
+    `${JSON.stringify(
+      {
+        generatedAt: new Date().toISOString(),
+        solaChildrenAttempted,
+        solaChildrenUpgradedWithWebsite: upgradedWithWebsite,
+        solaChildrenUpgradedWithInstagram: upgradedWithInstagram,
+        solaChildrenUpgradedWithBooking: upgradedWithBooking,
+        preProvisionalCount,
+        postProvisionalCount,
+        preResolvedCount,
+        postResolvedCount,
+      },
+      null,
+      2
+    )}\n`
+  );
 
   return {
     attemptedChildren: candidates.length,

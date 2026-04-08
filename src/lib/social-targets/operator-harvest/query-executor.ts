@@ -203,12 +203,28 @@ async function searchPlacesForQuery(
   return rows.slice(0, resultsPerQuery);
 }
 
-export async function runGoogleSearch(query: string, limit = 8): Promise<GoogleSearchResult[]> {
+export async function runGoogleSearch(
+  query: string,
+  limit = 8,
+  opts?: {
+    strictQuery?: boolean;
+    intent?: "directory_backed_surface_promotion" | "sola_child_surface_recovery";
+    operatorId?: string;
+    candidateStrength?: number;
+  }
+): Promise<GoogleSearchResult[]> {
   const apiKey = (process.env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_MAPS_API_KEY || "").trim();
   if (!apiKey) return [];
+  const normalizedQuery = opts?.strictQuery ? query.replace(/\s+/g, " ").trim() : query;
   const detailsCache = new Map<string, PlaceDetailsResult | null>();
   const websiteLinksCache = new Map<string, string[]>();
-  const rows = await searchPlacesForQuery(query, apiKey, Math.max(1, Math.min(12, limit)), detailsCache, websiteLinksCache);
+  const rows = await searchPlacesForQuery(
+    normalizedQuery,
+    apiKey,
+    Math.max(1, Math.min(12, limit)),
+    detailsCache,
+    websiteLinksCache
+  );
   return rows.map((row) => ({
     title: row.title,
     link: row.url,

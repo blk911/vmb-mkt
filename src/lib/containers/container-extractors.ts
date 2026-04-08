@@ -1,7 +1,9 @@
 import crypto from "node:crypto";
 import type { SourceRecord } from "@/lib/operators/types";
 import { normalizeCity, normalizeName } from "@/lib/operators/normalize";
+import { fetchCandidatePage } from "@/lib/operators/page-fetch";
 import type { ContainerRegistryEntry, ContainerStrategyName } from "./container-registry";
+import { deepExtractFromSolaChildPage, isSolaChildDetailUrl } from "./sola-deep-extract";
 
 export type ContainerTenantCandidate = {
   name?: string;
@@ -115,42 +117,86 @@ function dedupeTenants(tenants: ContainerTenantCandidate[]): ContainerTenantCand
   return [...map.values()];
 }
 
-export function extractContainerTenants(input: {
+export async function extractContainerTenants(input: {
   containerUrl: string;
   html: string;
   candidate: SourceRecord;
   registryEntry: ContainerRegistryEntry;
-}): ContainerExtractorResult {
+}): Promise<ContainerExtractorResult> {
   const parentContainerName = parseParentContainerName(input.html, input.candidate.parentContainerName || input.candidate.name);
   const parentSeed = `${input.registryEntry.brand}|${input.containerUrl}|${parentContainerName || ""}`;
   const parentContainerId = hashParentContainerId(parentSeed);
   const anchors = extractAnchors(input.html, input.containerUrl);
   const parsedTenants = dedupeTenants(parseTenantCandidates(anchors, input.registryEntry.strategy, parentContainerName));
 
-  const tenantCandidates: SourceRecord[] = parsedTenants.map((tenant) => ({
-    source: "container",
-    operatorType: "child_operator",
-    parentContainerId,
-    parentContainerName,
-    name: tenant.name,
-    city: tenant.city || normalizeCity(input.candidate.city),
-    category: tenant.category,
-    sourceUrl: tenant.detailUrl || input.containerUrl,
-    extractedFromUrl: input.containerUrl,
-    evidenceType: tenant.detailUrl ? "direct_operator" : "directory_listing",
-    raw: {
-      from: "container_extraction",
-      containerBrand: input.registryEntry.brand,
-      containerUrl: input.containerUrl,
-    },
-    extracted: {
-      tenantName: tenant.name,
-      tenantDetailUrl: tenant.detailUrl,
-      strategy: input.registryEntry.strategy,
+  const tenantCandidates: SourceRecord[] = [];
+  for (const tenant of parsedTenants) {
+    const base: SourceRecord = {
+      source: "container",
+      operatorType: "child_operator",
       parentContainerId,
       parentContainerName,
-    },
-  }));
+      name: tenant.name,
+      city: tenant.city || normalizeCity(input.candidate.city),
+      category: tenant.category,
+      sourceUrl: tenant.detailUrl || input.containerUrl,
+      extractedFromUrl: input.containerUrl,
+      evidenceType: tenant.detailUrl ? "direct_operator" : "directory_listing",
+      raw: {
+        from: "container_extraction",
+        containerBrand: input.registryEntry.brand,
+        containerUrl: input.containerUrl,
+      },
+      extracted: {
+        tenantName: tenant.name,
+        tenantDetailUrl: tenant.detailUrl,
+        strategy: input.registryEntry.strategy,
+        parentContainerId,
+        parentContainerName,
+      },
+    };
+
+    if (input.registryEntry.strategy === "sola" && tenant.detailUrl && isSolaChildDetailUrl(tenant.detailUrl)) {
+      const fetched = await fetchCandidatePage(tenant.detailUrl, {
+        timeoutMs: 12000,
+        referrer: input.containerUrl,
+        userAgent: "vmb-container-sola/1.0",
+      });
+      if (fetched.statusCode && fetched.html) {
+        const deep = deepExtractFromSolaChildPage({ url: fetched.finalUrl || tenant.detailUrl, html: fetched.html });
+        const hasSurface = Boolean(deep.website || deep.instagram || deep.booking || deep.phone || deep.email);
+        if (hasSurface) {
+          tenantCandidates.push({
+            ...base,
+            source: deep.booking ? "booking" : deep.instagram ? "instagram" : deep.website ? "website" : "container",
+            name: deep.name || base.name,
+            website: deep.website || base.website,
+            instagram: deep.instagram || base.instagram,
+            booking: deep.booking || base.booking,
+            phone: deep.phone || base.phone,
+            category: deep.category || base.category,
+            parentContainerName: deep.parentContainerName || base.parentContainerName,
+            extractedFromUrl: fetched.finalUrl || tenant.detailUrl,
+            raw: {
+              ...(base.raw as Record<string, unknown>),
+              deepExtractor: "sola",
+              createdAt: Date.now(),
+            },
+            extracted: {
+              ...(base.extracted as Record<string, unknown>),
+              parserUsed: "sola-deep",
+              extractionSignals: deep.extractionSignals,
+              internalDetailLinks: deep.internalDetailLinks,
+              email: deep.email,
+            },
+          });
+          continue;
+        }
+      }
+    }
+
+    tenantCandidates.push(base);
+  }
 
   return {
     parentContainerId,

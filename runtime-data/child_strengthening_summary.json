@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-04-07T17:14:38.522Z",
-  "attemptedChildren": 80,
-  "urlsScanned": 60,
-  "evidenceAdded": 60,
+  "generatedAt": "2026-04-08T17:03:14.008Z",
+  "attemptedChildren": 59,
+  "urlsScanned": 59,
+  "evidenceAdded": 59,
   "auditPath": "runtime-data/child_operator_audit.json"
 }

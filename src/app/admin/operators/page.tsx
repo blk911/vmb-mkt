@@ -26,6 +26,7 @@ export default function OperatorsPage({
   searchParams?: {
     filter?: string;
     showContainers?: string;
+    showContainerDerivedOnly?: string;
     showDiscard?: string;
     showEnumerated?: string;
     showProvisionalChildren?: string;
@@ -34,6 +35,7 @@ export default function OperatorsPage({
 }) {
   const filter = normalizeFilter(searchParams?.filter);
   const showContainers = searchParams?.showContainers === "1";
+  const showContainerDerivedOnly = flagOn(searchParams?.showContainerDerivedOnly);
   const showDiscard = flagOn(searchParams?.showDiscard);
   const showEnumerated = flagOn(searchParams?.showEnumerated);
   const showProvisionalChildren = flagOn(searchParams?.showProvisionalChildren);
@@ -65,6 +67,8 @@ export default function OperatorsPage({
     if (filter === "shelved_by_review") return getReviewStateOrDefault(op.reviewState) === "shelved_by_review";
     return true;
   }).filter(({ op }) => {
+    const isContainerDerived = op.operatorType === "child_operator" || Boolean(op.parentContainerId);
+    if (showContainerDerivedOnly && !isContainerDerived) return false;
     const hasSurface = Boolean(op.canonical.booking || op.canonical.instagram || op.canonical.website);
     const lowSignal = op.confidenceScore <= 1 && !hasSurface;
     const defaultTierVisible =
@@ -122,6 +126,12 @@ export default function OperatorsPage({
   return (
     <div style={{ padding: "18px 20px", maxWidth: 1400 }}>
       <h1 style={{ fontSize: 24, fontWeight: 600 }}>Operator Console</h1>
+      <div style={{ marginTop: 8, display: "flex", gap: 12, fontSize: 13 }}>
+        <a href="/admin/operators">Operators</a>
+        <a href="/admin/operators/children">Children</a>
+        <a href="/admin/operators/ready">Ready</a>
+        <a href="/admin/operators/surface-recovery">Surface Recovery</a>
+      </div>
       <div style={{ marginTop: 12 }}>
         <strong>Resolver operators:</strong> {operators.length} | <strong>Rendered:</strong> {filteredOperators.length} |{" "}
         <strong>Hot:</strong> {hot.length} | <strong>Enriched:</strong> {enriched.length} |{" "}
@@ -151,31 +161,37 @@ export default function OperatorsPage({
           shelved by review
         </a>
         <a
-          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "0" : "1"}`}
+          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "0" : "1"}&showContainerDerivedOnly=${showContainerDerivedOnly ? "1" : "0"}&showDiscard=${showDiscard ? "1" : "0"}&showEnumerated=${showEnumerated ? "1" : "0"}&showProvisionalChildren=${showProvisionalChildren ? "1" : "0"}&showLowSignal=${showLowSignal ? "1" : "0"}`}
           style={{ fontWeight: 500 }}
         >
           {showContainers ? "hide containers" : "show containers"}
         </a>
         <a
-          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showDiscard=${showDiscard ? "0" : "1"}&showEnumerated=${showEnumerated ? "1" : "0"}&showProvisionalChildren=${showProvisionalChildren ? "1" : "0"}&showLowSignal=${showLowSignal ? "1" : "0"}`}
+          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showContainerDerivedOnly=${showContainerDerivedOnly ? "0" : "1"}&showDiscard=${showDiscard ? "1" : "0"}&showEnumerated=${showEnumerated ? "1" : "0"}&showProvisionalChildren=${showProvisionalChildren ? "1" : "0"}&showLowSignal=${showLowSignal ? "1" : "0"}`}
+          style={{ fontWeight: 500 }}
+        >
+          {showContainerDerivedOnly ? "show all operators" : "show container-derived only"}
+        </a>
+        <a
+          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showContainerDerivedOnly=${showContainerDerivedOnly ? "1" : "0"}&showDiscard=${showDiscard ? "0" : "1"}&showEnumerated=${showEnumerated ? "1" : "0"}&showProvisionalChildren=${showProvisionalChildren ? "1" : "0"}&showLowSignal=${showLowSignal ? "1" : "0"}`}
           style={{ fontWeight: 500 }}
         >
           {showDiscard ? "hide discard/shelved" : "show discard/shelved"}
         </a>
         <a
-          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showDiscard=${showDiscard ? "1" : "0"}&showEnumerated=${showEnumerated ? "0" : "1"}&showProvisionalChildren=${showProvisionalChildren ? "1" : "0"}&showLowSignal=${showLowSignal ? "1" : "0"}`}
+          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showContainerDerivedOnly=${showContainerDerivedOnly ? "1" : "0"}&showDiscard=${showDiscard ? "1" : "0"}&showEnumerated=${showEnumerated ? "0" : "1"}&showProvisionalChildren=${showProvisionalChildren ? "1" : "0"}&showLowSignal=${showLowSignal ? "1" : "0"}`}
           style={{ fontWeight: 500 }}
         >
           {showEnumerated ? "hide enumerated" : "show enumerated"}
         </a>
         <a
-          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showDiscard=${showDiscard ? "1" : "0"}&showEnumerated=${showEnumerated ? "1" : "0"}&showProvisionalChildren=${showProvisionalChildren ? "0" : "1"}&showLowSignal=${showLowSignal ? "1" : "0"}`}
+          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showContainerDerivedOnly=${showContainerDerivedOnly ? "1" : "0"}&showDiscard=${showDiscard ? "1" : "0"}&showEnumerated=${showEnumerated ? "1" : "0"}&showProvisionalChildren=${showProvisionalChildren ? "0" : "1"}&showLowSignal=${showLowSignal ? "1" : "0"}`}
           style={{ fontWeight: 500 }}
         >
           {showProvisionalChildren ? "hide provisional child" : "show provisional child"}
         </a>
         <a
-          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showDiscard=${showDiscard ? "1" : "0"}&showEnumerated=${showEnumerated ? "1" : "0"}&showProvisionalChildren=${showProvisionalChildren ? "1" : "0"}&showLowSignal=${showLowSignal ? "0" : "1"}`}
+          href={`/admin/operators?filter=${filter}&showContainers=${showContainers ? "1" : "0"}&showContainerDerivedOnly=${showContainerDerivedOnly ? "1" : "0"}&showDiscard=${showDiscard ? "1" : "0"}&showEnumerated=${showEnumerated ? "1" : "0"}&showProvisionalChildren=${showProvisionalChildren ? "1" : "0"}&showLowSignal=${showLowSignal ? "0" : "1"}`}
           style={{ fontWeight: 500 }}
         >
           {showLowSignal ? "hide low signal" : "show low signal"}
@@ -227,7 +243,7 @@ export default function OperatorsPage({
       <table
         style={{
           width: "100%",
-          minWidth: 1450,
+          minWidth: 1530,
           borderCollapse: "collapse",
           tableLayout: "fixed",
         }}
@@ -236,6 +252,7 @@ export default function OperatorsPage({
           <tr>
             <th align="left" style={{ width: "20%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Name</th>
             <th align="left" style={{ width: "8%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>City</th>
+            <th align="left" style={{ width: "10%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Parent</th>
             <th style={{ width: "4%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>IG</th>
             <th style={{ width: "6%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Booking</th>
             <th style={{ width: "6%", position: "sticky", top: 0, background: "#fff", zIndex: 2 }}>Status</th>
@@ -258,6 +275,9 @@ export default function OperatorsPage({
               </td>
               <td style={cell} title={op.city}>
                 <span style={truncate}>{op.city || "-"}</span>
+              </td>
+              <td style={cell} title={op.parentContainerName}>
+                <span style={truncate}>{op.parentContainerId ? op.parentContainerName || "-" : "-"}</span>
               </td>
               <td style={cell}>
                 {op.canonical.instagram && (
@@ -300,9 +320,9 @@ export default function OperatorsPage({
               <td style={cell} title={outreach.reason}>
                 <span style={truncate}>{outreach.reason}</span>
               </td>
-              <td style={cell}>{evidenceCount(op)}</td>
-              <td style={{ ...cell, color: "#555" }} title={sourceTypeLabel(op)}>
-                <span style={truncate}>{sourceTypeLabel(op)}</span>
+              <td style={cell}>{op.evidenceCount}</td>
+              <td style={{ ...cell, color: "#555" }} title={op.sourceTypeSummary || sourceTypeLabel(op)}>
+                <span style={truncate}>{op.sourceTypeSummary || sourceTypeLabel(op)}</span>
               </td>
               <td style={cell}>
                 {op.resolverStatus === "hot" ? (

@@ -7,11 +7,11 @@ export type ContainerExtractionOutput = ContainerExtractorResult & {
   strategy?: string;
 };
 
-export function runContainerExtraction(input: {
+export async function runContainerExtraction(input: {
   sourceUrl: string;
   html: string;
   candidate: SourceRecord;
-}): ContainerExtractionOutput {
+}): Promise<ContainerExtractionOutput> {
   const registryEntry = getContainerRegistryEntry(input.sourceUrl);
   if (!registryEntry) {
     return {
@@ -23,7 +23,7 @@ export function runContainerExtraction(input: {
     };
   }
 
-  const extracted = extractContainerTenants({
+  const extracted = await extractContainerTenants({
     containerUrl: input.sourceUrl,
     html: input.html,
     candidate: input.candidate,

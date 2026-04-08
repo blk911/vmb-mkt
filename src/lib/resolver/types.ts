@@ -2,7 +2,9 @@ import type { EvidenceRecord } from "@/lib/evidence/types";
 
 export type ResolverOperator = {
   id: string;
+  operatorType?: "operator" | "container" | "child_operator";
   canonicalName?: string;
+  parentContainerName?: string;
   canonicalAddress?: string;
   canonicalCity?: string;
   canonicalPhone?: string;
