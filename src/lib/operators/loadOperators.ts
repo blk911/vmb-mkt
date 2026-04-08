@@ -9,6 +9,7 @@ export type OperatorConsoleRow = OperatorRecord & {
   resolverStatus: ResolverOperator["status"];
   childState: ChildState;
   isContainer: boolean;
+  parentContainerId?: string;
 };
 
 function provisionalName(value?: string): boolean {
@@ -32,6 +33,7 @@ export function loadOperatorsFromResolverRegistry(): OperatorConsoleRow[] {
       resolverStatus: row.status,
       childState: deriveChildState(row),
       isContainer: Boolean(row.isContainer),
+      parentContainerId: row.parentContainerId,
     };
   });
   return applyReviewOverlay(mapped) as OperatorConsoleRow[];

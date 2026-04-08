@@ -67,6 +67,29 @@ function hasInternalDetailLinks(op: OperatorConsoleRow): boolean {
   });
 }
 
+function hasLowQualityIdentityIndicators(op: OperatorConsoleRow): boolean {
+  const values = [
+    op.name,
+    op.city,
+    ...((op.evidence || []).flatMap((row) => [row.sourceUrl, row.name, row.city])),
+  ]
+    .filter(Boolean)
+    .map((value) => String(value).toLowerCase());
+  return values.some((value) =>
+    [
+      "access denied",
+      "forbidden",
+      "blocked",
+      "captcha",
+      "not found",
+      "page not found",
+      "unknown",
+      "n/a",
+      "unavailable",
+    ].some((token) => value.includes(token))
+  );
+}
+
 function likelySurfaceHints(op: OperatorConsoleRow): { bookingHint: boolean; instagramHint: boolean } {
   let bookingHint = false;
   let instagramHint = false;
@@ -90,8 +113,7 @@ function likelySurfaceHints(op: OperatorConsoleRow): { bookingHint: boolean; ins
 function dedupeKey(op: OperatorConsoleRow): string {
   const name = normalizeText(op.name);
   if (op.childState === "not_child") return `${name}|${normalizeText(op.city)}`;
-  const parentContainer = normalizeText((op.evidence || []).map((row) => row.parentContainerName).find(Boolean));
-  return `${name}|${parentContainer || normalizeText(op.city)}`;
+  return `${name}|${normalizeText(op.parentContainerId || op.city)}`;
 }
 
 function recoveryPriorityWithReasons(op: OperatorConsoleRow): { score: number; reasons: string[]; hintBoost: number } {
@@ -192,6 +214,10 @@ function recoveryPriorityWithReasons(op: OperatorConsoleRow): { score: number; r
   if ((op.name || "").toLowerCase() === "unknown" || !hasIdentity) {
     score -= 10;
     reasons.push("weak identity penalty");
+  }
+  if (hasLowQualityIdentityIndicators(op)) {
+    score -= 10;
+    reasons.push("low-quality identity indicator penalty");
   }
 
   return { score: Math.max(0, Math.round(score)), reasons, hintBoost };

@@ -12,7 +12,7 @@ function topCounts(values: string[]): Array<{ label: string; count: number }> {
 
 export default function SurfaceRecoveryPage() {
   const operators = loadOperatorsFromResolverRegistry();
-  const queue = selectSurfaceRecoveryQueue(operators);
+  const queue = [...selectSurfaceRecoveryQueue(operators)].sort((a, b) => b.recoveryPriority - a.recoveryPriority);
   const artifactPath = (() => {
     try {
       return writeSurfaceRecoveryQueue(queue);
@@ -73,7 +73,7 @@ export default function SurfaceRecoveryPage() {
               <td>{row.sourceTypeSummary || "-"}</td>
               <td>
                 <div>{row.recoveryPriority}</div>
-                <div style={{ fontSize: 11, color: "#666" }}>{row.recoveryReasons.slice(0, 3).join(" • ")}</div>
+                <div style={{ fontSize: 11, color: "#666" }}>{row.recoveryReasons.slice(0, 4).join(" • ")}</div>
               </td>
               <td>{row.reviewState || "unreviewed"}</td>
               <td>{row.reviewNotes || "-"}</td>
