@@ -1,8 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { DoraQueueTable } from "@/components/admin/source-intake/DoraQueueTable";
+import { DriftSummaryCard } from "@/components/admin/source-intake/DriftSummaryCard";
 import { MatchReviewTable } from "@/components/admin/source-intake/MatchReviewTable";
 import { ParsePreviewTable } from "@/components/admin/source-intake/ParsePreviewTable";
+import { ResolverOutcomePanel } from "@/components/admin/source-intake/ResolverOutcomePanel";
+import { SocialQueueTable } from "@/components/admin/source-intake/SocialQueueTable";
 import { SourceIntakeForm } from "@/components/admin/source-intake/SourceIntakeForm";
 import { SourceIntakeTable } from "@/components/admin/source-intake/SourceIntakeTable";
 import type {
@@ -11,6 +15,14 @@ import type {
   ReviewAction,
   SourceIntakeRecord,
 } from "@/lib/source-intake/types";
+import type {
+  DoraValidationQueueItem,
+  DoraValidationResult,
+  OperatorCandidateLinkSuggestion,
+  SocialDiscoveryQueueItem,
+  SocialDiscoveryResult,
+  SourceIntakeDriftEvent,
+} from "@/lib/source-intake/phase2-types";
 
 type IntakeListResponse = {
   ok: boolean;
@@ -24,6 +36,13 @@ type IntakeDetailResponse = {
   intake?: SourceIntakeRecord;
   parsedCandidates?: ParsedCandidateRow[];
   processingReceipts?: IntakeProcessingReceipt[];
+  doraQueueItems?: DoraValidationQueueItem[];
+  doraResults?: DoraValidationResult[];
+  socialQueueItems?: SocialDiscoveryQueueItem[];
+  socialResults?: SocialDiscoveryResult[];
+  driftEvents?: SourceIntakeDriftEvent[];
+  latestDriftEvent?: SourceIntakeDriftEvent | null;
+  operatorCandidateLinks?: OperatorCandidateLinkSuggestion[];
 };
 
 type ParseResponse = {
@@ -39,11 +58,37 @@ type ProcessResponse = {
   receipt?: IntakeProcessingReceipt;
 };
 
+type ResolveDoraResponse = {
+  ok: boolean;
+  error?: string;
+  result?: DoraValidationResult;
+};
+
+type ResolveSocialResponse = {
+  ok: boolean;
+  error?: string;
+  result?: SocialDiscoveryResult;
+};
+
+type DriftResponse = {
+  ok: boolean;
+  error?: string;
+  event?: SourceIntakeDriftEvent | null;
+};
+
 export default function SourceIntakeAdminPage() {
   const [intakes, setIntakes] = useState<SourceIntakeRecord[]>([]);
   const [selectedIntake, setSelectedIntake] = useState<SourceIntakeRecord | null>(null);
   const [parsedCandidates, setParsedCandidates] = useState<ParsedCandidateRow[]>([]);
   const [processingReceipts, setProcessingReceipts] = useState<IntakeProcessingReceipt[]>([]);
+  const [doraQueueItems, setDoraQueueItems] = useState<DoraValidationQueueItem[]>([]);
+  const [doraResults, setDoraResults] = useState<DoraValidationResult[]>([]);
+  const [socialQueueItems, setSocialQueueItems] = useState<SocialDiscoveryQueueItem[]>([]);
+  const [socialResults, setSocialResults] = useState<SocialDiscoveryResult[]>([]);
+  const [driftEvents, setDriftEvents] = useState<SourceIntakeDriftEvent[]>([]);
+  const [latestDriftEvent, setLatestDriftEvent] = useState<SourceIntakeDriftEvent | null>(null);
+  const [operatorCandidateLinks, setOperatorCandidateLinks] = useState<OperatorCandidateLinkSuggestion[]>([]);
+  const [summaryByIntakeId, setSummaryByIntakeId] = useState<Record<string, { doraQueue: number; socialQueue: number; drift: number }>>({});
   const [loadingList, setLoadingList] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
   const [busyKey, setBusyKey] = useState<string | null>(null);
@@ -82,6 +127,21 @@ export default function SourceIntakeAdminPage() {
       setSelectedIntake(json.intake);
       setParsedCandidates(json.parsedCandidates ?? []);
       setProcessingReceipts(json.processingReceipts ?? []);
+      setDoraQueueItems(json.doraQueueItems ?? []);
+      setDoraResults(json.doraResults ?? []);
+      setSocialQueueItems(json.socialQueueItems ?? []);
+      setSocialResults(json.socialResults ?? []);
+      setDriftEvents(json.driftEvents ?? []);
+      setLatestDriftEvent(json.latestDriftEvent ?? null);
+      setOperatorCandidateLinks(json.operatorCandidateLinks ?? []);
+      setSummaryByIntakeId((current) => ({
+        ...current,
+        [json.intake.id]: {
+          doraQueue: (json.doraQueueItems ?? []).length,
+          socialQueue: (json.socialQueueItems ?? []).length,
+          drift: (json.driftEvents ?? []).length,
+        },
+      }));
       setPageError(null);
     } catch (error: unknown) {
       setPageError(error instanceof Error ? error.message : "Failed to load intake detail");
@@ -108,6 +168,13 @@ export default function SourceIntakeAdminPage() {
       setSelectedIntake(json.intake);
       setParsedCandidates(json.parsedCandidates ?? []);
       setProcessingReceipts([]);
+      setDoraQueueItems([]);
+      setDoraResults([]);
+      setSocialQueueItems([]);
+      setSocialResults([]);
+      setDriftEvents([]);
+      setLatestDriftEvent(null);
+      setOperatorCandidateLinks([]);
       setPageError(null);
     } catch (error: unknown) {
       setPageError(error instanceof Error ? error.message : "Failed to parse intake");
@@ -152,6 +219,63 @@ export default function SourceIntakeAdminPage() {
     );
   }, []);
 
+  const handleResolveDora = useCallback(async (queueItemId: string) => {
+    setBusyKey(`dora-resolve:${queueItemId}`);
+    try {
+      const response = await fetch(`/api/source-intake/dora-queue/${encodeURIComponent(queueItemId)}/resolve`, {
+        method: "POST",
+      });
+      const json = (await response.json()) as ResolveDoraResponse;
+      if (!response.ok || !json.ok || !json.result) {
+        throw new Error(json.error || "Failed to resolve DORA queue item");
+      }
+      if (selectedIntake) await loadIntakeDetail(selectedIntake.id);
+      setPageError(null);
+    } catch (error: unknown) {
+      setPageError(error instanceof Error ? error.message : "Failed to resolve DORA queue item");
+    } finally {
+      setBusyKey(null);
+    }
+  }, [loadIntakeDetail, selectedIntake]);
+
+  const handleResolveSocial = useCallback(async (queueItemId: string) => {
+    setBusyKey(`social-resolve:${queueItemId}`);
+    try {
+      const response = await fetch(`/api/source-intake/social-queue/${encodeURIComponent(queueItemId)}/resolve`, {
+        method: "POST",
+      });
+      const json = (await response.json()) as ResolveSocialResponse;
+      if (!response.ok || !json.ok || !json.result) {
+        throw new Error(json.error || "Failed to resolve social queue item");
+      }
+      if (selectedIntake) await loadIntakeDetail(selectedIntake.id);
+      setPageError(null);
+    } catch (error: unknown) {
+      setPageError(error instanceof Error ? error.message : "Failed to resolve social queue item");
+    } finally {
+      setBusyKey(null);
+    }
+  }, [loadIntakeDetail, selectedIntake]);
+
+  const handleRecomputeDrift = useCallback(async (intakeId: string) => {
+    setBusyKey(`drift:${intakeId}`);
+    try {
+      const response = await fetch(`/api/source-intake/${encodeURIComponent(intakeId)}/drift`, {
+        method: "POST",
+      });
+      const json = (await response.json()) as DriftResponse;
+      if (!response.ok || !json.ok) {
+        throw new Error(json.error || "Failed to compute drift");
+      }
+      await loadIntakeDetail(intakeId);
+      setPageError(null);
+    } catch (error: unknown) {
+      setPageError(error instanceof Error ? error.message : "Failed to compute drift");
+    } finally {
+      setBusyKey(null);
+    }
+  }, [loadIntakeDetail]);
+
   const sourceIntelligence = useMemo(() => {
     const counts = {
       totalParsed: parsedCandidates.length,
@@ -169,6 +293,24 @@ export default function SourceIntakeAdminPage() {
     }
     return counts;
   }, [parsedCandidates]);
+
+  const doraRows = useMemo(
+    () =>
+      doraQueueItems.map((item) => ({
+        item,
+        result: doraResults.find((result) => result.queueItemId === item.id) ?? null,
+      })),
+    [doraQueueItems, doraResults]
+  );
+
+  const socialRows = useMemo(
+    () =>
+      socialQueueItems.map((item) => ({
+        item,
+        result: socialResults.find((result) => result.queueItemId === item.id) ?? null,
+      })),
+    [socialQueueItems, socialResults]
+  );
 
   return (
     <main className="min-h-screen bg-neutral-50 p-6">
@@ -193,6 +335,7 @@ export default function SourceIntakeAdminPage() {
           intakes={intakes}
           selectedIntakeId={selectedIntake?.id}
           busyKey={busyKey}
+          summaryByIntakeId={summaryByIntakeId}
           onView={(intakeId) => void loadIntakeDetail(intakeId)}
           onParse={(intakeId) => void handleParse(intakeId)}
           onProcess={(intakeId) => void handleProcess(intakeId)}
@@ -254,6 +397,18 @@ export default function SourceIntakeAdminPage() {
                 rows={parsedCandidates}
                 busy={busyKey === `process:${selectedIntake.id}`}
                 onReviewActionChange={handleReviewActionChange}
+              />
+
+              <DoraQueueTable
+                rows={doraRows}
+                busyQueueItemId={busyKey?.startsWith("dora-resolve:") ? busyKey.replace("dora-resolve:", "") : null}
+                onResolve={(queueItemId) => void handleResolveDora(queueItemId)}
+              />
+
+              <SocialQueueTable
+                rows={socialRows}
+                busyQueueItemId={busyKey?.startsWith("social-resolve:") ? busyKey.replace("social-resolve:", "") : null}
+                onResolve={(queueItemId) => void handleResolveSocial(queueItemId)}
               />
             </div>
 
@@ -318,6 +473,18 @@ export default function SourceIntakeAdminPage() {
                   <p className="text-sm text-neutral-500">No processing receipt yet.</p>
                 )}
               </section>
+
+              <DriftSummaryCard
+                event={latestDriftEvent}
+                onCompute={() => void handleRecomputeDrift(selectedIntake.id)}
+                busy={busyKey === `drift:${selectedIntake.id}`}
+              />
+
+              <ResolverOutcomePanel
+                doraResults={doraResults}
+                socialResults={socialResults}
+                operatorCandidateLinks={operatorCandidateLinks}
+              />
             </div>
           </section>
         ) : (

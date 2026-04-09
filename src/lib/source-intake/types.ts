@@ -112,7 +112,16 @@ export type SourceIntakeCreateInput = {
 export type OperatorEvidenceFactType =
   | "team_membership"
   | "role"
-  | "price";
+  | "price"
+  | "license_status"
+  | "license_number"
+  | "license_type"
+  | "license_city"
+  | "instagram_handle"
+  | "booking_url"
+  | "website_url"
+  | "linktree_url"
+  | "tiktok_handle";
 
 export type StagedOperatorEvidence = {
   id: string;

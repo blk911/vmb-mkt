@@ -6,6 +6,7 @@ type SourceIntakeTableProps = {
   intakes: SourceIntakeRecord[];
   selectedIntakeId?: string;
   busyKey?: string | null;
+  summaryByIntakeId?: Record<string, { doraQueue: number; socialQueue: number; drift: number }>;
   onView: (intakeId: string) => void;
   onParse: (intakeId: string) => void;
   onProcess: (intakeId: string) => void;
@@ -23,6 +24,7 @@ export function SourceIntakeTable({
   intakes,
   selectedIntakeId,
   busyKey,
+  summaryByIntakeId,
   onView,
   onParse,
   onProcess,
@@ -48,6 +50,9 @@ export function SourceIntakeTable({
               <th className="px-3 py-3">City/State</th>
               <th className="px-3 py-3">Status</th>
               <th className="px-3 py-3">Candidates</th>
+              <th className="px-3 py-3">DORA</th>
+              <th className="px-3 py-3">Social</th>
+              <th className="px-3 py-3">Drift</th>
               <th className="px-3 py-3">Actions</th>
             </tr>
           </thead>
@@ -55,6 +60,7 @@ export function SourceIntakeTable({
             {intakes.map((intake) => {
               const isSelected = intake.id === selectedIntakeId;
               const candidateCount = intake.parseSummary?.totalCandidates ?? 0;
+              const summary = summaryByIntakeId?.[intake.id];
               return (
                 <tr
                   key={intake.id}
@@ -69,6 +75,9 @@ export function SourceIntakeTable({
                     <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-700">{intake.status}</span>
                   </td>
                   <td className="px-3 py-3 align-top text-neutral-700">{candidateCount}</td>
+                  <td className="px-3 py-3 align-top text-neutral-700">{summary ? summary.doraQueue : "—"}</td>
+                  <td className="px-3 py-3 align-top text-neutral-700">{summary ? summary.socialQueue : "—"}</td>
+                  <td className="px-3 py-3 align-top text-neutral-700">{summary ? summary.drift : "—"}</td>
                   <td className="px-3 py-3 align-top">
                     <div className="flex flex-wrap gap-2">
                       <button
@@ -101,7 +110,7 @@ export function SourceIntakeTable({
             })}
             {intakes.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-3 py-8 text-center text-sm text-neutral-500">
+                <td colSpan={11} className="px-3 py-8 text-center text-sm text-neutral-500">
                   No source intakes yet.
                 </td>
               </tr>

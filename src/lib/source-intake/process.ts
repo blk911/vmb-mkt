@@ -1,6 +1,4 @@
 import {
-  appendDoraValidationQueue,
-  appendSocialDiscoveryQueue,
   appendStagedOperatorEvidence,
   createSourceIntakeId,
   getProcessingReceiptByIntakeId,
@@ -10,10 +8,13 @@ import {
   updateSourceIntake,
   upsertOperatorCandidates,
 } from "./store";
+import { loadResolverRegistry } from "@/lib/resolver/registry-store";
+import { computeIntakeDrift } from "./drift";
+import { enqueueDoraValidationForCandidate } from "./dora-queue";
+import { enqueueSocialDiscoveryForCandidate } from "./social-queue";
 import type {
   IntakeCandidateProcessResult,
   IntakeProcessingReceipt,
-  IntakeQueueItem,
   OperatorCandidateRecord,
   ParsedCandidateRow,
   ReviewAction,
@@ -115,18 +116,33 @@ function buildQueueItem(
   intake: SourceIntakeRecord,
   candidate: ParsedCandidateRow,
   createdAt: string
-): IntakeQueueItem {
+): {
+  intakeId: string;
+  candidateId: string;
+  sourceLabel: string;
+  sourceType: SourceIntakeRecord["sourceType"];
+  sourceUrl?: string;
+  facilityId?: string;
+  facilityName?: string;
+  city?: string;
+  state?: string;
+  displayName: string;
+  firstName?: string;
+  lastName?: string;
+} {
   return {
-    id: createSourceIntakeId("siq"),
     intakeId: intake.id,
     candidateId: candidate.id,
-    name: candidate.displayName,
+    sourceLabel: intake.sourceLabel,
+    sourceType: intake.sourceType,
+    sourceUrl: intake.sourceUrl,
     facilityId: intake.facilityId,
     facilityName: intake.facilityName,
     city: intake.city,
     state: intake.state,
-    createdAt,
-    status: "queued",
+    displayName: candidate.displayName,
+    firstName: candidate.firstName,
+    lastName: candidate.lastName,
   };
 }
 
@@ -146,9 +162,9 @@ export async function processSourceIntake(
   if (!candidates.length) throw new Error("parsed_candidates_required");
 
   const processedAt = new Date().toISOString();
+  const operatorsById = new Map(loadResolverRegistry().map((row) => [row.id, row]));
   const evidenceRows: StagedOperatorEvidence[] = [];
   const operatorCandidates: OperatorCandidateRecord[] = [];
-  const queueRows: IntakeQueueItem[] = [];
   const candidateResults: IntakeCandidateProcessResult[] = [];
 
   let matchedCount = 0;
@@ -160,6 +176,11 @@ export async function processSourceIntake(
     if (action === "accept_match" && candidate.suggestedMatch?.matchedOperatorId) {
       const rows = buildEvidenceRows(intake, candidate, candidate.suggestedMatch.matchedOperatorId, processedAt);
       evidenceRows.push(...rows);
+      const matchedOperator = operatorsById.get(candidate.suggestedMatch.matchedOperatorId);
+      const missingDirectSurfaces = !matchedOperator?.canonicalInstagram || !matchedOperator?.canonicalBooking || !matchedOperator?.canonicalWebsite;
+      if (missingDirectSurfaces) {
+        await enqueueSocialDiscoveryForCandidate(buildQueueItem(intake, candidate, processedAt));
+      }
       matchedCount += 1;
       candidateResults.push({
         candidateId: candidate.id,
@@ -175,7 +196,9 @@ export async function processSourceIntake(
     if (action === "force_new") {
       const unresolved = buildOperatorCandidate(intake, candidate, processedAt);
       operatorCandidates.push(unresolved);
-      queueRows.push(buildQueueItem(intake, candidate, processedAt));
+      const queueInput = buildQueueItem(intake, candidate, processedAt);
+      await enqueueDoraValidationForCandidate(queueInput);
+      await enqueueSocialDiscoveryForCandidate(queueInput);
       newCandidateCount += 1;
       candidateResults.push({
         candidateId: candidate.id,
@@ -201,8 +224,6 @@ export async function processSourceIntake(
   await appendStagedOperatorEvidence(evidenceRows);
   if (operatorCandidates.length) {
     await upsertOperatorCandidates(operatorCandidates);
-    await appendDoraValidationQueue(queueRows);
-    await appendSocialDiscoveryQueue(queueRows);
   }
 
   const receipt: IntakeProcessingReceipt = {
@@ -228,6 +249,7 @@ export async function processSourceIntake(
       heldCount,
     },
   });
+  await computeIntakeDrift(intakeId);
 
   return receipt;
 }
