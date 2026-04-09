@@ -17,12 +17,34 @@ export type DirectoryTraversalResult = {
 
 const DETAIL_PATH_HINT = /(profile|provider|professional|staff|artist|detail|book|booking|service|team|tenant|member|technician)/i;
 
-function sourceUrlCandidates(operator: ResolverOperator): string[] {
-  const urls = operator.sources
+function isDetailLikeUrl(url: string): boolean {
+  return DETAIL_PATH_HINT.test(url);
+}
+
+function sourceUrlCandidates(operator: ResolverOperator): TraversalFollowOn[] {
+  const rows = operator.sources
     .filter((row) => row.source === "directory" || row.source === "container" || row.evidenceType === "directory_listing")
-    .map((row) => row.sourceUrl)
-    .filter((x): x is string => Boolean(x && x.startsWith("http")));
-  return [...new Set(urls)].slice(0, 3);
+    .map((row) => ({
+      url: row.sourceUrl,
+      fromUrl: row.sourceUrl,
+      evidenceType: row.evidenceType,
+    }))
+    .filter((row): row is TraversalFollowOn => Boolean(row.url && row.url.startsWith("http")));
+
+  const directDetail = rows
+    .filter((row) => isDetailLikeUrl(row.url))
+    .map((row) => ({ ...row, evidenceType: "direct_operator" as const }));
+  const listingPages = rows.filter((row) => !isDetailLikeUrl(row.url));
+  const deduped = [...directDetail, ...listingPages];
+  const seen = new Set<string>();
+  const out: TraversalFollowOn[] = [];
+  for (const row of deduped) {
+    if (seen.has(row.url)) continue;
+    seen.add(row.url);
+    out.push(row);
+    if (out.length >= 6) break;
+  }
+  return out;
 }
 
 function toFollowOnLinks(originUrl: string, links: string[]): TraversalFollowOn[] {
@@ -49,13 +71,23 @@ export async function traverseDirectoryForOperator(operator: ResolverOperator): 
   let yieldedDirectDetailPages = false;
   const urls = sourceUrlCandidates(operator);
 
-  for (const sourceUrl of urls) {
-    const fetched = await fetchCandidatePage(sourceUrl);
+  for (const source of urls) {
+    if (isDetailLikeUrl(source.url)) {
+      yieldedDirectDetailPages = true;
+      followOn.push({
+        url: source.url,
+        fromUrl: source.fromUrl,
+        evidenceType: "direct_operator",
+      });
+      continue;
+    }
+
+    const fetched = await fetchCandidatePage(source.url);
     if (!fetched.statusCode || !fetched.html) continue;
-    scannedUrls.push(sourceUrl);
-    const extracted = extractFromPage(fetched.finalUrl || sourceUrl, fetched.html, {
+    scannedUrls.push(source.url);
+    const extracted = extractFromPage(fetched.finalUrl || source.url, fetched.html, {
       source: "directory",
-      sourceUrl,
+      sourceUrl: source.url,
       name: operator.canonicalName,
       city: operator.canonicalCity,
       address: operator.canonicalAddress,
@@ -66,7 +98,7 @@ export async function traverseDirectoryForOperator(operator: ResolverOperator): 
       evidenceType: "directory_listing",
       parentContainerName: operator.sources.find((row) => row.source === "container")?.parentContainerName,
     });
-    const links = toFollowOnLinks(sourceUrl, extracted.internalDetailLinks || []);
+    const links = toFollowOnLinks(source.url, extracted.internalDetailLinks || []);
     if (links.length) yieldedDirectDetailPages = true;
     for (const row of links) followOn.push(row);
   }

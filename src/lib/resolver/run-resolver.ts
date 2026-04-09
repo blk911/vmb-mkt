@@ -329,6 +329,10 @@ function evidenceStrength(row: EvidenceRecord): number {
     row.raw && typeof row.raw === "object" && "from" in (row.raw as Record<string, unknown>)
       ? (row.raw as Record<string, unknown>).from === "directory_backed_surface_promotion"
       : false;
+  const fromDirectoryDetailRecovery =
+    row.raw && typeof row.raw === "object" && "from" in (row.raw as Record<string, unknown>)
+      ? (row.raw as Record<string, unknown>).from === "directory_detail_surface_recovery"
+      : false;
   const deepExtractor =
     row.extracted && typeof row.extracted === "object" && "parserUsed" in (row.extracted as Record<string, unknown>)
       ? String((row.extracted as Record<string, unknown>).parserUsed || "")
@@ -342,6 +346,7 @@ function evidenceStrength(row: EvidenceRecord): number {
   if (isSolaDeep) score += 16;
   if (fromSolaRecovery) score += 14;
   if (fromDirectoryBackedPromotion) score += 20;
+  if (fromDirectoryDetailRecovery) score += 22;
   if (row.name && !isProvisionalName(row.name)) score += 6;
   return score;
 }
@@ -416,11 +421,27 @@ function assignStatus(op: ResolverOperator): ResolverOperator["status"] {
     if (!fromDirectoryBacked) return false;
     return Boolean(row.booking || row.instagram || row.website || row.phone);
   });
+  const hasDirectoryDetailDirectEvidence = op.sources.some((row) => {
+    const fromDirectoryDetail =
+      row.raw && typeof row.raw === "object" && "from" in (row.raw as Record<string, unknown>)
+        ? (row.raw as Record<string, unknown>).from === "directory_detail_surface_recovery"
+        : false;
+    if (!fromDirectoryDetail) return false;
+    return Boolean(row.booking || row.instagram || row.website || row.phone);
+  });
+  const hasStrongCanonicalIdentity = Boolean(
+    op.canonicalName &&
+    !isProvisionalName(op.canonicalName) &&
+    (op.canonicalCity || op.canonicalAddress) &&
+    (op.canonicalPhone || op.sources.length >= 3)
+  );
   if (hasBooking || hasStrongIG) return "hot";
   if (hasPromotionDirectEvidence && op.canonicalBooking) return "hot";
   if (hasPromotionDirectEvidence && op.canonicalInstagram && op.canonicalName && op.canonicalCity) return "hot";
   if (hasPromotionDirectEvidence && isChildOperator && op.canonicalBooking) return "hot";
   if (hasDirectoryBackedPromotionDirectEvidence && (op.canonicalBooking || hasStrongIG)) return "hot";
+  if (hasDirectoryDetailDirectEvidence && (op.canonicalBooking || hasStrongIG)) return "hot";
+  if (hasDirectoryDetailDirectEvidence && op.canonicalWebsite && hasStrongCanonicalIdentity) return "hot";
   if (hasSolaRecoveryDirectEvidence && isChildOperator && (op.canonicalBooking || op.canonicalInstagram)) return "hot";
   const hasIdentity = Boolean(op.canonicalName && (op.canonicalCity || op.canonicalAddress));
   if (hasIdentity && (op.canonicalWebsite || op.canonicalPhone || op.sources.length >= 3)) return "enriched";
@@ -429,6 +450,9 @@ function assignStatus(op: ResolverOperator): ResolverOperator["status"] {
     return "enriched";
   }
   if (hasDirectoryBackedPromotionDirectEvidence && hasIdentity && (op.canonicalWebsite || op.canonicalInstagram || op.canonicalPhone)) {
+    return "enriched";
+  }
+  if (hasDirectoryDetailDirectEvidence && hasStrongCanonicalIdentity && (op.canonicalWebsite || op.canonicalInstagram || op.canonicalPhone)) {
     return "enriched";
   }
   if (hasSolaRecoveryDirectEvidence && isChildOperator && (op.canonicalWebsite || op.canonicalPhone || op.sources.length >= 2)) {

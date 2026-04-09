@@ -10,9 +10,9 @@ import {
   extractCityFromAddress,
   extractJsonLdObjects,
   extractLinks,
+  stripHtml,
   extractMetaContent,
   extractTitle,
-  firstByHost,
   getFirstMatch,
 } from "./domain-parsers/shared";
 import { parseVagaro } from "./domain-parsers/vagaro";
@@ -38,6 +38,7 @@ export type ExtractedPageFields = {
 
 const BOOKING_HOST_HINTS = ["glossgenius.com", "vagaro.com", "styleseat.com", "booksy.com", "fresha.com", "square.site"];
 const SOCIAL_HOST_HINTS = ["instagram.com", "facebook.com", "tiktok.com", "x.com", "twitter.com"];
+const DIRECTORY_HOST_HINTS = ["yelp.com", "yellowpages.com", "foursquare.com", "mapquest.com", "google.com"];
 const DETAIL_PATH_HINT = /(profile|provider|professional|staff|artist|detail|book|booking|service|team|tenant|member|technician)/i;
 const EXCLUDE_PATH_HINT = /(login|signup|register|privacy|terms|help|contact|about|careers)/i;
 const CATEGORY_HINTS: Array<{ category: string; pattern: RegExp }> = [
@@ -53,7 +54,8 @@ function firstWebsite(urls: string[]): string | undefined {
     try {
       const host = new URL(value).hostname.toLowerCase();
       if (!SOCIAL_HOST_HINTS.some((hint) => host === hint || host.endsWith(`.${hint}`)) &&
-          !BOOKING_HOST_HINTS.some((hint) => host === hint || host.endsWith(`.${hint}`))) {
+          !BOOKING_HOST_HINTS.some((hint) => host === hint || host.endsWith(`.${hint}`)) &&
+          !DIRECTORY_HOST_HINTS.some((hint) => host === hint || host.endsWith(`.${hint}`))) {
         return value;
       }
     } catch {
@@ -61,6 +63,90 @@ function firstWebsite(urls: string[]): string | undefined {
     }
   }
   return undefined;
+}
+
+function hostMatches(host: string, hints: string[]): boolean {
+  return hints.some((hint) => host === hint || host.endsWith(`.${hint}`));
+}
+
+function canonicalLinkUrl(html: string, origin: string): string | undefined {
+  const raw = getFirstMatch(html, /<link[^>]+rel=["']canonical["'][^>]+href=["']([\s\S]*?)["'][^>]*>/i);
+  if (!raw) return undefined;
+  try {
+    return new URL(raw, origin).toString();
+  } catch {
+    return undefined;
+  }
+}
+
+function normalizeComparableUrl(value: string): string {
+  try {
+    const parsed = new URL(value);
+    parsed.hash = "";
+    if (parsed.hostname.includes("instagram.com")) {
+      parsed.search = "";
+      const segments = parsed.pathname.split("/").filter(Boolean);
+      if (segments[0]) parsed.pathname = `/${segments[0].replace(/^@/, "")}/`;
+      return parsed.toString();
+    }
+    parsed.search = "";
+    return parsed.toString().replace(/\/+$/, "");
+  } catch {
+    return value.trim();
+  }
+}
+
+function scoreSurfaceLink(
+  value: string,
+  origin: string,
+  kind: "booking" | "instagram" | "website"
+): number {
+  try {
+    const parsed = new URL(value);
+    const originHost = new URL(origin).hostname.toLowerCase();
+    const host = parsed.hostname.toLowerCase();
+    const path = `${parsed.pathname}${parsed.search}`.toLowerCase();
+    let score = 0;
+
+    if (EXCLUDE_PATH_HINT.test(path)) score -= 40;
+
+    if (kind === "booking") {
+      if (hostMatches(host, BOOKING_HOST_HINTS)) score += 40;
+      if (/(book|booking|reserve|appointment|schedule)/i.test(path)) score += 18;
+      if (DETAIL_PATH_HINT.test(path)) score += 8;
+    } else if (kind === "instagram") {
+      if (host.includes("instagram.com")) score += 40;
+      const segments = parsed.pathname.split("/").filter(Boolean);
+      if (segments.length === 1) score += 18;
+      if (/^(p|reel|reels|stories|explore|accounts|tv)$/i.test(segments[0] || "")) score -= 35;
+      if (parsed.search.includes("utm_")) score -= 2;
+    } else {
+      if (hostMatches(host, DIRECTORY_HOST_HINTS)) return -25;
+      if (!hostMatches(host, SOCIAL_HOST_HINTS) && !hostMatches(host, BOOKING_HOST_HINTS) && !hostMatches(host, DIRECTORY_HOST_HINTS)) {
+        score += 28;
+      }
+      if (host !== originHost) score += 12;
+      if (parsed.pathname === "/" || parsed.pathname === "") score += 8;
+      if (/^(\/(home|about|services?)\/?)?$/i.test(parsed.pathname)) score += 4;
+    }
+
+    return score;
+  } catch {
+    return -100;
+  }
+}
+
+function pickBestSurfaceLink(
+  urls: string[],
+  origin: string,
+  kind: "booking" | "instagram" | "website"
+): string | undefined {
+  const deduped = [...new Set(urls.map(normalizeComparableUrl))];
+  const ranked = deduped
+    .map((value) => ({ value, score: scoreSurfaceLink(value, origin, kind) }))
+    .filter((row) => row.score > 0)
+    .sort((a, b) => b.score - a.score);
+  return ranked[0]?.value;
 }
 
 function getParser(url: string): { name: string; run: (url: string, html: string, preliminaryName?: string, preliminaryCity?: string) => DomainParserOutput } | undefined {
@@ -162,6 +248,7 @@ export function extractFromPage(url: string, html: string, preliminary: SourceRe
   const siteName = extractMetaContent(html, "og:site_name");
   const phoneFromMeta = extractMetaContent(html, "telephone");
   const links = extractLinks(html, url);
+  const canonicalUrl = canonicalLinkUrl(html, url);
   const jsonLd = extractJsonLdObjects(html);
 
   let jsonName: string | undefined;
@@ -186,9 +273,14 @@ export function extractFromPage(url: string, html: string, preliminary: SourceRe
     }
   }
 
-  const instagram = firstByHost(links, ["instagram.com"]);
-  const booking = firstByHost(links, BOOKING_HOST_HINTS);
-  const website = firstWebsite(links) || jsonWebsite;
+  const instagram = pickBestSurfaceLink(links, url, "instagram");
+  const booking = pickBestSurfaceLink(links, url, "booking");
+  const website =
+    pickBestSurfaceLink(
+      [canonicalUrl, jsonWebsite, ...links].filter((value): value is string => Boolean(value)),
+      url,
+      "website"
+    ) || firstWebsite(links) || jsonWebsite;
   const address = jsonAddress;
   const city = jsonCity || extractCityFromAddress(address) || normalizeCity(preliminary.city);
   const phone = jsonPhone || phoneFromMeta || getFirstMatch(html, /(\+?1?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})/);
@@ -208,11 +300,16 @@ export function extractFromPage(url: string, html: string, preliminary: SourceRe
   const resolvedName = looksDetailPage
     ? headingName || jsonName || normalizeName(ogTitle) || parserOutput?.name || title || normalizeName(preliminary.name)
     : parserOutput?.name || jsonName || normalizeName(ogTitle) || title || normalizeName(preliminary.name);
+  const strippedTitle = title ? stripHtml(title) : undefined;
+  const derivedEvidenceType =
+    (booking || instagram || website) && (looksDetailPage || parserOutput?.evidenceType === "direct_operator")
+      ? "direct_operator"
+      : parserOutput?.evidenceType || evidenceType;
 
   return {
-    evidenceType: parserOutput?.evidenceType || evidenceType,
+    evidenceType: derivedEvidenceType,
     parserUsed: deepSola?.extractionSignals?.length ? "sola-deep" : parser?.name,
-    name: deepSola?.name || resolvedName,
+    name: deepSola?.name || resolvedName || strippedTitle,
     address: parserOutput?.address || address || preliminary.address,
     city: parserOutput?.city || city || normalizeCity(preliminary.city),
     phone: deepSola?.phone || phone || phoneFromHref || phoneFromBody || preliminary.phone,
