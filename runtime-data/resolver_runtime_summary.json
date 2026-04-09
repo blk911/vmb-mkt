@@ -1,21 +1,42 @@
 {
-  "generatedAt": "2026-04-08T22:56:47.886Z",
-  "status": "timed_out",
-  "completed": false,
-  "timedOut": true,
-  "totalElapsedMs": 10080,
+  "generatedAt": "2026-04-09T00:09:11.104Z",
+  "status": "completed",
+  "completed": true,
+  "timedOut": false,
+  "totalElapsedMs": 4994,
   "dominantSlowPhase": "canonical_resolution",
   "phaseTimings": {
-    "input_load": 44,
+    "input_load": 43,
     "evidence_indexing": 11,
-    "canonical_resolution": 10024
+    "canonical_resolution": 3814,
+    "status_scoring_pre_compaction": 403,
+    "duplicate_merge_pass": 22,
+    "status_scoring_post_compaction": 401,
+    "child_operator_pass": 0,
+    "promotion_evaluation": 112,
+    "output_materialization": 183,
+    "file_writes": 0
   },
   "phaseCounts": {
     "input_load": 2942,
     "evidence_indexing": 3177,
-    "canonical_resolution": 2470000
+    "canonical_resolution": 85511,
+    "status_scoring_pre_compaction": 2184,
+    "duplicate_merge_pass": 2031,
+    "status_scoring_post_compaction": 153,
+    "child_operator_pass": 64,
+    "promotion_evaluation": 153,
+    "output_materialization": 153,
+    "file_writes": 2
   },
-  "phaseBudgetExceeded": [],
-  "errorPhase": "canonical_resolution",
-  "error": "Resolver budget exceeded in canonical_resolution"
+  "phaseBudgetExceeded": [
+    "canonical_resolution"
+  ],
+  "canonicalComparisonsPerformed": 85511,
+  "canonicalCandidateLookupsPerformed": 3177,
+  "canonicalCandidateSetAvg": 30.69,
+  "canonicalCandidateSetMax": 54,
+  "canonicalFullScansPerformed": 0,
+  "canonicalNewOperatorsCreated": 2184,
+  "canonicalMatchedExistingOperators": 993
 }

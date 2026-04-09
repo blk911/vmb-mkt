@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import type { EvidenceRecord } from "@/lib/evidence/types";
 import { loadEvidence } from "@/lib/evidence/store";
 import { expandContainerEvidence } from "./container-expansion";
+import { buildCanonicalCandidateIndex } from "./canonical-candidate-index";
 import { evaluateEvidenceMatch } from "./match";
 import { normalizeAddress, normalizeCity, normalizeDomain, normalizeName, normalizePhone } from "./normalize";
 import { loadResolverRegistry, saveResolverRegistry, saveResolverSummary } from "./registry-store";
@@ -22,6 +23,7 @@ type ResolverRunOptions = {
   phaseBudgetMs?: number;
   heartbeatEvery?: number;
   persistOutputs?: boolean;
+  allowGlobalCanonicalFallback?: boolean;
 };
 
 type ResolverRuntimeSummary = {
@@ -34,6 +36,13 @@ type ResolverRuntimeSummary = {
   phaseTimings: Record<string, number>;
   phaseCounts: Record<string, number>;
   phaseBudgetExceeded: string[];
+  canonicalComparisonsPerformed: number;
+  canonicalCandidateLookupsPerformed: number;
+  canonicalCandidateSetAvg: number;
+  canonicalCandidateSetMax: number;
+  canonicalFullScansPerformed: number;
+  canonicalNewOperatorsCreated: number;
+  canonicalMatchedExistingOperators: number;
   errorPhase?: string;
   error?: string;
 };
@@ -466,6 +475,13 @@ export function runResolverFromEvidence(inputEvidence?: EvidenceRecord[], opts?:
   let errorMessage: string | undefined;
   let timedOut = false;
   let result: ResolverOperator[] = [];
+  let canonicalComparisonsPerformed = 0;
+  let canonicalCandidateLookupsPerformed = 0;
+  let canonicalCandidateSetTotal = 0;
+  let canonicalCandidateSetMax = 0;
+  let canonicalFullScansPerformed = 0;
+  let canonicalNewOperatorsCreated = 0;
+  let canonicalMatchedExistingOperators = 0;
 
   runtime.traceLogger?.log({
     stage: "resolver_start",
@@ -485,27 +501,59 @@ export function runResolverFromEvidence(inputEvidence?: EvidenceRecord[], opts?:
     phaseCounts.evidence_indexing = evidence.length;
 
     const operators: ResolverOperator[] = [];
+    const canonicalIndex = buildCanonicalCandidateIndex(operators);
     let evidenceComparisons = 0;
+    let candidateLookupsPerformed = 0;
+    let candidateSetTotal = 0;
+    let candidateSetMax = 0;
+    let fullScansPerformed = 0;
+    let newCanonicalsCreated = 0;
+    let matchedExistingOperators = 0;
     const canonicalResolutionStartedAt = startPhase(runtime, "canonical_resolution", `evidence=${evidence.length}`);
     for (let i = 0; i < evidence.length; i += 1) {
       const row = evidence[i];
+      const lookup = canonicalIndex.getCandidatesForEvidence(row, {
+        allowGlobalFallback: opts?.allowGlobalCanonicalFallback === true,
+      });
+      candidateLookupsPerformed += 1;
+      candidateSetTotal += lookup.candidateSetSize;
+      candidateSetMax = Math.max(candidateSetMax, lookup.candidateSetSize);
+      if (lookup.usedGlobalFallback) fullScansPerformed += 1;
+      canonicalCandidateLookupsPerformed = candidateLookupsPerformed;
+      canonicalCandidateSetTotal = candidateSetTotal;
+      canonicalCandidateSetMax = candidateSetMax;
+      canonicalFullScansPerformed = fullScansPerformed;
       let bestMatch: ResolverOperator | undefined;
       let bestScore = -1;
       let bestMatched = false;
-      for (const op of operators) {
-        if (shouldSkipParentContainerMerge(op, row)) continue;
-        const evaluation = evaluateEvidenceMatch(op, row);
-        evidenceComparisons += 1;
-        if (runtime.enabled && evidenceComparisons % 10000 === 0) {
-          runtime.phaseTimings.set("canonical_resolution", Date.now() - canonicalResolutionStartedAt);
-          phaseCounts.canonical_resolution = evidenceComparisons;
-          checkResolverBudget(runtime, "canonical_resolution", canonicalResolutionStartedAt);
+
+      const seenCandidateIds = new Set<string>();
+      const evaluateCandidates = (candidateOps: ResolverOperator[]) => {
+        for (const op of candidateOps) {
+          if (seenCandidateIds.has(op.id)) continue;
+          seenCandidateIds.add(op.id);
+          if (shouldSkipParentContainerMerge(op, row)) continue;
+          const evaluation = evaluateEvidenceMatch(op, row);
+          evidenceComparisons += 1;
+          canonicalComparisonsPerformed = evidenceComparisons;
+          if (runtime.enabled && evidenceComparisons % 10000 === 0) {
+            runtime.phaseTimings.set("canonical_resolution", Date.now() - canonicalResolutionStartedAt);
+            phaseCounts.canonical_resolution = evidenceComparisons;
+            checkResolverBudget(runtime, "canonical_resolution", canonicalResolutionStartedAt);
+          }
+          if (evaluation.score > bestScore) {
+            bestScore = evaluation.score;
+            bestMatch = op;
+            bestMatched = evaluation.matched;
+          }
         }
-        if (evaluation.score > bestScore) {
-          bestScore = evaluation.score;
-          bestMatch = op;
-          bestMatched = evaluation.matched;
-        }
+      };
+
+      evaluateCandidates(lookup.tier1Candidates);
+      if (!bestMatched) evaluateCandidates(lookup.tier2Candidates);
+      if (!bestMatched) evaluateCandidates(lookup.tier3Candidates);
+      if (!bestMatched && lookup.globalFallbackCandidates.length > 0) {
+        evaluateCandidates(lookup.globalFallbackCandidates);
       }
 
       if (bestMatch && bestMatched) {
@@ -515,19 +563,45 @@ export function runResolverFromEvidence(inputEvidence?: EvidenceRecord[], opts?:
         if (!bestMatch.operatorType) bestMatch.operatorType = operatorTypeFromEvidence(row);
         bestMatch.confidenceScore = Math.max(bestMatch.confidenceScore, Math.floor(bestScore / 10));
         bestMatch.updatedAt = now;
+        canonicalIndex.addEvidence(bestMatch, row);
+        matchedExistingOperators += 1;
+        canonicalMatchedExistingOperators = matchedExistingOperators;
       } else {
-        operators.push(createOperatorFromEvidence(row, now));
+        const created = createOperatorFromEvidence(row, now);
+        operators.push(created);
+        canonicalIndex.addOperator(created);
+        newCanonicalsCreated += 1;
+        canonicalNewOperatorsCreated = newCanonicalsCreated;
       }
 
       if ((i + 1) % runtime.heartbeatEvery === 0 || i === evidence.length - 1) {
         runtime.phaseTimings.set("canonical_resolution", Date.now() - canonicalResolutionStartedAt);
         phaseCounts.canonical_resolution = evidenceComparisons;
-        heartbeat(runtime, "canonical_resolution", i + 1, evidence.length, `operators=${operators.length}; comparisons=${evidenceComparisons}`);
+        heartbeat(
+          runtime,
+          "canonical_resolution",
+          i + 1,
+          evidence.length,
+          `operators=${operators.length}; comparisons=${evidenceComparisons}; candidateAvg=${candidateLookupsPerformed ? (candidateSetTotal / candidateLookupsPerformed).toFixed(2) : "0.00"}; candidateMax=${candidateSetMax}; fullScans=${fullScansPerformed}`
+        );
         checkResolverBudget(runtime, "canonical_resolution", canonicalResolutionStartedAt);
       }
     }
-    finishPhase(runtime, "canonical_resolution", canonicalResolutionStartedAt, evidenceComparisons, `operators=${operators.length}`);
+    finishPhase(
+      runtime,
+      "canonical_resolution",
+      canonicalResolutionStartedAt,
+      evidenceComparisons,
+      `operators=${operators.length}; candidateAvg=${candidateLookupsPerformed ? (candidateSetTotal / candidateLookupsPerformed).toFixed(2) : "0.00"}; candidateMax=${candidateSetMax}; fullScans=${fullScansPerformed}`
+    );
     phaseCounts.canonical_resolution = evidenceComparisons;
+    canonicalComparisonsPerformed = evidenceComparisons;
+    canonicalCandidateLookupsPerformed = candidateLookupsPerformed;
+    canonicalCandidateSetTotal = candidateSetTotal;
+    canonicalCandidateSetMax = candidateSetMax;
+    canonicalFullScansPerformed = fullScansPerformed;
+    canonicalNewOperatorsCreated = newCanonicalsCreated;
+    canonicalMatchedExistingOperators = matchedExistingOperators;
 
     const scoringPreStartedAt = startPhase(runtime, "status_scoring_pre_compaction", `operators=${operators.length}`);
     for (let i = 0; i < operators.length; i += 1) {
@@ -646,6 +720,15 @@ export function runResolverFromEvidence(inputEvidence?: EvidenceRecord[], opts?:
     phaseTimings: Object.fromEntries(runtime.phaseTimings.entries()),
     phaseCounts,
     phaseBudgetExceeded: [...runtime.phaseBudgetExceeded.values()],
+    canonicalComparisonsPerformed,
+    canonicalCandidateLookupsPerformed,
+    canonicalCandidateSetAvg: canonicalCandidateLookupsPerformed
+      ? Number((canonicalCandidateSetTotal / canonicalCandidateLookupsPerformed).toFixed(2))
+      : 0,
+    canonicalCandidateSetMax,
+    canonicalFullScansPerformed,
+    canonicalNewOperatorsCreated,
+    canonicalMatchedExistingOperators,
     errorPhase,
     error: errorMessage,
   };
