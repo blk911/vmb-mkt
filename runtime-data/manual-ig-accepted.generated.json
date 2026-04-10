@@ -1,0 +1,20 @@
+[
+  {
+    "acceptedAt": "2026-04-10T14:18:44.340Z",
+    "clusterId": "targetsalon_mnszrgfk",
+    "originHandle": "targetsalon",
+    "handle": "jspenw",
+    "displayName": "JSW",
+    "categoryGuess": "client",
+    "confidence": 0.62,
+    "source": "manual_ig_cluster",
+    "evidenceType": "social_seed",
+    "platform": "instagram",
+    "captureMethod": "copy_paste",
+    "market": "Denver",
+    "tags": [
+      "prospect"
+    ],
+    "id": "migacc_371c9400fdd7"
+  }
+]
