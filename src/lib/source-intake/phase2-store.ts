@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { writeJsonAtomic } from "@/app/api/admin/_lib/atomic";
+import { getRuntimeDataRoot } from "@/lib/runtime/runtime-data-root";
 import { readJsonArrayFile } from "@/lib/social-targets/json-file";
 import type {
   DoraValidationQueueItem,
@@ -11,7 +12,7 @@ import type {
   SourceIntakeDriftEvent,
 } from "./phase2-types";
 
-const RUNTIME_DIR = path.join(process.cwd(), "runtime-data");
+const RUNTIME_DIR = getRuntimeDataRoot();
 const DORA_QUEUE_PATH = path.join(RUNTIME_DIR, "dora-validation-queue.generated.json");
 const DORA_RESULTS_PATH = path.join(RUNTIME_DIR, "dora-validation-results.generated.json");
 const SOCIAL_QUEUE_PATH = path.join(RUNTIME_DIR, "social-discovery-queue.generated.json");

@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { writeJsonAtomic } from "@/app/api/admin/_lib/atomic";
+import { getRuntimeDataRoot } from "@/lib/runtime/runtime-data-root";
 import { readJsonArrayFile } from "@/lib/social-targets/json-file";
 import type {
   IntakeProcessingReceipt,
@@ -12,7 +13,7 @@ import type {
   StagedOperatorEvidence,
 } from "./types";
 
-const RUNTIME_DIR = path.join(process.cwd(), "runtime-data");
+const RUNTIME_DIR = getRuntimeDataRoot();
 const INTAKES_PATH = path.join(RUNTIME_DIR, "source-intake.generated.json");
 const CANDIDATES_PATH = path.join(RUNTIME_DIR, "source-intake-candidates.generated.json");
 const PROCESSING_PATH = path.join(RUNTIME_DIR, "source-intake-processing.generated.json");
