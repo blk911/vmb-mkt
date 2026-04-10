@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { AdminTopNav } from "@/components/admin/AdminTopNav";
 import { loadResolverBackedOperatorsWithReview } from "@/lib/operators/review-store";
 import { loadReadyCoreSourceOperators, selectReadyCoreOperators } from "@/lib/operators/ready-core";
 import { READY_CORE_EXPORT_CSV_ARTIFACT, READY_CORE_EXPORT_JSON_ARTIFACT } from "@/lib/operators/ready-export";
@@ -66,13 +67,15 @@ export default function OperatorsReadyPage({
   });
 
   return (
-    <div style={{ padding: 24 }}>
-      <h1 style={{ fontSize: 24, fontWeight: 600 }}>Ready Core Workspace</h1>
-      <div style={{ marginTop: 10 }}>
-        <a href="/admin/operators">Back to Operator Console</a>
-      </div>
+    <main style={{ minHeight: "100vh", background: "#fafafa" }}>
+      <AdminTopNav />
+      <div style={{ padding: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 600 }}>Ready Core Workspace</h1>
+        <div style={{ marginTop: 10 }}>
+          <a href="/admin/operators">Back to Operator Console</a>
+        </div>
 
-      <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: "10px 16px", fontSize: 13 }}>
+        <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: "10px 16px", fontSize: 13 }}>
         <span>
           <strong>Total ready:</strong> {readyAll.length}
         </span>
@@ -94,9 +97,9 @@ export default function OperatorsReadyPage({
         <span>
           <strong>By preferred surface:</strong> {byPreferredSurface.map((x) => `${x.label} (${x.count})`).join(", ")}
         </span>
-      </div>
+        </div>
 
-      <form method="get" style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 10, fontSize: 13 }}>
+        <form method="get" style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 10, fontSize: 13 }}>
         <label>
           <strong>City:</strong>{" "}
           <select name="city" defaultValue={cityFilter}>
@@ -143,18 +146,18 @@ export default function OperatorsReadyPage({
         </label>
         <button type="submit">Apply</button>
         <a href="/admin/operators/ready">Reset</a>
-      </form>
+        </form>
 
-      <div style={{ marginTop: 12, fontSize: 13 }}>
+        <div style={{ marginTop: 12, fontSize: 13 }}>
         <div>
           <strong>JSON export:</strong> <code>{READY_CORE_EXPORT_JSON_ARTIFACT}</code>
         </div>
         <div>
           <strong>CSV export:</strong> <code>{READY_CORE_EXPORT_CSV_ARTIFACT}</code>
         </div>
-      </div>
+        </div>
 
-      <table
+        <table
         style={{
           width: "100%",
           marginTop: 20,
@@ -217,8 +220,9 @@ export default function OperatorsReadyPage({
             </tr>
           ))}
         </tbody>
-      </table>
-    </div>
+        </table>
+      </div>
+    </main>
   );
 }
 

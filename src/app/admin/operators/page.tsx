@@ -1,4 +1,5 @@
 import type { OperatorRecord } from "@/lib/operators/types";
+import { AdminTopNav } from "@/components/admin/AdminTopNav";
 import { getOutreachEligibility } from "@/lib/operators/outreach-eligibility";
 import { buildOperatorQualitySummary } from "@/lib/operators/quality-summary";
 import { getReviewStateOrDefault } from "@/lib/operators/review-store";
@@ -124,15 +125,17 @@ export default function OperatorsPage({
   };
 
   return (
-    <div style={{ padding: "18px 20px", maxWidth: 1400 }}>
-      <h1 style={{ fontSize: 24, fontWeight: 600 }}>Operator Console</h1>
-      <div style={{ marginTop: 8, display: "flex", gap: 12, fontSize: 13 }}>
-        <a href="/admin/operators">Operators</a>
-        <a href="/admin/operators/children">Children</a>
-        <a href="/admin/operators/ready">Ready</a>
-        <a href="/admin/operators/surface-recovery">Surface Recovery</a>
-      </div>
-      <div style={{ marginTop: 12 }}>
+    <main style={{ minHeight: "100vh", background: "#fafafa" }}>
+      <AdminTopNav />
+      <div style={{ padding: "18px 20px", maxWidth: 1400 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 600 }}>Operator Console</h1>
+        <div style={{ marginTop: 8, display: "flex", gap: 12, fontSize: 13 }}>
+          <a href="/admin/operators">Operators</a>
+          <a href="/admin/operators/children">Children</a>
+          <a href="/admin/operators/ready">Ready</a>
+          <a href="/admin/operators/surface-recovery">Surface Recovery</a>
+        </div>
+        <div style={{ marginTop: 12 }}>
         <strong>Resolver operators:</strong> {operators.length} | <strong>Rendered:</strong> {filteredOperators.length} |{" "}
         <strong>Hot:</strong> {hot.length} | <strong>Enriched:</strong> {enriched.length} |{" "}
         <strong>Enumerated:</strong> {enumerated.length} |{" "}
@@ -239,7 +242,7 @@ export default function OperatorsPage({
         </span>
       </div>
 
-      <div style={{ width: "100%", overflowX: "auto", marginTop: 20 }}>
+        <div style={{ width: "100%", overflowX: "auto", marginTop: 20 }}>
       <table
         style={{
           width: "100%",
@@ -368,7 +371,8 @@ export default function OperatorsPage({
           ))}
         </tbody>
       </table>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }

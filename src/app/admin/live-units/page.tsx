@@ -1,8 +1,8 @@
+import { AdminTopNav } from "@/components/admin/AdminTopNav";
 import LiveUnitsClient from "./LiveUnitsClient";
-import { readReviewState, type ReviewDecision } from "@/app/admin/_lib/live-units/review-state";
+import { readReviewState } from "@/app/admin/_lib/live-units/review-state";
 import {
   readSalonTechLinksReviewState,
-  type SalonTechLinkReviewDecision,
 } from "@/app/admin/_lib/live-units/salon-tech-links-review-state";
 import { loadLiveUnitsWithTrace } from "@/lib/live-units/live-units-loader";
 import type { LiveUnitsLoadTrace } from "@/lib/live-units/live-units-debug-types";
@@ -43,9 +43,6 @@ type LiveUnitRow = {
   lat?: number | null;
   lon?: number | null;
 };
-
-type ReviewStateMap = Record<string, ReviewDecision>;
-type SalonTechReviewStateMap = Record<string, SalonTechLinkReviewDecision>;
 
 type ShopIndexRow = {
   shop_name: string;
@@ -117,16 +114,19 @@ export default async function LiveUnitsPage() {
   const techAssociations = loadTechAssociations();
 
   return (
-    <LiveUnitsClient
-      rows={rows.map((row) => ({
-        ...row,
-        entity_id: row.entity_id || row.live_unit_id,
-      }))}
-      loadTrace={loadTrace}
-      initialReviewState={reviewState}
-      initialSalonTechReviewState={salonTechReviewState}
-      shopIndex={shopIndex}
-      techAssociations={techAssociations}
-    />
+    <main className="min-h-screen bg-neutral-50">
+      <AdminTopNav />
+      <LiveUnitsClient
+        rows={rows.map((row) => ({
+          ...row,
+          entity_id: row.entity_id || row.live_unit_id,
+        }))}
+        loadTrace={loadTrace}
+        initialReviewState={reviewState}
+        initialSalonTechReviewState={salonTechReviewState}
+        shopIndex={shopIndex}
+        techAssociations={techAssociations}
+      />
+    </main>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AdminTopNav } from "@/components/admin/AdminTopNav";
 import { DoraQueueTable } from "@/components/admin/source-intake/DoraQueueTable";
 import { DriftSummaryCard } from "@/components/admin/source-intake/DriftSummaryCard";
 import { MatchReviewTable } from "@/components/admin/source-intake/MatchReviewTable";
@@ -85,7 +86,7 @@ export default function SourceIntakeAdminPage() {
   const [doraResults, setDoraResults] = useState<DoraValidationResult[]>([]);
   const [socialQueueItems, setSocialQueueItems] = useState<SocialDiscoveryQueueItem[]>([]);
   const [socialResults, setSocialResults] = useState<SocialDiscoveryResult[]>([]);
-  const [driftEvents, setDriftEvents] = useState<SourceIntakeDriftEvent[]>([]);
+  const [, setDriftEvents] = useState<SourceIntakeDriftEvent[]>([]);
   const [latestDriftEvent, setLatestDriftEvent] = useState<SourceIntakeDriftEvent | null>(null);
   const [operatorCandidateLinks, setOperatorCandidateLinks] = useState<OperatorCandidateLinkSuggestion[]>([]);
   const [summaryByIntakeId, setSummaryByIntakeId] = useState<Record<string, { doraQueue: number; socialQueue: number; drift: number }>>({});
@@ -313,8 +314,9 @@ export default function SourceIntakeAdminPage() {
   );
 
   return (
-    <main className="min-h-screen bg-neutral-50 p-6">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6">
+    <main className="min-h-screen bg-neutral-50">
+      <AdminTopNav />
+      <div className="mx-auto flex max-w-7xl flex-col gap-6 p-6">
         <div>
           <h1 className="text-2xl font-semibold text-neutral-950">Source Intake Admin</h1>
           <p className="mt-1 text-sm text-neutral-600">Create, parse, review, and process operator source text without mutating canonical operator records directly.</p>

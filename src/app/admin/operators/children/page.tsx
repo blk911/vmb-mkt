@@ -1,4 +1,5 @@
 import { loadOperatorsFromResolverRegistry, type OperatorConsoleRow } from "@/lib/operators/loadOperators";
+import { AdminTopNav } from "@/components/admin/AdminTopNav";
 
 function statusRank(value: OperatorConsoleRow["resolverStatus"]): number {
   if (value === "hot") return 0;
@@ -66,24 +67,26 @@ export default function ChildOperatorsPage() {
   const withWebsite = childRows.filter((row) => Boolean(row.canonical.website)).length;
 
   return (
-    <div style={{ padding: "18px 20px", maxWidth: 1400 }}>
-      <h1 style={{ fontSize: 24, fontWeight: 600 }}>Child Operators</h1>
-      <div style={{ marginTop: 8, display: "flex", gap: 12, fontSize: 13 }}>
-        <a href="/admin/operators">Operators</a>
-        <a href="/admin/operators/children">Children</a>
-        <a href="/admin/operators/ready">Ready</a>
-        <a href="/admin/operators/surface-recovery">Surface Recovery</a>
-      </div>
-      <div
-        style={{
-          marginTop: 12,
-          fontSize: 13,
-          color: "#333",
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "10px 16px",
-        }}
-      >
+    <main style={{ minHeight: "100vh", background: "#fafafa" }}>
+      <AdminTopNav />
+      <div style={{ padding: "18px 20px", maxWidth: 1400 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 600 }}>Child Operators</h1>
+        <div style={{ marginTop: 8, display: "flex", gap: 12, fontSize: 13 }}>
+          <a href="/admin/operators">Operators</a>
+          <a href="/admin/operators/children">Children</a>
+          <a href="/admin/operators/ready">Ready</a>
+          <a href="/admin/operators/surface-recovery">Surface Recovery</a>
+        </div>
+        <div
+          style={{
+            marginTop: 12,
+            fontSize: 13,
+            color: "#333",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "10px 16px",
+          }}
+        >
         <span>
           <strong>Total child operators:</strong> {childRows.length}
         </span>
@@ -109,9 +112,9 @@ export default function ChildOperatorsPage() {
             .map((row) => `${row.label} (${row.count})`)
             .join(", ")}
         </span>
-      </div>
+        </div>
 
-      <div style={{ width: "100%", overflowX: "auto", marginTop: 20 }}>
+        <div style={{ width: "100%", overflowX: "auto", marginTop: 20 }}>
         <table
           style={{
             width: "100%",
@@ -200,7 +203,8 @@ export default function ChildOperatorsPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }

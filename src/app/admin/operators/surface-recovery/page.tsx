@@ -1,5 +1,6 @@
 import { loadOperatorsFromResolverRegistry } from "@/lib/operators/loadOperators";
 import { selectSurfaceRecoveryQueue, writeSurfaceRecoveryQueue } from "@/lib/operators/surface-recovery";
+import { AdminTopNav } from "@/components/admin/AdminTopNav";
 
 function topCounts(values: string[]): Array<{ label: string; count: number }> {
   const map = new Map<string, number>();
@@ -25,12 +26,14 @@ export default function SurfaceRecoveryPage() {
   const bySourceMix = topCounts(queue.map((x) => x.sourceTypeSummary || "none"));
 
   return (
-    <div style={{ padding: 24 }}>
-      <h1 style={{ fontSize: 24, fontWeight: 600 }}>Surface Recovery Queue</h1>
-      <div style={{ marginTop: 10 }}>
-        <a href="/admin/operators">Back to Operator Console</a>
-      </div>
-      <div style={{ marginTop: 12, fontSize: 13, display: "flex", flexWrap: "wrap", gap: "10px 16px" }}>
+    <main style={{ minHeight: "100vh", background: "#fafafa" }}>
+      <AdminTopNav />
+      <div style={{ padding: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 600 }}>Surface Recovery Queue</h1>
+        <div style={{ marginTop: 10 }}>
+          <a href="/admin/operators">Back to Operator Console</a>
+        </div>
+        <div style={{ marginTop: 12, fontSize: 13, display: "flex", flexWrap: "wrap", gap: "10px 16px" }}>
         <span>
           <strong>Total queued:</strong> {queue.length}
         </span>
@@ -46,9 +49,9 @@ export default function SurfaceRecoveryPage() {
         <span>
           <strong>Artifact:</strong> <code>{artifactPath}</code>
         </span>
-      </div>
+        </div>
 
-      <table style={{ width: "100%", marginTop: 20, borderCollapse: "collapse" }}>
+        <table style={{ width: "100%", marginTop: 20, borderCollapse: "collapse" }}>
         <thead>
           <tr>
             <th align="left">Name</th>
@@ -80,8 +83,9 @@ export default function SurfaceRecoveryPage() {
             </tr>
           ))}
         </tbody>
-      </table>
-    </div>
+        </table>
+      </div>
+    </main>
   );
 }
 

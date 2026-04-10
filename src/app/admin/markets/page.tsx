@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { AdminTopNav } from "@/components/admin/AdminTopNav";
 import { getApprovedLiveUnits, getMarkets, getRegions, getZoneMembersWithClusters } from "@/lib/markets";
 import type { LiveUnitRowForTrace } from "@/lib/markets/zone-population-trace-logic";
 import { loadLiveUnitsWithTrace } from "@/lib/live-units/live-units-loader";
@@ -26,17 +27,20 @@ export default async function MarketsPage({
   }
 
   return (
-    <Suspense fallback={<div className="p-6 text-sm text-neutral-500">Loading markets…</div>}>
-      <MarketsClient
-        key={marketsUrlStateKey(initialUrlState)}
-        regions={regions}
-        zones={zones}
-        members={members}
-        clusters={clusters}
-        approvedLiveUnits={approvedLiveUnits}
-        liveUnitRowsForTrace={liveUnitRowsForTrace}
-        initialUrlState={initialUrlState}
-      />
-    </Suspense>
+    <main className="min-h-screen bg-neutral-50">
+      <AdminTopNav />
+      <Suspense fallback={<div className="p-6 text-sm text-neutral-500">Loading markets…</div>}>
+        <MarketsClient
+          key={marketsUrlStateKey(initialUrlState)}
+          regions={regions}
+          zones={zones}
+          members={members}
+          clusters={clusters}
+          approvedLiveUnits={approvedLiveUnits}
+          liveUnitRowsForTrace={liveUnitRowsForTrace}
+          initialUrlState={initialUrlState}
+        />
+      </Suspense>
+    </main>
   );
 }
