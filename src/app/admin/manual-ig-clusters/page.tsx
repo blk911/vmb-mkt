@@ -33,7 +33,7 @@ type RejectResponse = {
   cluster?: ManualIgCluster;
 };
 
-export default function ManualIgClustersAdminPage() {
+export default function Page() {
   const [clusters, setClusters] = useState<ManualIgCluster[]>([]);
   const [selectedCluster, setSelectedCluster] = useState<ManualIgCluster | null>(null);
   const [busyKey, setBusyKey] = useState<string | null>(null);

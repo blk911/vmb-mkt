@@ -27,6 +27,15 @@ export default function VmbAdminHome() {
         <Link href="/admin/vmb/tech" className="rounded-xl border border-neutral-200 p-4 font-bold hover:bg-neutral-50">
           Tech →
         </Link>
+        <Link
+          href="/admin/manual-ig-clusters"
+          className="block rounded-lg border p-4 hover:bg-gray-50"
+        >
+          <div className="font-medium">IG Clusters →</div>
+          <div className="text-sm text-gray-500">
+            Manual Instagram network intake and review
+          </div>
+        </Link>
       </div>
 
       <div className="mt-10">
