@@ -302,6 +302,7 @@ function derivePreferredContactSurface(op: ResolverOperator): ResolverOperator["
 
 function sourcePriority(source: EvidenceRecord["source"]): number {
   if (source === "booking") return 6;
+  if (source === "manual_upload") return 6;
   if (source === "website") return 5;
   if (source === "instagram") return 4;
   if (source === "directory") return 3;
@@ -321,6 +322,10 @@ function isProvisionalName(value?: string): boolean {
 
 function evidenceStrength(row: EvidenceRecord): number {
   let score = sourcePriority(row.source) * 10;
+  const isDoraUpload =
+    row.raw && typeof row.raw === "object" && "sourceNote" in (row.raw as Record<string, unknown>)
+      ? (row.raw as Record<string, unknown>).sourceNote === "dora_license"
+      : false;
   const fromSolaRecovery =
     row.raw && typeof row.raw === "object" && "from" in (row.raw as Record<string, unknown>)
       ? (row.raw as Record<string, unknown>).from === "sola_child_surface_recovery"
@@ -347,6 +352,9 @@ function evidenceStrength(row: EvidenceRecord): number {
   if (fromSolaRecovery) score += 14;
   if (fromDirectoryBackedPromotion) score += 20;
   if (fromDirectoryDetailRecovery) score += 22;
+  if (isDoraUpload && row.name && !isProvisionalName(row.name)) score += 20;
+  if (isDoraUpload && (row.address || row.city)) score += 18;
+  if (isDoraUpload && row.phone) score += 10;
   if (row.name && !isProvisionalName(row.name)) score += 6;
   return score;
 }

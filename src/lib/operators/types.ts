@@ -1,12 +1,13 @@
 export type PageClassification =
   | "direct_operator"
+  | "direct_upload"
   | "directory_listing"
   | "suite_container"
   | "website"
   | "social_profile"
   | "unknown";
 
-export type SourceKind = "dora" | "google" | "instagram" | "booking" | "directory" | "container" | "website";
+export type SourceKind = "dora" | "google" | "instagram" | "booking" | "directory" | "container" | "website" | "manual_upload";
 
 export type SourceRecord = {
   name?: string;

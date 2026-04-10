@@ -1,6 +1,6 @@
-export type EvidenceSource = "dora" | "google" | "instagram" | "booking" | "directory" | "container" | "website";
+export type EvidenceSource = "dora" | "google" | "instagram" | "booking" | "directory" | "container" | "website" | "manual_upload";
 
-export type EvidenceType = "direct_operator" | "directory_listing" | "suite_container" | "social_profile";
+export type EvidenceType = "direct_operator" | "direct_upload" | "directory_listing" | "suite_container" | "social_profile";
 
 export type EvidenceRecord = {
   id: string;

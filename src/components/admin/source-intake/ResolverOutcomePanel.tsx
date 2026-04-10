@@ -75,7 +75,7 @@ export function ResolverOutcomePanel({
               {operatorCandidateLinks.map((link) => (
                 <div key={link.id} className="rounded-xl bg-neutral-50 px-3 py-3 text-sm">
                   <div className="font-medium text-neutral-900">
-                    {link.targetType} -> {link.targetId}
+                    {link.targetType} {"->"} {link.targetId}
                   </div>
                   <div className="text-neutral-700">Score: {link.score}</div>
                   <div className="text-xs text-neutral-500">{link.reasons.join(" | ")}</div>

@@ -9,6 +9,7 @@ function sourceFromSourceRecord(source: SourceRecord["source"]): EvidenceSource 
   if (source === "directory") return "directory";
   if (source === "container") return "container";
   if (source === "website") return "website";
+  if (source === "manual_upload") return "manual_upload";
   return "google";
 }
 
@@ -30,6 +31,7 @@ function hashEvidence(source: EvidenceSource, src: SourceRecord, index: number):
 function toEvidenceType(value?: SourceRecord["evidenceType"]): EvidenceType | undefined {
   if (!value) return undefined;
   if (value === "direct_operator") return "direct_operator";
+  if (value === "direct_upload") return "direct_upload";
   if (value === "directory_listing") return "directory_listing";
   if (value === "suite_container") return "suite_container";
   if (value === "social_profile") return "social_profile";

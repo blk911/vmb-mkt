@@ -75,7 +75,7 @@ export function DriftSummaryCard({ event, onCompute, busy }: DriftSummaryCardPro
                 <div key={`${change.type}-${index}`} className="rounded-xl bg-neutral-50 px-3 py-2">
                   <div className="font-medium text-neutral-900">{change.type}</div>
                   <div className="text-neutral-700">
-                    {change.baselineDisplayName || "n/a"} -> {change.comparisonDisplayName || "n/a"}
+                    {change.baselineDisplayName || "n/a"} {"->"} {change.comparisonDisplayName || "n/a"}
                   </div>
                   <div className="text-xs text-neutral-500">{change.reasons.join(" | ")}</div>
                 </div>
