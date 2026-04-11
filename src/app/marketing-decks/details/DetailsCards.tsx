@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import SalonCashFlowComparison from "@/components/marketing/SalonCashFlowComparison";
 
@@ -14,6 +15,24 @@ const CARDS = [
 const MISSION_TEXT =
   "The personal care industry is built on Clients and Client relationships. Our mission is to strengthen the connection between salons and their clients - by rewarding loyalty, encouraging referrals, and turning everyday relationships into lasting opportunity. VMB focuses on what actually drives growth: clients.";
 const GAME_PLAN_TITLE = "VMB 2026 Rollout Plan";
+const VMB_30S_GRAPHICS = [
+  {
+    src: "/How salons attract new clients.png",
+    alt: "How salons attract new clients loop",
+  },
+  {
+    src: "/How clients can boost your business.png",
+    alt: "How clients help your salon grow",
+  },
+  {
+    src: "/Building your VMB Referral Network.png",
+    alt: "VMB referral network explainer",
+  },
+  {
+    src: "/Beauty services connection in soft pink.png",
+    alt: "Beauty services connection visual",
+  },
+];
 
 export default function DetailsCards() {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
@@ -112,15 +131,19 @@ export default function DetailsCards() {
                     <p className="font-semibold text-neutral-900">
                       VMB helps salons grow with the clients they already have.
                     </p>
-                    <p>
-                      Clients share the salon experience with friends, those referrals turn into appointments, and
-                      both the salon and loyal clients can earn rewards through co-marketing.
-                    </p>
-                    <ul className="list-disc space-y-1 pl-5">
-                      <li>Post and share simple salon promos.</li>
-                      <li>Turn client relationships into referral activity.</li>
-                      <li>Track engagement and reward growth-driving clients.</li>
-                    </ul>
+                    <div className="space-y-4">
+                      {VMB_30S_GRAPHICS.map((g) => (
+                        <div key={g.src} className="overflow-hidden rounded-xl border bg-white">
+                          <Image
+                            src={g.src}
+                            alt={g.alt}
+                            width={1024}
+                            height={1024}
+                            className="h-auto w-full"
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <>Lorem ipsum content slot. Click card header again to close.</>
