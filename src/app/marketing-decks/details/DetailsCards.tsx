@@ -8,6 +8,7 @@ const CARDS = [
   "#2 The VMB Game Plan",
   "#3 VMB Co-Marketing Program",
   "#4 What's Next...",
+  "#5 VMB in 30 Seconds",
 ];
 
 const MISSION_TEXT =
@@ -106,6 +107,21 @@ export default function DetailsCards() {
                   <SalonCashFlowComparison />
                 ) : idx === 3 ? (
                   <p className="font-semibold text-neutral-900">Coming Soon!!</p>
+                ) : idx === 4 ? (
+                  <div className="space-y-3">
+                    <p className="font-semibold text-neutral-900">
+                      VMB helps salons grow with the clients they already have.
+                    </p>
+                    <p>
+                      Clients share the salon experience with friends, those referrals turn into appointments, and
+                      both the salon and loyal clients can earn rewards through co-marketing.
+                    </p>
+                    <ul className="list-disc space-y-1 pl-5">
+                      <li>Post and share simple salon promos.</li>
+                      <li>Turn client relationships into referral activity.</li>
+                      <li>Track engagement and reward growth-driving clients.</li>
+                    </ul>
+                  </div>
                 ) : (
                   <>Lorem ipsum content slot. Click card header again to close.</>
                 )}
