@@ -32,6 +32,10 @@ const VMB_30S_GRAPHICS = [
     src: "/Beauty services connection in soft pink.png",
     alt: "Beauty services connection visual",
   },
+  {
+    src: "/Mother’s Day pampering with VMB gift cards.png",
+    alt: "Mother's Day pampering with VMB gift cards",
+  },
 ];
 
 export default function DetailsCards() {
