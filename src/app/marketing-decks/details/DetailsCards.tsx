@@ -36,6 +36,10 @@ const VMB_30S_GRAPHICS = [
     src: "/Mother’s Day pampering with VMB gift cards.png",
     alt: "Mother's Day pampering with VMB gift cards",
   },
+  {
+    src: "/Let him spoil her with VMB.png",
+    alt: "Let him spoil her with VMB",
+  },
 ];
 
 export default function DetailsCards() {
