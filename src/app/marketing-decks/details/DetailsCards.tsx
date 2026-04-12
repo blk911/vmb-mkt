@@ -17,8 +17,8 @@ const MISSION_TEXT =
 const GAME_PLAN_TITLE = "VMB 2026 Rollout Plan";
 const VMB_30S_GRAPHICS = [
   {
-    src: "/Let him spoil her with VMB.png",
-    alt: "Let him spoil her with VMB",
+    src: "/Beauty and wellness at VMB Salon.png",
+    alt: "Beauty and wellness at VMB Salon",
   },
   {
     src: "/How salons attract new clients.png",
@@ -39,6 +39,10 @@ const VMB_30S_GRAPHICS = [
   {
     src: "/Mother’s Day pampering with VMB gift cards.png",
     alt: "Mother's Day pampering with VMB gift cards",
+  },
+  {
+    src: "/Let him spoil her with VMB.png",
+    alt: "Let him spoil her with VMB",
   },
 ];
 
