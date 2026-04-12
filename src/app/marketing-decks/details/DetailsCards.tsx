@@ -37,8 +37,8 @@ const VMB_30S_GRAPHICS = [
     alt: "Beauty services connection visual",
   },
   {
-    src: "/Mother’s Day pampering with VMB gift cards.png",
-    alt: "Mother's Day pampering with VMB gift cards",
+    src: "/Beauty and wellness at VMB Salon.png",
+    alt: "Beauty and wellness at VMB Salon",
   },
   {
     src: "/Let him spoil her with VMB.png",
