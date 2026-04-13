@@ -131,6 +131,12 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         isPrimary: true,
       },
       {
+        label: "Sola Containers",
+        href: "/admin/sola-containers",
+        description: "Canonical Sola parent locations and tenant pull review.",
+        section: "intake",
+      },
+      {
         label: "Places Review",
         href: "/admin/vmb/places/review",
         description: "Review places candidates and adjudicate storefront confidence.",
