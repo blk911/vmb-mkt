@@ -8,7 +8,7 @@ type SolaTenantTableProps = {
 };
 
 function externalLink(url: string | undefined, label: string) {
-  if (!url) return <span className="text-neutral-400">—</span>;
+  if (!url) return null;
   return (
     <a
       href={url}
@@ -22,14 +22,23 @@ function externalLink(url: string | undefined, label: string) {
 }
 
 export function SolaTenantTable({ tenants, loading }: SolaTenantTableProps) {
+  const withInstagram = tenants.filter((tenant) => Boolean(tenant.instagramUrl)).length;
+  const withWebsite = tenants.filter((tenant) => Boolean(tenant.websiteUrl)).length;
+  const withBooking = tenants.filter((tenant) => Boolean(tenant.bookingUrl)).length;
+
   return (
     <section className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="text-base font-semibold text-neutral-900">Tenant Records</h3>
           <p className="text-sm text-neutral-600">Structured child records captured under the selected Sola parent container.</p>
         </div>
-        <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-700">{tenants.length} total</span>
+        <div className="flex flex-wrap gap-2 text-xs font-medium">
+          <span className="rounded-full bg-neutral-100 px-3 py-1 text-neutral-700">{tenants.length} total</span>
+          <span className="rounded-full bg-sky-100 px-3 py-1 text-sky-800">{withInstagram} with IG</span>
+          <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">{withWebsite} with website</span>
+          <span className="rounded-full bg-violet-100 px-3 py-1 text-violet-800">{withBooking} with booking</span>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
@@ -40,9 +49,7 @@ export function SolaTenantTable({ tenants, loading }: SolaTenantTableProps) {
               <th className="px-3 py-3">Category Guess</th>
               <th className="px-3 py-3">Suite</th>
               <th className="px-3 py-3">Phone</th>
-              <th className="px-3 py-3">IG</th>
-              <th className="px-3 py-3">Site</th>
-              <th className="px-3 py-3">Booking</th>
+              <th className="px-3 py-3">Links</th>
               <th className="px-3 py-3">Source Type</th>
               <th className="px-3 py-3">Status</th>
             </tr>
@@ -54,10 +61,22 @@ export function SolaTenantTable({ tenants, loading }: SolaTenantTableProps) {
                 <td className="px-3 py-3 align-top text-neutral-700">{tenant.categoryGuess}</td>
                 <td className="px-3 py-3 align-top text-neutral-700">{tenant.suite || "—"}</td>
                 <td className="px-3 py-3 align-top text-neutral-700">{tenant.phone || "—"}</td>
-                <td className="px-3 py-3 align-top">{externalLink(tenant.instagramUrl, "IG")}</td>
-                <td className="px-3 py-3 align-top">{externalLink(tenant.websiteUrl, "Site")}</td>
-                <td className="px-3 py-3 align-top">{externalLink(tenant.bookingUrl, "Booking")}</td>
-                <td className="px-3 py-3 align-top text-neutral-700">{tenant.sourceType}</td>
+                <td className="px-3 py-3 align-top">
+                  <div className="flex flex-wrap gap-2">
+                    {externalLink(tenant.instagramUrl, "IG")}
+                    {externalLink(tenant.websiteUrl, "Site")}
+                    {externalLink(tenant.bookingUrl, "Booking")}
+                    {!tenant.instagramUrl && !tenant.websiteUrl && !tenant.bookingUrl ? (
+                      <span className="text-neutral-400">—</span>
+                    ) : null}
+                  </div>
+                </td>
+                <td className="px-3 py-3 align-top">
+                  <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-700">
+                    {tenant.sourceType}
+                  </span>
+                  {tenant.evidenceLabel ? <div className="mt-1 text-xs text-neutral-500">{tenant.evidenceLabel}</div> : null}
+                </td>
                 <td className="px-3 py-3 align-top">
                   <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-700">{tenant.status}</span>
                 </td>
@@ -65,14 +84,14 @@ export function SolaTenantTable({ tenants, loading }: SolaTenantTableProps) {
             ))}
             {!loading && tenants.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-3 py-8 text-center text-sm text-neutral-500">
+                <td colSpan={7} className="px-3 py-8 text-center text-sm text-neutral-500">
                   No tenant records for this container yet.
                 </td>
               </tr>
             ) : null}
             {loading ? (
               <tr>
-                <td colSpan={9} className="px-3 py-8 text-center text-sm text-neutral-500">
+                <td colSpan={7} className="px-3 py-8 text-center text-sm text-neutral-500">
                   Loading tenant records...
                 </td>
               </tr>

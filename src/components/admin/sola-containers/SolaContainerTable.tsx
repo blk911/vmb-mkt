@@ -6,6 +6,7 @@ type SolaContainerTableProps = {
   containers: SolaContainer[];
   selectedContainerId?: string;
   busyKey?: string | null;
+  priorityNames?: string[];
   onSelect: (containerId: string) => void;
   onMarkReady: (containerId: string) => void;
 };
@@ -32,9 +33,12 @@ export function SolaContainerTable({
   containers,
   selectedContainerId,
   busyKey,
+  priorityNames = [],
   onSelect,
   onMarkReady,
 }: SolaContainerTableProps) {
+  const prioritySet = new Set(priorityNames.map((name) => name.toLowerCase()));
+
   return (
     <section className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -65,17 +69,30 @@ export function SolaContainerTable({
             {containers.map((container) => (
               <tr
                 key={container.id}
-                className={container.id === selectedContainerId ? "bg-neutral-50" : "border-b border-neutral-100"}
+                className={
+                  container.id === selectedContainerId
+                    ? "bg-neutral-50"
+                    : prioritySet.has(container.name.toLowerCase())
+                      ? "border-b border-amber-100 bg-amber-50/40"
+                      : "border-b border-neutral-100"
+                }
               >
                 <td className="px-3 py-3 align-top text-neutral-700">{container.brand}</td>
                 <td className="px-3 py-3 align-top">
-                  <button
-                    type="button"
-                    onClick={() => onSelect(container.id)}
-                    className="font-medium text-neutral-900 hover:underline"
-                  >
-                    {container.name}
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onSelect(container.id)}
+                      className="font-medium text-neutral-900 hover:underline"
+                    >
+                      {container.name}
+                    </button>
+                    {prioritySet.has(container.name.toLowerCase()) ? (
+                      <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">
+                        Priority First Wave
+                      </span>
+                    ) : null}
+                  </div>
                 </td>
                 <td className="px-3 py-3 align-top text-neutral-700">{container.city}</td>
                 <td className="px-3 py-3 align-top text-neutral-700">{container.zip || "n/a"}</td>

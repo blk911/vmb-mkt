@@ -18,6 +18,11 @@ function normalizeTenantKey(input?: string): string {
   return normalizeText(input).replace(/\s+/g, " ");
 }
 
+function trimToOptional(value?: string): string | undefined {
+  const trimmed = (value || "").trim();
+  return trimmed || undefined;
+}
+
 function compareContainers(a: SolaContainer, b: SolaContainer): number {
   const distanceDelta = (a.distanceMiles ?? Number.MAX_SAFE_INTEGER) - (b.distanceMiles ?? Number.MAX_SAFE_INTEGER);
   if (distanceDelta !== 0) return distanceDelta;
@@ -109,6 +114,41 @@ export async function updateSolaContainerStatus(
     status,
     updatedAt: new Date().toISOString(),
   };
+  rows[index] = updated;
+  await saveSolaContainers(rows);
+  return updated;
+}
+
+export async function updateSolaContainer(
+  id: string,
+  patch: Partial<Pick<SolaContainer, "locationPageUrl" | "directoryPageUrl" | "status" | "notes">>
+): Promise<SolaContainer> {
+  const rows = await listSolaContainers();
+  const index = rows.findIndex((row) => row.id === id);
+  if (index === -1) throw new Error("container_not_found");
+
+  const current = rows[index];
+  const nextLocationPageUrl =
+    patch.locationPageUrl !== undefined ? trimToOptional(patch.locationPageUrl) : current.locationPageUrl;
+  const nextDirectoryPageUrl =
+    patch.directoryPageUrl !== undefined ? trimToOptional(patch.directoryPageUrl) : current.directoryPageUrl;
+  const nextNotes = patch.notes !== undefined ? trimToOptional(patch.notes) : current.notes;
+
+  let nextStatus = patch.status ?? current.status;
+  const savedParentUrl = Boolean(nextLocationPageUrl || nextDirectoryPageUrl);
+  if (savedParentUrl && current.status === "seeded" && patch.status === undefined) {
+    nextStatus = "resolved";
+  }
+
+  const updated: SolaContainer = {
+    ...current,
+    locationPageUrl: nextLocationPageUrl,
+    directoryPageUrl: nextDirectoryPageUrl,
+    notes: nextNotes,
+    status: nextStatus,
+    updatedAt: new Date().toISOString(),
+  };
+
   rows[index] = updated;
   await saveSolaContainers(rows);
   return updated;
