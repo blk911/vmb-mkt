@@ -23,10 +23,12 @@
     "social-targets:address-expansion:test": "ts-node --compiler-options \"{\\\"module\\\":\\\"commonjs\\\"}\" ./scripts/run_address_expansion_test.ts",
     "social-targets:verification-audit:sample": "ts-node --compiler-options \"{\\\"module\\\":\\\"commonjs\\\"}\" ./scripts/run_verification_audit_sample.ts",
     "social-targets:operator-harvest": "ts-node --compiler-options \"{\\\"module\\\":\\\"commonjs\\\"}\" ./scripts/run_operator_harvest.ts",
-    "operators:resolver": "ts-node --compiler-options \"{\\\"module\\\":\\\"commonjs\\\"}\" src/lib/operators/run-resolver.ts"
+    "operators:resolver": "ts-node --compiler-options \"{\\\"module\\\":\\\"commonjs\\\"}\" src/lib/operators/run-resolver.ts",
+    "ig:harvest": "ts-node scripts/run_ig_hashtag_harvest.ts"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
+    "apify-client": "^2.22.3",
     "csv-parse": "^6.1.0",
     "firebase-admin": "^13.6.1",
     "framer-motion": "^12.38.0",

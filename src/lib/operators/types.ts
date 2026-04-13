@@ -5,6 +5,7 @@ export type PageClassification =
   | "suite_container"
   | "website"
   | "social_profile"
+  | "social_post"
   | "unknown";
 
 export type SourceKind = "dora" | "google" | "instagram" | "booking" | "directory" | "container" | "website" | "manual_upload";

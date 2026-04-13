@@ -50,6 +50,7 @@ import {
 } from "@/lib/social-targets/target-visibility";
 import { getVerificationState } from "@/lib/social-targets/verification-state";
 import { getFeaturedValidationIntegrity } from "@/lib/social-targets/featured-validation-integrity";
+import InstagramHashtagHarvestPanel from "@/components/admin/social-targets/InstagramHashtagHarvestPanel";
 import type {
   ActivitySignal,
   ProfileHealth,
@@ -1562,6 +1563,11 @@ export default function SocialTargetsTable({
             Park Meadows / DTC — verification, priority, referrals. Edits persist to{" "}
             <code className="rounded bg-neutral-100 px-1 text-[11px]">runtime-data/*.generated.json</code>.
           </p>
+          <p className="mt-1 max-w-2xl text-sm text-neutral-600">
+            Use the Instagram Hashtag Harvest panel below to ingest recent hashtag posts like{" "}
+            <span className="font-medium">denvernails</span> or{" "}
+            <span className="font-medium">nailsdenver</span> into the evidence pipeline.
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           {showDevReset ? (
@@ -1583,6 +1589,10 @@ export default function SocialTargetsTable({
       {bulkSummary ? (
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">{bulkSummary}</div>
       ) : null}
+
+      <div className="mb-6">
+        <InstagramHashtagHarvestPanel />
+      </div>
 
       <details className="rounded-xl border border-neutral-200 bg-neutral-50/70 p-3">
         <summary className="cursor-pointer text-[11px] font-bold uppercase tracking-wide text-neutral-600">
