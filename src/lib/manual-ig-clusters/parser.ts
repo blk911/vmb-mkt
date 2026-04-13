@@ -2,13 +2,26 @@ import crypto from "node:crypto";
 import type { ManualIgCategoryGuess, ManualIgClusterItem } from "./types";
 
 export function normalizeIgHandle(input: string): string {
-  return (input || "")
-    .trim()
+  const raw = (input || "").trim();
+  if (!raw) return "";
+
+  const normalized = raw
     .replace(/^@+/, "")
     .replace(/^https?:\/\/(www\.)?instagram\.com\//i, "")
     .replace(/[/?#].*$/, "")
     .replace(/\/+$/, "")
-    .toLowerCase();
+    .replace(/\s+/g, "_")
+    .toLowerCase()
+    .replace(/[^a-z0-9._]+/g, "")
+    .replace(/^[._]+|[._]+$/g, "");
+
+  if (normalized) return normalized;
+
+  return raw
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9._]+/g, "")
+    .replace(/^[._]+|[._]+$/g, "");
 }
 
 function hashId(prefix: string, value: string): string {

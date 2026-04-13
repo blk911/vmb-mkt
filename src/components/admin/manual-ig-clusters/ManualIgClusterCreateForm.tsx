@@ -79,12 +79,12 @@ export function ManualIgClusterCreateForm({ onSuccess }: ManualIgClusterCreateFo
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="grid gap-1 text-sm">
-          <span className="font-medium text-neutral-700">Origin Handle</span>
+          <span className="font-medium text-neutral-700">Origin Handle / Label</span>
           <input
             value={form.originHandle}
             onChange={(event) => update("originHandle", event.target.value)}
             className="rounded-xl border border-neutral-300 px-3 py-2 outline-none focus:border-neutral-500"
-            placeholder="@targetsalon"
+            placeholder="@targetsalon or Tiff5280 Pull"
           />
         </label>
         <label className="grid gap-1 text-sm">
