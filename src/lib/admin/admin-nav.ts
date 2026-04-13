@@ -131,6 +131,30 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
         isPrimary: true,
       },
       {
+        label: "External Site Capture",
+        href: "/admin/source-intake/external-site-capture",
+        description: "Capture an external salon page and preview it inside a VMB framework.",
+        section: "intake",
+      },
+      {
+        label: "Imported Profiles",
+        href: "/admin/source-intake/imported-profiles",
+        description: "Review draft VMB profiles created from external site captures.",
+        section: "intake",
+      },
+      {
+        label: "Imported Salon Records",
+        href: "/admin/source-intake/imported-salon-records",
+        description: "Review canonical salon records promoted from approved imported drafts.",
+        section: "intake",
+      },
+      {
+        label: "Hashtag Paste Intake",
+        href: "/admin/source-intake/hashtag-paste-intake",
+        description: "Paste Instagram hashtag content and surface likely provider and client signals.",
+        section: "intake",
+      },
+      {
         label: "Sola Containers",
         href: "/admin/sola-containers",
         description: "Canonical Sola parent locations and tenant pull review.",
