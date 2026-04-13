@@ -1,5 +1,6 @@
 "use client";
 
+import { buildInstagramProfileUrl } from "@/lib/manual-ig-clusters/parser";
 import type { ManualIgCluster } from "@/lib/manual-ig-clusters/types";
 
 type ManualIgClusterDetailTableProps = {
@@ -21,6 +22,9 @@ export function ManualIgClusterDetailTable({
   onAccept,
   onReject,
 }: ManualIgClusterDetailTableProps) {
+  const linkClass =
+    "inline-flex items-center rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-50";
+
   return (
     <section className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -48,12 +52,14 @@ export function ManualIgClusterDetailTable({
               <th className="px-3 py-3">Category</th>
               <th className="px-3 py-3">Confidence</th>
               <th className="px-3 py-3">Status</th>
+              <th className="px-3 py-3">Links</th>
               <th className="px-3 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
             {cluster.items.map((item) => {
               const resolved = item.status !== "unreviewed";
+              const instagramUrl = buildInstagramProfileUrl(item.handle);
               return (
                 <tr key={item.id} className="border-b border-neutral-100">
                   <td className="px-3 py-3 align-top font-medium text-neutral-900">@{item.handle}</td>
@@ -64,6 +70,30 @@ export function ManualIgClusterDetailTable({
                     <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusBadgeClass(item.status)}`}>
                       {item.status}
                     </span>
+                  </td>
+                  <td className="px-3 py-3 align-top">
+                    <div className="flex flex-wrap gap-2">
+                      {instagramUrl ? (
+                        <a
+                          href={instagramUrl}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className={linkClass}
+                        >
+                          IG
+                        </a>
+                      ) : null}
+                      {item.websiteUrl ? (
+                        <a
+                          href={item.websiteUrl}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className={linkClass}
+                        >
+                          Site
+                        </a>
+                      ) : null}
+                    </div>
                   </td>
                   <td className="px-3 py-3 align-top">
                     <div className="flex flex-wrap gap-2">

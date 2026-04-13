@@ -22,6 +22,7 @@ export interface ManualIgClusterItem {
   handle: string;
   displayName: string;
   rawLine: string;
+  websiteUrl?: string;
   categoryGuess: ManualIgCategoryGuess;
   confidence: number;
   notes?: string;

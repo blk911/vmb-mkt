@@ -24,6 +24,11 @@ export function normalizeIgHandle(input: string): string {
     .replace(/^[._]+|[._]+$/g, "");
 }
 
+export function buildInstagramProfileUrl(handle: string): string | null {
+  const normalizedHandle = normalizeIgHandle(handle);
+  return normalizedHandle ? `https://www.instagram.com/${normalizedHandle}/` : null;
+}
+
 function hashId(prefix: string, value: string): string {
   return `${prefix}_${crypto.createHash("md5").update(value).digest("hex").slice(0, 12)}`;
 }
