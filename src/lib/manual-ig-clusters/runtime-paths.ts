@@ -1,6 +1,7 @@
 import path from "node:path";
+import { getRuntimeDataRoot } from "@/lib/runtime/runtime-data-root";
 
-const RUNTIME_DIR = path.join(process.cwd(), "runtime-data");
+const RUNTIME_DIR = getRuntimeDataRoot();
 
 export function manualIgClustersDirPath(): string {
   return path.join(RUNTIME_DIR, "manual-ig-clusters.generated");
