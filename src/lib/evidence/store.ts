@@ -1,8 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
+import { getRuntimeDataRoot } from "@/lib/runtime/runtime-data-root";
 import type { EvidenceRecord } from "./types";
 
-const EVIDENCE_LAKE_PATH = path.join(process.cwd(), "runtime-data/evidence_lake.v1.json");
+const EVIDENCE_LAKE_PATH = path.join(getRuntimeDataRoot(), "evidence_lake.v1.json");
 
 export function loadEvidence(): EvidenceRecord[] {
   if (!fs.existsSync(EVIDENCE_LAKE_PATH)) return [];

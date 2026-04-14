@@ -1,11 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
+import { getRuntimeDataRoot } from "@/lib/runtime/runtime-data-root";
 import type { ResolverOperator } from "./types";
 
-const REGISTRY_PATH = path.join(process.cwd(), "runtime-data/resolver_registry.v1.json");
-const REGISTRY_UI_PATH = path.join(process.cwd(), "runtime-data/resolver_registry.ui.v1.json");
-const SUMMARY_PATH = path.join(process.cwd(), "runtime-data/resolver_summary.json");
-const SURFACE_RECOVERY_QUEUE_PATH = path.join(process.cwd(), "runtime-data/operator_surface_recovery_queue.json");
+const RUNTIME_ROOT = getRuntimeDataRoot();
+const REGISTRY_PATH = path.join(RUNTIME_ROOT, "resolver_registry.v1.json");
+const REGISTRY_UI_PATH = path.join(RUNTIME_ROOT, "resolver_registry.ui.v1.json");
+const SUMMARY_PATH = path.join(RUNTIME_ROOT, "resolver_summary.json");
+const SURFACE_RECOVERY_QUEUE_PATH = path.join(RUNTIME_ROOT, "operator_surface_recovery_queue.json");
 
 export function loadResolverRegistry(): ResolverOperator[] {
   if (!fs.existsSync(REGISTRY_PATH)) return [];
@@ -58,7 +60,7 @@ export function saveResolverSummary(input: {
 export function writeSurfaceRecoveryQueueArtifact(queue: unknown): string {
   fs.mkdirSync(path.dirname(SURFACE_RECOVERY_QUEUE_PATH), { recursive: true });
   fs.writeFileSync(SURFACE_RECOVERY_QUEUE_PATH, `${JSON.stringify(queue, null, 2)}\n`);
-  return "runtime-data/operator_surface_recovery_queue.json";
+  return SURFACE_RECOVERY_QUEUE_PATH;
 }
 
 function toUiResolverRegistry(operators: ResolverOperator[]): ResolverOperator[] {

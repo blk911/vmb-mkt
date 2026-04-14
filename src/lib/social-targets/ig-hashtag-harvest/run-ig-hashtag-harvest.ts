@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { appendEvidence, loadEvidence } from "../../evidence/store";
 import type { EvidenceRecord } from "../../evidence/types";
+import { getRuntimeDataRoot } from "../../runtime/runtime-data-root";
 import { loadResolverRegistry } from "../../resolver/registry-store";
 import { runResolver } from "../../resolver/run-resolver";
 import { mapIGPostToEvidence } from "./adapter";
@@ -78,11 +79,11 @@ export async function runIGHashtagHarvest(
   // "merged" as evidence that attached without growing the operator registry.
   const operatorsMerged = Math.max(0, dedupedBatch.length - operatorsCreated);
 
-  const summaryDir = path.join(process.cwd(), "runtime-data");
+  const summaryDir = getRuntimeDataRoot();
   await ensureDir(summaryDir);
 
   const relativeSummaryPath = `runtime-data/ig-hashtag-harvest-${hashtag}.summary.json`;
-  const summaryAbsPath = path.join(process.cwd(), relativeSummaryPath);
+  const summaryAbsPath = path.join(summaryDir, `ig-hashtag-harvest-${hashtag}.summary.json`);
 
   const summary = {
     hashtag,

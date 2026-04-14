@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { getRuntimeDataRoot } from "@/lib/runtime/runtime-data-root";
 
 export type RuntimeTraceStatus = "start" | "success" | "timeout" | "error" | "skipped" | "accepted" | "rejected";
 
@@ -18,7 +19,7 @@ export type RuntimeTraceEvent = {
   candidateStrength?: number;
 };
 
-const TRACE_PATH = path.join(process.cwd(), "runtime-data/directory_backed_runtime_trace.jsonl");
+const TRACE_PATH = path.join(getRuntimeDataRoot(), "directory_backed_runtime_trace.jsonl");
 
 export class RuntimeTraceLogger {
   readonly runId: string;

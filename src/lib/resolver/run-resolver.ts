@@ -3,6 +3,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import type { EvidenceRecord } from "@/lib/evidence/types";
 import { loadEvidence } from "@/lib/evidence/store";
+import { getRuntimeDataRoot } from "@/lib/runtime/runtime-data-root";
 import { expandContainerEvidence } from "./container-expansion";
 import { buildCanonicalCandidateIndex } from "./canonical-candidate-index";
 import { evaluateEvidenceMatch } from "./match";
@@ -13,8 +14,9 @@ import { loadOperatorReviews } from "@/lib/operators/review-store";
 import { compactResolverOperators } from "./compaction";
 import { RuntimeTraceLogger } from "./runtime-trace";
 
-const RESOLVER_RUNTIME_TRACE_PATH = path.join(process.cwd(), "runtime-data/resolver_runtime_trace.jsonl");
-const RESOLVER_RUNTIME_SUMMARY_PATH = path.join(process.cwd(), "runtime-data/resolver_runtime_summary.json");
+const RUNTIME_ROOT = getRuntimeDataRoot();
+const RESOLVER_RUNTIME_TRACE_PATH = path.join(RUNTIME_ROOT, "resolver_runtime_trace.jsonl");
+const RESOLVER_RUNTIME_SUMMARY_PATH = path.join(RUNTIME_ROOT, "resolver_runtime_summary.json");
 
 type ResolverRunOptions = {
   traceRuntime?: boolean;
