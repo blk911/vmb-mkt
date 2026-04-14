@@ -32,9 +32,6 @@ export async function harvestInstagramHashtag(
   const hashtag = normalizeHashtag(rawHashtag);
   const token = requireEnv("APIFY_TOKEN", process.env.APIFY_TOKEN);
 
-  // Force runtime loading in the server route so Vercel traces these packages
-  // as direct runtime dependencies of the harvest path.
-  await import("proxy-agent");
   const { ApifyClient } = await import("apify-client");
 
   const client = new ApifyClient({ token });
