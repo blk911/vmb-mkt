@@ -25,28 +25,45 @@ function safeArray(value: unknown): string[] {
     .filter(Boolean);
 }
 
+async function parseApifyError(response: Response): Promise<string> {
+  try {
+    const data = (await response.json()) as {
+      error?: { message?: string };
+      message?: string;
+    };
+    return data.error?.message || data.message || `Apify request failed (${response.status})`;
+  } catch {
+    return `Apify request failed (${response.status})`;
+  }
+}
+
 export async function harvestInstagramHashtag(
   rawHashtag: string,
   limit = 50
 ): Promise<IGHashtagPost[]> {
   const hashtag = normalizeHashtag(rawHashtag);
   const token = requireEnv("APIFY_TOKEN", process.env.APIFY_TOKEN);
+  const response = await fetch(
+    "https://api.apify.com/v2/acts/apify~instagram-hashtag-scraper/run-sync-get-dataset-items?format=json&clean=true",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        hashtags: [hashtag],
+        resultsLimit: limit,
+      }),
+      cache: "no-store",
+    }
+  );
 
-  const { ApifyClient } = await import("apify-client");
-
-  const client = new ApifyClient({ token });
-
-  const run = await client.actor("apify/instagram-hashtag-scraper").call({
-    hashtags: [hashtag],
-    resultsLimit: limit,
-  });
-
-  const datasetId = run.defaultDatasetId;
-  if (!datasetId) {
-    throw new Error("Instagram hashtag scraper returned no dataset id");
+  if (!response.ok) {
+    throw new Error(await parseApifyError(response));
   }
 
-  const { items } = await client.dataset(datasetId).listItems();
+  const items = (await response.json()) as unknown[];
 
   return (items as unknown[]).map((item) => {
     const post = (item ?? {}) as Record<string, unknown>;

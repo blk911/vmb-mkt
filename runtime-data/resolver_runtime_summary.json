@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-04-14T14:36:53.220Z",
+  "generatedAt": "2026-04-14T14:46:34.133Z",
   "status": "completed",
   "completed": true,
   "timedOut": false,
-  "totalElapsedMs": 5954,
+  "totalElapsedMs": 5780,
   "dominantSlowPhase": "canonical_resolution",
   "phaseTimings": {
-    "input_load": 79,
-    "evidence_indexing": 19,
-    "canonical_resolution": 4762,
-    "status_scoring_pre_compaction": 404,
-    "duplicate_merge_pass": 16,
-    "status_scoring_post_compaction": 403,
+    "input_load": 43,
+    "evidence_indexing": 10,
+    "canonical_resolution": 4647,
+    "status_scoring_pre_compaction": 401,
+    "duplicate_merge_pass": 17,
+    "status_scoring_post_compaction": 390,
     "child_operator_pass": 0,
     "promotion_evaluation": 105,
-    "output_materialization": 165,
-    "file_writes": 1
+    "output_materialization": 167,
+    "file_writes": 0
   },
   "phaseCounts": {
     "input_load": 2943,
