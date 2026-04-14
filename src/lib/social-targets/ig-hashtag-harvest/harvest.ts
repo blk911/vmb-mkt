@@ -1,8 +1,4 @@
-import "dotenv/config";
-import { ApifyClient } from "apify-client";
 import type { IGHashtagPost } from "./types";
-
-const APIFY_TOKEN = process.env.APIFY_TOKEN;
 
 function requireEnv(name: string, value: string | undefined): string {
   if (!value) {
@@ -34,7 +30,12 @@ export async function harvestInstagramHashtag(
   limit = 50
 ): Promise<IGHashtagPost[]> {
   const hashtag = normalizeHashtag(rawHashtag);
-  const token = requireEnv("APIFY_TOKEN", APIFY_TOKEN);
+  const token = requireEnv("APIFY_TOKEN", process.env.APIFY_TOKEN);
+
+  // Force runtime loading in the server route so Vercel traces these packages
+  // as direct runtime dependencies of the harvest path.
+  await import("proxy-agent");
+  const { ApifyClient } = await import("apify-client");
 
   const client = new ApifyClient({ token });
 
