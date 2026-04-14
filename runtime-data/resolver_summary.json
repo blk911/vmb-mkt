@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-04-08T19:47:30.604Z",
-  "evidenceCount": 2942,
-  "operatorCount": 153,
+  "generatedAt": "2026-04-14T13:14:13.554Z",
+  "evidenceCount": 2943,
+  "operatorCount": 154,
   "hotCount": 36,
   "enrichedCount": 42,
-  "enumeratedCount": 74,
+  "enumeratedCount": 75,
   "containerCount": 1,
   "childOperatorCount": 63,
   "childWithBookingCount": 0,
   "childWithInstagramCount": 1,
   "childWithWebsiteCount": 1,
   "childWeakCount": 62,
-  "preCompactionOperatorCount": 2184,
-  "postCompactionOperatorCount": 153,
+  "preCompactionOperatorCount": 2185,
+  "postCompactionOperatorCount": 154,
   "compactedDuplicateCount": 2031
 }
