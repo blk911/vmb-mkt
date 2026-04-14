@@ -2,8 +2,8 @@
   "hashtag": "denvernails",
   "requestedLimit": 1,
   "postsPulled": 1,
-  "evidenceAdded": 1,
-  "operatorsCreated": 1,
+  "evidenceAdded": 0,
+  "operatorsCreated": 0,
   "operatorsMerged": 0,
   "sample": {
     "postId": "3875136394260825239",
@@ -33,5 +33,5 @@
     "timestamp": "2026-04-14T13:11:42.000Z",
     "weeksAgo": 0
   },
-  "generatedAt": "2026-04-14T13:14:13.556Z"
+  "generatedAt": "2026-04-14T13:26:19.151Z"
 }
