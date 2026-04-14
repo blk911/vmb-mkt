@@ -25,4 +25,5 @@ export type IGHashtagHarvestResult = {
   operatorsMerged?: number;
   summaryPath: string;
   sample?: IGHashtagPost;
+  posts?: IGHashtagPost[];
 };

@@ -107,5 +107,6 @@ export async function runIGHashtagHarvest(
     operatorsMerged,
     summaryPath: relativeSummaryPath,
     sample: posts[0],
+    posts,
   };
 }

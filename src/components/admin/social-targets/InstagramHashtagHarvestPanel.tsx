@@ -3,6 +3,19 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+type HarvestPost = {
+  postId: string;
+  postUrl: string;
+  username: string;
+  profileUrl: string;
+  caption: string;
+  hashtags: string[];
+  likeCount: number;
+  commentCount: number;
+  timestamp: string;
+  weeksAgo: number;
+};
+
 type HarvestResult = {
   hashtag: string;
   requestedLimit: number;
@@ -11,18 +24,8 @@ type HarvestResult = {
   operatorsCreated?: number;
   operatorsMerged?: number;
   summaryPath: string;
-  sample?: {
-    postId: string;
-    postUrl: string;
-    username: string;
-    profileUrl: string;
-    caption: string;
-    hashtags: string[];
-    likeCount: number;
-    commentCount: number;
-    timestamp: string;
-    weeksAgo: number;
-  };
+  sample?: HarvestPost;
+  posts?: HarvestPost[];
 };
 
 type ApiResponse =
@@ -263,6 +266,128 @@ export default function InstagramHashtagHarvestPanel() {
                     <span className="text-sm text-neutral-500">-</span>
                   )}
                 </div>
+              </div>
+            </div>
+          ) : null}
+
+          {(result.posts ?? []).length > 0 ? (
+            <div className="rounded-xl border border-neutral-200 bg-white p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="text-sm font-medium text-neutral-800">
+                  Current run posts
+                </div>
+                <div className="text-xs text-neutral-500">
+                  {(result.posts ?? []).length} pulled
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full border-separate border-spacing-0 text-sm">
+                  <thead>
+                    <tr className="text-left">
+                      <th className="border-b border-neutral-200 px-3 py-2 font-medium text-neutral-600">
+                        #
+                      </th>
+                      <th className="border-b border-neutral-200 px-3 py-2 font-medium text-neutral-600">
+                        Username
+                      </th>
+                      <th className="border-b border-neutral-200 px-3 py-2 font-medium text-neutral-600">
+                        Weeks
+                      </th>
+                      <th className="border-b border-neutral-200 px-3 py-2 font-medium text-neutral-600">
+                        Likes
+                      </th>
+                      <th className="border-b border-neutral-200 px-3 py-2 font-medium text-neutral-600">
+                        Comments
+                      </th>
+                      <th className="border-b border-neutral-200 px-3 py-2 font-medium text-neutral-600">
+                        Timestamp
+                      </th>
+                      <th className="border-b border-neutral-200 px-3 py-2 font-medium text-neutral-600">
+                        Caption
+                      </th>
+                      <th className="border-b border-neutral-200 px-3 py-2 font-medium text-neutral-600">
+                        Hashtags
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(result.posts ?? []).map((post, index) => (
+                      <tr key={`${post.postId}-${index}`} className="align-top">
+                        <td className="border-b border-neutral-100 px-3 py-3 text-neutral-500">
+                          {index + 1}
+                        </td>
+                        <td className="border-b border-neutral-100 px-3 py-3">
+                          <div className="font-medium text-neutral-900">
+                            @{post.username || "unknown"}
+                          </div>
+                          <div className="mt-1 break-all text-xs">
+                            {post.profileUrl ? (
+                              <a
+                                href={post.profileUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-neutral-500 underline underline-offset-2"
+                              >
+                                profile
+                              </a>
+                            ) : (
+                              <span className="text-neutral-500">-</span>
+                            )}
+                          </div>
+                          <div className="mt-1 break-all text-xs">
+                            {post.postUrl ? (
+                              <a
+                                href={post.postUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-neutral-500 underline underline-offset-2"
+                              >
+                                post
+                              </a>
+                            ) : (
+                              <span className="text-neutral-500">-</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="border-b border-neutral-100 px-3 py-3 text-neutral-700">
+                          {post.weeksAgo}
+                        </td>
+                        <td className="border-b border-neutral-100 px-3 py-3 text-neutral-700">
+                          {post.likeCount}
+                        </td>
+                        <td className="border-b border-neutral-100 px-3 py-3 text-neutral-700">
+                          {post.commentCount}
+                        </td>
+                        <td className="border-b border-neutral-100 px-3 py-3 text-neutral-700">
+                          <div className="max-w-[180px] break-words">
+                            {post.timestamp || "-"}
+                          </div>
+                        </td>
+                        <td className="border-b border-neutral-100 px-3 py-3 text-neutral-700">
+                          <div className="max-w-[320px] whitespace-pre-wrap break-words">
+                            {post.caption || "-"}
+                          </div>
+                        </td>
+                        <td className="border-b border-neutral-100 px-3 py-3">
+                          <div className="flex max-w-[260px] flex-wrap gap-1.5">
+                            {(post.hashtags ?? []).length > 0 ? (
+                              post.hashtags.map((tag) => (
+                                <span
+                                  key={`${post.postId}-${tag}`}
+                                  className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-700"
+                                >
+                                  #{tag}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-neutral-500">-</span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           ) : null}
