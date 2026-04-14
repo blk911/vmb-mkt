@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     // Restore-mode safety: legacy route signatures compile under Next 16.
     ignoreBuildErrors: true,
   },
+  serverExternalPackages: ["apify-client"],
   /**
    * Ensures the browser bundle can read a Maps JS key at build time.
    * Prefer NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in .env; GOOGLE_MAPS_BROWSER_KEY is an optional alias
