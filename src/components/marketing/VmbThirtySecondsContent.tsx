@@ -33,6 +33,16 @@ const VMB_30S_GRAPHICS = [
   },
 ];
 
+const VMB_30S_INSERTS = [
+  "USE VMB to build your exclusive, invite-only client network",
+  "Client invitations are your leverage - no ad spend required",
+  "Clients build relationships - they don't buy services",
+  "Clients choose on trust - they ask their friends first",
+  "When it's great, clients tell, share, and post",
+  "VMB Gift Requests turn sharing into bookings and new clients",
+  "You don't chase clients - your network brings them to you",
+];
+
 type Props = {
   showEmailButton?: boolean;
 };
@@ -42,9 +52,12 @@ export default function VmbThirtySecondsContent({ showEmailButton = false }: Pro
     <div className="space-y-4">
       <p className="font-semibold text-neutral-900">VMB helps salons grow with the clients they already have.</p>
       <div className="space-y-4">
-        {VMB_30S_GRAPHICS.map((graphic) => (
-          <div key={graphic.src} className="overflow-hidden rounded-xl border bg-white">
-            <Image src={graphic.src} alt={graphic.alt} width={1024} height={1024} className="h-auto w-full" />
+        {VMB_30S_GRAPHICS.map((graphic, index) => (
+          <div key={graphic.src} className="space-y-4">
+            <div className="overflow-hidden rounded-xl border bg-white">
+              <Image src={graphic.src} alt={graphic.alt} width={1024} height={1024} className="h-auto w-full" />
+            </div>
+            <p className="font-semibold text-neutral-900">{VMB_30S_INSERTS[index]}</p>
           </div>
         ))}
       </div>
