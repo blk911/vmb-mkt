@@ -51,7 +51,7 @@ export default function VmbThirtySecondsContent({ showEmailButton = false }: Pro
       {showEmailButton ? (
         <div className="pt-2">
           <a
-            href="mailto:support@vmbsalons.com?subject=VMB%20in%2030%20Seconds"
+            href="https://www.vmbsalons.com/access/request"
             className="inline-flex items-center justify-center rounded-xl border border-sky-300 bg-sky-50 px-5 py-3 text-sm font-semibold text-sky-800 transition hover:border-sky-400 hover:bg-sky-100"
           >
             More Info Email
