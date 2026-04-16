@@ -8,6 +8,32 @@ const ROLE_OPTIONS = [
   { value: "member", label: "Internal operator access" },
 ];
 
+const ACCESS_REQUEST_EMAIL = "blk911@gmail.com";
+
+function buildAccessRequestMailto(form: {
+  name: string;
+  email: string;
+  organization: string;
+  requestedRole: string;
+  notes: string;
+}) {
+  const selectedRole = ROLE_OPTIONS.find((option) => option.value === form.requestedRole)?.label ?? form.requestedRole;
+  const subject = `VMB access request: ${form.name}`;
+  const body = [
+    "New VMB access request",
+    "",
+    `Name: ${form.name}`,
+    `Email: ${form.email}`,
+    `Organization: ${form.organization}`,
+    `Requested access: ${selectedRole}`,
+    "",
+    "Notes:",
+    form.notes || "(none)",
+  ].join("\n");
+
+  return `mailto:${ACCESS_REQUEST_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 export default function RequestAccessPage() {
   const [form, setForm] = useState({
     name: "",
@@ -46,7 +72,8 @@ export default function RequestAccessPage() {
       }
 
       setStatus("success");
-      setMessage("Access request received. A VMB administrator can review it from the internal workspace.");
+      setMessage(`Access request received. An email draft will open for ${ACCESS_REQUEST_EMAIL}.`);
+      window.location.href = buildAccessRequestMailto(form);
       setForm({
         name: "",
         email: "",
