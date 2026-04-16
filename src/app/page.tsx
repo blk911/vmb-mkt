@@ -1,6 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
+import VmbThirtySecondsContent from "@/components/marketing/VmbThirtySecondsContent";
 
 export default function Home() {
+  const [showVmbThirtySeconds, setShowVmbThirtySeconds] = useState(false);
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-neutral-50 to-white">
       <section className="mx-auto flex min-h-[calc(100vh-56px)] max-w-6xl items-center px-4 py-12">
@@ -21,24 +27,30 @@ export default function Home() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/auth/login"
+                onClick={() => setShowVmbThirtySeconds(false)}
                 className="inline-flex items-center justify-center rounded-xl bg-neutral-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800"
               >
                 Secure Sign In
               </Link>
               <Link
                 href="/access/request"
+                onClick={() => setShowVmbThirtySeconds(false)}
                 className="inline-flex items-center justify-center rounded-xl border border-sky-300 bg-sky-50 px-5 py-3 text-sm font-semibold text-sky-800 transition hover:border-sky-400 hover:bg-sky-100"
               >
                 Open Request Form
               </Link>
-              <a
-                href="https://vmbsalons.com"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center rounded-xl border border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-900 transition hover:border-neutral-400 hover:bg-neutral-50"
+              <button
+                type="button"
+                onClick={() => setShowVmbThirtySeconds((prev) => !prev)}
+                aria-pressed={showVmbThirtySeconds}
+                className={`inline-flex items-center justify-center rounded-xl border px-5 py-3 text-sm font-semibold transition ${
+                  showVmbThirtySeconds
+                    ? "border-neutral-950 bg-neutral-950 text-white"
+                    : "border-neutral-300 text-neutral-900 hover:border-neutral-400 hover:bg-neutral-50"
+                }`}
               >
                 VMB in 30 seconds
-              </a>
+              </button>
             </div>
 
             <div className="mt-10 grid gap-4 md:grid-cols-2">
@@ -57,6 +69,16 @@ export default function Home() {
                 </p>
               </div>
             </div>
+            {showVmbThirtySeconds ? (
+              <div className="mt-4 rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-neutral-900">
+                  VMB in 30 Seconds
+                </h2>
+                <div className="mt-4 text-sm leading-relaxed text-neutral-600 md:text-base">
+                  <VmbThirtySecondsContent showEmailButton />
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <aside className="rounded-3xl border border-neutral-200 bg-neutral-950 p-8 text-white shadow-sm md:p-10">

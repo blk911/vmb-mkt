@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import SalonCashFlowComparison from "@/components/marketing/SalonCashFlowComparison";
+import VmbThirtySecondsContent from "@/components/marketing/VmbThirtySecondsContent";
 
 const CARDS = [
   "#1 VMB's Mission Statement",
@@ -15,37 +15,6 @@ const CARDS = [
 const MISSION_TEXT =
   "The personal care industry is built on Clients and Client relationships. Our mission is to strengthen the connection between salons and their clients - by rewarding loyalty, encouraging referrals, and turning everyday relationships into lasting opportunity. VMB focuses on what actually drives growth: clients.";
 const GAME_PLAN_TITLE = "VMB 2026 Rollout Plan";
-const VMB_30S_GRAPHICS = [
-  {
-    src: "/Beauty and wellness at VMB Salon.png",
-    alt: "Beauty and wellness at VMB Salon",
-  },
-  {
-    src: "/How salons attract new clients.png",
-    alt: "How salons attract new clients loop",
-  },
-  {
-    src: "/How clients can boost your business.png",
-    alt: "How clients help your salon grow",
-  },
-  {
-    src: "/Building your VMB Referral Network.png",
-    alt: "VMB referral network explainer",
-  },
-  {
-    src: "/Beauty services connection in soft pink.png",
-    alt: "Beauty services connection visual",
-  },
-  {
-    src: "/Mother's Day beauty salon gift guide.png",
-    alt: "Mother's Day beauty salon gift guide",
-  },
-  {
-    src: "/Let him spoil her with VMB.png",
-    alt: "Let him spoil her with VMB",
-  },
-];
-
 export default function DetailsCards() {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
 
@@ -139,24 +108,7 @@ export default function DetailsCards() {
                 ) : idx === 3 ? (
                   <p className="font-semibold text-neutral-900">Coming Soon!!</p>
                 ) : idx === 4 ? (
-                  <div className="space-y-3">
-                    <p className="font-semibold text-neutral-900">
-                      VMB helps salons grow with the clients they already have.
-                    </p>
-                    <div className="space-y-4">
-                      {VMB_30S_GRAPHICS.map((g) => (
-                        <div key={g.src} className="overflow-hidden rounded-xl border bg-white">
-                          <Image
-                            src={g.src}
-                            alt={g.alt}
-                            width={1024}
-                            height={1024}
-                            className="h-auto w-full"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <VmbThirtySecondsContent />
                 ) : (
                   <>Lorem ipsum content slot. Click card header again to close.</>
                 )}
