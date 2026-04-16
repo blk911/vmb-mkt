@@ -37,7 +37,7 @@ export default function Home() {
                 rel="noreferrer"
                 className="inline-flex items-center justify-center rounded-xl border border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-900 transition hover:border-neutral-400 hover:bg-neutral-50"
               >
-                Visit Corporate Site
+                VMB in 30 seconds
               </a>
             </div>
 
