@@ -10,7 +10,7 @@ export default function Home() {
               External Access
             </span>
             <h1 className="mt-5 text-4xl font-semibold tracking-tight text-neutral-950 md:text-5xl">
-              Welcome to VenMeBaby
+              Welcome to VMB Salons
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-neutral-700 md:text-lg">
               venmebaby.com is the secure product entry point for VMB. External visitors can learn where to go
@@ -29,7 +29,7 @@ export default function Home() {
                 href="/access/request"
                 className="inline-flex items-center justify-center rounded-xl border border-sky-300 bg-sky-50 px-5 py-3 text-sm font-semibold text-sky-800 transition hover:border-sky-400 hover:bg-sky-100"
               >
-                Request Access
+                Open Request Form
               </Link>
               <a
                 href="https://vmbsalons.com"
@@ -60,7 +60,7 @@ export default function Home() {
           </div>
 
           <aside className="rounded-3xl border border-neutral-200 bg-neutral-950 p-8 text-white shadow-sm md:p-10">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-300">Platform Layout</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-300">VMB in 30 seconds</p>
             <div className="mt-6 space-y-4">
               <a
                 href="https://venmebaby.com"
