@@ -60,7 +60,7 @@ export default function Home() {
           </div>
 
           <aside className="rounded-3xl border border-neutral-200 bg-neutral-950 p-8 text-white shadow-sm md:p-10">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-300">VMB in 30 seconds</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-300">Platform Layout</p>
             <div className="mt-6 space-y-4">
               <a
                 href="https://venmebaby.com"
