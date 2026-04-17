@@ -8,9 +8,9 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-neutral-50 to-white">
-      <section className="mx-auto min-h-[calc(100vh-56px)] max-w-5xl px-4 py-12">
-        <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm md:p-10">
-          <div>
+      <section className="mx-auto min-h-[calc(100vh-56px)] max-w-6xl px-4 py-12">
+        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm md:p-10">
             <span className="inline-flex rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
               External Access
             </span>
@@ -98,6 +98,35 @@ export default function Home() {
               </div>
             ) : null}
           </div>
+
+          <aside className="rounded-3xl border border-neutral-200 bg-neutral-950 p-8 text-white shadow-sm md:p-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-300">What VMB Does for You</p>
+            <div className="mt-6 space-y-4 text-sm leading-6 text-neutral-300 md:text-base">
+              <p>Turn your social attention into real revenue</p>
+              <p>Get prepaid clients who actually show up</p>
+              <p>Build a client network that grows your business</p>
+              <p>Increase repeat visits and higher-value clients</p>
+              <p>Run it all with no ads and no monthly fees</p>
+            </div>
+
+            <div className="mt-8 space-y-4">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-sky-300">Micro Q</p>
+                <p className="mt-2 text-lg font-semibold text-white">Do I need to change how I work?</p>
+                <p className="mt-2 text-sm leading-6 text-neutral-300 md:text-base">
+                  No - VMB runs on top of what you already do.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-sky-300">Micro Q</p>
+                <p className="mt-2 text-lg font-semibold text-white">Do I need to market differently?</p>
+                <p className="mt-2 text-sm leading-6 text-neutral-300 md:text-base">
+                  No - VMB converts the attention you&apos;re already getting.
+                </p>
+              </div>
+            </div>
+          </aside>
         </div>
       </section>
     </main>
