@@ -10,12 +10,15 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-neutral-50 to-white">
       <section className="mx-auto min-h-[calc(100vh-56px)] max-w-6xl px-4 py-12">
+        <div className="mb-8 text-center text-2xl font-semibold tracking-tight text-neutral-900 md:text-3xl">
+          EMPOWERING | PERSONAL | CONNECTION
+        </div>
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm md:p-10">
             <span className="inline-flex rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
               External Access
             </span>
-            <h1 className="mt-5 text-4xl font-semibold tracking-tight text-neutral-950 md:text-5xl">
+            <h1 className="mt-5 text-3xl font-semibold tracking-tight text-neutral-950 md:text-4xl">
               Welcome to VMB Salons
             </h1>
             <p className="mt-4 text-2xl font-semibold leading-8 text-neutral-900 md:text-3xl">
