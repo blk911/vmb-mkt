@@ -34,12 +34,10 @@ export default function Home() {
               <p>Not followers - your client marketing team.</p>
             </div>
 
-            <div className="mt-8 rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
-              <div className="space-y-2 text-base leading-7 text-neutral-800">
-                <p>VMB converts your social media into a client network that drives real revenue.</p>
-                <p>Clients show up prepaid, love the experience, and bring others with them.</p>
-                <p>No ads. No monthly fees. Just turn it on and let it work.</p>
-              </div>
+            <div className="mt-8 space-y-2 text-base leading-7 text-neutral-800 md:text-lg">
+              <p>VMB converts your social media into a client network that drives real revenue.</p>
+              <p>Clients show up prepaid, love the experience, and bring others with them.</p>
+              <p>No ads. No monthly fees. Just turn it on and let it work.</p>
             </div>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
