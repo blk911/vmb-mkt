@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import VmbThirtySecondsContent from "@/components/marketing/VmbThirtySecondsContent";
 
 export default function Home() {
   const [showVmbThirtySeconds, setShowVmbThirtySeconds] = useState(false);
@@ -59,7 +60,7 @@ export default function Home() {
                     : "border-neutral-300 text-neutral-900 hover:border-neutral-400 hover:bg-neutral-50"
                 }`}
               >
-                See How It Works
+                See VMB in 30 Seconds
               </button>
               <Link
                 href="/access/request"
@@ -88,12 +89,8 @@ export default function Home() {
             {showVmbThirtySeconds ? (
               <div className="mt-6 rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-neutral-900">VMB in 30 Seconds</p>
-                <div className="mt-4 space-y-3 text-base leading-7 text-neutral-800">
-                  <p>Turn your existing social attention into real revenue</p>
-                  <p>Clients show up prepaid - fewer cancellations</p>
-                  <p>Clients return, bring others, and grow your network</p>
-                  <p>Build your own invite-only client base</p>
-                  <p>No ads. No monthly fees. No disruption</p>
+                <div className="mt-4 text-sm leading-relaxed text-neutral-600 md:text-base">
+                  <VmbThirtySecondsContent showEmailButton />
                 </div>
               </div>
             ) : null}
