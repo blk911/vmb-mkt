@@ -108,16 +108,14 @@ export default function Home() {
 
             <div className="mt-8 space-y-4">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-sky-300">Micro Q</p>
-                <p className="mt-2 text-lg font-semibold text-white">Do I need to change how I work?</p>
+                <p className="text-lg font-semibold text-white">Do I need to change how I work?</p>
                 <p className="mt-2 text-sm leading-6 text-neutral-300 md:text-base">
                   No - VMB runs on top of what you already do.
                 </p>
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-sky-300">Micro Q</p>
-                <p className="mt-2 text-lg font-semibold text-white">Do I need to market differently?</p>
+                <p className="text-lg font-semibold text-white">Do I need to market differently?</p>
                 <p className="mt-2 text-sm leading-6 text-neutral-300 md:text-base">
                   No - VMB converts the attention you&apos;re already getting.
                 </p>
