@@ -72,18 +72,27 @@ export default function Home() {
             </div>
 
             <div className="mt-10 grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
+              <Link
+                href="/access/request"
+                onClick={() => setShowVmbThirtySeconds(false)}
+                className="block rounded-2xl border border-neutral-200 bg-neutral-50 p-5 transition hover:border-neutral-300 hover:bg-white"
+              >
                 <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-neutral-900">venmebaby.com</h2>
                 <p className="mt-2 text-sm leading-6 text-neutral-700">
                   Runs the engine - access, control, and operations.
                 </p>
-              </div>
-              <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
+              </Link>
+              <a
+                href="https://www.vmbsalons.com"
+                target="_blank"
+                rel="noreferrer"
+                className="block rounded-2xl border border-neutral-200 bg-neutral-50 p-5 transition hover:border-neutral-300 hover:bg-white"
+              >
                 <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-neutral-900">vmbsalons.com</h2>
                 <p className="mt-2 text-sm leading-6 text-neutral-700">
                   Drives the business - converts attention into trusted, paying clients.
                 </p>
-              </div>
+              </a>
             </div>
 
             {showVmbThirtySeconds ? (
