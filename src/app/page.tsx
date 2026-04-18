@@ -23,7 +23,7 @@ const RIGHT_SIDE_QA_SECTIONS = [
     ],
   },
   {
-    title: "Trust + Network",
+    title: null,
     items: [
       {
         question: "Why VMB is an invite-only client network?",
@@ -40,7 +40,7 @@ const RIGHT_SIDE_QA_SECTIONS = [
     ],
   },
   {
-    title: "Revenue + Behavior",
+    title: null,
     items: [
       {
         question: "Do clients actually show up?",
@@ -61,7 +61,7 @@ const RIGHT_SIDE_QA_SECTIONS = [
     ],
   },
   {
-    title: "Marketing Shift",
+    title: null,
     items: [
       {
         question: "Do I need to run ads?",
@@ -78,7 +78,7 @@ const RIGHT_SIDE_QA_SECTIONS = [
     ],
   },
   {
-    title: "System + Ease",
+    title: null,
     items: [
       {
         question: "Is this hard to set up?",
@@ -95,7 +95,7 @@ const RIGHT_SIDE_QA_SECTIONS = [
     ],
   },
   {
-    title: "Positioning",
+    title: null,
     items: [
       {
         question: "Is this marketing?",
