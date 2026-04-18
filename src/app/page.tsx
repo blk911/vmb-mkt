@@ -4,6 +4,119 @@ import Link from "next/link";
 import { useState } from "react";
 import VmbThirtySecondsContent from "@/components/marketing/VmbThirtySecondsContent";
 
+const RIGHT_SIDE_QA_SECTIONS = [
+  {
+    title: null,
+    items: [
+      {
+        question: "How is this different from booking apps?",
+        answer: "They manage appointments. VMB creates them.",
+      },
+      {
+        question: "Where do the clients come from?",
+        answer: "From your existing audience - activated through trust.",
+      },
+      {
+        question: "Why does this work?",
+        answer: "People choose based on trust - not ads.",
+      },
+    ],
+  },
+  {
+    title: "Trust + Network",
+    items: [
+      {
+        question: "What is an invite-only client network?",
+        answer: "A private group of clients connected through trust, not traffic.",
+      },
+      {
+        question: "Why does invite-only matter?",
+        answer: "It filters out noise and attracts higher-intent clients.",
+      },
+      {
+        question: "Are these random clients?",
+        answer: "No - they come through people who already trust you.",
+      },
+      {
+        question: "What kind of clients does VMB attract?",
+        answer: "Clients who value the service, not just the price.",
+      },
+    ],
+  },
+  {
+    title: "Revenue + Behavior",
+    items: [
+      {
+        question: "Do clients actually show up?",
+        answer: "Yes - they come in prepaid and committed.",
+      },
+      {
+        question: "Will this reduce cancellations?",
+        answer: "Yes - prepaid, trust-based clients follow through.",
+      },
+      {
+        question: "Do clients come back?",
+        answer: "Yes - and they bring others with them.",
+      },
+      {
+        question: "Does this increase client value?",
+        answer: "Yes - better clients, better spend, better retention.",
+      },
+    ],
+  },
+  {
+    title: "Marketing Shift",
+    items: [
+      {
+        question: "Do I need to run ads?",
+        answer: "No - VMB replaces ad spend with client-driven growth.",
+      },
+      {
+        question: "Do I need to post more?",
+        answer: "No - it works with the attention you already have.",
+      },
+      {
+        question: "Do I need to change my pricing?",
+        answer: "No - VMB works with your current services.",
+      },
+    ],
+  },
+  {
+    title: "System + Ease",
+    items: [
+      {
+        question: "Is this hard to set up?",
+        answer: "No - you just turn it on.",
+      },
+      {
+        question: "Does it change how I run my salon?",
+        answer: "No - it runs on top of what you already do.",
+      },
+      {
+        question: "Do I need new software?",
+        answer: "No - VMB integrates with your current workflow.",
+      },
+    ],
+  },
+  {
+    title: "Positioning",
+    items: [
+      {
+        question: "Is this marketing?",
+        answer: "No - it is a conversion engine.",
+      },
+      {
+        question: "What am I really building with VMB?",
+        answer: "Your own client network that grows your business.",
+      },
+      {
+        question: "What is the real advantage?",
+        answer: "You stop chasing clients - and start owning them.",
+      },
+    ],
+  },
+] as const;
+
 export default function Home() {
   const [showVmbThirtySeconds, setShowVmbThirtySeconds] = useState(false);
 
@@ -116,20 +229,20 @@ export default function Home() {
               <p>Run it all with no ads and no monthly fees</p>
             </div>
 
-            <div className="mt-8 space-y-4">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <p className="text-lg font-semibold text-white">Do I need to change how I work?</p>
-                <p className="mt-2 text-sm leading-6 text-neutral-300 md:text-base">
-                  No - VMB runs on top of what you already do.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <p className="text-lg font-semibold text-white">Do I need to market differently?</p>
-                <p className="mt-2 text-sm leading-6 text-neutral-300 md:text-base">
-                  No - VMB converts the attention you&apos;re already getting.
-                </p>
-              </div>
+            <div className="mt-8 space-y-8">
+              {RIGHT_SIDE_QA_SECTIONS.map((section, index) => (
+                <div key={section.title ?? `section-${index}`} className="space-y-4">
+                  {section.title ? (
+                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-300">{section.title}</p>
+                  ) : null}
+                  {section.items.map((item) => (
+                    <div key={item.question} className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                      <p className="text-lg font-semibold text-white">{item.question}</p>
+                      <p className="mt-2 text-sm leading-6 text-neutral-300 md:text-base">{item.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              ))}
             </div>
           </aside>
         </div>
