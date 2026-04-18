@@ -9,6 +9,19 @@ const RIGHT_SIDE_QA_SECTIONS = [
     title: null,
     items: [
       {
+        question: "Do I need to change how I work?",
+        answer: "No - VMB runs on top of what you already do.",
+      },
+      {
+        question: "Do I need to market differently?",
+        answer: "No - VMB converts the attention you're already getting.",
+      },
+    ],
+  },
+  {
+    title: null,
+    items: [
+      {
         question: "How is this different from booking apps?",
         answer: "They manage appointments. VMB creates them.",
       },
