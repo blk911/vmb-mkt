@@ -9,29 +9,16 @@ const RIGHT_SIDE_QA_SECTIONS = [
     title: null,
     items: [
       {
-        question: "Do I need to change how I work?",
-        answer: "No - VMB runs on top of what you already do.",
-      },
-      {
-        question: "Do I need to market differently?",
-        answer: "No - VMB converts the attention you're already getting.",
-      },
-    ],
-  },
-  {
-    title: null,
-    items: [
-      {
-        question: "How is this different from booking apps?",
+        question: "How is VMB different from booking apps?",
         answer: "They manage appointments. VMB creates them.",
       },
       {
-        question: "Where do the clients come from?",
+        question: "Where do new clients come from?",
         answer: "From your existing audience - activated through trust.",
       },
       {
-        question: "Why does this work?",
-        answer: "People choose based on trust - not ads.",
+        question: "Why does VMB work?",
+        answer: "Women choose based on trust - not ads.",
       },
     ],
   },
@@ -39,20 +26,16 @@ const RIGHT_SIDE_QA_SECTIONS = [
     title: "Trust + Network",
     items: [
       {
-        question: "What is an invite-only client network?",
-        answer: "A private group of clients connected through trust, not traffic.",
+        question: "Why VMB is an invite-only client network?",
+        answer: "Clients connect based on trusted relationships, not traffic.",
       },
       {
-        question: "Why does invite-only matter?",
-        answer: "It filters out noise and attracts higher-intent clients.",
-      },
-      {
-        question: "Are these random clients?",
-        answer: "No - they come through people who already trust you.",
+        question: "Why does invite-only make a difference?",
+        answer: "Empowering personal connection; building trust with high-value clients.",
       },
       {
         question: "What kind of clients does VMB attract?",
-        answer: "Clients who value the service, not just the price.",
+        answer: "Clients who value your services, not based on price.",
       },
     ],
   },
@@ -69,7 +52,7 @@ const RIGHT_SIDE_QA_SECTIONS = [
       },
       {
         question: "Do clients come back?",
-        answer: "Yes - and they bring others with them.",
+        answer: "Yes - and they share with their personal networks.",
       },
       {
         question: "Does this increase client value?",
@@ -103,11 +86,11 @@ const RIGHT_SIDE_QA_SECTIONS = [
       },
       {
         question: "Does it change how I run my salon?",
-        answer: "No - it runs on top of what you already do.",
+        answer: "No - it adds to what you already do.",
       },
       {
         question: "Do I need new software?",
-        answer: "No - VMB integrates with your current workflow.",
+        answer: "No - VMB delivers clients directly to your chair.",
       },
     ],
   },
@@ -116,11 +99,11 @@ const RIGHT_SIDE_QA_SECTIONS = [
     items: [
       {
         question: "Is this marketing?",
-        answer: "No - it is a conversion engine.",
+        answer: "No - VMB is a conversion engine; do what you do.",
       },
       {
         question: "What am I really building with VMB?",
-        answer: "Your own client network that grows your business.",
+        answer: "Your invitation-only client network grows your business.",
       },
       {
         question: "What is the real advantage?",
