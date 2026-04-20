@@ -31,7 +31,12 @@ async function ensureArrayFile(filePath: string): Promise<void> {
   try {
     await fs.access(filePath);
   } catch {
-    await writeJsonAtomic(filePath, []);
+    try {
+      await fs.writeFile(filePath, "[]\n", { encoding: "utf8", flag: "wx" });
+    } catch (error) {
+      const code = typeof error === "object" && error !== null && "code" in error ? (error as NodeJS.ErrnoException).code : "";
+      if (code !== "EEXIST") throw error;
+    }
   }
 }
 

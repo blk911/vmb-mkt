@@ -9,10 +9,18 @@ const REGISTRY_UI_PATH = path.join(RUNTIME_ROOT, "resolver_registry.ui.v1.json")
 const SUMMARY_PATH = path.join(RUNTIME_ROOT, "resolver_summary.json");
 const SURFACE_RECOVERY_QUEUE_PATH = path.join(RUNTIME_ROOT, "operator_surface_recovery_queue.json");
 
+function readResolverRegistryFile(filePath: string): ResolverOperator[] {
+  try {
+    if (!fs.existsSync(filePath)) return [];
+    const parsed = JSON.parse(fs.readFileSync(filePath, "utf-8")) as unknown;
+    return Array.isArray(parsed) ? (parsed as ResolverOperator[]) : [];
+  } catch {
+    return [];
+  }
+}
+
 export function loadResolverRegistry(): ResolverOperator[] {
-  if (!fs.existsSync(REGISTRY_PATH)) return [];
-  const parsed = JSON.parse(fs.readFileSync(REGISTRY_PATH, "utf-8")) as unknown;
-  return Array.isArray(parsed) ? (parsed as ResolverOperator[]) : [];
+  return readResolverRegistryFile(REGISTRY_PATH);
 }
 
 export function saveResolverRegistry(operators: ResolverOperator[]): void {
@@ -23,9 +31,7 @@ export function saveResolverRegistry(operators: ResolverOperator[]): void {
 
 export function loadResolverRegistryForUi(): ResolverOperator[] {
   const target = fs.existsSync(REGISTRY_UI_PATH) ? REGISTRY_UI_PATH : REGISTRY_PATH;
-  if (!fs.existsSync(target)) return [];
-  const parsed = JSON.parse(fs.readFileSync(target, "utf-8")) as unknown;
-  return Array.isArray(parsed) ? (parsed as ResolverOperator[]) : [];
+  return readResolverRegistryFile(target);
 }
 
 export function saveResolverSummary(input: {

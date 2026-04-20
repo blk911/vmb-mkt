@@ -12,16 +12,25 @@ async function ensureQueueFile() {
   try {
     await fs.access(OUTREACH_QUEUE_PATH);
   } catch {
-    await writeJsonAtomic(OUTREACH_QUEUE_PATH, []);
+    try {
+      await fs.writeFile(OUTREACH_QUEUE_PATH, "[]\n", { encoding: "utf8", flag: "wx" });
+    } catch (error) {
+      const code = typeof error === "object" && error !== null && "code" in error ? (error as NodeJS.ErrnoException).code : "";
+      if (code !== "EEXIST") throw error;
+    }
   }
 }
 
 export async function listOutreachQueue(): Promise<OutreachQueueItem[]> {
   await ensureQueueFile();
-  const raw = await fs.readFile(OUTREACH_QUEUE_PATH, "utf8");
-  const parsed = JSON.parse(raw) as unknown;
-  const rows = Array.isArray(parsed) ? (parsed as OutreachQueueItem[]) : [];
-  return rows.sort((a, b) => (b.addedAt || "").localeCompare(a.addedAt || ""));
+  try {
+    const raw = await fs.readFile(OUTREACH_QUEUE_PATH, "utf8");
+    const parsed = JSON.parse(raw) as unknown;
+    const rows = Array.isArray(parsed) ? (parsed as OutreachQueueItem[]) : [];
+    return rows.sort((a, b) => (b.addedAt || "").localeCompare(a.addedAt || ""));
+  } catch {
+    return [];
+  }
 }
 
 export async function saveOutreachQueue(rows: OutreachQueueItem[]): Promise<OutreachQueueItem[]> {
