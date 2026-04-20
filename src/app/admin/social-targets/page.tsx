@@ -1,4 +1,3 @@
-import { AdminTopNav } from "@/components/admin/AdminTopNav";
 import SocialTargetsTable from "@/components/admin/social-targets/SocialTargetsTable";
 import { loadReferralEdges } from "@/lib/social-targets/loadReferralEdges";
 import { loadSocialTargets } from "@/lib/social-targets/loadSocialTargets";
@@ -13,7 +12,6 @@ export default async function AdminSocialTargetsPage() {
 
   return (
     <main className="min-h-screen bg-neutral-50">
-      <AdminTopNav />
       <div className="min-h-0 flex-1">
         <SocialTargetsTable
           initialTargets={initialTargets}

@@ -32,7 +32,7 @@ const MARKETS_LINK: AppLink = {
 const LIVE_UNITS_LINK: AppLink = { id: "liveunits", label: "LIVE UNITS", href: "/admin/live-units" };
 const DATASTORE_LINK: AppLink = { id: "datastore", label: "DATA STORE", href: "/dashboard/targets" };
 const TEAM_LINK: AppLink = { id: "team", label: "TEAM", href: "/team" };
-const ADMIN_LINK: AppLink = { id: "admin", label: "ADMIN", href: "/admin/vmb" };
+const ADMIN_LINK: AppLink = { id: "admin", label: "ADMIN", href: "/admin" };
 
 function defaultIsActive(href: string, pathname: string): boolean {
   const targetPath = href;

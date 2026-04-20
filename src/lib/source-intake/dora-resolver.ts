@@ -10,7 +10,7 @@ import {
 } from "./phase2-store";
 import { scoreNameMatch } from "./matcher";
 import { appendStagedOperatorEvidence, createSourceIntakeId, listOperatorCandidates, listParsedCandidates } from "./store";
-import type { DoraMatchStatus, DoraValidationResult } from "./phase2-types";
+import type { DoraMatchStatus, DoraValidationResult, ValidationReviewOutcome } from "./phase2-types";
 import type { ParsedCandidateRow, StagedOperatorEvidence } from "./types";
 
 type DoraLookupCandidate = {
@@ -144,6 +144,36 @@ async function candidateRowForQueue(intakeId: string, candidateId: string): Prom
   return rows.find((row) => row.id === candidateId) ?? null;
 }
 
+function deriveTargetOperatorId(candidate: ParsedCandidateRow | null, mergeTargetId?: string): string | undefined {
+  return mergeTargetId?.trim() || candidate?.suggestedMatch?.matchedOperatorId || undefined;
+}
+
+async function finalizeResult(
+  queueItem: Awaited<ReturnType<typeof getDoraQueueItemById>> extends infer T ? NonNullable<T> : never,
+  result: DoraValidationResult,
+  options?: { action?: ValidationReviewOutcome; mergeTargetId?: string; resolvedBy?: string },
+  parsedCandidate?: ParsedCandidateRow | null
+): Promise<DoraValidationResult> {
+  if (!options?.action) return result;
+
+  const reviewedAt = new Date().toISOString();
+  const finalResult: DoraValidationResult = {
+    ...result,
+    finalStatus: options.action,
+    mergeTargetId: options.action === "merged" ? options.mergeTargetId?.trim() || undefined : undefined,
+    reviewedAt,
+    reviewedBy: options.resolvedBy,
+    targetOperatorId: deriveTargetOperatorId(parsedCandidate ?? null, options.mergeTargetId),
+  };
+  await saveDoraResult(finalResult);
+  await upsertDoraQueueItem({
+    ...queueItem,
+    status: options.action,
+    lastAttemptAt: reviewedAt,
+  });
+  return finalResult;
+}
+
 async function maybeSaveLinkSuggestion(
   candidate: ParsedCandidateRow | null,
   intakeId: string,
@@ -265,13 +295,16 @@ async function writeDoraEvidence(
 
 export async function resolveDoraQueueItem(
   queueItemId: string,
-  _options?: { resolvedBy?: string }
+  options?: { resolvedBy?: string; action?: ValidationReviewOutcome; mergeTargetId?: string }
 ): Promise<DoraValidationResult> {
   const existing = await findDoraResultByQueueItemId(queueItemId);
-  if (existing) return existing;
-
   const queueItem = await getDoraQueueItemById(queueItemId);
   if (!queueItem) throw new Error("dora_queue_item_not_found");
+  const parsedCandidate = await candidateRowForQueue(queueItem.intakeId, queueItem.candidateId);
+
+  if (existing) {
+    return finalizeResult(queueItem, existing, options, parsedCandidate);
+  }
 
   const startedAt = new Date().toISOString();
   await upsertDoraQueueItem({
@@ -296,7 +329,6 @@ export async function resolveDoraQueueItem(
     const top = ranked[0];
     const status = deriveMatchStatus(ranked);
     const resolvedAt = new Date().toISOString();
-    const parsedCandidate = await candidateRowForQueue(queueItem.intakeId, queueItem.candidateId);
     const evidenceRows =
       top && (status === "active_match" || status === "inactive_match")
         ? await writeDoraEvidence(queueItem, top.candidate, parsedCandidate, resolvedAt)
@@ -320,17 +352,19 @@ export async function resolveDoraQueueItem(
         top?.reasons ??
         ["no credible DORA candidate found for this intake candidate"],
       evidenceIds: evidenceRows.map((row) => row.id),
+      targetOperatorId: deriveTargetOperatorId(parsedCandidate),
     };
 
     await saveDoraResult(result);
     await maybeSaveLinkSuggestion(parsedCandidate, queueItem.intakeId, result);
+    const queueStatus = options?.action || "resolved";
     await upsertDoraQueueItem({
       ...queueItem,
-      status: "resolved",
+      status: queueStatus,
       attempts: queueItem.attempts + 1,
       lastAttemptAt: startedAt,
     });
-    return result;
+    return finalizeResult(queueItem, result, options, parsedCandidate);
   } catch (error) {
     await upsertDoraQueueItem({
       ...queueItem,

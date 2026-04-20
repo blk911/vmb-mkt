@@ -1,4 +1,3 @@
-import { AdminTopNav } from "@/components/admin/AdminTopNav";
 import LiveUnitsClient from "./LiveUnitsClient";
 import { readReviewState } from "@/app/admin/_lib/live-units/review-state";
 import {
@@ -115,7 +114,6 @@ export default async function LiveUnitsPage() {
 
   return (
     <main className="min-h-screen bg-neutral-50">
-      <AdminTopNav />
       <LiveUnitsClient
         rows={rows.map((row) => ({
           ...row,

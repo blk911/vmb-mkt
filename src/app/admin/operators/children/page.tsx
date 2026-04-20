@@ -1,5 +1,4 @@
 import { loadOperatorsFromResolverRegistry, type OperatorConsoleRow } from "@/lib/operators/loadOperators";
-import { AdminTopNav } from "@/components/admin/AdminTopNav";
 
 function statusRank(value: OperatorConsoleRow["resolverStatus"]): number {
   if (value === "hot") return 0;
@@ -68,7 +67,6 @@ export default function ChildOperatorsPage() {
 
   return (
     <main style={{ minHeight: "100vh", background: "#fafafa" }}>
-      <AdminTopNav />
       <div style={{ padding: "18px 20px", maxWidth: 1400 }}>
         <h1 style={{ fontSize: 24, fontWeight: 600 }}>Child Operators</h1>
         <div style={{ marginTop: 8, display: "flex", gap: 12, fontSize: 13 }}>

@@ -1,5 +1,4 @@
 import type { OperatorRecord } from "@/lib/operators/types";
-import { AdminTopNav } from "@/components/admin/AdminTopNav";
 import { getOutreachEligibility } from "@/lib/operators/outreach-eligibility";
 import { buildOperatorQualitySummary } from "@/lib/operators/quality-summary";
 import { getReviewStateOrDefault } from "@/lib/operators/review-store";
@@ -126,7 +125,6 @@ export default function OperatorsPage({
 
   return (
     <main style={{ minHeight: "100vh", background: "#fafafa" }}>
-      <AdminTopNav />
       <div style={{ padding: "18px 20px", maxWidth: 1400 }}>
         <h1 style={{ fontSize: 24, fontWeight: 600 }}>Operator Console</h1>
         <div style={{ marginTop: 8, display: "flex", gap: 12, fontSize: 13 }}>

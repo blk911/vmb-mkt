@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import { AdminTopNav } from "@/components/admin/AdminTopNav";
 import { loadResolverBackedOperatorsWithReview } from "@/lib/operators/review-store";
 import { loadReadyCoreSourceOperators, selectReadyCoreOperators } from "@/lib/operators/ready-core";
 import { READY_CORE_EXPORT_CSV_ARTIFACT, READY_CORE_EXPORT_JSON_ARTIFACT } from "@/lib/operators/ready-export";
@@ -68,7 +67,6 @@ export default function OperatorsReadyPage({
 
   return (
     <main style={{ minHeight: "100vh", background: "#fafafa" }}>
-      <AdminTopNav />
       <div style={{ padding: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 600 }}>Ready Core Workspace</h1>
         <div style={{ marginTop: 10 }}>

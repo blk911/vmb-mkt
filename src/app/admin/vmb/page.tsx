@@ -1,12 +1,10 @@
 import Link from "next/link";
-import { AdminTopNav } from "@/components/admin/AdminTopNav";
 import VmbClusterExplorer from "@/components/vmb/vmb-cluster-explorer";
 import { DEMO_CLUSTER_ENTITIES } from "@/lib/cluster/demo-entities";
 
 export default function VmbAdminHome() {
   return (
     <main className="min-h-screen bg-neutral-50">
-      <AdminTopNav />
       <div className="p-6">
         <h1 className="text-2xl font-black text-neutral-900">VMB Admin</h1>
         <p className="mt-2 text-neutral-600">VMB-specific review, rollup, and intake tooling inside the broader admin system.</p>

@@ -11,7 +11,7 @@ import {
   upsertSocialQueueItem,
 } from "./phase2-store";
 import { appendStagedOperatorEvidence, createSourceIntakeId, getSourceIntakeById, listOperatorCandidates, listParsedCandidates } from "./store";
-import type { SocialDiscoveryResult, SocialSurfaceType } from "./phase2-types";
+import type { SocialDiscoveryResult, SocialSurfaceType, ValidationReviewOutcome } from "./phase2-types";
 import type { ParsedCandidateRow, StagedOperatorEvidence } from "./types";
 
 type SurfaceCandidate = {
@@ -140,6 +140,36 @@ async function queueCandidateRow(intakeId: string, candidateId: string): Promise
   return rows.find((row) => row.id === candidateId) ?? null;
 }
 
+function deriveTargetOperatorId(candidate: ParsedCandidateRow | null, mergeTargetId?: string): string | undefined {
+  return mergeTargetId?.trim() || candidate?.suggestedMatch?.matchedOperatorId || undefined;
+}
+
+async function finalizeResult(
+  queueItem: Awaited<ReturnType<typeof getSocialQueueItemById>> extends infer T ? NonNullable<T> : never,
+  result: SocialDiscoveryResult,
+  options?: { action?: ValidationReviewOutcome; mergeTargetId?: string; resolvedBy?: string },
+  parsedCandidate?: ParsedCandidateRow | null
+): Promise<SocialDiscoveryResult> {
+  if (!options?.action) return result;
+
+  const reviewedAt = new Date().toISOString();
+  const finalResult: SocialDiscoveryResult = {
+    ...result,
+    finalStatus: options.action,
+    mergeTargetId: options.action === "merged" ? options.mergeTargetId?.trim() || undefined : undefined,
+    reviewedAt,
+    reviewedBy: options.resolvedBy,
+    targetOperatorId: deriveTargetOperatorId(parsedCandidate ?? null, options.mergeTargetId),
+  };
+  await saveSocialResult(finalResult);
+  await upsertSocialQueueItem({
+    ...queueItem,
+    status: options.action,
+    lastAttemptAt: reviewedAt,
+  });
+  return finalResult;
+}
+
 async function writeSocialEvidence(
   queueItem: Awaited<ReturnType<typeof getSocialQueueItemById>> extends infer T ? NonNullable<T> : never,
   parsedCandidate: ParsedCandidateRow | null,
@@ -228,13 +258,16 @@ async function maybeSaveOperatorLinks(
 
 export async function resolveSocialQueueItem(
   queueItemId: string,
-  _options?: { resolvedBy?: string }
+  options?: { resolvedBy?: string; action?: ValidationReviewOutcome; mergeTargetId?: string }
 ): Promise<SocialDiscoveryResult> {
   const existing = await findSocialResultByQueueItemId(queueItemId);
-  if (existing) return existing;
-
   const queueItem = await getSocialQueueItemById(queueItemId);
   if (!queueItem) throw new Error("social_queue_item_not_found");
+  const parsedCandidate = await queueCandidateRow(queueItem.intakeId, queueItem.candidateId);
+
+  if (existing) {
+    return finalizeResult(queueItem, existing, options, parsedCandidate);
+  }
 
   const startedAt = new Date().toISOString();
   await upsertSocialQueueItem({
@@ -245,9 +278,8 @@ export async function resolveSocialQueueItem(
   });
 
   try {
-    const [intake, parsedCandidate] = await Promise.all([
+    const [intake] = await Promise.all([
       getSourceIntakeById(queueItem.intakeId),
-      queueCandidateRow(queueItem.intakeId, queueItem.candidateId),
     ]);
     const matchedOperator = parsedCandidate?.suggestedMatch?.matchedOperatorId
       ? loadResolverRegistry().find((row) => row.id === parsedCandidate.suggestedMatch?.matchedOperatorId)
@@ -306,16 +338,18 @@ export async function resolveSocialQueueItem(
         reasons: surface.reasons,
       })),
       evidenceIds: evidenceRows.map((row) => row.id),
+      targetOperatorId: deriveTargetOperatorId(parsedCandidate),
     };
     await saveSocialResult(result);
     await maybeSaveOperatorLinks(queueItem, parsedCandidate, surfaces, resolvedAt);
+    const queueStatus = options?.action || "resolved";
     await upsertSocialQueueItem({
       ...queueItem,
-      status: "resolved",
+      status: queueStatus,
       attempts: queueItem.attempts + 1,
       lastAttemptAt: startedAt,
     });
-    return result;
+    return finalizeResult(queueItem, result, options, parsedCandidate);
   } catch (error) {
     await upsertSocialQueueItem({
       ...queueItem,

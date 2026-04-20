@@ -4,8 +4,13 @@ export type QueueStatus =
   | "queued"
   | "processing"
   | "resolved"
+  | "approved"
+  | "merged"
+  | "rejected"
   | "failed"
   | "dismissed";
+
+export type ValidationReviewOutcome = "approved" | "merged" | "rejected";
 
 export type DoraMatchStatus =
   | "active_match"
@@ -56,6 +61,11 @@ export type DoraValidationResult = {
   score: number;
   reasons: string[];
   evidenceIds: string[];
+  finalStatus?: ValidationReviewOutcome;
+  mergeTargetId?: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  targetOperatorId?: string;
 };
 
 export type SocialDiscoveryQueueItem = {
@@ -89,6 +99,11 @@ export type SocialDiscoveryResult = {
     reasons: string[];
   }>;
   evidenceIds: string[];
+  finalStatus?: ValidationReviewOutcome;
+  mergeTargetId?: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  targetOperatorId?: string;
 };
 
 export type DriftChangeType =

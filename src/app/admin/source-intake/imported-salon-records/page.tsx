@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AdminTopNav } from "@/components/admin/AdminTopNav";
 import { ImportedSalonRecordDetailCard } from "@/components/admin/imported-salon-records/ImportedSalonRecordDetailCard";
 import { ImportedSalonRecordsTable } from "@/components/admin/imported-salon-records/ImportedSalonRecordsTable";
 import type { ImportedSalonRecord, ImportedSalonRecordStatus } from "@/lib/imported-salon-records/types";
@@ -93,7 +92,6 @@ export default function Page() {
 
   return (
     <main className="min-h-screen bg-neutral-50">
-      <AdminTopNav />
       <div className="mx-auto flex max-w-7xl flex-col gap-6 p-6">
         <div>
           <h1 className="text-2xl font-semibold text-neutral-950">Imported Salon Records</h1>

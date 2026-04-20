@@ -22,7 +22,7 @@ function sanitizeNextPath(next?: string) {
 
 function defaultNextPathForRole(role: "member" | "admin" | "external") {
   if (role === "external") return "/";
-  return role === "admin" ? "/admin/markets" : "/dashboard/targets";
+  return role === "admin" ? "/admin" : "/dashboard/targets";
 }
 
 function safeEqual(a: string, b: string): boolean {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AdminTopNav } from "@/components/admin/AdminTopNav";
 import { SolaContainerSeedButton } from "@/components/admin/sola-containers/SolaContainerSeedButton";
 import { SolaContainerTable } from "@/components/admin/sola-containers/SolaContainerTable";
 import { SolaContainerUrlForm } from "@/components/admin/sola-containers/SolaContainerUrlForm";
@@ -143,7 +142,6 @@ export default function Page() {
 
   return (
     <main className="min-h-screen bg-neutral-50">
-      <AdminTopNav />
       <div className="mx-auto flex max-w-7xl flex-col gap-6 p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>

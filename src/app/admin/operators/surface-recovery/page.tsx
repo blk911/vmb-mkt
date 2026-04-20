@@ -1,6 +1,5 @@
 import { loadOperatorsFromResolverRegistry } from "@/lib/operators/loadOperators";
 import { selectSurfaceRecoveryQueue, writeSurfaceRecoveryQueue } from "@/lib/operators/surface-recovery";
-import { AdminTopNav } from "@/components/admin/AdminTopNav";
 
 function topCounts(values: string[]): Array<{ label: string; count: number }> {
   const map = new Map<string, number>();
@@ -27,7 +26,6 @@ export default function SurfaceRecoveryPage() {
 
   return (
     <main style={{ minHeight: "100vh", background: "#fafafa" }}>
-      <AdminTopNav />
       <div style={{ padding: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 600 }}>Surface Recovery Queue</h1>
         <div style={{ marginTop: 10 }}>

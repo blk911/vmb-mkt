@@ -1,24 +1,54 @@
-import { AdminSectionCards } from "@/components/admin/AdminSectionCards";
-import { AdminTopNav } from "@/components/admin/AdminTopNav";
-import { getAdminNavGroups } from "@/lib/admin/admin-nav";
+import Link from "next/link";
+import { getAdminDashboardMetrics } from "@/lib/admin/pipeline/dashboard";
 
-export default function AdminPage() {
-  // /admin is the canonical entry point for admin/operator tooling across the platform.
-  const groups = getAdminNavGroups();
+export default async function AdminDashboard() {
+  const metrics = await getAdminDashboardMetrics();
 
   return (
-    <main className="min-h-screen bg-neutral-50">
-      <AdminTopNav />
-      <div className="mx-auto max-w-7xl px-6 py-6">
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-neutral-950">Admin Home</h1>
-          <p className="mt-2 max-w-3xl text-sm text-neutral-600">
-            Navigate admin tooling by operator workflow: platform, markets, operators, prospecting, intake, and data.
-          </p>
-        </div>
-
-        <AdminSectionCards groups={groups} />
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">System Dashboard</h1>
+        <p className="mt-1 text-sm text-gray-600">Live counts from the current intake, queue, resolver, and outreach runtime artifacts.</p>
       </div>
-    </main>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <StatCard title="New Inputs" value={metrics.newInputs} />
+        <StatCard title="Pending Validation" value={metrics.pendingValidation} />
+        <StatCard title="Ready Targets" value={metrics.readyTargets} />
+        <StatCard title="Active Outreach" value={metrics.activeOutreach} />
+      </div>
+
+      <div>
+        <h2 className="mb-2 text-lg font-semibold">Action Required</h2>
+        <ul className="space-y-2">
+          <li>
+            <ActionItem text={`${metrics.pendingValidation} operators need validation`} href="/admin/validate" />
+          </li>
+          <li>
+            <ActionItem text={`${metrics.readyTargets} targets ready for outreach`} href="/admin/target" />
+          </li>
+          <li>
+            <ActionItem text={`${metrics.activeOutreach} targets queued for activation`} href="/admin/activate" />
+          </li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ title, value }: { title: string; value: number }) {
+  return (
+    <div className="rounded-xl bg-white p-4 shadow">
+      <div className="text-sm text-gray-500">{title}</div>
+      <div className="text-xl font-bold">{value}</div>
+    </div>
+  );
+}
+
+function ActionItem({ text, href }: { text: string; href: string }) {
+  return (
+    <Link href={href} className="block rounded-lg bg-white p-3 shadow hover:bg-gray-100">
+      {text}
+    </Link>
   );
 }

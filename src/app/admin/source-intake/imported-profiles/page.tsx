@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AdminTopNav } from "@/components/admin/AdminTopNav";
 import { ImportedProfileDetailCard } from "@/components/admin/external-site-import/ImportedProfileDetailCard";
 import { ImportedProfilesTable } from "@/components/admin/external-site-import/ImportedProfilesTable";
 import type { ImportedProfileDraft, ImportedProfileDraftStatus } from "@/lib/external-site-import/types";
@@ -97,7 +96,6 @@ export default function Page() {
 
   return (
     <main className="min-h-screen bg-neutral-50">
-      <AdminTopNav />
       <div className="mx-auto flex max-w-7xl flex-col gap-6 p-6">
         <div>
           <h1 className="text-2xl font-semibold text-neutral-950">Imported Profiles</h1>

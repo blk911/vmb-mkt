@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AdminTopNav } from "@/components/admin/AdminTopNav";
 import { ManualIgClusterCreateForm } from "@/components/admin/manual-ig-clusters/ManualIgClusterCreateForm";
 import { ManualIgClusterDetailTable } from "@/components/admin/manual-ig-clusters/ManualIgClusterDetailTable";
 import { ManualIgClustersTable } from "@/components/admin/manual-ig-clusters/ManualIgClustersTable";
@@ -133,7 +132,6 @@ export default function Page() {
 
   return (
     <main className="min-h-screen bg-neutral-50">
-      <AdminTopNav />
       <div className="mx-auto flex max-w-7xl flex-col gap-6 p-6">
         <div>
           <h1 className="text-2xl font-semibold text-neutral-950">Manual IG Clusters</h1>
