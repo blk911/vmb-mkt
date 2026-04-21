@@ -62,6 +62,13 @@ export type ValidationDetail = {
     title: string;
     lines: string[];
   };
+  historicalProcessing?: {
+    present: boolean;
+    processedAt?: string;
+    matchedCount?: number;
+    newCandidateCount?: number;
+    heldCount?: number;
+  };
 };
 
 export type TargetRow = {

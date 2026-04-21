@@ -93,6 +93,32 @@ export default async function OperatorDetail({ params }: { params: Promise<{ ope
           </div>
         </section>
 
+        <section className="rounded-xl bg-white p-4 shadow">
+          <h2 className="font-bold">Historical Processing Context</h2>
+          <p className="mt-1 text-sm text-amber-700">
+            Supplemental / historical only. This context does not change canonical validation state or review actions.
+          </p>
+          <dl className="mt-3 space-y-2 text-sm">
+            <div>
+              <dt className="text-gray-500">Receipt</dt>
+              <dd>{detail.historicalProcessing?.present ? "Present" : "Absent"}</dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">Processed At</dt>
+              <dd>{detail.historicalProcessing?.processedAt || "No historical processing receipt found for this intake."}</dd>
+            </div>
+            {detail.historicalProcessing?.present ? (
+              <div>
+                <dt className="text-gray-500">Summary</dt>
+                <dd>
+                  matched {detail.historicalProcessing.matchedCount || 0} · new {detail.historicalProcessing.newCandidateCount || 0} · held{" "}
+                  {detail.historicalProcessing.heldCount || 0}
+                </dd>
+              </div>
+            ) : null}
+          </dl>
+        </section>
+
         {detail.candidate?.rawBlock ? (
           <section className="rounded-xl bg-white p-4 shadow xl:col-span-2">
             <h2 className="font-bold">Raw Candidate Block</h2>

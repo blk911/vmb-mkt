@@ -77,6 +77,21 @@ export type PipelineReconciliationSnapshot = {
   };
 };
 
+export type HistoricalProcessingContext = {
+  present: boolean;
+  processedAt?: string;
+  matchedCount?: number;
+  newCandidateCount?: number;
+  heldCount?: number;
+};
+
+export type LegacyReviewOverlayHint = {
+  operatorId: string;
+  present: boolean;
+  reviewState?: string;
+  updatedAt?: string;
+};
+
 async function readResolverSummary(): Promise<ResolverSummarySnapshot | null> {
   const summaryPath = path.join(getRuntimeDataRoot(), "resolver_summary.json");
   try {
@@ -236,4 +251,43 @@ export async function getPipelineReconciliationSnapshot(): Promise<PipelineRecon
       latestReviewAt,
     },
   };
+}
+
+export async function getHistoricalProcessingContext(intakeId?: string): Promise<HistoricalProcessingContext> {
+  if (!intakeId) return { present: false };
+  const receipt = await listProcessingReceipts(intakeId).then((rows) => rows[0] ?? null);
+  if (!receipt) return { present: false };
+  return {
+    present: true,
+    processedAt: receipt.processedAt,
+    matchedCount: receipt.matchedCount,
+    newCandidateCount: receipt.newCandidateCount,
+    heldCount: receipt.heldCount,
+  };
+}
+
+export async function getLegacyReviewOverlayHints(operatorIds: string[]): Promise<Record<string, LegacyReviewOverlayHint>> {
+  if (!operatorIds.length) return {};
+  const resolverIds = new Set(loadResolverRegistryForUi().map((row) => row.id));
+  const reviews = loadOperatorReviews();
+  const reviewMap = new Map(reviews.map((row) => [row.operatorId, row]));
+  const hints: Record<string, LegacyReviewOverlayHint> = {};
+
+  for (const operatorId of operatorIds) {
+    if (!resolverIds.has(operatorId)) continue;
+    const review = reviewMap.get(operatorId);
+    hints[operatorId] = review
+      ? {
+          operatorId,
+          present: true,
+          reviewState: review.reviewState,
+          updatedAt: review.updatedAt,
+        }
+      : {
+          operatorId,
+          present: false,
+        };
+  }
+
+  return hints;
 }

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import NextActionLink from "@/components/admin/pipeline/NextActionLink";
 import { appendAdminAction } from "@/lib/admin/pipeline/logging";
+import { getLegacyReviewOverlayHints } from "@/lib/admin/pipeline/reconciliation";
 import { addOutreachQueueItem, listOutreachQueue } from "@/lib/admin/pipeline/outreach-queue";
 import { filterTargetRows, getTargetFilterOptions, listTargetRows } from "@/lib/admin/pipeline/targeting";
 
@@ -20,6 +21,7 @@ export default async function TargetPage({
   const rows = filterTargetRows(allRows, filters);
   const options = getTargetFilterOptions(allRows);
   const outreachRows = await listOutreachQueue();
+  const reviewHints = await getLegacyReviewOverlayHints(allRows.map((row) => row.operatorId));
   const outreachIds = new Set(outreachRows.map((row) => row.operatorId));
   const notice = typeof params.notice === "string" ? params.notice : undefined;
   const readyCount = allRows.length;
@@ -133,9 +135,19 @@ export default async function TargetPage({
             {rows.length ? (
               rows.map((target) => {
                 const inOutreach = outreachIds.has(target.operatorId);
+                const reviewHint = reviewHints[target.operatorId];
                 return (
                   <tr key={target.operatorId} className="border-t">
-                    <td className="p-3 font-medium">{target.name}</td>
+                    <td className="p-3">
+                      <div className="font-medium">{target.name}</div>
+                      {reviewHint ? (
+                        <div className="mt-1 text-xs text-amber-700">
+                          Legacy review overlay (supplemental):{" "}
+                          {reviewHint.present ? `present · ${reviewHint.reviewState}` : "absent"}
+                          {reviewHint.present && reviewHint.updatedAt ? ` · ${reviewHint.updatedAt}` : ""}
+                        </div>
+                      ) : null}
+                    </td>
                     <td className="p-3">{target.confidenceScore}</td>
                     <td className="p-3">{target.city}</td>
                     <td className="p-3">{target.category}</td>

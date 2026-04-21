@@ -9,6 +9,7 @@ import {
 } from "@/lib/source-intake/phase2-store";
 import type { ParsedCandidateRow, SourceIntakeRecord } from "@/lib/source-intake/types";
 import type { DoraValidationResult, SocialDiscoveryResult } from "@/lib/source-intake/phase2-types";
+import { getHistoricalProcessingContext } from "./reconciliation";
 import type { ValidationDetail, ValidationQueueRow } from "./types";
 
 function confidenceToScore(confidence?: string): number | undefined {
@@ -150,10 +151,11 @@ function toIntakeSummary(intake: SourceIntakeRecord | null): ValidationDetail["i
 export async function getValidationDetail(queueItemId: string): Promise<ValidationDetail | null> {
   const doraItem = await getDoraQueueItemById(queueItemId);
   if (doraItem) {
-    const [candidateList, intake, result] = await Promise.all([
+    const [candidateList, intake, result, historicalProcessing] = await Promise.all([
       listParsedCandidates(doraItem.intakeId),
       getSourceIntakeById(doraItem.intakeId),
       findDoraResultByQueueItemId(queueItemId),
+      getHistoricalProcessingContext(doraItem.intakeId),
     ]);
     const candidate = candidateList.find((row) => row.id === doraItem.candidateId);
     const confidence = normalizeConfidence(candidate, result?.score);
@@ -187,16 +189,18 @@ export async function getValidationDetail(queueItemId: string): Promise<Validati
         : undefined,
       intake: toIntakeSummary(intake),
       resultSummary: result ? doraResultSummary(result) : undefined,
+      historicalProcessing,
     };
   }
 
   const socialItem = await getSocialQueueItemById(queueItemId);
   if (!socialItem) return null;
 
-  const [candidateList, intake, result] = await Promise.all([
+  const [candidateList, intake, result, historicalProcessing] = await Promise.all([
     listParsedCandidates(socialItem.intakeId),
     getSourceIntakeById(socialItem.intakeId),
     findSocialResultByQueueItemId(queueItemId),
+    getHistoricalProcessingContext(socialItem.intakeId),
   ]);
   const candidate = candidateList.find((row) => row.id === socialItem.candidateId);
   const confidence = normalizeConfidence(candidate);
@@ -230,5 +234,6 @@ export async function getValidationDetail(queueItemId: string): Promise<Validati
       : undefined,
     intake: toIntakeSummary(intake),
     resultSummary: result ? socialResultSummary(result) : undefined,
+    historicalProcessing,
   };
 }
