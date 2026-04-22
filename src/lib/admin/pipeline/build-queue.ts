@@ -212,14 +212,18 @@ export async function persistBuildSubmissionToValidationQueue(args: {
   rawText: string;
 }): Promise<BuildQueueSummary> {
   const fingerprint = buildSubmissionFingerprint(args.sourceType, args.rawText);
-  const recentDuplicate = (await listSourceIntakes()).find(
+  const recentDuplicates = (await listSourceIntakes()).filter(
     (intake) =>
+      intake.status !== "failed" &&
       intake.sourceLabel === `Build ${args.sourceType}` &&
       parseBuildFingerprintNote(intake.notes) === fingerprint &&
       isRecentIsoWithinWindow(intake.submittedAt)
   );
-  if (recentDuplicate) {
-    return summarizeExistingIntake(recentDuplicate.id);
+  for (const recentDuplicate of recentDuplicates) {
+    const summary = await summarizeExistingIntake(recentDuplicate.id);
+    if (summary.candidatesCreated > 0 || summary.doraQueued > 0 || summary.socialQueued > 0) {
+      return summary;
+    }
   }
 
   const intakeIdSeed = `pending_${Date.now().toString(36)}`;

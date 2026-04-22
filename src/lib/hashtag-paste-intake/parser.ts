@@ -108,6 +108,50 @@ function inferGeoHint(text: string, request: HashtagPasteIntakeRequest): string 
   return request.geoHint?.trim() || undefined;
 }
 
+function isPotentialBareHandle(line: string): boolean {
+  const value = line.trim();
+  if (!/^[a-z0-9._]{2,30}$/i.test(value)) return false;
+  if (/^\d+$/.test(value)) return false;
+  return value === value.toLowerCase() || /[._\d]/.test(value);
+}
+
+function buildBareHandleListPosts(request: HashtagPasteIntakeRequest): ParsedSocialPost[] {
+  const lines = request.rawText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const posts: ParsedSocialPost[] = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const handleLine = lines[index];
+    if (!isPotentialBareHandle(handleLine)) continue;
+
+    const displayNameLine = lines[index + 1];
+    const hasDisplayName = Boolean(displayNameLine) && !isPotentialBareHandle(displayNameLine);
+    const rawBlock = hasDisplayName ? `${handleLine}\n${displayNameLine}` : handleLine;
+    const handle = handleLine.replace(/^@/, "").toLowerCase();
+
+    posts.push({
+      id: `hpi_post_${crypto.createHash("md5").update(rawBlock).digest("hex").slice(0, 12)}`,
+      rawBlock,
+      handle,
+      displayName: hasDisplayName ? displayNameLine : undefined,
+      caption: hasDisplayName ? `${handleLine} ${displayNameLine}` : handleLine,
+      hashtags: [],
+      taggedHandles: [],
+      urls: [],
+      inferredType: "provider",
+      inferredServiceHint: inferServiceHint(rawBlock, request),
+      inferredGeoHint: inferGeoHint(rawBlock, request),
+      confidence: hasDisplayName ? "High" : "Medium",
+      reasons: ["bare handle list entry"],
+    });
+
+    if (hasDisplayName) {
+      index += 1;
+    }
+  }
+
+  return posts;
+}
+
 export function parseHashtagPasteRequest(request: HashtagPasteIntakeRequest): {
   parsedPosts: ParsedSocialPost[];
   diagnostics: string[];
@@ -116,7 +160,7 @@ export function parseHashtagPasteRequest(request: HashtagPasteIntakeRequest): {
   const diagnostics: string[] = [];
   if (request.rawText.trim().length < 80) diagnostics.push("very short pasted input");
 
-  const parsedPosts = blocks.map((block) => {
+  let parsedPosts = blocks.map((block) => {
     const blockId = `hpi_post_${crypto.createHash("md5").update(block).digest("hex").slice(0, 12)}`;
     const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
     const handles = collectMatches(HANDLE_REGEX, block, (value) => value.toLowerCase());
@@ -158,6 +202,14 @@ export function parseHashtagPasteRequest(request: HashtagPasteIntakeRequest): {
       reasons: uniqueStrings(reasons),
     } satisfies ParsedSocialPost;
   });
+
+  if (!parsedPosts.some((post) => post.handle)) {
+    const bareHandleListPosts = buildBareHandleListPosts(request);
+    if (bareHandleListPosts.length) {
+      parsedPosts = bareHandleListPosts;
+      diagnostics.push("parsed bare instagram handle list format");
+    }
+  }
 
   if (!parsedPosts.some((post) => post.handle)) diagnostics.push("no handles found");
   if (!parsedPosts.some((post) => post.inferredType === "client")) diagnostics.push("no client-signal posts identified");

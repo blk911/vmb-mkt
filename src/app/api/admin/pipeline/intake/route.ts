@@ -28,6 +28,7 @@ export async function POST(req: Request) {
       sourceType: body.sourceType,
       rawText: body.rawText,
       origin,
+      cookieHeader: req.headers.get("cookie") || undefined,
     });
 
     return NextResponse.json(result, { status: result.ok ? 200 : 500 });

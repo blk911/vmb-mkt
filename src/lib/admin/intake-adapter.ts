@@ -5,6 +5,7 @@ type UnifiedIntakeRequest = {
   sourceType: BuildSourceType;
   rawText: string;
   origin: string;
+  cookieHeader?: string;
 };
 
 type QueueSummary = {
@@ -32,10 +33,15 @@ function absolutize(origin: string, path: string): string {
   return new URL(path, origin).toString();
 }
 
-async function postJson(url: string, body: unknown): Promise<unknown> {
+async function postJson(url: string, body: unknown, cookieHeader?: string): Promise<unknown> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (cookieHeader) {
+    headers.cookie = cookieHeader;
+  }
+
   const response = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(body),
     cache: "no-store",
   });
@@ -44,14 +50,14 @@ async function postJson(url: string, body: unknown): Promise<unknown> {
 
 export async function submitUnifiedIntake(args: UnifiedIntakeRequest): Promise<UnifiedIntakeResult> {
   const { endpoint, body } = buildRequestConfig(args.sourceType, args.rawText);
-  const ingestionData = await postJson(absolutize(args.origin, endpoint), body);
+  const ingestionData = await postJson(absolutize(args.origin, endpoint), body, args.cookieHeader);
   const normalized = normalizeBuildResponse(args.sourceType, endpoint, ingestionData);
   if (!normalized.ok) return normalized;
 
   const queueData = (await postJson(absolutize(args.origin, "/api/admin/pipeline/build-to-queue"), {
     sourceType: args.sourceType,
     rawText: args.rawText,
-  })) as {
+  }, args.cookieHeader)) as {
     ok?: boolean;
     error?: string;
     summary?: QueueSummary;
