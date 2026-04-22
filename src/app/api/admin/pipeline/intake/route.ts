@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { submitUnifiedIntake } from "@/lib/admin/intake-adapter";
+import { getRuntimeStoreDescriptor } from "@/lib/admin/pipeline/runtime-debug";
 import type { BuildSourceType } from "@/lib/admin/pipeline/types";
 
 export const runtime = "nodejs";
@@ -31,9 +32,43 @@ export async function POST(req: Request) {
       cookieHeader: req.headers.get("cookie") || undefined,
     });
 
-    return NextResponse.json(result, { status: result.ok ? 200 : 500 });
+    const debugBase = {
+      ...getRuntimeStoreDescriptor(),
+      submittedAt: new Date().toISOString(),
+      submitOutcome: result.ok ? ("success" as const) : ("error" as const),
+    };
+
+    return NextResponse.json(
+      result.ok
+        ? {
+            ...result,
+            debug: {
+              ...debugBase,
+              intakeId: result.queue.intakeId,
+              recordsReceived: result.summary.recordsReceived,
+              doraQueued: result.queue.doraQueued,
+              socialQueued: result.queue.socialQueued,
+            },
+          }
+        : {
+            ...result,
+            debug: debugBase,
+          },
+      { status: result.ok ? 200 : 500 }
+    );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "server_error";
-    return NextResponse.json({ ok: false as const, error: message }, { status: 500 });
+    return NextResponse.json(
+      {
+        ok: false as const,
+        error: message,
+        debug: {
+          ...getRuntimeStoreDescriptor(),
+          submittedAt: new Date().toISOString(),
+          submitOutcome: "error" as const,
+        },
+      },
+      { status: 500 }
+    );
   }
 }

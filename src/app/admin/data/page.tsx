@@ -1,6 +1,8 @@
 import { getPipelineOperationalSnapshot } from "@/lib/admin/pipeline/state";
 import { getPipelineReconciliationSnapshot } from "@/lib/admin/pipeline/reconciliation";
 
+export const dynamic = "force-dynamic";
+
 export default async function DataPage() {
   const [snapshot, reconciliation] = await Promise.all([
     getPipelineOperationalSnapshot(),

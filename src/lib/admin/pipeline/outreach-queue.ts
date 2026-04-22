@@ -1,6 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { writeJsonAtomic } from "@/app/api/admin/_lib/atomic";
+import { usesFirestoreCanonicalPipelineStore } from "@/lib/admin/pipeline/canonical-store-config";
+import { firestoreListOutreachQueue, firestoreSaveOutreachQueue } from "@/lib/admin/pipeline/firestore-canonical-store";
 import { getRuntimeDataRoot } from "@/lib/runtime/runtime-data-root";
 import { outreachDedupeKey } from "./dedupe";
 import type { OutreachQueueItem } from "./types";
@@ -22,6 +24,9 @@ async function ensureQueueFile() {
 }
 
 export async function listOutreachQueue(): Promise<OutreachQueueItem[]> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreListOutreachQueue();
+  }
   await ensureQueueFile();
   try {
     const raw = await fs.readFile(OUTREACH_QUEUE_PATH, "utf8");
@@ -34,6 +39,9 @@ export async function listOutreachQueue(): Promise<OutreachQueueItem[]> {
 }
 
 export async function saveOutreachQueue(rows: OutreachQueueItem[]): Promise<OutreachQueueItem[]> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreSaveOutreachQueue(rows);
+  }
   await ensureQueueFile();
   const deduped = new Map(rows.map((row) => [outreachDedupeKey(row), row]));
   const normalized = [...deduped.values()].sort((a, b) => (b.addedAt || "").localeCompare(a.addedAt || ""));

@@ -1,6 +1,23 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { writeJsonAtomic } from "@/app/api/admin/_lib/atomic";
+import { usesFirestoreCanonicalPipelineStore } from "@/lib/admin/pipeline/canonical-store-config";
+import {
+  firestoreFindDoraResultByQueueItemId,
+  firestoreFindSocialResultByQueueItemId,
+  firestoreGetDoraQueueItemById,
+  firestoreGetSocialQueueItemById,
+  firestoreListDoraQueue,
+  firestoreListDoraResults,
+  firestoreListSocialQueue,
+  firestoreListSocialResults,
+  firestoreSaveDoraQueue,
+  firestoreSaveDoraResult,
+  firestoreSaveSocialQueue,
+  firestoreSaveSocialResult,
+  firestoreSetDoraQueueItem,
+  firestoreSetSocialQueueItem,
+} from "@/lib/admin/pipeline/firestore-canonical-store";
 import { getRuntimeDataRoot } from "@/lib/runtime/runtime-data-root";
 import { readJsonArrayFile } from "@/lib/social-targets/json-file";
 import type {
@@ -54,17 +71,26 @@ async function writeArray<T>(filePath: string, rows: T[]): Promise<T[]> {
 }
 
 export async function listDoraQueue(): Promise<DoraValidationQueueItem[]> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreListDoraQueue();
+  }
   const rows = await readArray<DoraValidationQueueItem>(DORA_QUEUE_PATH);
   return [...rows].sort((a, b) => compareDescByIso(a.createdAt, b.createdAt));
 }
 
 export async function saveDoraQueue(items: DoraValidationQueueItem[]): Promise<DoraValidationQueueItem[]> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreSaveDoraQueue(items);
+  }
   const dedup = new Map(items.map((item) => [item.id, item]));
   const next = [...dedup.values()].sort((a, b) => compareDescByIso(a.createdAt, b.createdAt));
   return writeArray(DORA_QUEUE_PATH, next);
 }
 
 export async function upsertDoraQueueItem(item: DoraValidationQueueItem): Promise<DoraValidationQueueItem> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreSetDoraQueueItem(item);
+  }
   const rows = await listDoraQueue();
   const next = [...rows.filter((row) => row.id !== item.id), item];
   await saveDoraQueue(next);
@@ -72,16 +98,25 @@ export async function upsertDoraQueueItem(item: DoraValidationQueueItem): Promis
 }
 
 export async function getDoraQueueItemById(id: string): Promise<DoraValidationQueueItem | null> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreGetDoraQueueItemById(id);
+  }
   const rows = await listDoraQueue();
   return rows.find((row) => row.id === id) ?? null;
 }
 
 export async function listDoraResults(): Promise<DoraValidationResult[]> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreListDoraResults();
+  }
   const rows = await readArray<DoraValidationResult>(DORA_RESULTS_PATH);
   return [...rows].sort((a, b) => compareDescByIso(a.resolvedAt, b.resolvedAt));
 }
 
 export async function saveDoraResult(result: DoraValidationResult): Promise<DoraValidationResult> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreSaveDoraResult(result);
+  }
   const rows = await listDoraResults();
   const next = [...rows.filter((row) => row.id !== result.id && row.queueItemId !== result.queueItemId), result]
     .sort((a, b) => compareDescByIso(a.resolvedAt, b.resolvedAt));
@@ -90,22 +125,34 @@ export async function saveDoraResult(result: DoraValidationResult): Promise<Dora
 }
 
 export async function findDoraResultByQueueItemId(queueItemId: string): Promise<DoraValidationResult | null> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreFindDoraResultByQueueItemId(queueItemId);
+  }
   const rows = await listDoraResults();
   return rows.find((row) => row.queueItemId === queueItemId) ?? null;
 }
 
 export async function listSocialQueue(): Promise<SocialDiscoveryQueueItem[]> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreListSocialQueue();
+  }
   const rows = await readArray<SocialDiscoveryQueueItem>(SOCIAL_QUEUE_PATH);
   return [...rows].sort((a, b) => compareDescByIso(a.createdAt, b.createdAt));
 }
 
 export async function saveSocialQueue(items: SocialDiscoveryQueueItem[]): Promise<SocialDiscoveryQueueItem[]> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreSaveSocialQueue(items);
+  }
   const dedup = new Map(items.map((item) => [item.id, item]));
   const next = [...dedup.values()].sort((a, b) => compareDescByIso(a.createdAt, b.createdAt));
   return writeArray(SOCIAL_QUEUE_PATH, next);
 }
 
 export async function upsertSocialQueueItem(item: SocialDiscoveryQueueItem): Promise<SocialDiscoveryQueueItem> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreSetSocialQueueItem(item);
+  }
   const rows = await listSocialQueue();
   const next = [...rows.filter((row) => row.id !== item.id), item];
   await saveSocialQueue(next);
@@ -113,16 +160,25 @@ export async function upsertSocialQueueItem(item: SocialDiscoveryQueueItem): Pro
 }
 
 export async function getSocialQueueItemById(id: string): Promise<SocialDiscoveryQueueItem | null> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreGetSocialQueueItemById(id);
+  }
   const rows = await listSocialQueue();
   return rows.find((row) => row.id === id) ?? null;
 }
 
 export async function listSocialResults(): Promise<SocialDiscoveryResult[]> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreListSocialResults();
+  }
   const rows = await readArray<SocialDiscoveryResult>(SOCIAL_RESULTS_PATH);
   return [...rows].sort((a, b) => compareDescByIso(a.resolvedAt, b.resolvedAt));
 }
 
 export async function saveSocialResult(result: SocialDiscoveryResult): Promise<SocialDiscoveryResult> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreSaveSocialResult(result);
+  }
   const rows = await listSocialResults();
   const next = [...rows.filter((row) => row.id !== result.id && row.queueItemId !== result.queueItemId), result]
     .sort((a, b) => compareDescByIso(a.resolvedAt, b.resolvedAt));
@@ -131,6 +187,9 @@ export async function saveSocialResult(result: SocialDiscoveryResult): Promise<S
 }
 
 export async function findSocialResultByQueueItemId(queueItemId: string): Promise<SocialDiscoveryResult | null> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreFindSocialResultByQueueItemId(queueItemId);
+  }
   const rows = await listSocialResults();
   return rows.find((row) => row.queueItemId === queueItemId) ?? null;
 }

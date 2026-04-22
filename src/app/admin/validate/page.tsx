@@ -1,6 +1,9 @@
 import Link from "next/link";
 import NextActionLink from "@/components/admin/pipeline/NextActionLink";
+import { getValidationLoadDebugInfo } from "@/lib/admin/pipeline/runtime-debug";
 import { getPipelineOperationalSnapshot, listPendingValidationRows } from "@/lib/admin/pipeline/state";
+
+export const dynamic = "force-dynamic";
 
 export default async function ValidatePage({
   searchParams,
@@ -8,7 +11,11 @@ export default async function ValidatePage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = (await searchParams) || {};
-  const [rows, snapshot] = await Promise.all([listPendingValidationRows(), getPipelineOperationalSnapshot()]);
+  const [rows, snapshot, debug] = await Promise.all([
+    listPendingValidationRows(),
+    getPipelineOperationalSnapshot(),
+    getValidationLoadDebugInfo(),
+  ]);
   const status = typeof params.status === "string" ? params.status : undefined;
   const action = typeof params.action === "string" ? params.action : undefined;
   const message = typeof params.message === "string" ? params.message : undefined;
@@ -30,6 +37,29 @@ export default async function ValidatePage({
         <MetricCard label="Pending Validation" value={snapshot.metrics.pendingValidation} />
         <MetricCard label="Pending DORA" value={snapshot.pendingBySource.DORA || 0} />
         <MetricCard label="Pending Social" value={snapshot.pendingBySource.SOCIAL || 0} />
+      </div>
+
+      <div className="rounded-xl border border-dashed border-gray-300 bg-white p-4 shadow">
+        <h2 className="font-semibold">Validate Runtime Debug</h2>
+        <p className="mt-1 text-sm text-gray-600">Read-only instrumentation for confirming the queue store currently visible to this page load.</p>
+        <div className="mt-3 grid grid-cols-1 gap-3 text-sm md:grid-cols-2 xl:grid-cols-3">
+          <DebugRow label="Checked at" value={debug.checkedAt} />
+          <DebugRow label="Runtime root" value={debug.runtimeRoot} />
+          <DebugRow label="Canonical store" value={debug.canonicalStoreMode} />
+          <DebugRow label="Storage mode" value={debug.storageMode} />
+          <DebugRow label="Environment" value={debug.environment} />
+          <DebugRow label="Instance" value={`${debug.instanceHost} / pid ${debug.instancePid}`} />
+          <DebugRow label="DORA queue count" value={`${debug.doraQueueCount}`} />
+          <DebugRow label="Social queue count" value={`${debug.socialQueueCount}`} />
+          <DebugRow
+            label="Latest DORA queue item"
+            value={debug.latestDoraQueueItemId ? `${debug.latestDoraQueueItemId} · ${debug.latestDoraQueueCreatedAt || "unknown"}` : "none"}
+          />
+          <DebugRow
+            label="Latest Social queue item"
+            value={debug.latestSocialQueueItemId ? `${debug.latestSocialQueueItemId} · ${debug.latestSocialQueueCreatedAt || "unknown"}` : "none"}
+          />
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-xl bg-white shadow">
@@ -86,6 +116,15 @@ function MetricCard({ label, value }: { label: string; value: number }) {
     <div className="rounded-xl bg-white p-4 shadow">
       <div className="text-sm text-gray-500">{label}</div>
       <div className="text-xl font-bold">{value}</div>
+    </div>
+  );
+}
+
+function DebugRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
+      <div className="break-all text-gray-900">{value}</div>
     </div>
   );
 }

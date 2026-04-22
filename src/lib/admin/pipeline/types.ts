@@ -1,3 +1,5 @@
+import type { BuildSubmitDebugInfo, ValidationLoadDebugInfo } from "./runtime-debug";
+
 export type BuildSourceType = "Instagram" | "DORA" | "Upload" | "URL";
 
 export type BuildSubmissionSummary = {
@@ -13,11 +15,13 @@ export type BuildSubmissionResult =
       endpoint: string;
       summary: BuildSubmissionSummary;
       raw: unknown;
+      debug?: BuildSubmitDebugInfo;
     }
   | {
       ok: false;
       endpoint?: string;
       error: string;
+      debug?: BuildSubmitDebugInfo;
     };
 
 export type ValidationQueueSource = "DORA" | "SOCIAL";
@@ -107,3 +111,5 @@ export type AdminActionLogEntry = {
   result: string;
   details?: Record<string, unknown>;
 };
+
+export type ValidationPageDebug = ValidationLoadDebugInfo;

@@ -3,6 +3,8 @@ import NextActionLink from "@/components/admin/pipeline/NextActionLink";
 import { appendAdminAction } from "@/lib/admin/pipeline/logging";
 import { listOutreachQueue } from "@/lib/admin/pipeline/outreach-queue";
 
+export const dynamic = "force-dynamic";
+
 export default async function ActivatePage({
   searchParams,
 }: {

@@ -1,6 +1,14 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { writeJsonAtomic } from "@/app/api/admin/_lib/atomic";
+import { usesFirestoreCanonicalPipelineStore } from "@/lib/admin/pipeline/canonical-store-config";
+import {
+  firestoreGetSourceIntakeById,
+  firestoreListParsedCandidates,
+  firestoreListSourceIntakes,
+  firestoreSaveParsedCandidates,
+  firestoreSetSourceIntake,
+} from "@/lib/admin/pipeline/firestore-canonical-store";
 import { getRuntimeDataRoot } from "@/lib/runtime/runtime-data-root";
 import { readJsonArrayFile } from "@/lib/social-targets/json-file";
 import type {
@@ -60,11 +68,17 @@ function makeId(prefix: string) {
 }
 
 export async function listSourceIntakes(): Promise<SourceIntakeRecord[]> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreListSourceIntakes();
+  }
   const rows = await readArray<SourceIntakeRecord>(INTAKES_PATH);
   return [...rows].sort((a, b) => compareDescByIso(a.submittedAt, b.submittedAt));
 }
 
 export async function getSourceIntakeById(id: string): Promise<SourceIntakeRecord | null> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreGetSourceIntakeById(id);
+  }
   const rows = await listSourceIntakes();
   return rows.find((row) => row.id === id) ?? null;
 }
@@ -86,12 +100,26 @@ export async function createSourceIntake(input: SourceIntakeCreateInput): Promis
     status: "pending",
     submittedAt: now,
   };
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreSetSourceIntake(record);
+  }
   const next = [record, ...rows].sort((a, b) => compareDescByIso(a.submittedAt, b.submittedAt));
   await writeArray(INTAKES_PATH, next);
   return record;
 }
 
 export async function updateSourceIntake(id: string, patch: Partial<SourceIntakeRecord>): Promise<SourceIntakeRecord> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    const current = await firestoreGetSourceIntakeById(id);
+    if (!current) throw new Error("source_intake_not_found");
+    const nextRow: SourceIntakeRecord = {
+      ...current,
+      ...patch,
+      id: current.id,
+      submittedAt: current.submittedAt,
+    };
+    return firestoreSetSourceIntake(nextRow);
+  }
   const rows = await listSourceIntakes();
   const index = rows.findIndex((row) => row.id === id);
   if (index === -1) throw new Error("source_intake_not_found");
@@ -108,7 +136,6 @@ export async function updateSourceIntake(id: string, patch: Partial<SourceIntake
 }
 
 export async function saveParsedCandidates(intakeId: string, rows: ParsedCandidateRow[]): Promise<ParsedCandidateRow[]> {
-  const existing = await readArray<ParsedCandidateRow>(CANDIDATES_PATH);
   const seen = new Set<string>();
   const normalized = [...rows]
     .map((row, index) => ({
@@ -124,12 +151,20 @@ export async function saveParsedCandidates(intakeId: string, rows: ParsedCandida
       seen.add(row.id);
       return true;
     });
+  if (usesFirestoreCanonicalPipelineStore()) {
+    await firestoreSaveParsedCandidates(intakeId, normalized);
+    return normalized;
+  }
+  const existing = await readArray<ParsedCandidateRow>(CANDIDATES_PATH);
   const next = [...existing.filter((row) => row.intakeId !== intakeId), ...normalized];
   await writeArray(CANDIDATES_PATH, next);
   return normalized;
 }
 
 export async function listParsedCandidates(intakeId: string): Promise<ParsedCandidateRow[]> {
+  if (usesFirestoreCanonicalPipelineStore()) {
+    return firestoreListParsedCandidates(intakeId);
+  }
   const rows = await readArray<ParsedCandidateRow>(CANDIDATES_PATH);
   return rows
     .filter((row) => row.intakeId === intakeId)

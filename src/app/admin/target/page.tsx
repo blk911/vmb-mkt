@@ -5,6 +5,8 @@ import { getLegacyReviewOverlayHints } from "@/lib/admin/pipeline/reconciliation
 import { addOutreachQueueItem, listOutreachQueue } from "@/lib/admin/pipeline/outreach-queue";
 import { filterTargetRows, getTargetFilterOptions, listTargetRows } from "@/lib/admin/pipeline/targeting";
 
+export const dynamic = "force-dynamic";
+
 export default async function TargetPage({
   searchParams,
 }: {

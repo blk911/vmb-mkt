@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getAdminDashboardMetrics } from "@/lib/admin/pipeline/dashboard";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboard() {
   const metrics = await getAdminDashboardMetrics();
 
