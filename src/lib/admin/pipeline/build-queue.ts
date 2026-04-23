@@ -3,6 +3,8 @@ import { parseHashtagPasteRequest } from "@/lib/hashtag-paste-intake/parser";
 import type { HashtagPasteIntakeRequest, ProviderCandidate } from "@/lib/hashtag-paste-intake/types";
 import { normalizeBuildUploadRecords } from "./build";
 import { adaptUploadRecords } from "@/lib/operators/upload-adapter";
+import { fetchCandidatePage } from "@/lib/operators/page-fetch";
+import { extractVagaroDirectoryListings } from "@/lib/operators/domain-parsers/vagaro";
 import { enqueueDoraValidationForCandidate } from "@/lib/source-intake/dora-queue";
 import { enqueueSocialDiscoveryForCandidate } from "@/lib/source-intake/social-queue";
 import {
@@ -41,6 +43,8 @@ type PreparedCandidateSet = {
   city?: string;
   candidates: ParsedCandidateRow[];
 };
+
+type CandidateDraft = Omit<ParsedCandidateRow, "id" | "intakeId" | "ordinal">;
 
 function splitDisplayName(displayName: string): { firstName?: string; lastName?: string } {
   const parts = displayName.trim().split(/\s+/).filter(Boolean);
@@ -162,54 +166,132 @@ function prepareInstagramCandidates(intakeId: string, rawText: string): Prepared
   };
 }
 
-function prepareUploadCandidates(
+function isVagaroProfessionalsResultsUrl(value?: string): boolean {
+  if (!value) return false;
+  try {
+    const parsed = new URL(value);
+    const host = parsed.hostname.toLowerCase();
+    return (host === "vagaro.com" || host === "www.vagaro.com") && parsed.pathname.toLowerCase().startsWith("/professionals/");
+  } catch {
+    return false;
+  }
+}
+
+async function expandVagaroDirectoryCandidates(row: {
+  name?: string;
+  city?: string;
+  category?: string;
+  website?: string;
+  booking?: string;
+  sourceUrl?: string;
+  raw?: unknown;
+}): Promise<CandidateDraft[] | null> {
+  const candidateUrl = row.sourceUrl || row.website || row.booking;
+  if (!isVagaroProfessionalsResultsUrl(candidateUrl)) return null;
+
+  const fetched = await fetchCandidatePage(candidateUrl, { timeoutMs: 15000 });
+  if (!fetched.html) return null;
+
+  const listings = extractVagaroDirectoryListings(fetched.finalUrl || candidateUrl, fetched.html);
+  if (!listings.length) return null;
+
+  return listings.map((listing) => {
+    const parts = splitDisplayName(listing.displayName);
+    const rawBlock = JSON.stringify(
+      {
+        sourceUrl: candidateUrl,
+        listingUrl: listing.profileUrl,
+        displayName: listing.displayName,
+        businessName: listing.businessName,
+        city: listing.city,
+        state: listing.state,
+        location: listing.location,
+        serviceHint: listing.serviceHint,
+        ratingSummary: listing.ratingSummary,
+        sourceNote: listing.sourceNote,
+        pageClassification: listing.pageClassification,
+      },
+      null,
+      2
+    );
+    const warnings = ["vagaro_directory_results"];
+    if (!listing.city) warnings.push("missing_city");
+
+    return {
+      rawBlock,
+      displayName: listing.displayName,
+      firstName: parts.firstName,
+      lastName: parts.lastName,
+      roleLabel: normalizeCanonicalCategory(listing.serviceHint || row.category),
+      parseConfidence: listing.businessName && listing.city ? "high" : "medium",
+      parseWarnings: warnings,
+      reviewAction: "pending",
+    } satisfies CandidateDraft;
+  });
+}
+
+async function prepareUploadCandidates(
   intakeId: string,
   sourceType: Exclude<BuildSourceType, "Instagram">,
   rawText: string
-): PreparedCandidateSet {
+): Promise<PreparedCandidateSet> {
   const records = normalizeBuildUploadRecords(sourceType, rawText);
   const adapted = adaptUploadRecords(records);
-  const candidates = adapted.sourceRecords.map((row, index) => {
-    const instagramIdentity =
-      sourceType === "URL" ? parseInstagramUrlIdentity(row.instagram || row.sourceUrl || row.website) : null;
-    const displayName =
-      row.name?.trim() ||
-      instagramIdentity?.displayNameFallback ||
-      (instagramIdentity ? "Instagram URL" : undefined) ||
-      row.instagram ||
-      row.website ||
-      row.booking ||
-      `Candidate ${index + 1}`;
-    const parts = splitDisplayName(displayName);
-    const rawBlock =
-      row.raw && typeof row.raw === "object" && "original" in row.raw
-        ? JSON.stringify((row.raw as { original?: unknown }).original ?? row.raw, null, 2)
-        : JSON.stringify(row, null, 2);
-    const warnings: string[] = [];
-    if (!row.city) warnings.push("missing_city");
-    if (!row.address) warnings.push("missing_address");
-    if (instagramIdentity) warnings.push("instagram_url_identity_source");
-    return {
-      id: `${intakeId}_cand_${String(index + 1).padStart(2, "0")}`,
-      intakeId,
-      ordinal: index + 1,
-      rawBlock,
-      displayName,
-      firstName: parts.firstName,
-      lastName: parts.lastName,
-      instagramHandle: instagramIdentity?.instagramHandle,
-      instagramProfileUrl:
-        instagramIdentity?.instagramProfileUrl || toInstagramProfileUrl(row.instagram || row.sourceUrl),
-      signalType: instagramIdentity ? "unknown" : undefined,
-      roleLabel: normalizeCanonicalCategory(row.category),
-      parseConfidence:
-        row.name && (row.city || row.address)
-          ? "high"
-          : row.name || instagramIdentity ? "medium" : "low",
-      parseWarnings: warnings.length ? warnings : undefined,
-      reviewAction: "pending",
-    } satisfies ParsedCandidateRow;
-  });
+  const candidateDrafts = (
+    await Promise.all(
+      adapted.sourceRecords.map(async (row, index) => {
+        const vagaroListings = sourceType === "URL" ? await expandVagaroDirectoryCandidates(row) : null;
+        if (vagaroListings?.length) return vagaroListings;
+
+        const instagramIdentity =
+          sourceType === "URL" ? parseInstagramUrlIdentity(row.instagram || row.sourceUrl || row.website) : null;
+        const displayName =
+          row.name?.trim() ||
+          instagramIdentity?.displayNameFallback ||
+          (instagramIdentity ? "Instagram URL" : undefined) ||
+          row.instagram ||
+          row.website ||
+          row.booking ||
+          `Candidate ${index + 1}`;
+        const parts = splitDisplayName(displayName);
+        const rawBlock =
+          row.raw && typeof row.raw === "object" && "original" in row.raw
+            ? JSON.stringify((row.raw as { original?: unknown }).original ?? row.raw, null, 2)
+            : JSON.stringify(row, null, 2);
+        const warnings: string[] = [];
+        if (!row.city) warnings.push("missing_city");
+        if (!row.address) warnings.push("missing_address");
+        if (instagramIdentity) warnings.push("instagram_url_identity_source");
+
+        return [
+          {
+            rawBlock,
+            displayName,
+            firstName: parts.firstName,
+            lastName: parts.lastName,
+            instagramHandle: instagramIdentity?.instagramHandle,
+            instagramProfileUrl:
+              instagramIdentity?.instagramProfileUrl || toInstagramProfileUrl(row.instagram || row.sourceUrl),
+            signalType: instagramIdentity ? "unknown" : undefined,
+            roleLabel: normalizeCanonicalCategory(row.category),
+            parseConfidence:
+              row.name && (row.city || row.address)
+                ? "high"
+                : row.name || instagramIdentity ? "medium" : "low",
+            parseWarnings: warnings.length ? warnings : undefined,
+            reviewAction: "pending",
+          } satisfies CandidateDraft,
+        ];
+      })
+    )
+  ).flat();
+
+  const candidates = candidateDrafts.map((candidate, index) => ({
+    id: `${intakeId}_cand_${String(index + 1).padStart(2, "0")}`,
+    intakeId,
+    ordinal: index + 1,
+    ...candidate,
+  }));
 
   return {
     sourceUrl: adapted.sourceRecords.map((row) => toInstagramProfileUrl(row.instagram) || row.website || row.booking).find(Boolean),
@@ -270,7 +352,7 @@ export async function persistBuildSubmissionToValidationQueue(args: {
   const prepared =
     args.sourceType === "Instagram"
       ? prepareInstagramCandidates(intakeIdSeed, args.rawText)
-      : prepareUploadCandidates(intakeIdSeed, args.sourceType, args.rawText);
+      : await prepareUploadCandidates(intakeIdSeed, args.sourceType, args.rawText);
 
   const intake = await createSourceIntake({
     sourceLabel: `Build ${args.sourceType}`,
@@ -284,7 +366,7 @@ export async function persistBuildSubmissionToValidationQueue(args: {
   const candidates = dedupeCandidates(
     (args.sourceType === "Instagram"
       ? prepareInstagramCandidates(intake.id, args.rawText)
-      : prepareUploadCandidates(intake.id, args.sourceType, args.rawText)
+      : await prepareUploadCandidates(intake.id, args.sourceType, args.rawText)
     ).candidates
   );
 
