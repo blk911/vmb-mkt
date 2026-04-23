@@ -10,6 +10,14 @@ export type InstagramUrlIdentity = {
   identityKind: "profile" | "content";
 };
 
+export type SolaLocationUrlIdentity = {
+  canonicalUrl: string;
+  bookingUrl: string;
+  locationSlug: string;
+  displayNameFallback: string;
+  sourceNote: "sola_location_url";
+};
+
 export function normalizeCanonicalCategory(input?: string): CanonicalCategory {
   const text = (input || "").trim().toLowerCase();
   if (!text) return "unknown";
@@ -39,6 +47,14 @@ export function instagramHandleToDisplayName(value?: string): string | undefined
   if (!handle) return undefined;
   const display = handle.replace(/[._]+/g, " ").trim();
   return display || handle;
+}
+
+function titleCaseSlug(value: string): string {
+  return value
+    .split(/[\s_-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
 }
 
 export function parseInstagramUrlIdentity(value?: string): InstagramUrlIdentity | null {
@@ -93,6 +109,38 @@ export function parseInstagramUrlIdentity(value?: string): InstagramUrlIdentity 
     instagramProfileUrl: `https://www.instagram.com/${handle}/`,
     displayNameFallback: instagramHandleToDisplayName(handle),
     identityKind: "profile",
+  };
+}
+
+export function parseSolaLocationUrlIdentity(value?: string): SolaLocationUrlIdentity | null {
+  const raw = (value || "").trim();
+  if (!raw) return null;
+
+  let url: URL;
+  try {
+    url = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
+  } catch {
+    return null;
+  }
+
+  if (url.hostname.toLowerCase() !== "book.solasalonstudios.com") return null;
+
+  const segments = url.pathname.split("/").map((segment) => segment.trim()).filter(Boolean);
+  if (segments.length < 2) return null;
+  if (segments[1].toLowerCase() !== "location") return null;
+
+  const locationSlug = decodeURIComponent(segments[0]).trim().toLowerCase();
+  if (!/^[a-z0-9_-]+$/i.test(locationSlug)) return null;
+
+  const canonicalPath = `/${locationSlug}/location`;
+  const canonicalUrl = `https://book.solasalonstudios.com${canonicalPath}`;
+
+  return {
+    canonicalUrl,
+    bookingUrl: canonicalUrl,
+    locationSlug,
+    displayNameFallback: titleCaseSlug(locationSlug),
+    sourceNote: "sola_location_url",
   };
 }
 

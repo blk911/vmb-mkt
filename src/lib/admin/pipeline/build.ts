@@ -1,5 +1,5 @@
 import type { BuildSourceType, BuildSubmissionResult, BuildSubmissionSummary } from "./types";
-import { parseInstagramUrlIdentity } from "./normalization";
+import { parseInstagramUrlIdentity, parseSolaLocationUrlIdentity } from "./normalization";
 
 type BuildRequestConfig = {
   endpoint: string;
@@ -83,15 +83,24 @@ export function normalizeBuildUploadRecords(
   if (sourceType === "URL") {
     return lines.map((line) => {
       const instagramIdentity = parseInstagramUrlIdentity(line);
-      if (!instagramIdentity) {
-        return { sourceUrl: line, website: line };
+      if (instagramIdentity) {
+        return {
+          sourceUrl: instagramIdentity.normalizedUrl,
+          instagram: instagramIdentity.instagramProfileUrl || instagramIdentity.normalizedUrl,
+          name: instagramIdentity.displayNameFallback,
+          sourceNote: "instagram_url_identity",
+        };
       }
-      return {
-        sourceUrl: instagramIdentity.normalizedUrl,
-        instagram: instagramIdentity.instagramProfileUrl || instagramIdentity.normalizedUrl,
-        name: instagramIdentity.displayNameFallback,
-        sourceNote: "instagram_url_identity",
-      };
+      const solaIdentity = parseSolaLocationUrlIdentity(line);
+      if (solaIdentity) {
+        return {
+          sourceUrl: solaIdentity.canonicalUrl,
+          booking: solaIdentity.bookingUrl,
+          name: solaIdentity.displayNameFallback,
+          sourceNote: solaIdentity.sourceNote,
+        };
+      }
+      return { sourceUrl: line, website: line };
     });
   }
   if (sourceType === "DORA") {
