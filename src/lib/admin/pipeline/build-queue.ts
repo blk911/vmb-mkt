@@ -68,6 +68,18 @@ function candidateNameFromProvider(candidate: ProviderCandidate): string {
   return candidate.handle.replace(/^@/, "").replace(/[._]/g, " ").trim() || candidate.handle;
 }
 
+function instagramSignalType(candidate: ProviderCandidate): "provider" | "client_tagged" | "unknown" {
+  if (candidate.providerSignalCount >= 1) return "provider";
+  if (candidate.clientSignalCount >= 1 || candidate.taggedByCount >= 1) return "client_tagged";
+  return "unknown";
+}
+
+function toCaptionSnippet(value?: string): string | undefined {
+  const text = (value || "").trim().replace(/\s+/g, " ");
+  if (!text) return undefined;
+  return text.length > 180 ? `${text.slice(0, 177)}...` : text;
+}
+
 function isUsableInstagramDisplayName(value?: string): boolean {
   const text = (value || "").trim();
   if (!text) return false;
@@ -105,6 +117,10 @@ function candidateRowsFromInstagram(intakeId: string, rawText: string): ParsedCa
     const evidenceBlocks = candidate.evidencePostIds
       .map((postId) => postMap.get(postId)?.rawBlock)
       .filter((value): value is string => Boolean(value));
+    const evidencePosts = candidate.evidencePostIds
+      .map((postId) => postMap.get(postId))
+      .filter((value): value is NonNullable<typeof value> => Boolean(value));
+    const captionSnippet = toCaptionSnippet(evidencePosts.map((post) => post.caption).find(Boolean));
     return {
       id: `${intakeId}_${candidate.id}`,
       intakeId,
@@ -113,6 +129,12 @@ function candidateRowsFromInstagram(intakeId: string, rawText: string): ParsedCa
       displayName,
       firstName: parts.firstName,
       lastName: parts.lastName,
+      instagramHandle: candidate.handle,
+      instagramProfileUrl: toInstagramProfileUrl(candidate.handle),
+      captionSnippet,
+      signalType: instagramSignalType(candidate),
+      serviceHint: candidate.serviceHint,
+      geoHint: candidate.geoHint,
       // Preserve the strongest known provider/service identity, but keep category conservative.
       roleLabel: normalizeCanonicalCategory(candidate.serviceHint),
       parseConfidence: confidenceFromProvider(candidate.confidence),

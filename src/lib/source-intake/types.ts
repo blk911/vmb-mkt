@@ -57,6 +57,12 @@ export type ParsedCandidateRow = {
   displayName: string;
   firstName?: string;
   lastName?: string;
+  instagramHandle?: string;
+  instagramProfileUrl?: string;
+  captionSnippet?: string;
+  signalType?: "provider" | "client_tagged" | "unknown";
+  serviceHint?: string;
+  geoHint?: string;
   roleLabel?: string;
   priceText?: string;
   priceValue?: number | null;

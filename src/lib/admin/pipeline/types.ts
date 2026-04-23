@@ -41,6 +41,12 @@ export type ValidationQueueRow = {
   confidenceScore?: number;
   createdAt: string;
   resolvedAt?: string;
+  instagramHandle?: string;
+  instagramProfileUrl?: string;
+  captionSnippet?: string;
+  signalType?: "provider" | "client_tagged" | "unknown";
+  serviceHint?: string;
+  geoHint?: string;
 };
 
 export type ValidationDetail = {
@@ -53,6 +59,12 @@ export type ValidationDetail = {
     parseConfidence?: string;
     parseWarnings?: string[];
     rawBlock?: string;
+    instagramHandle?: string;
+    instagramProfileUrl?: string;
+    captionSnippet?: string;
+    signalType?: "provider" | "client_tagged" | "unknown";
+    serviceHint?: string;
+    geoHint?: string;
   };
   intake?: {
     id: string;

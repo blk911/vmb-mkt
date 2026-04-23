@@ -84,6 +84,19 @@ export default async function ValidatePage({
                     <div className="text-xs text-gray-500">
                       {[row.city, row.state].filter(Boolean).join(", ") || "Location unknown"}
                     </div>
+                    {row.instagramHandle || row.signalType || row.serviceHint || row.geoHint ? (
+                      <div className="mt-1 text-xs text-amber-700">
+                        IG context:{" "}
+                        {[
+                          row.instagramHandle ? `@${row.instagramHandle.replace(/^@/, "")}` : null,
+                          row.signalType ? `signal ${row.signalType}` : null,
+                          row.serviceHint ? `service ${row.serviceHint}` : null,
+                          row.geoHint ? `geo ${row.geoHint}` : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </div>
+                    ) : null}
                   </td>
                   <td className="p-3">{row.sourceType}</td>
                   <td className="p-3">{row.status}</td>

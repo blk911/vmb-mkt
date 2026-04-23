@@ -78,6 +78,63 @@ export default async function OperatorDetail({ params }: { params: Promise<{ ope
               </div>
             ) : null}
 
+            {detail.candidate &&
+            (detail.candidate.instagramHandle ||
+              detail.candidate.instagramProfileUrl ||
+              detail.candidate.signalType ||
+              detail.candidate.serviceHint ||
+              detail.candidate.geoHint ||
+              detail.candidate.captionSnippet) ? (
+              <div>
+                <div className="font-medium">Instagram Attribution Context</div>
+                <div className="text-xs text-amber-700">
+                  Supplemental only. This reviewer context does not change canonical validation state or actions.
+                </div>
+                <dl className="mt-2 space-y-1">
+                  {detail.candidate.instagramHandle ? (
+                    <div>
+                      <dt className="text-gray-500">Handle</dt>
+                      <dd>@{detail.candidate.instagramHandle.replace(/^@/, "")}</dd>
+                    </div>
+                  ) : null}
+                  {detail.candidate.instagramProfileUrl ? (
+                    <div>
+                      <dt className="text-gray-500">Profile URL</dt>
+                      <dd>
+                        <a className="text-blue-600 hover:underline" href={detail.candidate.instagramProfileUrl} target="_blank" rel="noreferrer">
+                          {detail.candidate.instagramProfileUrl}
+                        </a>
+                      </dd>
+                    </div>
+                  ) : null}
+                  {detail.candidate.signalType ? (
+                    <div>
+                      <dt className="text-gray-500">Signal Type</dt>
+                      <dd>{detail.candidate.signalType}</dd>
+                    </div>
+                  ) : null}
+                  {detail.candidate.serviceHint ? (
+                    <div>
+                      <dt className="text-gray-500">Service Hint</dt>
+                      <dd>{detail.candidate.serviceHint}</dd>
+                    </div>
+                  ) : null}
+                  {detail.candidate.geoHint ? (
+                    <div>
+                      <dt className="text-gray-500">Geo Hint</dt>
+                      <dd>{detail.candidate.geoHint}</dd>
+                    </div>
+                  ) : null}
+                  {detail.candidate.captionSnippet ? (
+                    <div>
+                      <dt className="text-gray-500">Caption Snippet</dt>
+                      <dd>{detail.candidate.captionSnippet}</dd>
+                    </div>
+                  ) : null}
+                </dl>
+              </div>
+            ) : null}
+
             {detail.resultSummary ? (
               <div>
                 <div className="font-medium">{detail.resultSummary.title}</div>

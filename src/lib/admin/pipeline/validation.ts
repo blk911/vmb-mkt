@@ -78,6 +78,12 @@ export async function listValidationRows(): Promise<ValidationQueueRow[]> {
         confidenceScore: confidence.score,
         createdAt: item.createdAt,
         resolvedAt: result?.resolvedAt,
+        instagramHandle: candidate?.instagramHandle,
+        instagramProfileUrl: candidate?.instagramProfileUrl,
+        captionSnippet: candidate?.captionSnippet,
+        signalType: candidate?.signalType,
+        serviceHint: candidate?.serviceHint,
+        geoHint: candidate?.geoHint,
       } satisfies ValidationQueueRow;
     })
   );
@@ -102,6 +108,12 @@ export async function listValidationRows(): Promise<ValidationQueueRow[]> {
         confidenceScore: confidence.score,
         createdAt: item.createdAt,
         resolvedAt: result?.resolvedAt,
+        instagramHandle: candidate?.instagramHandle,
+        instagramProfileUrl: candidate?.instagramProfileUrl,
+        captionSnippet: candidate?.captionSnippet,
+        signalType: candidate?.signalType,
+        serviceHint: candidate?.serviceHint,
+        geoHint: candidate?.geoHint,
       } satisfies ValidationQueueRow;
     })
   );
@@ -175,6 +187,12 @@ export async function getValidationDetail(queueItemId: string): Promise<Validati
         confidenceScore: confidence.score,
         createdAt: doraItem.createdAt,
         resolvedAt: result?.resolvedAt,
+        instagramHandle: candidate?.instagramHandle,
+        instagramProfileUrl: candidate?.instagramProfileUrl,
+        captionSnippet: candidate?.captionSnippet,
+        signalType: candidate?.signalType,
+        serviceHint: candidate?.serviceHint,
+        geoHint: candidate?.geoHint,
       },
       resolveEndpoint: `/api/source-intake/dora-queue/${encodeURIComponent(queueItemId)}/resolve`,
       candidate: candidate
@@ -185,6 +203,12 @@ export async function getValidationDetail(queueItemId: string): Promise<Validati
             parseConfidence: candidate.parseConfidence,
             parseWarnings: candidate.parseWarnings,
             rawBlock: candidate.rawBlock,
+            instagramHandle: candidate.instagramHandle,
+            instagramProfileUrl: candidate.instagramProfileUrl,
+            captionSnippet: candidate.captionSnippet,
+            signalType: candidate.signalType,
+            serviceHint: candidate.serviceHint,
+            geoHint: candidate.geoHint,
           }
         : undefined,
       intake: toIntakeSummary(intake),
@@ -220,6 +244,12 @@ export async function getValidationDetail(queueItemId: string): Promise<Validati
       confidenceScore: confidence.score,
       createdAt: socialItem.createdAt,
       resolvedAt: result?.resolvedAt,
+      instagramHandle: candidate?.instagramHandle,
+      instagramProfileUrl: candidate?.instagramProfileUrl,
+      captionSnippet: candidate?.captionSnippet,
+      signalType: candidate?.signalType,
+      serviceHint: candidate?.serviceHint,
+      geoHint: candidate?.geoHint,
     },
     resolveEndpoint: `/api/source-intake/social-queue/${encodeURIComponent(queueItemId)}/resolve`,
     candidate: candidate
@@ -230,6 +260,12 @@ export async function getValidationDetail(queueItemId: string): Promise<Validati
           parseConfidence: candidate.parseConfidence,
           parseWarnings: candidate.parseWarnings,
           rawBlock: candidate.rawBlock,
+          instagramHandle: candidate.instagramHandle,
+          instagramProfileUrl: candidate.instagramProfileUrl,
+          captionSnippet: candidate.captionSnippet,
+          signalType: candidate.signalType,
+          serviceHint: candidate.serviceHint,
+          geoHint: candidate.geoHint,
         }
       : undefined,
     intake: toIntakeSummary(intake),
