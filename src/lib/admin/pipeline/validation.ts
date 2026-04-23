@@ -1,4 +1,5 @@
 import { getSourceIntakeById, listParsedCandidates } from "@/lib/source-intake/store";
+import { buildCandidateMatchSuggestions } from "@/lib/source-intake/matcher";
 import {
   findDoraResultByQueueItemId,
   findSocialResultByQueueItemId,
@@ -69,6 +70,49 @@ function compareIsoDesc(left?: string, right?: string): number {
   return (right || "").localeCompare(left || "");
 }
 
+function asTrimmedString(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function parseDirectoryReviewContext(candidate?: ParsedCandidateRow): ValidationDetail["candidate"]["directoryContext"] | undefined {
+  if (!candidate?.rawBlock) return undefined;
+
+  try {
+    const parsed = JSON.parse(candidate.rawBlock) as Record<string, unknown>;
+    const sourceNote = asTrimmedString(parsed.sourceNote);
+    const pageClassification = asTrimmedString(parsed.pageClassification);
+    const isDirectoryDerived = sourceNote === "vagaro_directory_results" || pageClassification === "directory_results_page";
+    if (!isDirectoryDerived) return undefined;
+
+    const context = {
+      businessName: asTrimmedString(parsed.businessName),
+      city: asTrimmedString(parsed.city),
+      state: asTrimmedString(parsed.state),
+      location: asTrimmedString(parsed.location) || candidate.geoHint,
+      serviceHint: candidate.serviceHint || asTrimmedString(parsed.serviceHint) || candidate.roleLabel,
+      listingUrl: asTrimmedString(parsed.listingUrl),
+      ratingSummary: asTrimmedString(parsed.ratingSummary),
+      sourceNote,
+      pageClassification,
+    };
+
+    return Object.values(context).some(Boolean) ? context : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+async function resolveSuggestedMatch(
+  intake: SourceIntakeRecord | null,
+  candidate?: ParsedCandidateRow
+): Promise<ParsedCandidateRow["suggestedMatch"] | undefined> {
+  if (!candidate) return undefined;
+  if (candidate.suggestedMatch) return candidate.suggestedMatch;
+  if (!intake) return undefined;
+  const [enrichedCandidate] = await buildCandidateMatchSuggestions(intake, [candidate]);
+  return enrichedCandidate?.suggestedMatch;
+}
+
 function combineLaneStatuses(rows: ValidationQueueRow[]): string {
   const parts = rows
     .sort((left, right) => VALIDATION_LANE_ORDER[left.sourceType] - VALIDATION_LANE_ORDER[right.sourceType])
@@ -119,8 +163,10 @@ function combineValidationReviewRow(rows: ValidationQueueRow[]): ValidationRevie
   };
 }
 
-export async function listPendingValidationReviewRows(): Promise<ValidationReviewRow[]> {
-  const pendingRows = (await listValidationRows()).filter((row) => isPendingValidationStatus(row.status));
+export async function listPendingValidationReviewRows(intakeId?: string): Promise<ValidationReviewRow[]> {
+  const pendingRows = (await listValidationRows()).filter(
+    (row) => isPendingValidationStatus(row.status) && (!intakeId || row.intakeId === intakeId)
+  );
   const groupedRows = new Map<string, ValidationQueueRow[]>();
   for (const row of pendingRows) {
     const reviewKey = buildValidationReviewKey(row.intakeId, row.candidateId);
@@ -297,6 +343,8 @@ export async function getValidationDetail(reviewKeyOrQueueItemId: string): Promi
     Promise.all(laneRows.map((row) => buildLaneDetail(row))),
   ]);
   const candidate = candidateList.find((row) => row.id === keyParts.candidateId);
+  const suggestedMatch = await resolveSuggestedMatch(intake, candidate);
+  const directoryContext = parseDirectoryReviewContext(candidate);
 
   return {
     row: combineValidationReviewRow(laneRows),
@@ -315,6 +363,8 @@ export async function getValidationDetail(reviewKeyOrQueueItemId: string): Promi
           signalType: candidate.signalType,
           serviceHint: candidate.serviceHint,
           geoHint: candidate.geoHint,
+          suggestedMatch,
+          directoryContext,
         }
       : undefined,
     intake: toIntakeSummary(intake),

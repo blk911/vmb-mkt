@@ -15,7 +15,7 @@ export default async function AdminDashboard() {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard title="New Inputs" value={metrics.newInputs} />
-        <StatCard title="Pending Validation" value={metrics.pendingValidation} />
+        <StatCard title="Pending Review" value={metrics.pendingValidation} />
         <StatCard title="Ready Targets" value={metrics.readyTargets} />
         <StatCard title="Active Outreach" value={metrics.activeOutreach} />
       </div>
@@ -24,7 +24,7 @@ export default async function AdminDashboard() {
         <h2 className="mb-2 text-lg font-semibold">Action Required</h2>
         <ul className="space-y-2">
           <li>
-            <ActionItem text={`${metrics.pendingValidation} operators need validation`} href="/admin/validate" />
+            <ActionItem text={`${metrics.pendingValidation} operators pending review`} href="/admin/validate" />
           </li>
           <li>
             <ActionItem text={`${metrics.readyTargets} targets ready for outreach`} href="/admin/target" />

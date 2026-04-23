@@ -12,22 +12,46 @@ export default async function ValidatePage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = (await searchParams) || {};
+  const intakeId = typeof params.intakeId === "string" ? params.intakeId : undefined;
   const [rows, snapshot, debug] = await Promise.all([
-    listPendingValidationReviewRows(),
+    listPendingValidationReviewRows(intakeId),
     getPipelineOperationalSnapshot(),
     getValidationLoadDebugInfo(),
   ]);
   const status = typeof params.status === "string" ? params.status : undefined;
   const action = typeof params.action === "string" ? params.action : undefined;
   const message = typeof params.message === "string" ? params.message : undefined;
+  const pageTitle = intakeId ? "Submission Review" : "Review Queue";
+  const pageDescription = intakeId
+    ? "Showing pending review rows for this intake only."
+    : "Pending candidates across all intakes. Open any row to review lane-specific evidence and actions.";
+  const detailHrefSuffix = intakeId ? `?${new URLSearchParams({ intakeId }).toString()}` : "";
+  const scopedLaneCounts = rows.reduce(
+    (acc, row) => {
+      for (const lane of row.lanes) {
+        if (lane === "DORA") acc.dora += 1;
+        if (lane === "SOCIAL") acc.social += 1;
+      }
+      return acc;
+    },
+    { dora: 0, social: 0 }
+  );
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold">Validation Queue</h1>
-        <p className="mt-1 text-sm text-gray-600">
-          Pending candidates are combined into one review row when both DORA and SOCIAL lanes exist. Underlying queue items and actions remain lane-specific on the detail page.
-        </p>
+        <h1 className="text-xl font-bold">{pageTitle}</h1>
+        <p className="mt-1 text-sm text-gray-600">{pageDescription}</p>
+        {intakeId ? (
+          <div className="mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+            <div>
+              Latest submission intake <span className="font-mono text-xs">{intakeId}</span>
+            </div>
+            <Link href="/admin/validate" className="font-medium text-blue-700 hover:underline">
+              Open full review queue
+            </Link>
+          </div>
+        ) : null}
       </div>
 
       {message ? (
@@ -37,13 +61,13 @@ export default async function ValidatePage({
       ) : null}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <MetricCard label="Pending Validation" value={snapshot.metrics.pendingValidation} />
-        <MetricCard label="Pending DORA" value={snapshot.pendingBySource.DORA || 0} />
-        <MetricCard label="Pending Social" value={snapshot.pendingBySource.SOCIAL || 0} />
+        <MetricCard label={intakeId ? "Rows In This Submission" : "Pending Review"} value={intakeId ? rows.length : snapshot.metrics.pendingValidation} />
+        <MetricCard label="Pending DORA" value={intakeId ? scopedLaneCounts.dora : snapshot.pendingBySource.DORA || 0} />
+        <MetricCard label="Pending Social" value={intakeId ? scopedLaneCounts.social : snapshot.pendingBySource.SOCIAL || 0} />
       </div>
 
       <div className="rounded-xl border border-dashed border-gray-300 bg-white p-4 shadow">
-        <h2 className="font-semibold">Validate Runtime Debug</h2>
+        <h2 className="font-semibold">Queue Runtime Debug</h2>
         <p className="mt-1 text-sm text-gray-600">Read-only instrumentation for confirming the queue store currently visible to this page load.</p>
         <div className="mt-3 grid grid-cols-1 gap-3 text-sm md:grid-cols-2 xl:grid-cols-3">
           <DebugRow label="Checked at" value={debug.checkedAt} />
@@ -116,7 +140,7 @@ export default async function ValidatePage({
                   </td>
                   <td className="p-3">{row.confidence}</td>
                   <td className="p-3">
-                    <Link href={`/admin/validate/${encodeURIComponent(row.reviewKey)}`} className="text-blue-600 hover:underline">
+                    <Link href={`/admin/validate/${encodeURIComponent(row.reviewKey)}${detailHrefSuffix}`} className="text-blue-600 hover:underline">
                       Review
                     </Link>
                   </td>
@@ -125,7 +149,7 @@ export default async function ValidatePage({
             ) : (
               <tr>
                 <td className="p-4 text-gray-500" colSpan={5}>
-                  No queue items found.
+                  {intakeId ? "No pending review rows found for this intake." : "No queue items found."}
                 </td>
               </tr>
             )}

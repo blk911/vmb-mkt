@@ -5,11 +5,22 @@ import { getValidationDetail } from "@/lib/admin/pipeline/validation";
 
 const TERMINAL_STATUSES = new Set(["approved", "merged", "rejected", "failed", "dismissed"]);
 
-export default async function OperatorDetail({ params }: { params: Promise<{ operatorId: string }> }) {
+export default async function OperatorDetail({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ operatorId: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { operatorId } = await params;
+  const query = (await searchParams) || {};
+  const intakeId = typeof query.intakeId === "string" ? query.intakeId : undefined;
   const detail = await getValidationDetail(decodeURIComponent(operatorId || ""));
 
   if (!detail) notFound();
+
+  const backHref = `/admin/validate${intakeId ? `?${new URLSearchParams({ intakeId }).toString()}` : ""}`;
+  const backLabel = intakeId ? "Back to submission review" : "Back to review queue";
 
   return (
     <div className="space-y-6">
@@ -20,8 +31,8 @@ export default async function OperatorDetail({ params }: { params: Promise<{ ope
             Validation review key {detail.row.reviewKey}
           </p>
         </div>
-        <Link href="/admin/validate" className="text-sm text-blue-600 hover:underline">
-          Back to queue
+        <Link href={backHref} className="text-sm text-blue-600 hover:underline">
+          {backLabel}
         </Link>
       </div>
 
@@ -147,6 +158,106 @@ export default async function OperatorDetail({ params }: { params: Promise<{ ope
               </div>
             ) : null}
 
+            {detail.candidate?.directoryContext ? (
+              <div>
+                <div className="font-medium">Directory Source Context</div>
+                <div className="text-xs text-amber-700">
+                  Supplemental only. This source context supports reviewer judgment and does not change canonical validation state or actions.
+                </div>
+                <dl className="mt-2 space-y-1">
+                  {detail.candidate.directoryContext.businessName ? (
+                    <div>
+                      <dt className="text-gray-500">Business / Salon</dt>
+                      <dd>{detail.candidate.directoryContext.businessName}</dd>
+                    </div>
+                  ) : null}
+                  {detail.candidate.directoryContext.location ||
+                  detail.candidate.directoryContext.city ||
+                  detail.candidate.directoryContext.state ? (
+                    <div>
+                      <dt className="text-gray-500">Location</dt>
+                      <dd>
+                        {detail.candidate.directoryContext.location ||
+                          [detail.candidate.directoryContext.city, detail.candidate.directoryContext.state].filter(Boolean).join(", ")}
+                      </dd>
+                    </div>
+                  ) : null}
+                  {detail.candidate.directoryContext.serviceHint ? (
+                    <div>
+                      <dt className="text-gray-500">Category / Service</dt>
+                      <dd>{detail.candidate.directoryContext.serviceHint}</dd>
+                    </div>
+                  ) : null}
+                  {detail.candidate.directoryContext.listingUrl ? (
+                    <div>
+                      <dt className="text-gray-500">Listing / Profile URL</dt>
+                      <dd>
+                        <a className="text-blue-600 hover:underline" href={detail.candidate.directoryContext.listingUrl} target="_blank" rel="noreferrer">
+                          {detail.candidate.directoryContext.listingUrl}
+                        </a>
+                      </dd>
+                    </div>
+                  ) : null}
+                  {detail.candidate.directoryContext.ratingSummary ? (
+                    <div>
+                      <dt className="text-gray-500">Rating / Reviews</dt>
+                      <dd>{detail.candidate.directoryContext.ratingSummary}</dd>
+                    </div>
+                  ) : null}
+                  {detail.candidate.directoryContext.pageClassification || detail.candidate.directoryContext.sourceNote ? (
+                    <div>
+                      <dt className="text-gray-500">Source Classification</dt>
+                      <dd>
+                        {[detail.candidate.directoryContext.pageClassification, detail.candidate.directoryContext.sourceNote]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </dd>
+                    </div>
+                  ) : null}
+                </dl>
+              </div>
+            ) : null}
+
+            {detail.candidate?.suggestedMatch ? (
+              <div>
+                <div className="font-medium">Possible Existing Match</div>
+                <div className="text-xs text-amber-700">
+                  Supplemental only. This hint is deterministic reviewer guidance from current stored data and does not auto-merge or approve anything.
+                </div>
+                <dl className="mt-2 space-y-1">
+                  <div>
+                    <dt className="text-gray-500">Disposition</dt>
+                    <dd>{detail.candidate.suggestedMatch.disposition}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-gray-500">Score</dt>
+                    <dd>{detail.candidate.suggestedMatch.score}</dd>
+                  </div>
+                  {detail.candidate.suggestedMatch.matchedOperatorName || detail.candidate.suggestedMatch.matchedOperatorId ? (
+                    <div>
+                      <dt className="text-gray-500">Matched Operator</dt>
+                      <dd>
+                        {detail.candidate.suggestedMatch.matchedOperatorName || "Unknown operator"}
+                        {detail.candidate.suggestedMatch.matchedOperatorId ? (
+                          <span className="ml-2 font-mono text-xs text-gray-500">{detail.candidate.suggestedMatch.matchedOperatorId}</span>
+                        ) : null}
+                      </dd>
+                    </div>
+                  ) : null}
+                  {detail.candidate.suggestedMatch.reasons.length ? (
+                    <div>
+                      <dt className="text-gray-500">Reasons</dt>
+                      <dd className="space-y-1">
+                        {detail.candidate.suggestedMatch.reasons.map((reason) => (
+                          <div key={reason}>{reason}</div>
+                        ))}
+                      </dd>
+                    </div>
+                  ) : null}
+                </dl>
+              </div>
+            ) : null}
+
             <div>
               <div className="font-medium">Validation Lanes</div>
               <div className="mt-2 space-y-3">
@@ -226,6 +337,7 @@ export default async function OperatorDetail({ params }: { params: Promise<{ ope
                     queueItemId={lane.queueItemId}
                     displayName={`${detail.row.displayName} (${lane.sourceType})`}
                     resolveEndpoint={lane.resolveEndpoint}
+                    intakeId={intakeId}
                   />
                 )}
               </div>

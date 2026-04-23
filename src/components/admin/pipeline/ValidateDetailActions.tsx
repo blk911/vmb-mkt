@@ -7,11 +7,12 @@ type Props = {
   queueItemId: string;
   displayName: string;
   resolveEndpoint: string;
+  intakeId?: string;
 };
 
 type ActionKind = "approve" | "merge" | "reject";
 
-export default function ValidateDetailActions({ queueItemId, displayName, resolveEndpoint }: Props) {
+export default function ValidateDetailActions({ queueItemId, displayName, resolveEndpoint, intakeId }: Props) {
   const router = useRouter();
   const [busyAction, setBusyAction] = useState<ActionKind | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -67,8 +68,9 @@ export default function ValidateDetailActions({ queueItemId, displayName, resolv
       const params = new URLSearchParams({
         status: ok ? "success" : "error",
         action,
-        message: ok ? `${displayName} ${action === "approve" ? "approved" : action === "merge" ? "merged" : "rejected"} and removed from pending validation.` : String(data?.error || "request_failed"),
+        message: ok ? `${displayName} ${action === "approve" ? "approved" : action === "merge" ? "merged" : "rejected"} and removed from pending review.` : String(data?.error || "request_failed"),
       });
+      if (intakeId) params.set("intakeId", intakeId);
       router.push(`/admin/validate?${params.toString()}`);
     } catch (caughtError: unknown) {
       const message = caughtError instanceof Error ? caughtError.message : "request_failed";

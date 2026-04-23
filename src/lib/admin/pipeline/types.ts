@@ -1,3 +1,4 @@
+import type { CandidateMatchSuggestion } from "@/lib/source-intake/types";
 import type { BuildSubmitDebugInfo, ValidationLoadDebugInfo } from "./runtime-debug";
 
 export type BuildSourceType = "Instagram" | "DORA" | "Upload" | "URL";
@@ -9,11 +10,19 @@ export type BuildSubmissionSummary = {
   notes?: string[];
 };
 
+export type BuildQueueSummary = {
+  intakeId: string;
+  candidatesCreated: number;
+  doraQueued: number;
+  socialQueued: number;
+};
+
 export type BuildSubmissionResult =
   | {
       ok: true;
       endpoint: string;
       summary: BuildSubmissionSummary;
+      queue?: BuildQueueSummary;
       raw: unknown;
       debug?: BuildSubmitDebugInfo;
     }
@@ -86,6 +95,18 @@ export type ValidationLaneDetail = {
   };
 };
 
+export type DirectoryReviewContext = {
+  businessName?: string;
+  city?: string;
+  state?: string;
+  location?: string;
+  serviceHint?: string;
+  listingUrl?: string;
+  ratingSummary?: string;
+  sourceNote?: string;
+  pageClassification?: string;
+};
+
 export type ValidationDetail = {
   row: ValidationReviewRow;
   lanes: ValidationLaneDetail[];
@@ -102,6 +123,8 @@ export type ValidationDetail = {
     signalType?: "provider" | "client_tagged" | "unknown";
     serviceHint?: string;
     geoHint?: string;
+    suggestedMatch?: CandidateMatchSuggestion;
+    directoryContext?: DirectoryReviewContext;
   };
   intake?: {
     id: string;

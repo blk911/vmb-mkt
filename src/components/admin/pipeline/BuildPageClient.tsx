@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import NextActionLink from "@/components/admin/pipeline/NextActionLink";
 import type { BuildSourceType, BuildSubmissionResult } from "@/lib/admin/pipeline/types";
@@ -127,6 +128,7 @@ function readPersistedDraft(): PersistedBuildDraft | null {
 }
 
 export default function BuildPageClient() {
+  const router = useRouter();
   const [sourceType, setSourceType] = useState<BuildSourceType | null>(null);
   const [rawText, setRawText] = useState("");
   const [result, setResult] = useState<BuildSubmissionResult | null>(null);
@@ -156,6 +158,11 @@ export default function BuildPageClient() {
     };
     window.localStorage.setItem(BUILD_DRAFT_STORAGE_KEY, JSON.stringify(payload));
   }, [draftLoaded, sourceType, rawText]);
+
+  function getSubmissionIntakeId(value: BuildSubmissionResult): string | undefined {
+    if (!value.ok) return undefined;
+    return value.queue?.intakeId || value.debug?.intakeId;
+  }
 
   async function logBuildAction(payload: {
     sourceType: BuildSourceType;
@@ -210,6 +217,11 @@ export default function BuildPageClient() {
             }
           : { error: normalized.error, debug: normalized.debug },
       });
+
+      const intakeId = getSubmissionIntakeId(normalized);
+      if (normalized.ok && intakeId) {
+        router.push(`/admin/validate?${new URLSearchParams({ intakeId }).toString()}`);
+      }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "request_failed";
       setResult({ ok: false, error: message });
@@ -309,12 +321,12 @@ export default function BuildPageClient() {
               ))}
             </div>
           ) : null}
-          {result.ok ? <p className="mt-3 text-sm font-medium text-green-800">Next: review the new pending item in Validate.</p> : null}
+          {result.ok ? <p className="mt-3 text-sm font-medium text-green-800">Next: review this submission.</p> : null}
           {result.debug ? <BuildDebugPanel result={result} /> : null}
         </div>
       ) : null}
 
-      <NextActionLink href="/admin/validate" text="Review pending operators in Validate" />
+      <NextActionLink href="/admin/validate" text="Open review queue" />
     </div>
   );
 }
