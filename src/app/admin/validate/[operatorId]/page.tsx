@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import ValidateDetailActions from "@/components/admin/pipeline/ValidateDetailActions";
 import { getValidationDetail } from "@/lib/admin/pipeline/validation";
 
+const TERMINAL_STATUSES = new Set(["approved", "merged", "rejected", "failed", "dismissed"]);
+
 export default async function OperatorDetail({ params }: { params: Promise<{ operatorId: string }> }) {
   const { operatorId } = await params;
   const detail = await getValidationDetail(decodeURIComponent(operatorId || ""));
@@ -15,7 +17,7 @@ export default async function OperatorDetail({ params }: { params: Promise<{ ope
         <div>
           <h1 className="text-xl font-bold">{detail.row.displayName}</h1>
           <p className="mt-1 text-sm text-gray-600">
-            {detail.row.sourceType} queue item {detail.row.queueItemId}
+            Validation review key {detail.row.reviewKey}
           </p>
         </div>
         <Link href="/admin/validate" className="text-sm text-blue-600 hover:underline">
@@ -36,12 +38,22 @@ export default async function OperatorDetail({ params }: { params: Promise<{ ope
               <dd>{[detail.row.city, detail.row.state].filter(Boolean).join(", ") || "Unknown"}</dd>
             </div>
             <div>
-              <dt className="text-gray-500">Source</dt>
-              <dd>{detail.row.sourceType}</dd>
+              <dt className="text-gray-500">Validation Lanes</dt>
+              <dd className="flex flex-wrap gap-2">
+                {detail.row.lanes.map((lane) => (
+                  <LaneBadge key={lane} lane={lane} />
+                ))}
+              </dd>
             </div>
             <div>
-              <dt className="text-gray-500">Status</dt>
-              <dd>{detail.row.status}</dd>
+              <dt className="text-gray-500">Lane Status</dt>
+              <dd>
+                {detail.row.lanes.map((lane) => (
+                  <div key={lane}>
+                    {lane}: {detail.row.laneStatuses[lane] || "pending"}
+                  </div>
+                ))}
+              </dd>
             </div>
             <div>
               <dt className="text-gray-500">Confidence</dt>
@@ -135,18 +147,32 @@ export default async function OperatorDetail({ params }: { params: Promise<{ ope
               </div>
             ) : null}
 
-            {detail.resultSummary ? (
-              <div>
-                <div className="font-medium">{detail.resultSummary.title}</div>
-                <ul className="mt-1 space-y-1 text-gray-700">
-                  {detail.resultSummary.lines.map((line) => (
-                    <li key={line}>{line}</li>
-                  ))}
-                </ul>
+            <div>
+              <div className="font-medium">Validation Lanes</div>
+              <div className="mt-2 space-y-3">
+                {detail.lanes.map((lane) => (
+                  <div key={lane.queueItemId} className="rounded-lg border border-gray-200 p-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <LaneBadge lane={lane.sourceType} />
+                      <span className="font-mono text-xs text-gray-500">{lane.queueItemId}</span>
+                    </div>
+                    <div className="mt-2 text-gray-700">Status: {lane.status}</div>
+                    {lane.resultSummary ? (
+                      <div className="mt-2">
+                        <div className="font-medium">{lane.resultSummary.title}</div>
+                        <ul className="mt-1 space-y-1 text-gray-700">
+                          {lane.resultSummary.lines.map((line) => (
+                            <li key={line}>{line}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : (
+                      <div className="mt-2 text-gray-500">No resolved evidence yet for this lane.</div>
+                    )}
+                  </div>
+                ))}
               </div>
-            ) : (
-              <div className="text-gray-500">No resolved evidence yet for this queue item.</div>
-            )}
+            </div>
           </div>
         </section>
 
@@ -185,15 +211,36 @@ export default async function OperatorDetail({ params }: { params: Promise<{ ope
 
         <section className="rounded-xl bg-white p-4 shadow xl:col-span-2">
           <h2 className="font-bold">Review Actions</h2>
-          <div className="mt-3">
-            <ValidateDetailActions
-              queueItemId={detail.row.queueItemId}
-              displayName={detail.row.displayName}
-              resolveEndpoint={detail.resolveEndpoint}
-            />
+          <p className="mt-1 text-sm text-gray-600">Underlying queue items remain separate. Review actions below still submit to each lane&apos;s existing resolve endpoint.</p>
+          <div className="mt-3 grid grid-cols-1 gap-4 xl:grid-cols-2">
+            {detail.lanes.map((lane) => (
+              <div key={lane.queueItemId} className="rounded-lg border border-gray-200 p-4">
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  <LaneBadge lane={lane.sourceType} />
+                  <span className="font-mono text-xs text-gray-500">{lane.queueItemId}</span>
+                </div>
+                {TERMINAL_STATUSES.has(lane.status) ? (
+                  <p className="text-sm text-gray-500">This lane is already resolved and no longer accepts review actions.</p>
+                ) : (
+                  <ValidateDetailActions
+                    queueItemId={lane.queueItemId}
+                    displayName={`${detail.row.displayName} (${lane.sourceType})`}
+                    resolveEndpoint={lane.resolveEndpoint}
+                  />
+                )}
+              </div>
+            ))}
           </div>
         </section>
       </div>
     </div>
   );
+}
+
+function LaneBadge({ lane }: { lane: "DORA" | "SOCIAL" }) {
+  const className =
+    lane === "DORA"
+      ? "border-blue-200 bg-blue-50 text-blue-700"
+      : "border-purple-200 bg-purple-50 text-purple-700";
+  return <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${className}`}>{lane}</span>;
 }

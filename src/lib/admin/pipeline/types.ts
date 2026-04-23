@@ -49,9 +49,46 @@ export type ValidationQueueRow = {
   geoHint?: string;
 };
 
-export type ValidationDetail = {
-  row: ValidationQueueRow;
+export type ValidationReviewRow = {
+  reviewKey: string;
+  intakeId: string;
+  candidateId: string;
+  displayName: string;
+  city?: string;
+  state?: string;
+  sourceLabel: string;
+  sourceUrl?: string;
+  status: string;
+  confidence: string;
+  confidenceScore?: number;
+  createdAt: string;
+  resolvedAt?: string;
+  instagramHandle?: string;
+  instagramProfileUrl?: string;
+  captionSnippet?: string;
+  signalType?: "provider" | "client_tagged" | "unknown";
+  serviceHint?: string;
+  geoHint?: string;
+  lanes: ValidationQueueSource[];
+  laneStatuses: Partial<Record<ValidationQueueSource, string>>;
+};
+
+export type ValidationLaneDetail = {
+  queueItemId: string;
+  sourceType: ValidationQueueSource;
+  status: string;
+  createdAt: string;
+  resolvedAt?: string;
   resolveEndpoint: string;
+  resultSummary?: {
+    title: string;
+    lines: string[];
+  };
+};
+
+export type ValidationDetail = {
+  row: ValidationReviewRow;
+  lanes: ValidationLaneDetail[];
   candidate?: {
     displayName: string;
     roleLabel?: string;
@@ -73,10 +110,6 @@ export type ValidationDetail = {
     sourceUrl?: string;
     status: string;
     submittedAt: string;
-  };
-  resultSummary?: {
-    title: string;
-    lines: string[];
   };
   historicalProcessing?: {
     present: boolean;

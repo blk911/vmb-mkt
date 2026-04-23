@@ -2,15 +2,19 @@ import { getSourceIntakeById, listParsedCandidates } from "@/lib/source-intake/s
 import {
   findDoraResultByQueueItemId,
   findSocialResultByQueueItemId,
-  getDoraQueueItemById,
-  getSocialQueueItemById,
   listDoraQueue,
   listSocialQueue,
 } from "@/lib/source-intake/phase2-store";
 import type { ParsedCandidateRow, SourceIntakeRecord } from "@/lib/source-intake/types";
 import type { DoraValidationResult, SocialDiscoveryResult } from "@/lib/source-intake/phase2-types";
 import { getHistoricalProcessingContext } from "./reconciliation";
-import type { ValidationDetail, ValidationQueueRow } from "./types";
+import type { ValidationDetail, ValidationLaneDetail, ValidationQueueRow, ValidationReviewRow } from "./types";
+
+const TERMINAL_VALIDATION_STATUSES = new Set(["approved", "merged", "rejected", "failed", "dismissed"]);
+const VALIDATION_LANE_ORDER: Record<ValidationQueueRow["sourceType"], number> = {
+  DORA: 0,
+  SOCIAL: 1,
+};
 
 function confidenceToScore(confidence?: string): number | undefined {
   if (!confidence) return undefined;
@@ -42,6 +46,116 @@ function resultStatus(result?: DoraValidationResult | SocialDiscoveryResult | nu
   if ("finalStatus" in result && result.finalStatus) return result.finalStatus;
   if ("status" in result) return result.status;
   return result.discoveredSurfaces.length ? "resolved" : "queued";
+}
+
+function buildValidationReviewKey(intakeId: string, candidateId: string): string {
+  return `${intakeId}::${candidateId}`;
+}
+
+function parseValidationReviewKey(value: string): { intakeId: string; candidateId: string } | null {
+  const separatorIndex = value.indexOf("::");
+  if (separatorIndex <= 0) return null;
+  const intakeId = value.slice(0, separatorIndex);
+  const candidateId = value.slice(separatorIndex + 2);
+  if (!intakeId || !candidateId) return null;
+  return { intakeId, candidateId };
+}
+
+function isPendingValidationStatus(status: string): boolean {
+  return !TERMINAL_VALIDATION_STATUSES.has(status);
+}
+
+function compareIsoDesc(left?: string, right?: string): number {
+  return (right || "").localeCompare(left || "");
+}
+
+function combineLaneStatuses(rows: ValidationQueueRow[]): string {
+  const parts = rows
+    .sort((left, right) => VALIDATION_LANE_ORDER[left.sourceType] - VALIDATION_LANE_ORDER[right.sourceType])
+    .map((row) => `${row.sourceType}: ${row.status}`);
+  return parts.join(" · ");
+}
+
+function combineValidationReviewRow(rows: ValidationQueueRow[]): ValidationReviewRow {
+  const orderedRows = [...rows].sort((left, right) => {
+    const byCreatedAt = compareIsoDesc(left.createdAt, right.createdAt);
+    if (byCreatedAt !== 0) return byCreatedAt;
+    return VALIDATION_LANE_ORDER[left.sourceType] - VALIDATION_LANE_ORDER[right.sourceType];
+  });
+  const baseRow = orderedRows[0];
+  const bestConfidenceRow =
+    [...orderedRows]
+      .filter((row) => typeof row.confidenceScore === "number")
+      .sort((left, right) => (right.confidenceScore || 0) - (left.confidenceScore || 0))[0] || baseRow;
+  const laneStatuses = orderedRows.reduce<ValidationReviewRow["laneStatuses"]>((acc, row) => {
+    acc[row.sourceType] = row.status;
+    return acc;
+  }, {});
+  const lanes = [...new Set(orderedRows.map((row) => row.sourceType))].sort(
+    (left, right) => VALIDATION_LANE_ORDER[left] - VALIDATION_LANE_ORDER[right]
+  );
+  return {
+    reviewKey: buildValidationReviewKey(baseRow.intakeId, baseRow.candidateId),
+    intakeId: baseRow.intakeId,
+    candidateId: baseRow.candidateId,
+    displayName: baseRow.displayName,
+    city: orderedRows.map((row) => row.city).find(Boolean),
+    state: orderedRows.map((row) => row.state).find(Boolean),
+    sourceLabel: baseRow.sourceLabel,
+    sourceUrl: orderedRows.map((row) => row.sourceUrl).find(Boolean),
+    status: combineLaneStatuses(orderedRows),
+    confidence: bestConfidenceRow.confidence,
+    confidenceScore: bestConfidenceRow.confidenceScore,
+    createdAt: orderedRows.map((row) => row.createdAt).sort((left, right) => compareIsoDesc(left, right))[0] || baseRow.createdAt,
+    resolvedAt: orderedRows.map((row) => row.resolvedAt).filter(Boolean).sort((left, right) => compareIsoDesc(left, right))[0],
+    instagramHandle: baseRow.instagramHandle,
+    instagramProfileUrl: baseRow.instagramProfileUrl,
+    captionSnippet: baseRow.captionSnippet,
+    signalType: baseRow.signalType,
+    serviceHint: baseRow.serviceHint,
+    geoHint: baseRow.geoHint,
+    lanes,
+    laneStatuses,
+  };
+}
+
+export async function listPendingValidationReviewRows(): Promise<ValidationReviewRow[]> {
+  const pendingRows = (await listValidationRows()).filter((row) => isPendingValidationStatus(row.status));
+  const groupedRows = new Map<string, ValidationQueueRow[]>();
+  for (const row of pendingRows) {
+    const reviewKey = buildValidationReviewKey(row.intakeId, row.candidateId);
+    const current = groupedRows.get(reviewKey) || [];
+    current.push(row);
+    groupedRows.set(reviewKey, current);
+  }
+  return [...groupedRows.values()]
+    .map((rows) => combineValidationReviewRow(rows))
+    .sort((left, right) => compareIsoDesc(left.createdAt, right.createdAt));
+}
+
+async function buildLaneDetail(row: ValidationQueueRow): Promise<ValidationLaneDetail> {
+  if (row.sourceType === "DORA") {
+    const result = await findDoraResultByQueueItemId(row.queueItemId);
+    return {
+      queueItemId: row.queueItemId,
+      sourceType: row.sourceType,
+      status: row.status,
+      createdAt: row.createdAt,
+      resolvedAt: row.resolvedAt,
+      resolveEndpoint: `/api/source-intake/dora-queue/${encodeURIComponent(row.queueItemId)}/resolve`,
+      resultSummary: result ? doraResultSummary(result) : undefined,
+    };
+  }
+  const result = await findSocialResultByQueueItemId(row.queueItemId);
+  return {
+    queueItemId: row.queueItemId,
+    sourceType: row.sourceType,
+    status: row.status,
+    createdAt: row.createdAt,
+    resolvedAt: row.resolvedAt,
+    resolveEndpoint: `/api/source-intake/social-queue/${encodeURIComponent(row.queueItemId)}/resolve`,
+    resultSummary: result ? socialResultSummary(result) : undefined,
+  };
 }
 
 export async function listValidationRows(): Promise<ValidationQueueRow[]> {
@@ -121,7 +235,7 @@ export async function listValidationRows(): Promise<ValidationQueueRow[]> {
   return [...doraRows, ...socialRows].sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
 }
 
-function doraResultSummary(result: DoraValidationResult): ValidationDetail["resultSummary"] {
+function doraResultSummary(result: DoraValidationResult): ValidationLaneDetail["resultSummary"] {
   return {
     title: "DORA Resolution",
     lines: [
@@ -135,7 +249,7 @@ function doraResultSummary(result: DoraValidationResult): ValidationDetail["resu
   };
 }
 
-function socialResultSummary(result: SocialDiscoveryResult): ValidationDetail["resultSummary"] {
+function socialResultSummary(result: SocialDiscoveryResult): ValidationLaneDetail["resultSummary"] {
   return {
     title: "Social Resolution",
     lines: [
@@ -160,98 +274,33 @@ function toIntakeSummary(intake: SourceIntakeRecord | null): ValidationDetail["i
   };
 }
 
-export async function getValidationDetail(queueItemId: string): Promise<ValidationDetail | null> {
-  const doraItem = await getDoraQueueItemById(queueItemId);
-  if (doraItem) {
-    const [candidateList, intake, result, historicalProcessing] = await Promise.all([
-      listParsedCandidates(doraItem.intakeId),
-      getSourceIntakeById(doraItem.intakeId),
-      findDoraResultByQueueItemId(queueItemId),
-      getHistoricalProcessingContext(doraItem.intakeId),
-    ]);
-    const candidate = candidateList.find((row) => row.id === doraItem.candidateId);
-    const confidence = normalizeConfidence(candidate, result?.score);
-    return {
-      row: {
-        queueItemId: doraItem.id,
-        intakeId: doraItem.intakeId,
-        candidateId: doraItem.candidateId,
-        displayName: doraItem.displayName,
-        city: doraItem.city,
-        state: doraItem.state,
-        sourceLabel: doraItem.sourceLabel,
-        sourceUrl: doraItem.sourceUrl,
-        sourceType: "DORA",
-        status: resultStatus(result) || doraItem.status,
-        confidence: confidence.label,
-        confidenceScore: confidence.score,
-        createdAt: doraItem.createdAt,
-        resolvedAt: result?.resolvedAt,
-        instagramHandle: candidate?.instagramHandle,
-        instagramProfileUrl: candidate?.instagramProfileUrl,
-        captionSnippet: candidate?.captionSnippet,
-        signalType: candidate?.signalType,
-        serviceHint: candidate?.serviceHint,
-        geoHint: candidate?.geoHint,
-      },
-      resolveEndpoint: `/api/source-intake/dora-queue/${encodeURIComponent(queueItemId)}/resolve`,
-      candidate: candidate
-        ? {
-            displayName: candidate.displayName,
-            roleLabel: candidate.roleLabel,
-            priceText: candidate.priceText,
-            parseConfidence: candidate.parseConfidence,
-            parseWarnings: candidate.parseWarnings,
-            rawBlock: candidate.rawBlock,
-            instagramHandle: candidate.instagramHandle,
-            instagramProfileUrl: candidate.instagramProfileUrl,
-            captionSnippet: candidate.captionSnippet,
-            signalType: candidate.signalType,
-            serviceHint: candidate.serviceHint,
-            geoHint: candidate.geoHint,
-          }
-        : undefined,
-      intake: toIntakeSummary(intake),
-      resultSummary: result ? doraResultSummary(result) : undefined,
-      historicalProcessing,
-    };
-  }
+export async function getValidationDetail(reviewKeyOrQueueItemId: string): Promise<ValidationDetail | null> {
+  const validationRows = await listValidationRows();
+  const matchedQueueRow = validationRows.find((row) => row.queueItemId === reviewKeyOrQueueItemId);
+  const keyParts = matchedQueueRow
+    ? {
+        intakeId: matchedQueueRow.intakeId,
+        candidateId: matchedQueueRow.candidateId,
+      }
+    : parseValidationReviewKey(reviewKeyOrQueueItemId);
+  if (!keyParts) return null;
 
-  const socialItem = await getSocialQueueItemById(queueItemId);
-  if (!socialItem) return null;
+  const laneRows = validationRows
+    .filter((row) => row.intakeId === keyParts.intakeId && row.candidateId === keyParts.candidateId)
+    .sort((left, right) => VALIDATION_LANE_ORDER[left.sourceType] - VALIDATION_LANE_ORDER[right.sourceType]);
+  if (!laneRows.length) return null;
 
-  const [candidateList, intake, result, historicalProcessing] = await Promise.all([
-    listParsedCandidates(socialItem.intakeId),
-    getSourceIntakeById(socialItem.intakeId),
-    findSocialResultByQueueItemId(queueItemId),
-    getHistoricalProcessingContext(socialItem.intakeId),
+  const [candidateList, intake, historicalProcessing, lanes] = await Promise.all([
+    listParsedCandidates(keyParts.intakeId),
+    getSourceIntakeById(keyParts.intakeId),
+    getHistoricalProcessingContext(keyParts.intakeId),
+    Promise.all(laneRows.map((row) => buildLaneDetail(row))),
   ]);
-  const candidate = candidateList.find((row) => row.id === socialItem.candidateId);
-  const confidence = normalizeConfidence(candidate);
+  const candidate = candidateList.find((row) => row.id === keyParts.candidateId);
+
   return {
-    row: {
-      queueItemId: socialItem.id,
-      intakeId: socialItem.intakeId,
-      candidateId: socialItem.candidateId,
-      displayName: socialItem.displayName,
-      city: socialItem.city,
-      state: socialItem.state,
-      sourceLabel: socialItem.sourceLabel,
-      sourceUrl: socialItem.sourceUrl,
-      sourceType: "SOCIAL",
-      status: resultStatus(result) || socialItem.status,
-      confidence: confidence.label,
-      confidenceScore: confidence.score,
-      createdAt: socialItem.createdAt,
-      resolvedAt: result?.resolvedAt,
-      instagramHandle: candidate?.instagramHandle,
-      instagramProfileUrl: candidate?.instagramProfileUrl,
-      captionSnippet: candidate?.captionSnippet,
-      signalType: candidate?.signalType,
-      serviceHint: candidate?.serviceHint,
-      geoHint: candidate?.geoHint,
-    },
-    resolveEndpoint: `/api/source-intake/social-queue/${encodeURIComponent(queueItemId)}/resolve`,
+    row: combineValidationReviewRow(laneRows),
+    lanes,
     candidate: candidate
       ? {
           displayName: candidate.displayName,
@@ -269,7 +318,6 @@ export async function getValidationDetail(queueItemId: string): Promise<Validati
         }
       : undefined,
     intake: toIntakeSummary(intake),
-    resultSummary: result ? socialResultSummary(result) : undefined,
     historicalProcessing,
   };
 }

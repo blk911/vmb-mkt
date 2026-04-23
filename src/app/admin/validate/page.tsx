@@ -1,7 +1,8 @@
 import Link from "next/link";
 import NextActionLink from "@/components/admin/pipeline/NextActionLink";
 import { getValidationLoadDebugInfo } from "@/lib/admin/pipeline/runtime-debug";
-import { getPipelineOperationalSnapshot, listPendingValidationRows } from "@/lib/admin/pipeline/state";
+import { getPipelineOperationalSnapshot } from "@/lib/admin/pipeline/state";
+import { listPendingValidationReviewRows } from "@/lib/admin/pipeline/validation";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export default async function ValidatePage({
 }) {
   const params = (await searchParams) || {};
   const [rows, snapshot, debug] = await Promise.all([
-    listPendingValidationRows(),
+    listPendingValidationReviewRows(),
     getPipelineOperationalSnapshot(),
     getValidationLoadDebugInfo(),
   ]);
@@ -24,7 +25,9 @@ export default async function ValidatePage({
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold">Validation Queue</h1>
-        <p className="mt-1 text-sm text-gray-600">Only true pending queue items remain here; approved, merged, and rejected items are removed from this view.</p>
+        <p className="mt-1 text-sm text-gray-600">
+          Pending candidates are combined into one review row when both DORA and SOCIAL lanes exist. Underlying queue items and actions remain lane-specific on the detail page.
+        </p>
       </div>
 
       {message ? (
@@ -66,9 +69,8 @@ export default async function ValidatePage({
         <table className="w-full text-sm">
           <thead className="bg-gray-100 text-left">
             <tr>
-              <th className="p-3">Queue Item</th>
-              <th className="p-3">Name</th>
-              <th className="p-3">Source</th>
+              <th className="p-3">Candidate</th>
+              <th className="p-3">Lanes</th>
               <th className="p-3">Status</th>
               <th className="p-3">Confidence</th>
               <th className="p-3">Action</th>
@@ -77,13 +79,13 @@ export default async function ValidatePage({
           <tbody>
             {rows.length ? (
               rows.map((row) => (
-                <tr key={row.queueItemId} className="border-t">
-                  <td className="p-3 font-mono text-xs text-gray-600">{row.queueItemId}</td>
+                <tr key={row.reviewKey} className="border-t">
                   <td className="p-3">
                     <div className="font-medium text-gray-900">{row.displayName}</div>
                     <div className="text-xs text-gray-500">
                       {[row.city, row.state].filter(Boolean).join(", ") || "Location unknown"}
                     </div>
+                    <div className="mt-1 font-mono text-[11px] text-gray-400">{row.reviewKey}</div>
                     {row.instagramHandle || row.signalType || row.serviceHint || row.geoHint ? (
                       <div className="mt-1 text-xs text-amber-700">
                         IG context:{" "}
@@ -98,11 +100,23 @@ export default async function ValidatePage({
                       </div>
                     ) : null}
                   </td>
-                  <td className="p-3">{row.sourceType}</td>
-                  <td className="p-3">{row.status}</td>
+                  <td className="p-3">
+                    <div className="flex flex-wrap gap-2">
+                      {row.lanes.map((lane) => (
+                        <LaneBadge key={lane} lane={lane} />
+                      ))}
+                    </div>
+                  </td>
+                  <td className="p-3 text-xs text-gray-700">
+                    {row.lanes.map((lane) => (
+                      <div key={lane}>
+                        {lane}: {row.laneStatuses[lane] || "pending"}
+                      </div>
+                    ))}
+                  </td>
                   <td className="p-3">{row.confidence}</td>
                   <td className="p-3">
-                    <Link href={`/admin/validate/${encodeURIComponent(row.queueItemId)}`} className="text-blue-600 hover:underline">
+                    <Link href={`/admin/validate/${encodeURIComponent(row.reviewKey)}`} className="text-blue-600 hover:underline">
                       Review
                     </Link>
                   </td>
@@ -110,7 +124,7 @@ export default async function ValidatePage({
               ))
             ) : (
               <tr>
-                <td className="p-4 text-gray-500" colSpan={6}>
+                <td className="p-4 text-gray-500" colSpan={5}>
                   No queue items found.
                 </td>
               </tr>
@@ -131,6 +145,14 @@ function MetricCard({ label, value }: { label: string; value: number }) {
       <div className="text-xl font-bold">{value}</div>
     </div>
   );
+}
+
+function LaneBadge({ lane }: { lane: "DORA" | "SOCIAL" }) {
+  const className =
+    lane === "DORA"
+      ? "border-blue-200 bg-blue-50 text-blue-700"
+      : "border-purple-200 bg-purple-50 text-purple-700";
+  return <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${className}`}>{lane}</span>;
 }
 
 function DebugRow({ label, value }: { label: string; value: string }) {
