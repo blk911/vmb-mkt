@@ -1,4 +1,5 @@
 import type { BuildSourceType, BuildSubmissionResult, BuildSubmissionSummary } from "./types";
+import { parseInstagramUrlIdentity } from "./normalization";
 
 type BuildRequestConfig = {
   endpoint: string;
@@ -80,7 +81,18 @@ export function normalizeBuildUploadRecords(
 
   const lines = toNonEmptyLines(rawText);
   if (sourceType === "URL") {
-    return lines.map((line) => ({ sourceUrl: line, website: line }));
+    return lines.map((line) => {
+      const instagramIdentity = parseInstagramUrlIdentity(line);
+      if (!instagramIdentity) {
+        return { sourceUrl: line, website: line };
+      }
+      return {
+        sourceUrl: instagramIdentity.normalizedUrl,
+        instagram: instagramIdentity.instagramProfileUrl || instagramIdentity.normalizedUrl,
+        name: instagramIdentity.displayNameFallback,
+        sourceNote: "instagram_url_identity",
+      };
+    });
   }
   if (sourceType === "DORA") {
     return lines.map((line) => ({ businessName: line }));

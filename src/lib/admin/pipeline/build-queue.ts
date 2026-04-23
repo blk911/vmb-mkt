@@ -24,6 +24,7 @@ import {
 import {
   normalizeCanonicalCategory,
   normalizedTextFingerprint,
+  parseInstagramUrlIdentity,
   pickMostCommonNonEmpty,
   toInstagramProfileUrl,
 } from "./normalization";
@@ -169,7 +170,16 @@ function prepareUploadCandidates(
   const records = normalizeBuildUploadRecords(sourceType, rawText);
   const adapted = adaptUploadRecords(records);
   const candidates = adapted.sourceRecords.map((row, index) => {
-    const displayName = row.name?.trim() || row.instagram || row.website || row.booking || `Candidate ${index + 1}`;
+    const instagramIdentity =
+      sourceType === "URL" ? parseInstagramUrlIdentity(row.instagram || row.sourceUrl || row.website) : null;
+    const displayName =
+      row.name?.trim() ||
+      instagramIdentity?.displayNameFallback ||
+      (instagramIdentity ? "Instagram URL" : undefined) ||
+      row.instagram ||
+      row.website ||
+      row.booking ||
+      `Candidate ${index + 1}`;
     const parts = splitDisplayName(displayName);
     const rawBlock =
       row.raw && typeof row.raw === "object" && "original" in row.raw
@@ -178,6 +188,7 @@ function prepareUploadCandidates(
     const warnings: string[] = [];
     if (!row.city) warnings.push("missing_city");
     if (!row.address) warnings.push("missing_address");
+    if (instagramIdentity) warnings.push("instagram_url_identity_source");
     return {
       id: `${intakeId}_cand_${String(index + 1).padStart(2, "0")}`,
       intakeId,
@@ -186,8 +197,15 @@ function prepareUploadCandidates(
       displayName,
       firstName: parts.firstName,
       lastName: parts.lastName,
+      instagramHandle: instagramIdentity?.instagramHandle,
+      instagramProfileUrl:
+        instagramIdentity?.instagramProfileUrl || toInstagramProfileUrl(row.instagram || row.sourceUrl),
+      signalType: instagramIdentity ? "unknown" : undefined,
       roleLabel: normalizeCanonicalCategory(row.category),
-      parseConfidence: row.name && (row.city || row.address) ? "high" : row.name ? "medium" : "low",
+      parseConfidence:
+        row.name && (row.city || row.address)
+          ? "high"
+          : row.name || instagramIdentity ? "medium" : "low",
       parseWarnings: warnings.length ? warnings : undefined,
       reviewAction: "pending",
     } satisfies ParsedCandidateRow;

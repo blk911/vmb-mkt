@@ -2,6 +2,14 @@ import crypto from "node:crypto";
 
 export type CanonicalCategory = "nails" | "lashes" | "brows" | "hair" | "spa" | "multi_service" | "unknown";
 
+export type InstagramUrlIdentity = {
+  normalizedUrl: string;
+  instagramHandle?: string;
+  instagramProfileUrl?: string;
+  displayNameFallback?: string;
+  identityKind: "profile" | "content";
+};
+
 export function normalizeCanonicalCategory(input?: string): CanonicalCategory {
   const text = (input || "").trim().toLowerCase();
   if (!text) return "unknown";
@@ -24,6 +32,68 @@ export function toInstagramProfileUrl(value?: string): string | undefined {
   const handle = raw.replace(/^@/, "").replace(/^https?:\/\/(www\.)?instagram\.com\//i, "").replace(/\/+$/, "");
   if (!handle || /[/?#]/.test(handle)) return undefined;
   return `https://www.instagram.com/${handle}/`;
+}
+
+export function instagramHandleToDisplayName(value?: string): string | undefined {
+  const handle = (value || "").trim().replace(/^@/, "");
+  if (!handle) return undefined;
+  const display = handle.replace(/[._]+/g, " ").trim();
+  return display || handle;
+}
+
+export function parseInstagramUrlIdentity(value?: string): InstagramUrlIdentity | null {
+  const raw = (value || "").trim();
+  if (!raw) return null;
+
+  let url: URL;
+  try {
+    url = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
+  } catch {
+    return null;
+  }
+
+  const hostname = url.hostname.toLowerCase();
+  if (hostname !== "instagram.com" && hostname !== "www.instagram.com") return null;
+
+  const segments = url.pathname.split("/").map((segment) => segment.trim()).filter(Boolean);
+  const reservedRoots = new Set([
+    "p",
+    "reel",
+    "reels",
+    "tv",
+    "stories",
+    "explore",
+    "accounts",
+    "developer",
+    "directory",
+    "about",
+    "legal",
+    "policies",
+  ]);
+  const normalizedUrl = `https://www.instagram.com${url.pathname}${url.search}`.replace(/(?<!:)\/{2,}/g, "/");
+
+  if (!segments.length || reservedRoots.has(segments[0].toLowerCase())) {
+    return {
+      normalizedUrl,
+      identityKind: "content",
+    };
+  }
+
+  const handle = segments[0].replace(/^@/, "");
+  if (!/^[a-z0-9._]{1,30}$/i.test(handle)) {
+    return {
+      normalizedUrl,
+      identityKind: "content",
+    };
+  }
+
+  return {
+    normalizedUrl,
+    instagramHandle: handle,
+    instagramProfileUrl: `https://www.instagram.com/${handle}/`,
+    displayNameFallback: instagramHandleToDisplayName(handle),
+    identityKind: "profile",
+  };
 }
 
 export function toCompactDisplayName(value?: string): string | undefined {
