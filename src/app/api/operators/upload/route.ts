@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
+import { getRuntimeDataRoot } from "@/lib/runtime/runtime-data-root";
 import { adaptUploadRecords, type RawUploadRecord } from "@/lib/operators/upload-adapter";
 import { sourceRecordsToEvidence } from "@/lib/evidence/ingest";
 import { appendEvidence, loadEvidence } from "@/lib/evidence/store";
@@ -12,7 +13,7 @@ import { runResolver } from "@/lib/resolver/run-resolver";
 
 export const runtime = "nodejs";
 
-const SUMMARY_PATH = path.join(process.cwd(), "runtime-data/upload_summary.json");
+const SUMMARY_PATH = path.join(getRuntimeDataRoot(), "upload_summary.json");
 
 type UploadSummary = {
   generatedAt: string;
@@ -34,6 +35,17 @@ type UploadSummary = {
 function writeSummary(summary: UploadSummary): void {
   fs.mkdirSync(path.dirname(SUMMARY_PATH), { recursive: true });
   fs.writeFileSync(SUMMARY_PATH, `${JSON.stringify(summary, null, 2)}\n`);
+}
+
+function tryWriteSummary(summary: UploadSummary): void {
+  try {
+    writeSummary(summary);
+  } catch (error) {
+    console.warn("upload_summary_write_skipped", {
+      error: error instanceof Error ? error.message : "unknown_error",
+      summaryPath: SUMMARY_PATH,
+    });
+  }
 }
 
 function toEvidenceIdentityKey(row: EvidenceRecord): string {
@@ -174,7 +186,8 @@ export async function POST(req: Request) {
         enriched: upgradedEnriched,
       },
     };
-    writeSummary(summary);
+    // This summary artifact is supplemental only; Build success should depend on canonical intake work, not local disk.
+    tryWriteSummary(summary);
 
     return NextResponse.json(
       {
