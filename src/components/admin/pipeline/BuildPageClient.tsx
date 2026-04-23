@@ -7,6 +7,48 @@ import type { BuildSourceType, BuildSubmissionResult } from "@/lib/admin/pipelin
 const SOURCES: BuildSourceType[] = ["Instagram", "DORA", "Upload", "URL"];
 const BUILD_DRAFT_STORAGE_KEY = "vmb.admin.buildDraft.v1";
 
+const SOURCE_LABELS: Record<BuildSourceType, string> = {
+  Instagram: "Instagram Text",
+  DORA: "DORA Records",
+  Upload: "Bulk Upload",
+  URL: "Single URL",
+};
+
+const SOURCE_GUIDANCE: Record<
+  BuildSourceType,
+  {
+    whatToPaste: string;
+    whatNotToPaste: string;
+    example: string;
+    nextStep: string;
+  }
+> = {
+  Instagram: {
+    whatToPaste: "Copied Instagram captions, hashtag results, or copied profile/post text blocks.",
+    whatNotToPaste: "Booking links or generic website URLs.",
+    example: "@denvernailartist\nDenver Nail Artist\nCaption text with tagged techs and service hints",
+    nextStep: "The system parses Instagram text into candidates, preserves IG context, and queues matching validation lanes.",
+  },
+  DORA: {
+    whatToPaste: "Copied license, facility, or business record text from DORA exports or record views.",
+    whatNotToPaste: "Social captions or website URLs.",
+    example: "Business Name, License Number, City, State",
+    nextStep: "The system normalizes the records, creates canonical candidates, and queues them for validation.",
+  },
+  Upload: {
+    whatToPaste: "CSV rows, structured JSON, TSV, or other batch-formatted records.",
+    whatNotToPaste: "Single URLs or one-off Instagram text blocks.",
+    example: 'name,city,website\nLafayette Nails,Lafayette,https://example.com',
+    nextStep: "The system adapts the batch rows into canonical candidate records and queues validation work.",
+  },
+  URL: {
+    whatToPaste: "One clean business, profile, booking, or location page URL.",
+    whatNotToPaste: "Instagram hashtag/search/explore links or bulk text blocks.",
+    example: "https://book.solasalonstudios.com/lafayette/location",
+    nextStep: "The system normalizes the URL once, derives any supported identity hints, and queues validation from that canonical URL.",
+  },
+};
+
 type PersistedBuildDraft = {
   sourceType: BuildSourceType | null;
   rawText: string;
@@ -14,15 +56,59 @@ type PersistedBuildDraft = {
 };
 
 function placeholderForSource(sourceType: BuildSourceType | null): string {
-  if (sourceType === "Instagram") return "Paste Instagram hashtag harvest text here.";
-  if (sourceType === "DORA") return 'Paste a JSON array, {"records":[...]}, or simple CSV/TSV export.';
-  if (sourceType === "Upload") return 'Paste a JSON array, {"records":[...]}, CSV/TSV export, or one name per line.';
-  if (sourceType === "URL") return "Paste one website URL per line.";
+  if (sourceType === "Instagram") return "Paste copied Instagram text blocks here.";
+  if (sourceType === "DORA") return 'Paste copied DORA records, JSON, or CSV/TSV export here.';
+  if (sourceType === "Upload") return 'Paste CSV, TSV, JSON, or other structured batch rows here.';
+  if (sourceType === "URL") return "Paste one clean business/profile/booking/location URL here.";
   return "";
 }
 
 function isBuildSourceType(value: unknown): value is BuildSourceType {
   return value === "Instagram" || value === "DORA" || value === "Upload" || value === "URL";
+}
+
+function toNonEmptyLines(rawText: string): string[] {
+  return rawText
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function isSinglePlainUrl(rawText: string): boolean {
+  const lines = toNonEmptyLines(rawText);
+  return lines.length === 1 && /^https?:\/\/\S+$/i.test(lines[0]);
+}
+
+function looksLikeInstagramSearchOrExploreUrl(rawText: string): boolean {
+  if (!isSinglePlainUrl(rawText)) return false;
+  try {
+    const url = new URL(toNonEmptyLines(rawText)[0]);
+    const hostname = url.hostname.toLowerCase();
+    if (hostname !== "instagram.com" && hostname !== "www.instagram.com") return false;
+    return /\/(explore|search)\b/i.test(url.pathname);
+  } catch {
+    return false;
+  }
+}
+
+function buildSourceWarnings(sourceType: BuildSourceType | null, rawText: string): string[] {
+  if (!sourceType) return [];
+  const trimmed = rawText.trim();
+  if (!trimmed) return [];
+
+  if (sourceType === "URL" && looksLikeInstagramSearchOrExploreUrl(rawText)) {
+    return ["This looks like an Instagram search or explore URL. Use Instagram Text for copied hashtag/search results, not Single URL."];
+  }
+
+  if (sourceType === "Instagram" && isSinglePlainUrl(rawText)) {
+    return ["This looks like a booking or website URL. Use Single URL instead of Instagram Text for direct links."];
+  }
+
+  if (sourceType === "Upload" && isSinglePlainUrl(rawText)) {
+    return ["This looks like one plain URL. Use Single URL instead of Bulk Upload for one-off links."];
+  }
+
+  return [];
 }
 
 function readPersistedDraft(): PersistedBuildDraft | null {
@@ -49,6 +135,7 @@ export default function BuildPageClient() {
   const [draftLoaded, setDraftLoaded] = useState(false);
 
   const textareaPlaceholder = useMemo(() => placeholderForSource(sourceType), [sourceType]);
+  const sourceWarnings = useMemo(() => buildSourceWarnings(sourceType, rawText), [sourceType, rawText]);
 
   useEffect(() => {
     const persisted = readPersistedDraft();
@@ -159,7 +246,7 @@ export default function BuildPageClient() {
               }`}
               type="button"
             >
-              {source}
+              {SOURCE_LABELS[source]}
             </button>
           ))}
         </div>
@@ -171,6 +258,19 @@ export default function BuildPageClient() {
             <h2 className="font-semibold">2. Input Data</h2>
             <p className="mt-1 text-sm text-gray-600">The payload is normalized once, routed through the canonical intake path, then queued for validation.</p>
           </div>
+
+          <SourceGuidanceCard sourceType={sourceType} />
+
+          {sourceWarnings.length ? (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <div className="font-medium">Input warning</div>
+              <div className="mt-1 space-y-1">
+                {sourceWarnings.map((warning) => (
+                  <div key={warning}>{warning}</div>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <textarea
             className="h-48 w-full rounded border bg-white p-3"
@@ -215,6 +315,31 @@ export default function BuildPageClient() {
       ) : null}
 
       <NextActionLink href="/admin/validate" text="Review pending operators in Validate" />
+    </div>
+  );
+}
+
+function SourceGuidanceCard({ sourceType }: { sourceType: BuildSourceType }) {
+  const guidance = SOURCE_GUIDANCE[sourceType];
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm">
+      <h3 className="font-medium text-gray-900">{SOURCE_LABELS[sourceType]} Guidance</h3>
+      <div className="mt-3 space-y-2 text-gray-700">
+        <div>
+          <span className="font-medium text-gray-900">What to paste:</span> {guidance.whatToPaste}
+        </div>
+        <div>
+          <span className="font-medium text-gray-900">What not to paste:</span> {guidance.whatNotToPaste}
+        </div>
+        <div>
+          <span className="font-medium text-gray-900">Example:</span>
+          <pre className="mt-1 whitespace-pre-wrap rounded border border-gray-200 bg-white p-2 text-xs text-gray-700">{guidance.example}</pre>
+        </div>
+        <div>
+          <span className="font-medium text-gray-900">What the system does next:</span> {guidance.nextStep}
+        </div>
+      </div>
     </div>
   );
 }
