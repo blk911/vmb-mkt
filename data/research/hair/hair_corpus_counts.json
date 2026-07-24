@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-07-24T21:20:54.862Z",
+  "repo": "C:\\\\dev\\\\_vmb-mkt",
+  "branch": "research/hair-market-dig",
+  "datasets": [
+    "data/markets/beauty_zone_members_enriched_full.json",
+    "runtime-data/operator_master.v1.json",
+    "runtime-data/evidence_lake.v1.json"
+  ],
+  "counts": {
+    "zoneHairOrBarber": 142,
+    "zoneDeduped": 141,
+    "zoneDuplicatesSkipped": 1,
+    "masterHairish": 161,
+    "withWebsite": 1,
+    "withBooking": 14,
+    "withInstagram": 30,
+    "withAnyCleanSurface": 33,
+    "identityOnly": 108
+  },
+  "geo": {
+    "Denver": 102,
+    "Greenwood Village": 15,
+    "Englewood": 2,
+    "Westminster": 13,
+    "Thornton": 7,
+    "Broomfield": 2
+  },
+  "sampleSize": 90
+}

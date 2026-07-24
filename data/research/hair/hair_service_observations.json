@@ -1,0 +1,1653 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-24T21:25:09.952Z",
+  "usableMenuOperators": 3,
+  "observationCount": 88,
+  "caveat": "Committed VMB marketing evidence lake had empty extracted menus for Hair. Observations below are from live capture of corpus-attached booking URLs only.",
+  "observations": [
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Medium to Long Haircut",
+      "pricingText": "Starting at $55.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Pixie Haircut",
+      "pricingText": "Starting at $85.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Men's Haircut",
+      "pricingText": "Starting at $45.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Blow-Dry",
+      "pricingText": "Starting at $50.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Bang Trim/Grooming",
+      "pricingText": "Starting at $15.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Color Consultation",
+      "pricingText": "$0.00",
+      "pricingModeHint": "consultation_required",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Full Custom Color + Haircut",
+      "pricingText": "Starting at $220.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": "balayage/lived-in/babylights/full highlights language; includes toning",
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Full Custom Color + Blowdry",
+      "pricingText": "Starting at $165.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Partial Custom Color + Haircut",
+      "pricingText": "Starting at $190.00",
+      "pricingModeHint": "starting_at",
+      "tier": "partial",
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Partial Custom Color + Blowdry",
+      "pricingText": "Starting at $135.00",
+      "pricingModeHint": "starting_at",
+      "tier": "partial",
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Mini Custom Color + Haircut",
+      "pricingText": "Starting at $160.00",
+      "pricingModeHint": "starting_at",
+      "tier": "mini",
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Mini Custom + Blow-dry",
+      "pricingText": "Starting at $105.00",
+      "pricingModeHint": "starting_at",
+      "tier": "mini",
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Highlight Consultation",
+      "pricingText": "$5.00",
+      "pricingModeHint": "consultation_required",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Full Highlight with Haircut",
+      "pricingText": "Starting at $230.00",
+      "pricingModeHint": "starting_at",
+      "tier": "full",
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Full Highlight with Blowdry",
+      "pricingText": "Starting at $170.00",
+      "pricingModeHint": "starting_at",
+      "tier": "full",
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Partial Highlight with Haircut",
+      "pricingText": "Starting at $200.00",
+      "pricingModeHint": "starting_at",
+      "tier": "partial",
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Partial Highlight with Blowdry",
+      "pricingText": "Starting at $175.00",
+      "pricingModeHint": "starting_at",
+      "tier": "partial",
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Root Touch-Up + Haircut",
+      "pricingText": "Starting at $150.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Root Touch-Up + Blowdry",
+      "pricingText": "Starting at $110.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Roots to Ends Color + Haircut",
+      "pricingText": "Starting at $165.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Roots to Ends Color + Blowdry",
+      "pricingText": "Starting at $140.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Glaze + Haircut",
+      "pricingText": "Starting at $100.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Glaze + Blowdry",
+      "pricingText": "Starting at $80.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Color, Highlight with Haircut",
+      "pricingText": "Starting at $230.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Color, Highlight with Blowdry",
+      "pricingText": "Starting at $200.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Men's Color with Haircut",
+      "pricingText": "Starting at $130.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Keratin Extension Install (Partial)",
+      "pricingText": "consultation required",
+      "pricingModeHint": "consultation_required",
+      "tier": "partial",
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Keratin Extension Install (Full)",
+      "pricingText": "consultation required",
+      "pricingModeHint": "consultation_required",
+      "tier": "full",
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Keratin Extension Install (Extra Full)",
+      "pricingText": "consultation required",
+      "pricingModeHint": "consultation_required",
+      "tier": "extra_full",
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Weft Install (Partial)",
+      "pricingText": "consultation required",
+      "pricingModeHint": "consultation_required",
+      "tier": "partial",
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Weft Install (Full)",
+      "pricingText": "consultation required",
+      "pricingModeHint": "consultation_required",
+      "tier": "full",
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Weft Install (Extra Full)",
+      "pricingText": "consultation required",
+      "pricingModeHint": "consultation_required",
+      "tier": "extra_full",
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Hand Tied Extension Maintenance 1 row",
+      "pricingText": "1 row maintenance",
+      "pricingModeHint": "per_unit",
+      "tier": null,
+      "unit": "row",
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Hand Tied Extension Maintenance 2 row",
+      "pricingText": "2 row maintenance",
+      "pricingModeHint": "per_unit",
+      "tier": null,
+      "unit": "row",
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "KCMAX Keratin Treatment",
+      "pricingText": "Starting at $325.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Brazilian/Keratin Blowout Treatment",
+      "pricingText": "Starting at $300.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Updo",
+      "pricingText": "Starting at $150.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "rawServiceName": "Deep Conditioning Treatment",
+      "pricingText": "Starting at $15.00",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": "brand tiers: Davines $15, K18 $25, Kerastase $38, Olaplex $50",
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "rawServiceName": "Female Haircut",
+      "pricingText": "SHORT $85 / MEDIUM $95 / LONG $105",
+      "pricingModeHint": "tiered",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "rawServiceName": "Mens Haircut",
+      "pricingText": "$65.00",
+      "pricingModeHint": "fixed",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "rawServiceName": "Partial HighLight Haircut",
+      "pricingText": "SHORT $195 / MEDIUM $215 / LONG $235",
+      "pricingModeHint": "tiered",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "rawServiceName": "Highlights and Root Color + Cut",
+      "pricingText": "SHORT $225 / MEDIUM $240 / LONG $265",
+      "pricingModeHint": "tiered",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "rawServiceName": "Full head Highlight/Haircut",
+      "pricingText": "SHORT $225 / MEDIUM $250 / LONG $275",
+      "pricingModeHint": "tiered",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "rawServiceName": "All Over Color and Haircut",
+      "pricingText": "SHORT $165 / MEDIUM $180 / LONG $200",
+      "pricingModeHint": "tiered",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "rawServiceName": "All Over Color and Highlight",
+      "pricingText": "SHORT $205 / MEDIUM $245 / LONG $275",
+      "pricingModeHint": "tiered",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "rawServiceName": "Full Head Highlight",
+      "pricingText": "SHORT $195 / MEDIUM $215 / LONG $255",
+      "pricingModeHint": "tiered",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "rawServiceName": "All Over Color/ Blow Dry Style",
+      "pricingText": "SHORT $135 / MEDIUM $165 / LONG $195",
+      "pricingModeHint": "tiered",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "rawServiceName": "Partial HighLight",
+      "pricingText": "SHORT $165 / MEDIUM $185 / LONG $225",
+      "pricingModeHint": "tiered",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "rawServiceName": "Mens Haircut and Color",
+      "pricingText": "$115.00",
+      "pricingModeHint": "fixed",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "rawServiceName": "Shampoo, Conditioner, Blow Dry",
+      "pricingText": "$65.00",
+      "pricingModeHint": "fixed",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "rawServiceName": "Bang Trim",
+      "pricingText": "Free (existing clients)",
+      "pricingModeHint": "fixed",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "rawServiceName": "Base Color and Highlights/Lowlights",
+      "pricingText": "Short $195 / Medium $210 / Long $225",
+      "pricingModeHint": "tiered",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "rawServiceName": "Balyage Highlights",
+      "pricingText": "$250.00+",
+      "pricingModeHint": "starting_at",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "rawServiceName": "Consultation",
+      "pricingText": "listed",
+      "pricingModeHint": "consultation_required",
+      "tier": null,
+      "unit": null,
+      "notes": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Long Hair/ Womans Haircut",
+      "pricingText": "$75.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 75,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Color Retouch",
+      "pricingText": "$120.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 120,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Short Hair/ Mens Haircut",
+      "pricingText": "$50.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 50,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "All over Color",
+      "pricingText": "$130.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 130,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Color Retouch and Haircut",
+      "pricingText": "$160.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 160,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Short Hair/ Mens Color",
+      "pricingText": "$115.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 115,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Highlight Partial",
+      "pricingText": "$160.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 160,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "All over Color and Haircut",
+      "pricingText": "$175.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 175,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Highlight with Color Retouch and Haircut",
+      "pricingText": "$250.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 250,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Balayge/Ombre and Haircut",
+      "pricingText": "$250.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 250,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Long Hair/ Womans Haircut and Gloss",
+      "pricingText": "$120.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 120,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Color Adjustment",
+      "pricingText": "$0.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 0,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Updo and shampoo style",
+      "pricingText": "$75.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 75,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Bridal Updo",
+      "pricingText": "$100.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 100,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Add-on curls",
+      "pricingText": "$10.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 10,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Updo/no shampoo",
+      "pricingText": "$50.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 50,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Beard Trim",
+      "pricingText": "$20.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 20,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Bang Trim",
+      "pricingText": "$15.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 15,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Buzz/Clipper Haircut",
+      "pricingText": "$35.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 35,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Add-on Scalp Treament",
+      "pricingText": "$20.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 20,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Add-on Hair Conditioning Treatment",
+      "pricingText": "$20.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 20,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Shampoo Style",
+      "pricingText": "$50.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 50,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Balayage/Ombre",
+      "pricingText": "$215.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 215,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Add-on Gloss/Grey Blending (semi-permanent color)",
+      "pricingText": "$30.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 30,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Highlight Full and Haircut",
+      "pricingText": "$250.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 250,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Mens Haircut and Grey Blending",
+      "pricingText": "$75.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 75,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Highlight Partial and Haircut",
+      "pricingText": "$190.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 190,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Mini Highlight and Haircut",
+      "pricingText": "$160.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 160,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Highlight Full",
+      "pricingText": "$200.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 200,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Mini Highlight",
+      "pricingText": "$120.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 120,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Clean up",
+      "pricingText": "$20.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 20,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Long Hair/ Womans Haircut and Treatment",
+      "pricingText": "$100.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 100,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Highlight with Color Retouch",
+      "pricingText": "$180.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 180,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "rawServiceName": "Kid cut",
+      "pricingText": "$30.00 (fixed)",
+      "pricingModeHint": "fixed",
+      "priceUsd": 30,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high",
+      "evidenceClass": "live_menu_capture"
+    }
+  ],
+  "nameSignals": [
+    {
+      "operatorId": "zone:color crush hair studio|denver",
+      "operatorName": "Color Crush Hair Studio",
+      "city": "Denver",
+      "tags": [
+        "color_specialist_name",
+        "suite_operator"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:the aura collective bridal & extension salon|westminster",
+      "operatorName": "The AURA Collective Bridal & Extension Salon",
+      "city": "Westminster",
+      "tags": [
+        "extension_specialist_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:epic hair studio|thornton",
+      "operatorName": "Epic Hair Studio",
+      "city": "Thornton",
+      "tags": [
+        "suite_operator"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:ralph's barbershop|denver",
+      "operatorName": "Ralph's Barbershop",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:fluff color and balayage salon|denver",
+      "operatorName": "Fluff Color and Balayage Salon",
+      "city": "Denver",
+      "tags": [
+        "color_specialist_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:salon lofts|denver",
+      "operatorName": "Salon Lofts",
+      "city": "Denver",
+      "tags": [
+        "suite_operator"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:salons by jc cherry creek|denver",
+      "operatorName": "Salons by JC Cherry Creek",
+      "city": "Denver",
+      "tags": [
+        "suite_operator"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:sola salons|denver",
+      "operatorName": "Sola Salons",
+      "city": "Denver",
+      "tags": [
+        "suite_operator"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:sola salons|westminster",
+      "operatorName": "Sola Salons",
+      "city": "Westminster",
+      "tags": [
+        "suite_operator"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:alchemy & aura|denver",
+      "operatorName": "Alchemy & Aura",
+      "city": "Denver",
+      "tags": [
+        "extension_specialist_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:bello haven salon + extensions at cherry creek north ✂|denver",
+      "operatorName": "Bello Haven Salon + Extensions at Cherry Creek North ✂",
+      "city": "Denver",
+      "tags": [
+        "extension_specialist_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:bishops cuts color westminster|westminster",
+      "operatorName": "Bishops Cuts Color Westminster",
+      "city": "Westminster",
+      "tags": [
+        "color_specialist_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:curly republic|greenwood village",
+      "operatorName": "Curly Republic",
+      "city": "Greenwood Village",
+      "tags": [
+        "textured_natural_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:elsewhere salon - luxury hair extensions and hair color experts|denver",
+      "operatorName": "Elsewhere Salon - Luxury Hair Extensions and Hair Color Experts",
+      "city": "Denver",
+      "tags": [
+        "color_specialist_name",
+        "extension_specialist_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:fuego studios barbershop|denver",
+      "operatorName": "Fuego Studios Barbershop",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name",
+        "suite_operator"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:hair extensions studio by fluff|denver",
+      "operatorName": "Hair Extensions Studio by Fluff",
+      "city": "Denver",
+      "tags": [
+        "extension_specialist_name",
+        "suite_operator"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:madison reed hair color bar cherry creek|denver",
+      "operatorName": "Madison Reed Hair Color Bar Cherry Creek",
+      "city": "Denver",
+      "tags": [
+        "color_specialist_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:marina's salon and color studio|greenwood village",
+      "operatorName": "Marina's salon and color studio",
+      "city": "Greenwood Village",
+      "tags": [
+        "color_specialist_name",
+        "suite_operator"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:peleet studio|denver",
+      "operatorName": "Peleet Studio",
+      "city": "Denver",
+      "tags": [
+        "suite_operator"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:studio: a collective of stylists|denver",
+      "operatorName": "Studio: A Collective Of Stylists",
+      "city": "Denver",
+      "tags": [
+        "suite_operator"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:1013 barbershop|greenwood village",
+      "operatorName": "1013 Barbershop",
+      "city": "Greenwood Village",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:barber chelo|denver",
+      "operatorName": "Barber Chelo",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:blank barbers cherry creek|denver",
+      "operatorName": "Blank Barbers Cherry Creek",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:boulder barbers|denver",
+      "operatorName": "Boulder Barbers",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:cherry barbers|denver",
+      "operatorName": "Cherry Barbers",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:elijah “official” barber|denver",
+      "operatorName": "Elijah “OFFICIAL” Barber",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:fadez on blake st barbershop|denver",
+      "operatorName": "FADEZ ON BLAKE ST BARBERSHOP",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:floyd's 99 barbershop|denver",
+      "operatorName": "Floyd's 99 Barbershop",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:floyd's 99 barbershop|greenwood village",
+      "operatorName": "Floyd's 99 Barbershop",
+      "city": "Greenwood Village",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:frank's barber shop a gentlemen’s salon|denver",
+      "operatorName": "Frank's Barber Shop a Gentlemen’s Salon",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:fresh barbershop|denver",
+      "operatorName": "Fresh Barbershop",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:mcstyles ltd. barbershop|denver",
+      "operatorName": "McStyles LTD. Barbershop",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:paris productions barbershop & salon|denver",
+      "operatorName": "Paris Productions Barbershop & Salon",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:rock time barbershop|denver",
+      "operatorName": "Rock Time Barbershop",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:routine barbering|denver",
+      "operatorName": "ROUTINE BARBERING",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:sola salons|greenwood village",
+      "operatorName": "Sola Salons",
+      "city": "Greenwood Village",
+      "tags": [
+        "suite_operator"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:speakeasy barber lounge|denver",
+      "operatorName": "Speakeasy Barber Lounge",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:stan’s downtown barbers - champa|denver",
+      "operatorName": "Stan’s Downtown Barbers - Champa",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:stealth barbershop|denver",
+      "operatorName": "Stealth Barbershop",
+      "city": "Denver",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:the modern salonstudios|denver",
+      "operatorName": "the MODERN SalonStudios",
+      "city": "Denver",
+      "tags": [
+        "suite_operator"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:tribute barbershop|greenwood village",
+      "operatorName": "Tribute Barbershop",
+      "city": "Greenwood Village",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:y'alls barbershop|greenwood village",
+      "operatorName": "Y'alls Barbershop",
+      "city": "Greenwood Village",
+      "tags": [
+        "cut_barber_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:alfandi hair studio|denver",
+      "operatorName": "Alfandi Hair Studio",
+      "city": "Denver",
+      "tags": [
+        "suite_operator"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:allure hair studio|denver",
+      "operatorName": "Allure Hair Studio",
+      "city": "Denver",
+      "tags": [
+        "suite_operator"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:black moon collective|denver",
+      "operatorName": "Black Moon Collective",
+      "city": "Denver",
+      "tags": [
+        "textured_natural_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:black moon hair collective|denver",
+      "operatorName": "BLACK MOON HAIR COLLECTIVE",
+      "city": "Denver",
+      "tags": [
+        "textured_natural_name"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:chacos room studio|denver",
+      "operatorName": "Chacos Room Studio",
+      "city": "Denver",
+      "tags": [
+        "suite_operator"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    },
+    {
+      "operatorId": "zone:foundation hair studio|denver",
+      "operatorName": "Foundation Hair Studio",
+      "city": "Denver",
+      "tags": [
+        "suite_operator"
+      ],
+      "confidence": "low",
+      "note": "Name/subtype signal only; no menu text in corpus"
+    }
+  ],
+  "taxonomyClusters": [
+    {
+      "clusterId": "cuts_styling",
+      "label": "Cuts & Styling",
+      "evidenceOperators": [
+        "Perlino - Cherry Creek",
+        "The Place Salon",
+        "Tulip’s Salon"
+      ],
+      "includedRawNames": [
+        "Medium to Long Haircut",
+        "Pixie Haircut",
+        "Men's Haircut",
+        "Female Haircut",
+        "Blow-Dry",
+        "Bang Trim",
+        "Updo",
+        "Shampoo, Conditioner, Blow Dry",
+        "Long Hair/ Womans Haircut",
+        "Buzz/Clipper Haircut"
+      ],
+      "excludedRawNames": [
+        "braids",
+        "locs",
+        "silk press",
+        "wig install"
+      ],
+      "exclusionReason": "Not observed in live menus of sampled booking URLs; present only as operator-name signals"
+    },
+    {
+      "clusterId": "color_lightening",
+      "label": "Color & Lightening",
+      "evidenceOperators": [
+        "Perlino - Cherry Creek",
+        "The Place Salon",
+        "Tulip’s Salon"
+      ],
+      "includedRawNames": [
+        "Full Custom Color",
+        "Partial Custom Color",
+        "Mini Custom Color",
+        "Full Highlight",
+        "Partial Highlight",
+        "Root Touch-Up",
+        "Roots to Ends Color",
+        "Glaze",
+        "All Over Color",
+        "Balayage/Ombre",
+        "Balyage Highlights",
+        "Color Retouch"
+      ],
+      "excludedRawNames": [
+        "corrective color packages as separate SKU"
+      ],
+      "exclusionReason": "Corrective/color adjustment seen as $0 or consultation language, not as priced public SKU with modifiers"
+    },
+    {
+      "clusterId": "treatments_extensions",
+      "label": "Treatments & Extensions",
+      "evidenceOperators": [
+        "Perlino - Cherry Creek",
+        "Tulip’s Salon"
+      ],
+      "includedRawNames": [
+        "Keratin Extension Install",
+        "Weft Install",
+        "Hand Tied Extension Maintenance",
+        "KCMAX Keratin Treatment",
+        "Brazilian/Keratin Blowout",
+        "Deep Conditioning Treatment",
+        "Add-on Scalp Treatment"
+      ],
+      "excludedRawNames": [
+        "sew-in",
+        "wig install",
+        "loc maintenance",
+        "braid styles"
+      ],
+      "exclusionReason": "Not in live captured menus; defer to specialist pack pending more evidence"
+    }
+  ]
+}

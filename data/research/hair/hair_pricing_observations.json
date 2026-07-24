@@ -1,0 +1,1049 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-24T21:25:09.953Z",
+  "observationCount": 88,
+  "modesObserved": {
+    "fixed": 38,
+    "starting_at": 29,
+    "tiered": 10,
+    "consultation_required": 9,
+    "per_unit": 2
+  },
+  "dimensionsObserved": [
+    {
+      "dimension": "LENGTH_TIER",
+      "examples": [
+        "SHORT/MEDIUM/LONG"
+      ],
+      "operators": [
+        "The Place Salon"
+      ],
+      "clientSelectable": true,
+      "evidenceCount": 1
+    },
+    {
+      "dimension": "COVERAGE_TIER",
+      "examples": [
+        "mini/partial/full",
+        "partial/full/extra full"
+      ],
+      "operators": [
+        "Perlino - Cherry Creek"
+      ],
+      "clientSelectable": true,
+      "evidenceCount": 1
+    },
+    {
+      "dimension": "FINISH_PACKAGE",
+      "examples": [
+        "+ Haircut vs + Blowdry"
+      ],
+      "operators": [
+        "Perlino - Cherry Creek"
+      ],
+      "clientSelectable": true,
+      "evidenceCount": 1
+    },
+    {
+      "dimension": "PRODUCT_BRAND_TIER",
+      "examples": [
+        "Davines/K18/Kerastase/Olaplex"
+      ],
+      "operators": [
+        "Perlino - Cherry Creek"
+      ],
+      "clientSelectable": true,
+      "evidenceCount": 1
+    },
+    {
+      "dimension": "EXTENSION_ROW",
+      "examples": [
+        "1 row / 2 row maintenance"
+      ],
+      "operators": [
+        "Perlino - Cherry Creek"
+      ],
+      "clientSelectable": "mixed",
+      "evidenceCount": 1
+    },
+    {
+      "dimension": "CONSULTATION_GATE",
+      "examples": [
+        "extensions",
+        "keratin",
+        "color change"
+      ],
+      "operators": [
+        "Perlino - Cherry Creek",
+        "The Place Salon"
+      ],
+      "clientSelectable": false,
+      "evidenceCount": 2
+    },
+    {
+      "dimension": "ADD_ON",
+      "examples": [
+        "Add-on curls",
+        "Add-on Scalp Treatment",
+        "Beard Trim"
+      ],
+      "operators": [
+        "Tulip’s Salon"
+      ],
+      "clientSelectable": true,
+      "evidenceCount": 1
+    },
+    {
+      "dimension": "OUNCE_BOWL",
+      "examples": [],
+      "operators": [],
+      "clientSelectable": null,
+      "evidenceCount": 0,
+      "status": "NOT_OBSERVED_IN_LIVE_SAMPLE"
+    }
+  ],
+  "observations": [
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Medium to Long Haircut",
+      "marketLanguage": "Starting at $55.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Pixie Haircut",
+      "marketLanguage": "Starting at $85.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Men's Haircut",
+      "marketLanguage": "Starting at $45.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Blow-Dry",
+      "marketLanguage": "Starting at $50.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Bang Trim/Grooming",
+      "marketLanguage": "Starting at $15.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Color Consultation",
+      "marketLanguage": "$0.00",
+      "pricingMode": "consultation_required",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Full Custom Color + Haircut",
+      "marketLanguage": "Starting at $220.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Full Custom Color + Blowdry",
+      "marketLanguage": "Starting at $165.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Partial Custom Color + Haircut",
+      "marketLanguage": "Starting at $190.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Partial Custom Color + Blowdry",
+      "marketLanguage": "Starting at $135.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Mini Custom Color + Haircut",
+      "marketLanguage": "Starting at $160.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Mini Custom + Blow-dry",
+      "marketLanguage": "Starting at $105.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Highlight Consultation",
+      "marketLanguage": "$5.00",
+      "pricingMode": "consultation_required",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Full Highlight with Haircut",
+      "marketLanguage": "Starting at $230.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Full Highlight with Blowdry",
+      "marketLanguage": "Starting at $170.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Partial Highlight with Haircut",
+      "marketLanguage": "Starting at $200.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Partial Highlight with Blowdry",
+      "marketLanguage": "Starting at $175.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Root Touch-Up + Haircut",
+      "marketLanguage": "Starting at $150.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Root Touch-Up + Blowdry",
+      "marketLanguage": "Starting at $110.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Roots to Ends Color + Haircut",
+      "marketLanguage": "Starting at $165.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Roots to Ends Color + Blowdry",
+      "marketLanguage": "Starting at $140.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Glaze + Haircut",
+      "marketLanguage": "Starting at $100.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Glaze + Blowdry",
+      "marketLanguage": "Starting at $80.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Color, Highlight with Haircut",
+      "marketLanguage": "Starting at $230.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Color, Highlight with Blowdry",
+      "marketLanguage": "Starting at $200.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Men's Color with Haircut",
+      "marketLanguage": "Starting at $130.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Keratin Extension Install (Partial)",
+      "marketLanguage": "consultation required",
+      "pricingMode": "consultation_required",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Keratin Extension Install (Full)",
+      "marketLanguage": "consultation required",
+      "pricingMode": "consultation_required",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Keratin Extension Install (Extra Full)",
+      "marketLanguage": "consultation required",
+      "pricingMode": "consultation_required",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Weft Install (Partial)",
+      "marketLanguage": "consultation required",
+      "pricingMode": "consultation_required",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Weft Install (Full)",
+      "marketLanguage": "consultation required",
+      "pricingMode": "consultation_required",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Weft Install (Extra Full)",
+      "marketLanguage": "consultation required",
+      "pricingMode": "consultation_required",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Hand Tied Extension Maintenance 1 row",
+      "marketLanguage": "1 row maintenance",
+      "pricingMode": "per_unit",
+      "tiers": null,
+      "unit": "row",
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Hand Tied Extension Maintenance 2 row",
+      "marketLanguage": "2 row maintenance",
+      "pricingMode": "per_unit",
+      "tiers": null,
+      "unit": "row",
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "KCMAX Keratin Treatment",
+      "marketLanguage": "Starting at $325.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Brazilian/Keratin Blowout Treatment",
+      "marketLanguage": "Starting at $300.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Updo",
+      "marketLanguage": "Starting at $150.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Perlino - Cherry Creek",
+      "sourceUrl": "https://www.vagaro.com/perlino/services",
+      "service": "Deep Conditioning Treatment",
+      "marketLanguage": "Starting at $15.00",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "service": "Female Haircut",
+      "marketLanguage": "SHORT $85 / MEDIUM $95 / LONG $105",
+      "pricingMode": "tiered",
+      "tiers": [
+        "SHORT",
+        "MEDIUM",
+        "LONG"
+      ],
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "service": "Mens Haircut",
+      "marketLanguage": "$65.00",
+      "pricingMode": "fixed",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "service": "Partial HighLight Haircut",
+      "marketLanguage": "SHORT $195 / MEDIUM $215 / LONG $235",
+      "pricingMode": "tiered",
+      "tiers": [
+        "SHORT",
+        "MEDIUM",
+        "LONG"
+      ],
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "service": "Highlights and Root Color + Cut",
+      "marketLanguage": "SHORT $225 / MEDIUM $240 / LONG $265",
+      "pricingMode": "tiered",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "service": "Full head Highlight/Haircut",
+      "marketLanguage": "SHORT $225 / MEDIUM $250 / LONG $275",
+      "pricingMode": "tiered",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "service": "All Over Color and Haircut",
+      "marketLanguage": "SHORT $165 / MEDIUM $180 / LONG $200",
+      "pricingMode": "tiered",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "service": "All Over Color and Highlight",
+      "marketLanguage": "SHORT $205 / MEDIUM $245 / LONG $275",
+      "pricingMode": "tiered",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "service": "Full Head Highlight",
+      "marketLanguage": "SHORT $195 / MEDIUM $215 / LONG $255",
+      "pricingMode": "tiered",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "service": "All Over Color/ Blow Dry Style",
+      "marketLanguage": "SHORT $135 / MEDIUM $165 / LONG $195",
+      "pricingMode": "tiered",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "service": "Partial HighLight",
+      "marketLanguage": "SHORT $165 / MEDIUM $185 / LONG $225",
+      "pricingMode": "tiered",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "service": "Mens Haircut and Color",
+      "marketLanguage": "$115.00",
+      "pricingMode": "fixed",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "service": "Shampoo, Conditioner, Blow Dry",
+      "marketLanguage": "$65.00",
+      "pricingMode": "fixed",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "service": "Bang Trim",
+      "marketLanguage": "Free (existing clients)",
+      "pricingMode": "fixed",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "service": "Base Color and Highlights/Lowlights",
+      "marketLanguage": "Short $195 / Medium $210 / Long $225",
+      "pricingMode": "tiered",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "service": "Balyage Highlights",
+      "marketLanguage": "$250.00+",
+      "pricingMode": "starting_at",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "The Place Salon",
+      "sourceUrl": "https://booksy.com/en-us/690375_denver-s-best-hairstylist-the-place-salon-michael-eatmon_hair-salon_134761_denver",
+      "service": "Consultation",
+      "marketLanguage": "listed",
+      "pricingMode": "consultation_required",
+      "tiers": null,
+      "unit": null,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Long Hair/ Womans Haircut",
+      "marketLanguage": "$75.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 75,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Color Retouch",
+      "marketLanguage": "$120.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 120,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Short Hair/ Mens Haircut",
+      "marketLanguage": "$50.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 50,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "All over Color",
+      "marketLanguage": "$130.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 130,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Color Retouch and Haircut",
+      "marketLanguage": "$160.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 160,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Short Hair/ Mens Color",
+      "marketLanguage": "$115.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 115,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Highlight Partial",
+      "marketLanguage": "$160.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 160,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "All over Color and Haircut",
+      "marketLanguage": "$175.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 175,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Highlight with Color Retouch and Haircut",
+      "marketLanguage": "$250.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 250,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Balayge/Ombre and Haircut",
+      "marketLanguage": "$250.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 250,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Long Hair/ Womans Haircut and Gloss",
+      "marketLanguage": "$120.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 120,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Color Adjustment",
+      "marketLanguage": "$0.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 0,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Updo and shampoo style",
+      "marketLanguage": "$75.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 75,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Bridal Updo",
+      "marketLanguage": "$100.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 100,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Add-on curls",
+      "marketLanguage": "$10.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 10,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Updo/no shampoo",
+      "marketLanguage": "$50.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 50,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Beard Trim",
+      "marketLanguage": "$20.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 20,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Bang Trim",
+      "marketLanguage": "$15.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 15,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Buzz/Clipper Haircut",
+      "marketLanguage": "$35.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 35,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Add-on Scalp Treament",
+      "marketLanguage": "$20.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 20,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Add-on Hair Conditioning Treatment",
+      "marketLanguage": "$20.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 20,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Shampoo Style",
+      "marketLanguage": "$50.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 50,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Balayage/Ombre",
+      "marketLanguage": "$215.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 215,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Add-on Gloss/Grey Blending (semi-permanent color)",
+      "marketLanguage": "$30.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 30,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Highlight Full and Haircut",
+      "marketLanguage": "$250.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 250,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Mens Haircut and Grey Blending",
+      "marketLanguage": "$75.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 75,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Highlight Partial and Haircut",
+      "marketLanguage": "$190.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 190,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Mini Highlight and Haircut",
+      "marketLanguage": "$160.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 160,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Highlight Full",
+      "marketLanguage": "$200.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 200,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Mini Highlight",
+      "marketLanguage": "$120.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 120,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Clean up",
+      "marketLanguage": "$20.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 20,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Long Hair/ Womans Haircut and Treatment",
+      "marketLanguage": "$100.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 100,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Highlight with Color Retouch",
+      "marketLanguage": "$180.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 180,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    },
+    {
+      "operatorName": "Tulip’s Salon",
+      "sourceUrl": "https://squareup.com/appointments/book/3o58drn4pdwabf/RPECVBBEZVZTA/start",
+      "service": "Kid cut",
+      "marketLanguage": "$30.00 (fixed)",
+      "pricingMode": "fixed",
+      "priceUsd": 30,
+      "retrievalDate": "2026-07-24",
+      "evidenceStrength": "high"
+    }
+  ]
+}
