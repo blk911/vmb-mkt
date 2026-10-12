@@ -89,27 +89,39 @@ export default async function ValidatePage({
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl bg-white shadow">
-        <table className="w-full text-sm">
+      <div
+        className="max-w-4xl overflow-x-auto rounded-xl bg-white shadow"
+        role="region"
+        aria-label="Review queue"
+        tabIndex={0}
+      >
+        <table className="w-full min-w-[44rem] table-fixed text-sm">
+          <colgroup>
+            <col className="w-[40%]" />
+            <col className="w-[15%]" />
+            <col className="w-[20%]" />
+            <col className="w-[15%]" />
+            <col className="w-[10%]" />
+          </colgroup>
           <thead className="bg-gray-100 text-left">
             <tr>
-              <th className="p-3">Candidate</th>
-              <th className="p-3">Lanes</th>
-              <th className="p-3">Status</th>
-              <th className="p-3">Confidence</th>
-              <th className="p-3">Action</th>
+              <th scope="col" className="p-3">Candidate</th>
+              <th scope="col" className="p-3">Lanes</th>
+              <th scope="col" className="p-3">Status</th>
+              <th scope="col" className="p-3">Confidence</th>
+              <th scope="col" className="p-3">Action</th>
             </tr>
           </thead>
           <tbody>
             {rows.length ? (
               rows.map((row) => (
                 <tr key={row.reviewKey} className="border-t">
-                  <td className="p-3">
+                  <td className="break-words p-3">
                     <div className="font-medium text-gray-900">{row.displayName}</div>
                     <div className="text-xs text-gray-500">
                       {[row.city, row.state].filter(Boolean).join(", ") || "Location unknown"}
                     </div>
-                    <div className="mt-1 font-mono text-[11px] text-gray-400">{row.reviewKey}</div>
+                    <div className="mt-1 break-all font-mono text-[11px] text-gray-400">{row.reviewKey}</div>
                     {row.instagramHandle || row.signalType || row.serviceHint || row.geoHint ? (
                       <div className="mt-1 text-xs text-amber-700">
                         IG context:{" "}
