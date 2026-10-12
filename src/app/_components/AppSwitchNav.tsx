@@ -71,6 +71,7 @@ export default function AppSwitchNav({ sessionUser }: Props) {
 
   return (
     <div
+      data-app-navigation
       style={{
         position: "sticky",
         top: 0,

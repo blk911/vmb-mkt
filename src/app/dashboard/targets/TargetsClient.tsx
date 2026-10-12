@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useDashboardActions } from "../DashboardShell";
+import CollapsibleFilters from "./CollapsibleFilters";
 import styles from "./TargetsUI.module.css";
 
 type Tech = {
@@ -507,7 +508,7 @@ export default function TargetsClient({ initialListId }: { initialListId?: strin
           </div>
 
           <div className={styles.wrap}>
-            <div className={styles.toolbar}>
+            <CollapsibleFilters summary={<>Showing <b>{sorted.length}</b> of <b>{rows.length}</b></>}>
               <div className={styles.toolbarGrid}>
                 {/* SCOPE */}
                 <div className={styles.sectionTitle}>Scope</div>
@@ -671,7 +672,7 @@ export default function TargetsClient({ initialListId }: { initialListId?: strin
                   <> · No active list selected</>
                 )}
               </div>
-            </div>
+            </CollapsibleFilters>
 
             <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "1fr", gap: 10 }}>
             {sorted.map((t) => {
