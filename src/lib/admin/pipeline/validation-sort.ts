@@ -1,10 +1,10 @@
 import type { ValidationReviewRow } from "./types";
 
-export type ValidationSortColumn = "candidate" | "lanes" | "status" | "confidence";
+export type ValidationSortColumn = "platform" | "candidate" | "salon" | "location" | "lanes" | "status" | "confidence";
 export type ValidationSort = { column: ValidationSortColumn; direction: "asc" | "desc" };
 export type ValidationSearchParams = Record<string, string | string[] | undefined>;
 
-const columns: readonly string[] = ["candidate", "lanes", "status", "confidence"];
+const columns: readonly string[] = ["platform", "candidate", "salon", "location", "lanes", "status", "confidence"];
 const textOrder = new Intl.Collator("en", { sensitivity: "base", numeric: true });
 
 export function parseValidationSort(params: ValidationSearchParams): ValidationSort | null {
@@ -41,7 +41,11 @@ function confidenceValue(row: ValidationReviewRow): number | null {
 
 function sortValue(row: ValidationReviewRow, column: ValidationSortColumn): string | number | null {
   if (column === "confidence") return confidenceValue(row);
-  if (column === "candidate") return row.displayName.trim() || null;
+  if (column === "platform") return row.profile?.platform && row.profile.platform !== "unknown" ? row.profile.platformLabel.trim() || row.profile.platform : null;
+  // Keep the candidate query parameter for existing bookmarks; the heading is Provider.
+  if (column === "candidate") return (row.profile?.providerName || row.displayName).trim() || null;
+  if (column === "salon") return row.profile?.businessName?.trim() || null;
+  if (column === "location") return [row.profile?.city || row.city, row.profile?.state || row.state, row.profile?.postalCode].filter(Boolean).join(", ").trim() || null;
   const lanes = [...row.lanes].sort();
   if (column === "lanes") return lanes.join(" · ") || null;
   return lanes.map((lane) => `${lane}: ${row.laneStatuses[lane] || "pending"}`).join(" · ") || null;

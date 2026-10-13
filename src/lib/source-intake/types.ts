@@ -55,6 +55,19 @@ export type ParsedCandidateRow = {
   ordinal: number;
   rawBlock: string;
   displayName: string;
+  /** Candidate-scoped source claims. Never populated from a batch's first row. */
+  sourceUrl?: string;
+  sourceContextUrl?: string;
+  bookingUrl?: string;
+  websiteUrl?: string;
+  businessName?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  providerId?: string;
+  businessId?: string;
+  /** Observed DOM IDs are scoped to their source page, not global provider IDs. */
+  sourceScopedIds?: Array<{ sourceUrl: string; id: string }>;
   firstName?: string;
   lastName?: string;
   instagramHandle?: string;

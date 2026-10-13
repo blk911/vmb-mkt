@@ -26,6 +26,7 @@ export type VagaroDirectoryListing = {
   location?: string;
   serviceHint?: string;
   profileUrl?: string;
+  sourceScopedIds?: Array<{ sourceUrl: string; id: string }>;
   ratingSummary?: string;
   sourceNote: "vagaro_directory_results";
   pageClassification: "directory_results_page";
@@ -49,7 +50,7 @@ function parseLocation(value?: string): { city?: string; state?: string; locatio
   if (!location) return {};
   const parts = location.split(",").map((part) => part.trim()).filter(Boolean);
   return {
-    city: normalizeCity(parts[0]),
+    city: parts[0] || undefined,
     state: parts[1] || undefined,
     location,
   };
@@ -60,22 +61,29 @@ function extractAnchorField(block: string, regex: RegExp): string | undefined {
   return match?.[1] ? stripHtml(match[1]) : undefined;
 }
 
+function htmlAttribute(attributes: string, name: string): string | undefined {
+  const value = attributes.match(new RegExp(`(?:^|\\s)${name}\\s*=\\s*(["'])(.*?)\\1`, "i"))?.[2];
+  return value?.replace(/&amp;/gi, "&").replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'");
+}
+
 export function extractVagaroDirectoryListings(url: string, html: string): VagaroDirectoryListing[] {
-  if (!listingLike(url, html)) return [];
+  if (!firstByHost([url], ["vagaro.com"]) || !listingLike(url, html)) return [];
   const serviceHint = parseServiceHint(url);
-  const anchorRegex = /<a class="text-decoration-none normalcolor" href="([^"]+)" id="lnkServiceProvider_[^"]*"[\s\S]*?aria-label="([^"]*)"[\s\S]*?<\/a>/gi;
+  const anchorRegex = /<a\b([^>]*)>[\s\S]*?<\/a>/gi;
   const listings: VagaroDirectoryListing[] = [];
   let match: RegExpExecArray | null = null;
   while ((match = anchorRegex.exec(html))) {
-    const href = match[1]?.trim();
+    const anchorId = htmlAttribute(match[1] || "", "id");
+    if (!anchorId?.startsWith("lnkServiceProvider_")) continue;
+    const href = htmlAttribute(match[1] || "", "href")?.trim();
     const block = match[0] || "";
     const displayName =
-      extractAnchorField(block, /<div id="spnProviderName_[^"]*"[^>]*>([\s\S]*?)<\/div>/i) ||
-      stripHtml(match[2] || "");
+      extractAnchorField(block, /<div\b[^>]*\sid=["']spnProviderName_[^"']*["'][^>]*>([\s\S]*?)<\/div>/i) ||
+      stripHtml(htmlAttribute(match[1] || "", "aria-label") || "");
     if (!displayName) continue;
-    const businessName = extractAnchorField(block, /<div[^>]+id="spnBusinessName_[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
+    const businessName = extractAnchorField(block, /<div\b[^>]*\sid=["']spnBusinessName_[^"']*["'][^>]*>([\s\S]*?)<\/div>/i);
     const ratingSummary = extractAnchorField(block, /<div[^>]+class="card-review-number[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
-    const locationText = extractAnchorField(block, /<div class="text-block-6 web-body-font"[^>]*>[\s\S]*?<span>([\s\S]*?)<\/span>/i);
+    const locationText = extractAnchorField(block, /<div\b[^>]*\sclass=["'][^"']*\btext-block-6\b[^"']*["'][^>]*>[\s\S]*?<span[^>]*>([\s\S]*?)<\/span>/i);
     const location = parseLocation(locationText);
     let profileUrl: string | undefined;
     if (href) {
@@ -93,6 +101,8 @@ export function extractVagaroDirectoryListings(url: string, html: string): Vagar
       location: location.location,
       serviceHint,
       profileUrl,
+      sourceScopedIds: [...new Set(Array.from(block.matchAll(/\sid\s*=\s*["']([^"']+)["']/gi), (entry) => entry[1]))]
+        .map((id) => ({ sourceUrl: url, id })),
       ratingSummary,
       sourceNote: "vagaro_directory_results",
       pageClassification: "directory_results_page",
@@ -125,8 +135,8 @@ export function parseVagaro(url: string, html: string, preliminaryName?: string,
     address,
     city: city || extractCityFromAddress(address) || normalizeCity(preliminaryCity),
     instagram: firstByHost(links, ["instagram.com"]),
-    booking: url.includes("vagaro.com") ? url : firstByHost(links, ["vagaro.com"]),
-    website: firstByHost(links, ["vagaro.com"]) ? undefined : url,
+    booking: firstByHost([url, ...links], ["vagaro.com"]),
+    website: firstByHost([url, ...links], ["vagaro.com"]) ? undefined : url,
     evidenceType: listingLike(url, html) ? "directory_listing" : "direct_operator",
   };
 }

@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ProfileRefinementControls from "@/components/admin/pipeline/ProfileRefinementControls";
+import { ProfileSummaryCard, SourceLink } from "@/components/admin/pipeline/ProfileEvidence";
+import { toRefinementQueueItem } from "@/lib/admin/pipeline/profile-presentation";
 import ValidateDetailActions from "@/components/admin/pipeline/ValidateDetailActions";
 import { getValidationDetail } from "@/lib/admin/pipeline/validation";
 
@@ -23,22 +26,24 @@ export default async function OperatorDetail({
   const backLabel = intakeId ? "Back to submission review" : "Back to review queue";
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
+    <div className="min-w-0 space-y-6">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
           <h1 className="text-xl font-bold">{detail.row.displayName}</h1>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="mt-1 break-all text-sm text-gray-600">
             Validation review key {detail.row.reviewKey}
           </p>
         </div>
-        <Link href={backHref} className="text-sm text-blue-600 hover:underline">
+        <Link href={backHref} className="max-w-40 shrink-0 text-sm text-blue-600 hover:underline">
           {backLabel}
         </Link>
       </div>
 
+      <ProfileRefinementControls rows={[toRefinementQueueItem(detail.row)]} scope={`detail:${detail.row.reviewKey}`} checkedAt={new Date().toISOString()} automatic={false} />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <ProfileSummaryCard profile={detail.row.profile || detail.profile} />
         <section className="rounded-xl bg-white p-4 shadow">
-          <h2 className="font-bold">Operator Profile</h2>
+          <h2 className="font-bold">Review record</h2>
           <dl className="mt-3 space-y-2 text-sm">
             <div>
               <dt className="text-gray-500">Name</dt>
@@ -67,8 +72,8 @@ export default async function OperatorDetail({
               </dd>
             </div>
             <div>
-              <dt className="text-gray-500">Confidence</dt>
-              <dd>{detail.row.confidence}</dd>
+              <dt className="text-gray-500">Extraction confidence</dt>
+              <dd>{detail.row.confidence}<span className="ml-2 text-xs text-gray-500">Source extraction quality; not identity verification.</span></dd>
             </div>
           </dl>
         </section>
@@ -82,9 +87,7 @@ export default async function OperatorDetail({
                 <div>{detail.intake.sourceLabel}</div>
                 <div className="text-gray-500">{detail.intake.sourceType}</div>
                 {detail.intake.sourceUrl ? (
-                  <a className="text-blue-600 hover:underline" href={detail.intake.sourceUrl} target="_blank" rel="noreferrer">
-                    {detail.intake.sourceUrl}
-                  </a>
+                  <SourceLink url={detail.intake.sourceUrl} />
                 ) : null}
               </div>
             ) : null}
@@ -124,9 +127,7 @@ export default async function OperatorDetail({
                     <div>
                       <dt className="text-gray-500">Profile URL</dt>
                       <dd>
-                        <a className="text-blue-600 hover:underline" href={detail.candidate.instagramProfileUrl} target="_blank" rel="noreferrer">
-                          {detail.candidate.instagramProfileUrl}
-                        </a>
+                        <SourceLink url={detail.candidate.instagramProfileUrl} />
                       </dd>
                     </div>
                   ) : null}
@@ -192,9 +193,7 @@ export default async function OperatorDetail({
                     <div>
                       <dt className="text-gray-500">Listing / Profile URL</dt>
                       <dd>
-                        <a className="text-blue-600 hover:underline" href={detail.candidate.directoryContext.listingUrl} target="_blank" rel="noreferrer">
-                          {detail.candidate.directoryContext.listingUrl}
-                        </a>
+                        <SourceLink url={detail.candidate.directoryContext.listingUrl} />
                       </dd>
                     </div>
                   ) : null}
@@ -316,7 +315,7 @@ export default async function OperatorDetail({
         {detail.candidate?.rawBlock ? (
           <section className="rounded-xl bg-white p-4 shadow xl:col-span-2">
             <h2 className="font-bold">Raw Candidate Block</h2>
-            <pre className="mt-3 whitespace-pre-wrap rounded bg-gray-50 p-3 text-xs text-gray-700">{detail.candidate.rawBlock}</pre>
+            <pre className="mt-3 whitespace-pre-wrap break-words rounded bg-gray-50 p-3 text-xs text-gray-700">{detail.candidate.rawBlock}</pre>
           </section>
         ) : null}
 

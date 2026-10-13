@@ -3,7 +3,7 @@ import { parseHashtagPasteRequest } from "@/lib/hashtag-paste-intake/parser";
 import type { HashtagPasteIntakeRequest, ProviderCandidate } from "@/lib/hashtag-paste-intake/types";
 import { normalizeBuildUploadRecords } from "./build";
 import { adaptUploadRecords } from "@/lib/operators/upload-adapter";
-import { fetchCandidatePage } from "@/lib/operators/page-fetch";
+import { fetchPublicProfile } from "./profile-fetch";
 import { extractVagaroDirectoryListings } from "@/lib/operators/domain-parsers/vagaro";
 import { enqueueDoraValidationForCandidate } from "@/lib/source-intake/dora-queue";
 import { enqueueSocialDiscoveryForCandidate } from "@/lib/source-intake/social-queue";
@@ -16,6 +16,7 @@ import {
 } from "@/lib/source-intake/store";
 import type { ParsedCandidateRow, ParseConfidence, SourceType } from "@/lib/source-intake/types";
 import type { BuildSourceType } from "./types";
+import { candidateInstagramUrl, classifyProfileUrl, recoverCandidateProfile } from "./profile-model";
 import { listDoraQueueByIntakeId, listSocialQueueByIntakeId } from "@/lib/source-intake/phase2-store";
 import {
   buildFingerprintNote,
@@ -106,9 +107,10 @@ function candidateRowsFromInstagram(intakeId: string, rawText: string): ParsedCa
   const postMap = new Map(parsedPosts.map((post) => [post.id, post]));
 
   return providerCandidates.map((candidate, index) => {
-    const providerOwnedName = parsedPosts.find(
+    const providerOwnedPost = parsedPosts.find(
       (post) => post.handle?.toLowerCase() === candidate.handle.toLowerCase() && post.inferredType === "provider"
-    )?.displayName;
+    );
+    const providerOwnedName = providerOwnedPost?.displayName;
     const chosenDisplayName = isUsableInstagramDisplayName(providerOwnedName)
       ? providerOwnedName
       : isUsableInstagramDisplayName(candidate.displayName)
@@ -126,6 +128,9 @@ function candidateRowsFromInstagram(intakeId: string, rawText: string): ParsedCa
       .map((postId) => postMap.get(postId))
       .filter((value): value is NonNullable<typeof value> => Boolean(value));
     const captionSnippet = toCaptionSnippet(evidencePosts.map((post) => post.caption).find(Boolean));
+    const ownedLinks = providerOwnedPost && !providerOwnedPost.taggedHandles.length
+      ? providerOwnedPost.urls.map(classifyProfileUrl).filter((link) => link !== null)
+      : [];
     return {
       id: `${intakeId}_${candidate.id}`,
       intakeId,
@@ -134,12 +139,16 @@ function candidateRowsFromInstagram(intakeId: string, rawText: string): ParsedCa
       displayName,
       firstName: parts.firstName,
       lastName: parts.lastName,
+      sourceUrl: candidateInstagramUrl(candidate.handle),
+      bookingUrl: ownedLinks.find((link) => link.platform !== "unknown" && link.kind !== "directory")?.url,
+      websiteUrl: ownedLinks.find((link) => link.platform === "unknown" && link.kind === "website")?.url,
       instagramHandle: candidate.handle,
       instagramProfileUrl: toInstagramProfileUrl(candidate.handle),
       captionSnippet,
       signalType: instagramSignalType(candidate),
       serviceHint: candidate.serviceHint,
-      geoHint: candidate.geoHint,
+      // Client posts can mention another city or link; keep those in raw evidence only.
+      geoHint: providerOwnedPost?.inferredGeoHint,
       // Preserve the strongest known provider/service identity, but keep category conservative.
       roleLabel: normalizeCanonicalCategory(candidate.serviceHint),
       parseConfidence: confidenceFromProvider(candidate.confidence),
@@ -166,7 +175,7 @@ function prepareInstagramCandidates(intakeId: string, rawText: string): Prepared
   };
 }
 
-function isVagaroProfessionalsResultsUrl(value?: string): boolean {
+function isVagaroProfessionalsResultsUrl(value?: string): value is string {
   if (!value) return false;
   try {
     const parsed = new URL(value);
@@ -189,10 +198,10 @@ async function expandVagaroDirectoryCandidates(row: {
   const candidateUrl = row.sourceUrl || row.website || row.booking;
   if (!isVagaroProfessionalsResultsUrl(candidateUrl)) return null;
 
-  const fetched = await fetchCandidatePage(candidateUrl, { timeoutMs: 15000 });
-  if (!fetched.html) return null;
+  const fetched = await fetchPublicProfile(candidateUrl, {}, Date.now() + 15_000);
+  if (fetched.outcome !== "retrieved" || !fetched.body) return null;
 
-  const listings = extractVagaroDirectoryListings(fetched.finalUrl || candidateUrl, fetched.html);
+  const listings = extractVagaroDirectoryListings(fetched.finalUrl || candidateUrl, fetched.body);
   if (!listings.length) return null;
 
   return listings.map((listing) => {
@@ -210,6 +219,7 @@ async function expandVagaroDirectoryCandidates(row: {
         ratingSummary: listing.ratingSummary,
         sourceNote: listing.sourceNote,
         pageClassification: listing.pageClassification,
+        sourceScopedIds: listing.sourceScopedIds,
       },
       null,
       2
@@ -222,6 +232,17 @@ async function expandVagaroDirectoryCandidates(row: {
       displayName: listing.displayName,
       firstName: parts.firstName,
       lastName: parts.lastName,
+      sourceUrl: listing.profileUrl,
+      sourceContextUrl: candidateUrl,
+      bookingUrl: listing.profileUrl,
+      businessName: listing.businessName,
+      city: listing.city,
+      state: listing.state,
+      serviceHint: listing.serviceHint,
+      geoHint: listing.location,
+      businessId: listing.profileUrl ? classifyProfileUrl(listing.profileUrl)?.businessId : undefined,
+      providerId: listing.profileUrl ? classifyProfileUrl(listing.profileUrl)?.providerId : undefined,
+      sourceScopedIds: listing.sourceScopedIds,
       roleLabel: normalizeCanonicalCategory(listing.serviceHint || row.category),
       parseConfidence: listing.businessName && listing.city ? "high" : "medium",
       parseWarnings: warnings,
@@ -263,12 +284,16 @@ async function prepareUploadCandidates(
         if (!row.address) warnings.push("missing_address");
         if (instagramIdentity) warnings.push("instagram_url_identity_source");
 
-        return [
-          {
+        const draft: CandidateDraft = {
             rawBlock,
             displayName,
             firstName: parts.firstName,
             lastName: parts.lastName,
+            sourceUrl: row.sourceUrl,
+            bookingUrl: row.booking,
+            websiteUrl: row.website,
+            city: row.city,
+            businessName: row.parentContainerName,
             instagramHandle: instagramIdentity?.instagramHandle,
             instagramProfileUrl:
               instagramIdentity?.instagramProfileUrl || toInstagramProfileUrl(row.instagram || row.sourceUrl),
@@ -280,8 +305,11 @@ async function prepareUploadCandidates(
                 : row.name || instagramIdentity ? "medium" : "low",
             parseWarnings: warnings.length ? warnings : undefined,
             reviewAction: "pending",
-          } satisfies CandidateDraft,
-        ];
+          };
+        // The original upload record can contain state/ZIP/business fields the adapter omits.
+        const profile = recoverCandidateProfile({ id: "draft", intakeId, ordinal: index + 1, ...draft });
+        return [{ ...draft, city: profile.city, state: profile.state, postalCode: profile.postalCode, businessName: profile.businessName,
+          providerId: profile.providerId, businessId: profile.businessId } satisfies CandidateDraft];
       })
     )
   ).flat();
@@ -363,12 +391,12 @@ export async function persistBuildSubmissionToValidationQueue(args: {
     rawText: args.rawText,
   });
 
-  const candidates = dedupeCandidates(
-    (args.sourceType === "Instagram"
-      ? prepareInstagramCandidates(intake.id, args.rawText)
-      : await prepareUploadCandidates(intake.id, args.sourceType, args.rawText)
-    ).candidates
-  );
+  // Preparation may fetch a directory. Re-key the same source snapshot instead of fetching twice.
+  const candidates = dedupeCandidates(prepared.candidates.map((candidate) => ({
+    ...candidate,
+    id: candidate.id.startsWith(intakeIdSeed) ? `${intake.id}${candidate.id.slice(intakeIdSeed.length)}` : candidate.id,
+    intakeId: intake.id,
+  })));
 
   if (!candidates.length) {
     await updateSourceIntake(intake.id, { status: "failed" });
@@ -387,16 +415,19 @@ export async function persistBuildSubmissionToValidationQueue(args: {
   let doraQueued = 0;
   let socialQueued = 0;
   for (const candidate of candidates) {
+    const profile = recoverCandidateProfile(candidate);
+    const candidateSourceUrl = profile.bookingLinks.find((link) => link.kind !== "directory")?.url ||
+      profile.socialLinks[0]?.url || profile.websiteLinks[0]?.url;
     await enqueueDoraValidationForCandidate({
       intakeId: intake.id,
       candidateId: candidate.id,
       sourceLabel: intake.sourceLabel,
       sourceType: intake.sourceType,
-      sourceUrl: intake.sourceUrl,
+      sourceUrl: candidateSourceUrl,
       facilityId: intake.facilityId,
-      facilityName: intake.facilityName,
-      city: intake.city,
-      state: intake.state,
+      facilityName: profile.businessName || intake.facilityName,
+      city: profile.city,
+      state: profile.state,
       displayName: candidate.displayName,
       firstName: candidate.firstName,
       lastName: candidate.lastName,
@@ -408,11 +439,11 @@ export async function persistBuildSubmissionToValidationQueue(args: {
       candidateId: candidate.id,
       sourceLabel: intake.sourceLabel,
       sourceType: intake.sourceType,
-      sourceUrl: intake.sourceUrl,
+      sourceUrl: candidateSourceUrl,
       facilityId: intake.facilityId,
-      facilityName: intake.facilityName,
-      city: intake.city,
-      state: intake.state,
+      facilityName: profile.businessName || intake.facilityName,
+      city: profile.city,
+      state: profile.state,
       displayName: candidate.displayName,
     });
     socialQueued += 1;

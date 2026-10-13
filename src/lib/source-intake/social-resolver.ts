@@ -1,16 +1,16 @@
 import { buildGoogleDiscoveryPack } from "@/lib/social-targets/google-discovery/query-generator";
 import { nameSimilarityScore } from "@/lib/social-targets/evidence";
 import { runGoogleSearch } from "@/lib/social-targets/operator-harvest/query-executor";
-import { detectPlatformFromUrl, extractHandle } from "@/lib/social-targets/social-normalization";
-import { loadResolverRegistry } from "@/lib/resolver/registry-store";
+import { extractHandle } from "@/lib/social-targets/social-normalization";
+import { candidateInstagramUrl, classifyProfileUrl, recoverCandidateProfile } from "@/lib/admin/pipeline/profile-model";
+import type { CandidateProfile } from "@/lib/admin/pipeline/profile-types";
 import {
   findSocialResultByQueueItemId,
   getSocialQueueItemById,
-  saveOperatorCandidateLink,
   saveSocialResult,
   upsertSocialQueueItem,
 } from "./phase2-store";
-import { appendStagedOperatorEvidence, createSourceIntakeId, getSourceIntakeById, listOperatorCandidates, listParsedCandidates } from "./store";
+import { appendStagedOperatorEvidence, createSourceIntakeId, listParsedCandidates } from "./store";
 import type { SocialDiscoveryResult, SocialSurfaceType, ValidationReviewOutcome } from "./phase2-types";
 import type { ParsedCandidateRow, StagedOperatorEvidence } from "./types";
 
@@ -61,15 +61,15 @@ function contextTerm(queueItem: Awaited<ReturnType<typeof getSocialQueueItemById
 function buildSocialQueries(
   queueItem: Awaited<ReturnType<typeof getSocialQueueItemById>> extends infer T ? NonNullable<T> : never,
   candidate: ParsedCandidateRow | null,
-  matchedOperator?: { canonicalWebsite?: string; canonicalPhone?: string }
+  profile?: CandidateProfile
 ): Array<{ query: string; kind: SocialSurfaceType | "website"; reason: string }> {
+  if (!candidate) return [];
   const anchor = {
     name: queueItem.displayName,
     category: candidate?.roleLabel,
     city: queueItem.city,
     zone: queueItem.state,
-    website: matchedOperator?.canonicalWebsite,
-    phone: matchedOperator?.canonicalPhone,
+    website: profile?.websiteLinks.find((link) => link.attribution === "candidate")?.url,
   };
   const baseQueries = buildGoogleDiscoveryPack(anchor).queries.slice(0, 4);
   const queries: Array<{ query: string; kind: SocialSurfaceType | "website"; reason: string }> = baseQueries.map((query) => ({
@@ -108,13 +108,16 @@ function buildSocialQueries(
 }
 
 function surfaceTypeFromUrl(url: string): SocialSurfaceType | null {
-  const platform = detectPlatformFromUrl(url);
-  if (platform === "instagram") return "instagram";
-  if (platform === "booking") return "booking";
-  if (platform === "website") return "website";
-  if (platform === "linktree") return "linktree";
-  if (platform === "tiktok") return "tiktok";
-  return null;
+  const classified = classifyProfileUrl(url);
+  if (!classified || classified.kind === "directory") return null;
+  const parsed = new URL(url);
+  const host = parsed.hostname.toLowerCase().replace(/\.$/, "");
+  const onHost = (domain: string) => host === domain || host.endsWith(`.${domain}`);
+  if (onHost("instagram.com")) return candidateInstagramUrl(url) ? "instagram" : null;
+  if (onHost("tiktok.com")) return /^\/@[a-z0-9._]+\/?$/i.test(parsed.pathname) ? "tiktok" : null;
+  if (onHost("linktr.ee")) return "linktree";
+  if (classified.platform !== "unknown") return classified.kind === "individual" || classified.kind === "shared_business" ? "booking" : null;
+  return classified.kind === "website" ? "website" : null;
 }
 
 function buildReasonBundle(input: {
@@ -131,8 +134,8 @@ function buildReasonBundle(input: {
   if (input.city && normalizeText(input.candidateTitle).includes(normalizeText(input.city))) {
     reasons.push("city appears in search title or snippet");
   }
-  const confidence = similarity >= 0.9 ? "high" : similarity >= 0.72 ? "medium" : "low";
-  return { confidence, reasons };
+  reasons.push("search_discovery_only_not_fetched_or_identity_verified");
+  return { confidence: "low", reasons };
 }
 
 async function queueCandidateRow(intakeId: string, candidateId: string): Promise<ParsedCandidateRow | null> {
@@ -159,7 +162,8 @@ async function finalizeResult(
     mergeTargetId: options.action === "merged" ? options.mergeTargetId?.trim() || undefined : undefined,
     reviewedAt,
     reviewedBy: options.resolvedBy,
-    targetOperatorId: deriveTargetOperatorId(parsedCandidate ?? null, options.mergeTargetId),
+    targetOperatorId: options.action === "approved" || options.action === "merged"
+      ? deriveTargetOperatorId(parsedCandidate ?? null, options.mergeTargetId) : undefined,
   };
   await saveSocialResult(finalResult);
   await upsertSocialQueueItem({
@@ -176,7 +180,7 @@ async function writeSocialEvidence(
   surfaces: SurfaceCandidate[],
   observedAt: string
 ): Promise<StagedOperatorEvidence[]> {
-  const operatorId = parsedCandidate?.suggestedMatch?.matchedOperatorId;
+  // Discovery is candidate-scoped staging. A suggested match is not an approved operator link.
   const rows: StagedOperatorEvidence[] = [];
   for (const surface of surfaces) {
     const factType =
@@ -193,13 +197,12 @@ async function writeSocialEvidence(
       id: createSourceIntakeId("soe"),
       intakeId: queueItem.intakeId,
       candidateId: queueItem.candidateId,
-      operatorId,
       facilityId: queueItem.facilityId,
       sourceType: queueItem.sourceType,
       sourceLabel: queueItem.sourceLabel,
-      sourceUrl: queueItem.sourceUrl,
+      sourceUrl: surface.value,
       observedAt,
-      candidateName: queueItem.displayName,
+      candidateName: parsedCandidate?.displayName || queueItem.displayName,
       factType,
       factValue: normalizeSurfaceValue(surface.type, surface.value),
       confidence: surface.confidence,
@@ -207,53 +210,6 @@ async function writeSocialEvidence(
   }
   if (rows.length) await appendStagedOperatorEvidence(rows);
   return rows;
-}
-
-async function maybeSaveOperatorLinks(
-  queueItem: Awaited<ReturnType<typeof getSocialQueueItemById>> extends infer T ? NonNullable<T> : never,
-  parsedCandidate: ParsedCandidateRow | null,
-  surfaces: SurfaceCandidate[],
-  createdAt: string
-): Promise<void> {
-  const operators = loadResolverRegistry().filter((row) => !row.isContainer);
-  for (const surface of surfaces) {
-    const normalized = normalizeText(normalizeSurfaceValue(surface.type, surface.value));
-    const matchedOperator = operators.find((row) => {
-      if (surface.type === "instagram") return normalizeText(row.canonicalInstagram) === normalized;
-      if (surface.type === "booking") return normalizeText(row.canonicalBooking) === normalized;
-      if (surface.type === "website") return normalizeText(row.canonicalWebsite) === normalized;
-      return false;
-    });
-    if (matchedOperator) {
-      await saveOperatorCandidateLink({
-        id: createSourceIntakeId("ocl"),
-        candidateId: queueItem.candidateId,
-        targetType: "operator",
-        targetId: matchedOperator.id,
-        score: surface.confidence === "high" ? 92 : surface.confidence === "medium" ? 78 : 62,
-        reasons: [...surface.reasons, "discovered surface already exists on resolver operator"],
-        createdAt,
-      });
-      return;
-    }
-  }
-
-  const unresolved = (await listOperatorCandidates()).find(
-    (row) =>
-      row.sourceIntakeId === queueItem.intakeId &&
-      normalizeText(row.displayName) === normalizeText(parsedCandidate?.displayName || queueItem.displayName)
-  );
-  if (unresolved && surfaces.length) {
-    await saveOperatorCandidateLink({
-      id: createSourceIntakeId("ocl"),
-      candidateId: queueItem.candidateId,
-      targetType: "operator_candidate",
-      targetId: unresolved.id,
-      score: surfaces.some((surface) => surface.confidence === "high") ? 88 : 72,
-      reasons: ["social discovery added surface evidence for unresolved operator candidate"],
-      createdAt,
-    });
-  }
 }
 
 export async function resolveSocialQueueItem(
@@ -278,40 +234,43 @@ export async function resolveSocialQueueItem(
   });
 
   try {
-    const [intake] = await Promise.all([
-      getSourceIntakeById(queueItem.intakeId),
-    ]);
-    const matchedOperator = parsedCandidate?.suggestedMatch?.matchedOperatorId
-      ? loadResolverRegistry().find((row) => row.id === parsedCandidate.suggestedMatch?.matchedOperatorId)
-      : undefined;
-
+    const profile = parsedCandidate ? recoverCandidateProfile(parsedCandidate) : undefined;
+    const scopedQueue = {
+      ...queueItem,
+      displayName: parsedCandidate?.displayName || queueItem.displayName,
+      city: profile?.city,
+      state: profile?.state,
+      facilityName: profile?.businessName,
+    };
     const discovered = new Map<string, SurfaceCandidate>();
-
-    for (const directUrl of [queueItem.sourceUrl, intake?.sourceUrl, matchedOperator?.canonicalWebsite].filter(
-      (value): value is string => Boolean(value)
-    )) {
-      const type = surfaceTypeFromUrl(directUrl);
-      if (!type) continue;
+    const directLinks = profile ? [...profile.bookingLinks, ...profile.socialLinks, ...profile.websiteLinks] : [];
+    for (const link of directLinks) {
+      const type = surfaceTypeFromUrl(link.url);
+      if (!type || link.attribution === "unresolved") continue;
       pushSurface(discovered, {
         type,
-        value: directUrl,
-        confidence: type === "website" ? "medium" : "high",
-        reasons: ["surface derived directly from existing source context"],
+        value: link.url,
+        confidence: "medium",
+        reasons: [
+          "candidate_source_reported_link_not_fetched_or_identity_verified",
+          `source_basis=${link.basis}`,
+          ...(link.kind === "shared_business" || link.attribution === "business" ? ["shared_business_link_not_provider_identity"] : []),
+        ],
       });
     }
 
-    const queries = buildSocialQueries(queueItem, parsedCandidate, matchedOperator);
+    const queries = buildSocialQueries(scopedQueue, parsedCandidate, profile);
     for (const query of queries) {
       const results = await runGoogleSearch(query.query, 3, { strictQuery: true });
       for (const result of results) {
         const type = surfaceTypeFromUrl(result.link);
         if (!type) continue;
         const bundle = buildReasonBundle({
-          queueName: queueItem.displayName,
+          queueName: scopedQueue.displayName,
           candidateTitle: `${result.title || ""} ${result.snippet || ""}`.trim(),
           query: query.query,
           reason: query.reason,
-          city: queueItem.city,
+          city: scopedQueue.city,
         });
         pushSurface(discovered, {
           type,
@@ -338,10 +297,9 @@ export async function resolveSocialQueueItem(
         reasons: surface.reasons,
       })),
       evidenceIds: evidenceRows.map((row) => row.id),
-      targetOperatorId: deriveTargetOperatorId(parsedCandidate),
     };
     await saveSocialResult(result);
-    await maybeSaveOperatorLinks(queueItem, parsedCandidate, surfaces, resolvedAt);
+    // Discovery-only surfaces never auto-link to a canonical or same-name unresolved operator.
     const queueStatus = options?.action || "resolved";
     await upsertSocialQueueItem({
       ...queueItem,

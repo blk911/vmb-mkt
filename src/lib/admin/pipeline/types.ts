@@ -1,3 +1,4 @@
+import type { CandidateProfile } from "./profile-types";
 import type { CandidateMatchSuggestion } from "@/lib/source-intake/types";
 import type { BuildSubmitDebugInfo, ValidationLoadDebugInfo } from "./runtime-debug";
 
@@ -36,6 +37,7 @@ export type BuildSubmissionResult =
 export type ValidationQueueSource = "DORA" | "SOCIAL";
 
 export type ValidationQueueRow = {
+  profile?: CandidateProfile;
   queueItemId: string;
   intakeId: string;
   candidateId: string;
@@ -59,6 +61,7 @@ export type ValidationQueueRow = {
 };
 
 export type ValidationReviewRow = {
+  profile?: CandidateProfile;
   reviewKey: string;
   intakeId: string;
   candidateId: string;
@@ -108,6 +111,7 @@ export type DirectoryReviewContext = {
 };
 
 export type ValidationDetail = {
+  profile?: CandidateProfile;
   row: ValidationReviewRow;
   lanes: ValidationLaneDetail[];
   candidate?: {

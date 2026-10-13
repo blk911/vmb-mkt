@@ -1,0 +1,63 @@
+import type { CandidateProfile, ProfileLink } from "@/lib/admin/pipeline/profile-types";
+import { profileFreshnessLabel, profileLinkLabel, profileStatusLabel, safeProfileHref } from "@/lib/admin/pipeline/profile-presentation";
+
+export function SourceLink({ url, label }: { url?: string; label?: string }) {
+  const href = safeProfileHref(url);
+  if (!href) return <span className="text-gray-500">{url ? "Link unavailable" : "Unknown"}</span>;
+  return <a className="break-all text-blue-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2" href={href} title={url} target="_blank" rel="noopener noreferrer">{label || url}</a>;
+}
+
+export function ProfileLinks({ links, empty = "Unknown", compact = false }: { links: ProfileLink[]; empty?: string; compact?: boolean }) {
+  if (!links.length) return <span className="text-gray-500">{empty}</span>;
+  const shown = compact ? links.slice(0, 2) : links;
+  return <div className="space-y-2">
+    {shown.map((link, index) => <div key={`${link.url}:${index}`}>
+      <SourceLink url={link.url} label={profileLinkLabel(link)} />
+      <div className="mt-0.5 break-all text-[11px] text-gray-500">{safeProfileHref(link.url) ? compact ? new URL(link.url).hostname : link.url : "Unsafe or invalid URL withheld"}</div>
+      <div className="mt-0.5 text-[11px] text-gray-600">
+        {link.attribution === "candidate" ? "Candidate-linked" : link.attribution === "business" ? "Business-linked" : "Attribution unresolved"}
+        {" · "}<SourceLink url={link.sourceUrl} label={link.basis === "linked_page" ? "Linked-page source" : link.basis === "directory_card" ? "Directory source" : "Submitted source"} />
+      </div>
+    </div>)}
+    {compact && links.length > shown.length ? <div className="text-xs text-gray-500">+{links.length - shown.length} in review</div> : null}
+  </div>;
+}
+
+export function ProfileCheckState({ profile }: { profile?: CandidateProfile }) {
+  return <div className="space-y-1 text-xs">
+    <div className={profile?.status === "blocked" || profile?.status === "error" || profile?.status === "ambiguous" ? "font-medium text-amber-800" : "font-medium text-gray-700"}>{profileStatusLabel(profile)}</div>
+    <div className="text-gray-500">{profileFreshnessLabel(profile)}</div>
+    <div className="text-gray-500">Last checked: {profile?.lastAttemptAt ? <time dateTime={profile.lastAttemptAt}>{profile.lastAttemptAt.replace("T", " ").replace(/\.\d+Z$/, " UTC")}</time> : "Not yet"}</div>
+  </div>;
+}
+
+export function ProfileSummaryCard({ profile }: { profile?: CandidateProfile }) {
+  return <section className="break-words rounded-xl border border-blue-100 bg-white p-4 shadow xl:col-span-2">
+    <h2 className="font-bold">Source-linked profile</h2>
+    <p className="mt-1 text-sm text-gray-600">Source claims and retrieval results support review. They do not establish identity, license, ownership, or approval.</p>
+    <dl className="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 xl:grid-cols-3">
+      <div><dt className="text-gray-500">Platform</dt><dd className="font-medium">{profile?.platformLabel || "Unknown"}</dd></div>
+      <div><dt className="text-gray-500">Profile / booking link</dt><dd className="mt-1"><ProfileLinks links={profile?.bookingLinks || []} empty="No exact profile link found" /></dd></div>
+      <div><dt className="text-gray-500">Social link</dt><dd className="mt-1"><ProfileLinks links={profile?.socialLinks || []} /></dd></div>
+      <div><dt className="text-gray-500">Provider (source-reported)</dt><dd>{profile?.providerName || "Unknown"}</dd></div>
+      <div><dt className="text-gray-500">Salon / business (source-reported)</dt><dd>{profile?.businessName || "Unknown"}</dd></div>
+      <div><dt className="text-gray-500">City / ZIP (source-reported)</dt><dd>{[profile?.city, profile?.state, profile?.postalCode].filter(Boolean).join(", ") || "Unknown"}</dd></div>
+      <div><dt className="text-gray-500">Website</dt><dd className="mt-1"><ProfileLinks links={profile?.websiteLinks || []} /></dd></div>
+      <div><dt className="text-gray-500">Platform identifiers</dt><dd className="break-all">Provider: {profile?.providerId || "Unknown"}<br />Business: {profile?.businessId || "Unknown"}</dd></div>
+      <div><dt className="text-gray-500">Retrieval status</dt><dd className="mt-1"><ProfileCheckState profile={profile} /></dd></div>
+    </dl>
+    {profile?.sourceContextUrl ? <p className="mt-4 text-sm"><SourceLink url={profile.sourceContextUrl} label="Original source context" /></p> : null}
+    {profile?.reasons.length ? <ul className="mt-3 list-inside list-disc space-y-1 text-sm text-gray-700">{profile.reasons.map((reason, index) => <li key={index}>{reason}</li>)}</ul> : null}
+    {profile?.nextAttemptAt ? <p className="mt-3 text-xs text-gray-500">Next eligible check: <time dateTime={profile.nextAttemptAt}>{profile.nextAttemptAt}</time></p> : null}
+    {profile?.searchStatus === "unsupported" ? <p className="mt-2 text-xs text-amber-800">Name + salon + platform search is unavailable. Missing links remain unresolved.</p> : null}
+    <h3 className="mt-5 font-semibold">Fetched observations</h3>
+    {profile?.observations.length ? <ul className="mt-2 space-y-3 text-sm">
+      {profile.observations.map((observation, index) => <li className="rounded-lg border border-gray-200 p-3" key={`${observation.sourceUrl}:${index}`}>
+        <div className="flex flex-wrap justify-between gap-2"><span className="font-medium">{observation.outcome === "blocked" ? "Protected / access blocked" : observation.outcome.replaceAll("_", " ")}{observation.httpStatus ? ` (HTTP ${observation.httpStatus})` : ""}</span><time className="text-xs text-gray-500" dateTime={observation.fetchedAt}>{observation.fetchedAt}</time></div>
+        <div className="mt-1"><SourceLink url={observation.sourceUrl} /></div>
+        {observation.finalUrl && observation.finalUrl !== observation.sourceUrl ? <div className="mt-1">Final page: <SourceLink url={observation.finalUrl} /></div> : null}
+        {observation.claims.length ? <ul className="mt-2 space-y-1 text-gray-700">{observation.claims.map((claim, claimIndex) => <li key={claimIndex}>{claim.type.replaceAll("_", " ")}: {claim.value}</li>)}</ul> : <p className="mt-2 text-gray-500">No additional claims recovered.</p>}
+      </li>)}
+    </ul> : <p className="mt-2 text-sm text-gray-500">No fetched observations yet. Known source-reported details remain visible above.</p>}
+  </section>;
+}

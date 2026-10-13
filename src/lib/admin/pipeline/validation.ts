@@ -10,6 +10,9 @@ import type { ParsedCandidateRow, SourceIntakeRecord } from "@/lib/source-intake
 import type { DoraValidationResult, SocialDiscoveryResult } from "@/lib/source-intake/phase2-types";
 import { getHistoricalProcessingContext } from "./reconciliation";
 import type { ValidationDetail, ValidationLaneDetail, ValidationQueueRow, ValidationReviewRow } from "./types";
+import { recoverCandidateProfile } from "./profile-model";
+import type { CandidateProfile } from "./profile-types";
+import { fingerprintCandidate, readProfileRefinement } from "./profile-store";
 
 const TERMINAL_VALIDATION_STATUSES = new Set(["approved", "merged", "rejected", "failed", "dismissed"]);
 const VALIDATION_LANE_ORDER: Record<ValidationQueueRow["sourceType"], number> = {
@@ -74,7 +77,7 @@ function asTrimmedString(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
-function parseDirectoryReviewContext(candidate?: ParsedCandidateRow): ValidationDetail["candidate"]["directoryContext"] | undefined {
+function parseDirectoryReviewContext(candidate?: ParsedCandidateRow): NonNullable<ValidationDetail["candidate"]>["directoryContext"] | undefined {
   if (!candidate?.rawBlock) return undefined;
 
   try {
@@ -158,6 +161,7 @@ function combineValidationReviewRow(rows: ValidationQueueRow[]): ValidationRevie
     signalType: baseRow.signalType,
     serviceHint: baseRow.serviceHint,
     geoHint: baseRow.geoHint,
+    profile: baseRow.profile,
     lanes,
     laneStatuses,
   };
@@ -209,6 +213,7 @@ export async function listValidationRows(): Promise<ValidationQueueRow[]> {
   const intakeIds = [...new Set([...doraQueue, ...socialQueue].map((row) => row.intakeId))];
 
   const candidatesByKey = new Map<string, ParsedCandidateRow>();
+  const profilesByKey = new Map<string, CandidateProfile>();
   await Promise.all(
     intakeIds.map(async (intakeId) => {
       const candidates = await listParsedCandidates(intakeId);
@@ -218,20 +223,34 @@ export async function listValidationRows(): Promise<ValidationQueueRow[]> {
     })
   );
 
+  // Both validation lanes share one exact-fingerprint read per candidate.
+  await Promise.all([...candidatesByKey].map(async ([key, candidate]) => {
+    const base = recoverCandidateProfile(candidate);
+    try {
+      const fingerprint = fingerprintCandidate(candidate);
+      const reviewKey = buildValidationReviewKey(candidate.intakeId, candidate.id);
+      const saved = await readProfileRefinement(reviewKey, fingerprint);
+      profilesByKey.set(key, saved?.fingerprint === fingerprint && saved.reviewKey === reviewKey ? saved.profile : base);
+    } catch {
+      profilesByKey.set(key, { ...base, reasons: [...base.reasons, "profile_refinement_read_error"] });
+    }
+  }));
+
   const doraRows = await Promise.all(
     doraQueue.map(async (item) => {
       const [result] = await Promise.all([findDoraResultByQueueItemId(item.id)]);
       const candidate = candidatesByKey.get(`${item.intakeId}:${item.candidateId}`);
-      const confidence = normalizeConfidence(candidate, result?.score);
+      const profile = profilesByKey.get(`${item.intakeId}:${item.candidateId}`);
+      const confidence = normalizeConfidence(candidate);
       return {
         queueItemId: item.id,
         intakeId: item.intakeId,
         candidateId: item.candidateId,
         displayName: item.displayName,
-        city: item.city,
-        state: item.state,
+        city: candidate ? profile?.city : item.city,
+        state: candidate ? profile?.state : item.state,
         sourceLabel: item.sourceLabel,
-        sourceUrl: item.sourceUrl,
+        sourceUrl: candidate ? profile?.bookingLinks.find((link) => link.kind !== "directory")?.url || profile?.socialLinks[0]?.url || profile?.websiteLinks[0]?.url : item.sourceUrl,
         sourceType: "DORA" as const,
         status: resultStatus(result) || item.status,
         confidence: confidence.label,
@@ -244,6 +263,7 @@ export async function listValidationRows(): Promise<ValidationQueueRow[]> {
         signalType: candidate?.signalType,
         serviceHint: candidate?.serviceHint,
         geoHint: candidate?.geoHint,
+        profile,
       } satisfies ValidationQueueRow;
     })
   );
@@ -252,16 +272,17 @@ export async function listValidationRows(): Promise<ValidationQueueRow[]> {
     socialQueue.map(async (item) => {
       const [result] = await Promise.all([findSocialResultByQueueItemId(item.id)]);
       const candidate = candidatesByKey.get(`${item.intakeId}:${item.candidateId}`);
+      const profile = profilesByKey.get(`${item.intakeId}:${item.candidateId}`);
       const confidence = normalizeConfidence(candidate);
       return {
         queueItemId: item.id,
         intakeId: item.intakeId,
         candidateId: item.candidateId,
         displayName: item.displayName,
-        city: item.city,
-        state: item.state,
+        city: candidate ? profile?.city : item.city,
+        state: candidate ? profile?.state : item.state,
         sourceLabel: item.sourceLabel,
-        sourceUrl: item.sourceUrl,
+        sourceUrl: candidate ? profile?.bookingLinks.find((link) => link.kind !== "directory")?.url || profile?.socialLinks[0]?.url || profile?.websiteLinks[0]?.url : item.sourceUrl,
         sourceType: "SOCIAL" as const,
         status: resultStatus(result) || item.status,
         confidence: confidence.label,
@@ -274,6 +295,7 @@ export async function listValidationRows(): Promise<ValidationQueueRow[]> {
         signalType: candidate?.signalType,
         serviceHint: candidate?.serviceHint,
         geoHint: candidate?.geoHint,
+        profile,
       } satisfies ValidationQueueRow;
     })
   );
@@ -348,6 +370,7 @@ export async function getValidationDetail(reviewKeyOrQueueItemId: string): Promi
 
   return {
     row: combineValidationReviewRow(laneRows),
+    profile: laneRows[0]?.profile,
     lanes,
     candidate: candidate
       ? {
