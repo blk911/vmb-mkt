@@ -42,6 +42,9 @@ export default async function ValidatePage({
       <div>
         <h1 className="text-xl font-bold">{pageTitle}</h1>
         <p className="mt-1 text-sm text-gray-600">{pageDescription}</p>
+        <Link href="/admin/review-export" className="mt-2 inline-block text-sm font-medium text-blue-700 hover:underline">
+          Download saved review metadata
+        </Link>
         {intakeId ? (
           <div className="mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
             <div>
