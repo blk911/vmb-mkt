@@ -1,6 +1,6 @@
 "use client";
 
-import { buildInstagramProfileUrl } from "@/lib/manual-ig-clusters/parser";
+import { buildInstagramProfileUrl } from "@/lib/manual-ig-clusters/profile";
 import type { ManualIgCluster } from "@/lib/manual-ig-clusters/types";
 
 type ManualIgClusterDetailTableProps = {

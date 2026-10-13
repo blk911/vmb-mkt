@@ -3,13 +3,21 @@ import NextActionLink from "@/components/admin/pipeline/NextActionLink";
 import { getValidationLoadDebugInfo } from "@/lib/admin/pipeline/runtime-debug";
 import { getPipelineOperationalSnapshot } from "@/lib/admin/pipeline/state";
 import { listPendingValidationReviewRows } from "@/lib/admin/pipeline/validation";
+import {
+  parseValidationSort,
+  sortValidationReviewRows,
+  validationSortHref,
+  type ValidationSearchParams,
+  type ValidationSort,
+  type ValidationSortColumn,
+} from "@/lib/admin/pipeline/validation-sort";
 
 export const dynamic = "force-dynamic";
 
 export default async function ValidatePage({
   searchParams,
 }: {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+  searchParams?: Promise<ValidationSearchParams>;
 }) {
   const params = (await searchParams) || {};
   const intakeId = typeof params.intakeId === "string" ? params.intakeId : undefined;
@@ -18,6 +26,8 @@ export default async function ValidatePage({
     getPipelineOperationalSnapshot(),
     getValidationLoadDebugInfo(),
   ]);
+  const sort = parseValidationSort(params);
+  const sortedRows = sortValidationReviewRows(rows, sort);
   const status = typeof params.status === "string" ? params.status : undefined;
   const action = typeof params.action === "string" ? params.action : undefined;
   const message = typeof params.message === "string" ? params.message : undefined;
@@ -89,6 +99,15 @@ export default async function ValidatePage({
         </div>
       </div>
 
+      <div className="flex max-w-4xl flex-wrap items-center justify-between gap-2 text-sm text-gray-600">
+        <p>Sort by a column heading. {sort ? `Sorted by ${sort.column}, ${sort.direction === "asc" ? "ascending" : "descending"}.` : "Newest first."}</p>
+        {sort ? (
+          <Link href={validationSortHref(params)} className="text-blue-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2">
+            Reset to newest first
+          </Link>
+        ) : null}
+      </div>
+
       <div
         className="max-w-4xl overflow-x-auto rounded-xl bg-white shadow"
         role="region"
@@ -105,16 +124,16 @@ export default async function ValidatePage({
           </colgroup>
           <thead className="bg-gray-100 text-left">
             <tr>
-              <th scope="col" className="p-3">Candidate</th>
-              <th scope="col" className="p-3">Lanes</th>
-              <th scope="col" className="p-3">Status</th>
-              <th scope="col" className="p-3">Confidence</th>
+              <SortHeader column="candidate" label="Candidate" params={params} sort={sort} />
+              <SortHeader column="lanes" label="Lanes" params={params} sort={sort} />
+              <SortHeader column="status" label="Status" params={params} sort={sort} />
+              <SortHeader column="confidence" label="Confidence" params={params} sort={sort} />
               <th scope="col" className="p-3">Action</th>
             </tr>
           </thead>
           <tbody>
             {rows.length ? (
-              rows.map((row) => (
+              sortedRows.map((row) => (
                 <tr key={row.reviewKey} className="border-t">
                   <td className="break-words p-3">
                     <div className="font-medium text-gray-900">{row.displayName}</div>
@@ -171,6 +190,27 @@ export default async function ValidatePage({
 
       <NextActionLink href="/admin/target" text={`Select top targets from ${snapshot.metrics.readyTargets} approved operators`} />
     </div>
+  );
+}
+
+function SortHeader({ column, label, params, sort }: {
+  column: ValidationSortColumn;
+  label: string;
+  params: ValidationSearchParams;
+  sort: ValidationSort | null;
+}) {
+  const active = sort?.column === column;
+  const nextDirection = active && sort.direction === "asc" ? "descending" : "ascending";
+  return (
+    <th scope="col" className="p-3" aria-sort={active ? (sort.direction === "asc" ? "ascending" : "descending") : undefined}>
+      <Link
+        href={validationSortHref(params, column)}
+        className="inline-flex items-center gap-1 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+        aria-label={`Sort by ${label}, ${nextDirection}`}
+      >
+        {label} <span aria-hidden="true">{active ? (sort.direction === "asc" ? "↑" : "↓") : "↕"}</span>
+      </Link>
+    </th>
   );
 }
 
