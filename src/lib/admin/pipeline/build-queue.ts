@@ -14,9 +14,9 @@ import {
   saveParsedCandidates,
   updateSourceIntake,
 } from "@/lib/source-intake/store";
-import type { ParsedCandidateRow, ParseConfidence, SourceType } from "@/lib/source-intake/types";
+import type { ParsedCandidateRow, ParseConfidence, SourceType, SourceEvidenceLink } from "@/lib/source-intake/types";
 import type { BuildSourceType } from "./types";
-import { candidateInstagramUrl, classifyProfileUrl, recoverCandidateProfile } from "./profile-model";
+import { candidateInstagramUrl, classifyProfileUrl, extractProfileUrls, recoverCandidateProfile } from "./profile-model";
 import { listDoraQueueByIntakeId, listSocialQueueByIntakeId } from "@/lib/source-intake/phase2-store";
 import {
   buildFingerprintNote,
@@ -68,12 +68,6 @@ function mapBuildSourceType(sourceType: BuildSourceType): SourceType {
   return "manual_field_note";
 }
 
-function candidateNameFromProvider(candidate: ProviderCandidate): string {
-  const displayName = candidate.displayName?.trim();
-  if (displayName) return displayName;
-  return candidate.handle.replace(/^@/, "").replace(/[._]/g, " ").trim() || candidate.handle;
-}
-
 function instagramSignalType(candidate: ProviderCandidate): "provider" | "client_tagged" | "unknown" {
   if (candidate.providerSignalCount >= 1) return "provider";
   if (candidate.clientSignalCount >= 1 || candidate.taggedByCount >= 1) return "client_tagged";
@@ -97,7 +91,37 @@ function isUsableInstagramDisplayName(value?: string): boolean {
   return true;
 }
 
-function candidateRowsFromInstagram(intakeId: string, rawText: string): ParsedCandidateRow[] {
+/** Attribute at the original post/line boundary, never at an entire pasted batch. */
+function instagramEvidenceLinks(posts: ReturnType<typeof parseHashtagPasteRequest>["parsedPosts"], handle: string): SourceEvidenceLink[] {
+  const values: SourceEvidenceLink[] = [];
+  const seen = new Set<string>();
+  for (const post of posts) {
+    const ownsPost = post.handle?.toLowerCase() === handle.toLowerCase() && post.inferredType === "provider";
+    const lines = post.rawBlock.split(/\r?\n/);
+    for (const url of post.urls) {
+      const path = url.replace(/^https?:\/\//i, "");
+      const lineIndex = lines.findIndex((line) => extractProfileUrls(line).includes(url));
+      const line = lines[lineIndex] || "";
+      const otherTag = /@([a-z0-9._]{2,30})/gi;
+      const hasOtherTag = [...line.matchAll(otherTag)].some((match) => match[1].toLowerCase() !== handle.toLowerCase());
+      const preceding = lines[Math.max(0, lineIndex - 1)] || "";
+      const taggedContext = line.trim().replace(/^https?:\/\//i, "").replace(/\/$/, "") === path.replace(/\/$/, "")
+        && /^\s*@([a-z0-9._]{2,30})\s*$/i.test(preceding)
+        && !new RegExp(`^\\s*@${handle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`, "i").test(preceding);
+      const explicitlyOwned = /\b(?:book(?:ing)? with me|my (?:booking|website|bio|link)|(?:booking|appointments|website)(?:\s+(?:url|link))?\s*:)/i.test(line);
+      const owned = ownsPost && (!hasOtherTag || explicitlyOwned) && !taggedContext;
+      const evidenceType: SourceEvidenceLink["evidenceType"] = owned ? "owned_post" : post.inferredType === "client" ? "client_post" : "mention";
+      const key = `${post.id}|${url}|${evidenceType}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      values.push({ url, sourceUrl: candidateInstagramUrl(post.handle), sourcePostId: post.id,
+        attribution: owned ? "provider" : "unknown", evidenceType, excerpt: line.trim().slice(0, 240) || undefined });
+    }
+  }
+  return values;
+}
+
+export function candidateRowsFromInstagram(intakeId: string, rawText: string): ParsedCandidateRow[] {
   const request: HashtagPasteIntakeRequest = {
     platform: "instagram",
     rawText,
@@ -107,30 +131,27 @@ function candidateRowsFromInstagram(intakeId: string, rawText: string): ParsedCa
   const postMap = new Map(parsedPosts.map((post) => [post.id, post]));
 
   return providerCandidates.map((candidate, index) => {
-    const providerOwnedPost = parsedPosts.find(
+    const providerOwnedPosts = parsedPosts.filter(
       (post) => post.handle?.toLowerCase() === candidate.handle.toLowerCase() && post.inferredType === "provider"
     );
-    const providerOwnedName = providerOwnedPost?.displayName;
+    const providerOwnedName = providerOwnedPosts.map((post) => post.displayName).find(isUsableInstagramDisplayName);
     const chosenDisplayName = isUsableInstagramDisplayName(providerOwnedName)
       ? providerOwnedName
-      : isUsableInstagramDisplayName(candidate.displayName)
-        ? candidate.displayName
-        : undefined;
+      : undefined;
     const displayName =
       chosenDisplayName?.trim() ||
-      candidate.handle.replace(/^@/, "").replace(/[._]/g, " ").trim() ||
-      candidateNameFromProvider(candidate);
-    const parts = splitDisplayName(displayName);
+      `@${candidate.handle.replace(/^@/, "")}`;
+    const parts = chosenDisplayName ? splitDisplayName(displayName) : {};
     const evidenceBlocks = candidate.evidencePostIds
       .map((postId) => postMap.get(postId)?.rawBlock)
       .filter((value): value is string => Boolean(value));
     const evidencePosts = candidate.evidencePostIds
       .map((postId) => postMap.get(postId))
       .filter((value): value is NonNullable<typeof value> => Boolean(value));
-    const captionSnippet = toCaptionSnippet(evidencePosts.map((post) => post.caption).find(Boolean));
-    const ownedLinks = providerOwnedPost && !providerOwnedPost.taggedHandles.length
-      ? providerOwnedPost.urls.map(classifyProfileUrl).filter((link) => link !== null)
-      : [];
+    const captionSnippet = toCaptionSnippet(providerOwnedPosts.map((post) => post.caption).find(Boolean));
+    const sourceEvidenceLinks = instagramEvidenceLinks(evidencePosts, candidate.handle);
+    const ownedLinks = sourceEvidenceLinks.filter((link) => link.attribution === "provider")
+      .map((link) => classifyProfileUrl(link.url)).filter((link) => link !== null);
     return {
       id: `${intakeId}_${candidate.id}`,
       intakeId,
@@ -142,13 +163,14 @@ function candidateRowsFromInstagram(intakeId: string, rawText: string): ParsedCa
       sourceUrl: candidateInstagramUrl(candidate.handle),
       bookingUrl: ownedLinks.find((link) => link.platform !== "unknown" && link.kind !== "directory")?.url,
       websiteUrl: ownedLinks.find((link) => link.platform === "unknown" && link.kind === "website")?.url,
+      sourceEvidenceLinks,
       instagramHandle: candidate.handle,
       instagramProfileUrl: toInstagramProfileUrl(candidate.handle),
       captionSnippet,
       signalType: instagramSignalType(candidate),
       serviceHint: candidate.serviceHint,
       // Client posts can mention another city or link; keep those in raw evidence only.
-      geoHint: providerOwnedPost?.inferredGeoHint,
+      geoHint: providerOwnedPosts.map((post) => post.inferredGeoHint).find(Boolean),
       // Preserve the strongest known provider/service identity, but keep category conservative.
       roleLabel: normalizeCanonicalCategory(candidate.serviceHint),
       parseConfidence: confidenceFromProvider(candidate.confidence),

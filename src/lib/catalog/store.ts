@@ -20,6 +20,8 @@ export async function loadSharedCatalog(): Promise<SharedCatalog> {
     if (!complete || new Set(projected.rows.map((row) => row.id)).size !== projected.rows.length) throw new Error("catalog_coverage_failed");
     const warnings = [
       "Business/address records are not individual providers.",
+      "Legacy file-only staged evidence is unavailable or unimported until an explicitly verified archive is supplied; no bundled or local production fallback is read.",
+      ...(projected.orphanEvidenceCount ? [`${projected.orphanEvidenceCount} staged evidence records have no matching candidate; originals are retained.`] : []),
       "Source records and manual decisions remain in their original collections; no destructive migration has run.",
       ...(projected.orphanQueueCount ? [`${projected.orphanQueueCount} queue records have no matching candidate source; originals are retained.`] : []),
       ...(projected.orphanResultCount ? [`${projected.orphanResultCount} review results have no matching candidate source; originals are retained.`] : []),
@@ -27,7 +29,7 @@ export async function loadSharedCatalog(): Promise<SharedCatalog> {
     return {
       rows: projected.rows,
       generatedAt: new Date().toISOString(),
-      coverage: { version: 1, storage: "firestore", strategy: "non_destructive_read_projection", complete, snapshotId: createHash("sha256").update(JSON.stringify(CATALOG_COLLECTIONS.map((collection) => [collection, sources[collection].map((doc) => [doc.id, doc.updatedAt])]))).digest("hex"), sourceCounts: Object.fromEntries(CATALOG_COLLECTIONS.map((collection) => [collection, sources[collection].length])), recordCount: projected.rows.length, providerCount, businessCount, orphanQueueCount: projected.orphanQueueCount, orphanResultCount: projected.orphanResultCount, conflictCount: projected.rows.filter((row) => row.conflicts.length).length, warnings },
+      coverage: { version: 1, storage: "firestore", strategy: "non_destructive_read_projection", complete, snapshotId: createHash("sha256").update(JSON.stringify(CATALOG_COLLECTIONS.map((collection) => [collection, sources[collection].map((doc) => [doc.id, doc.updatedAt])]))).digest("hex"), sourceCounts: Object.fromEntries(CATALOG_COLLECTIONS.map((collection) => [collection, sources[collection].length])), recordCount: projected.rows.length, providerCount, businessCount, orphanQueueCount: projected.orphanQueueCount, orphanResultCount: projected.orphanResultCount, conflictCount: projected.rows.filter((row) => row.conflicts.length).length, orphanEvidenceCount: projected.orphanEvidenceCount, evidenceAudit: projected.evidenceAudit, legacyFileEvidence: { status: "unavailable_or_unimported", importedCount: 0, note: "No legacy local archive is assumed complete or imported. Production reads only durable evidence in this snapshot." }, warnings },
     };
   } catch (error) {
     console.error("Shared catalog unavailable", error instanceof Error ? error.name : "unknown");

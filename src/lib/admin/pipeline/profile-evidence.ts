@@ -1,4 +1,4 @@
-import { classifyProfileUrl } from "./profile-model";
+import { classifyProfileUrl, normalizeProfileUrl } from "./profile-model";
 import { isSocialProfileHost, publicProfileUrl } from "./profile-fetch";
 import type { CandidateProfile, ProfileLink, ProfileObservation } from "./profile-types";
 
@@ -118,7 +118,7 @@ function jsonEntities(html: string): JsonObject[] {
 function hasType(entity: JsonObject, type: string): boolean { return strings(entity["@type"]).some((v) => v === type || v.endsWith(`/${type}`)); }
 function resolveObservedUrl(value: string, sourceUrl: string): string | undefined {
   if (!value || value.startsWith("#") || value.length > 2048) return undefined;
-  try { const url = new URL(value, sourceUrl); return publicProfileUrl(url.href)?.href; } catch { return undefined; }
+  try { const url = normalizeProfileUrl(value) || new URL(value, sourceUrl).href; return publicProfileUrl(url)?.href; } catch { return undefined; }
 }
 function entityPerson(entity: JsonObject): PersonEvidence {
   return { name: string(entity.name), businessNames: [...names(entity.worksFor), ...names(entity.memberOf), ...names(entity.affiliation)], ids: identifiers(entity.identifier), urls: strings(entity.url), socials: strings(entity.sameAs), address: object(entity.address) };
@@ -226,7 +226,7 @@ export function inspectProfilePage(html: string, base: CandidateProfile, finalUr
       if (!reasons.includes(limitReason)) reasons.push(limitReason);
       return;
     }
-    links.push({ ...classified, url, kind: kindHint ?? kind, attribution: assigned, sourceUrl: finalUrl, basis: "linked_page", observedAt });
+    links.push({ ...classified, url, kind: kindHint ?? kind, attribution: assigned, sourceUrl: finalUrl, sourceField: "observed_page.link", basis: "linked_page", observedAt });
   };
   if (match === "individual" || match === "shared") {
     for (const person of matches) { for (const url of person.urls) add(url, "candidate"); for (const url of person.socials) add(url, "candidate"); }

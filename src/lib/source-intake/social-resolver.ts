@@ -1,3 +1,4 @@
+import { withStableStagedEvidenceId } from "./evidence-identity";
 import { buildGoogleDiscoveryPack } from "@/lib/social-targets/google-discovery/query-generator";
 import { nameSimilarityScore } from "@/lib/social-targets/evidence";
 import { runGoogleSearch } from "@/lib/social-targets/operator-harvest/query-executor";
@@ -206,10 +207,16 @@ async function writeSocialEvidence(
       factType,
       factValue: normalizeSurfaceValue(surface.type, surface.value),
       confidence: surface.confidence,
+      attribution: surface.reasons.includes("candidate_source_reported_link_not_fetched_or_identity_verified") ? (surface.reasons.includes("shared_business_link_not_provider_identity") ? "business" : "candidate") : "unresolved",
+      sourceReasons: surface.reasons,
+      sourceRef: `adminPipelineSocialQueue:${queueItem.id}`,
+      sourceField: "candidate_source_or_search_discovery",
+      basis: "submitted",
     });
   }
-  if (rows.length) await appendStagedOperatorEvidence(rows);
-  return rows;
+  const durableRows = rows.map(withStableStagedEvidenceId);
+  if (durableRows.length) await appendStagedOperatorEvidence(durableRows);
+  return durableRows;
 }
 
 export async function resolveSocialQueueItem(

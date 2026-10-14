@@ -1,53 +1,53 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { listParsedCandidates } from "@/lib/source-intake/store";
-import { listDoraQueue, listSocialQueue, listDoraResults, listSocialResults } from "@/lib/source-intake/phase2-store";
 import type { ParsedCandidateRow } from "@/lib/source-intake/types";
-import { recoverCandidateProfile } from "./profile-model";
+import { adaptStoredCandidateEvidence } from "@/lib/catalog/source-adapters";
+import { loadProfileEvidenceSources } from "./profile-source-evidence";
+import { recoverCandidateProfile, reconcileCandidateProfile } from "./profile-model";
 import { refineCandidateProfile } from "./profile-refinement";
 import { claimProfileRefinement, completeProfileRefinement, fingerprintCandidate, releaseProfileLease } from "./profile-store";
 import type { CandidateProfile, ProfileRefinementRecord } from "./profile-types";
 
 export type ProfileRunResult = { reviewKey: string; status: "completed" | "cached" | "busy" | "skipped" | "error";
   profile?: CandidateProfile; error?: string; nextAttemptAt?: string };
-const TERMINAL = new Set(["approved", "merged", "rejected", "dismissed", "failed"]);
-const reviewKeyOf = (row: { intakeId: string; candidateId: string }) => `${row.intakeId}::${row.candidateId}`;
 
-/** Only existing pending candidates are eligible. A completed sibling lane is preserved. */
+/** Refresh source facts for any existing candidate without writing review decisions or queues. */
 export async function refineReviewProfiles(reviewKeys: readonly string[]): Promise<ProfileRunResult[]> {
   const keys = [...new Set(reviewKeys)];
   if (!keys.length || keys.length > 3 || keys.some((key) => !/^[A-Za-z0-9._:-]{3,256}$/.test(key) || !key.includes("::"))) {
     throw new Error("invalid_review_keys");
   }
-  const [dora, social, doraResults, socialResults] = await Promise.all([listDoraQueue(), listSocialQueue(), listDoraResults(), listSocialResults()]);
-  const doraById = new Map(doraResults.map((row) => [row.queueItemId, row]));
-  const socialById = new Map(socialResults.map((row) => [row.queueItemId, row]));
-  const lanes = [...dora.map((row) => ({ ...row, effectiveStatus: doraById.get(row.id)?.finalStatus || doraById.get(row.id)?.status || row.status })),
-    ...social.map((row) => ({ ...row, effectiveStatus: socialById.get(row.id)?.finalStatus || row.status }))];
+  const sources = await loadProfileEvidenceSources();
   const candidateLoads = new Map<string, Promise<ParsedCandidateRow[]>>();
   const candidates = (intakeId: string) => {
     if (!candidateLoads.has(intakeId)) candidateLoads.set(intakeId, listParsedCandidates(intakeId));
     return candidateLoads.get(intakeId)!;
   };
   async function run(reviewKey: string): Promise<ProfileRunResult> {
-    const ownLanes = lanes.filter((row) => reviewKeyOf(row) === reviewKey);
-    if (!ownLanes.length || ownLanes.some((row) => TERMINAL.has(String(row.effectiveStatus).toLowerCase()))) {
-      return { reviewKey, status: "skipped", error: "not_pending_review" };
-    }
-    const source = ownLanes[0];
-    const candidate = (await candidates(source.intakeId)).find((row) => row.id === source.candidateId);
-    if (!candidate || candidate.reviewAction === "hold") return { reviewKey, status: "skipped", error: "candidate_missing_or_held" };
-    const fingerprint = fingerprintCandidate(candidate);
+    if (reviewKey.split("::").length !== 2) return { reviewKey, status: "skipped", error: "ambiguous_source_key" };
+    const separator = reviewKey.indexOf("::");
+    const intakeId = reviewKey.slice(0, separator), candidateId = reviewKey.slice(separator + 2);
+    if (intakeId.includes(":") || candidateId.includes(":")) return { reviewKey, status: "skipped", error: "ambiguous_source_key" };
+    const candidate = (await candidates(intakeId)).find((row) => row.id === candidateId && row.intakeId === intakeId);
+    if (!candidate) return { reviewKey, status: "skipped", error: "candidate_missing" };
+    const base = recoverCandidateProfile(candidate);
+    const evidence = adaptStoredCandidateEvidence(candidate, base, sources.get(JSON.stringify([intakeId, candidateId])) || {});
+    const recovered = reconcileCandidateProfile({ ...base, reasons: [...base.reasons, ...evidence.conflicts] }, evidence.links);
+    const fingerprint = fingerprintCandidate(candidate, evidence.links);
     let token: string | undefined;
     try {
       const claim = await claimProfileRefinement(reviewKey, fingerprint);
-      if (claim.status === "cached") return { reviewKey, status: "cached", profile: claim.record.profile };
+      if (claim.status === "cached") return { reviewKey, status: "cached", profile: reconcileCandidateProfile(claim.record.profile, recovered) };
       if (claim.status === "busy") return { reviewKey, status: "busy", nextAttemptAt: new Date(Date.now() + 120_000).toISOString() };
       token = claim.token;
-      const recovered = recoverCandidateProfile(candidate);
-      const previous = claim.previous?.profile;
-      const seed: CandidateProfile = previous ? { ...previous, observations: [], reasons: [], status: "not_checked" } : recovered;
-      const profile = await refineCandidateProfile(seed);
+      const previous = claim.previous?.profile ? { ...claim.previous.profile,
+        candidateRef: !claim.previous.profile.candidateRef || claim.previous.profile.candidateRef === reviewKey
+          ? JSON.stringify([candidate.intakeId, candidate.id]) : claim.previous.profile.candidateRef } : undefined;
+      const combined = claim.previous?.fingerprint === fingerprint && previous
+        ? reconcileCandidateProfile(previous, recovered) : reconcileCandidateProfile(recovered, ...(previous ? [previous] : []));
+      const seed: CandidateProfile = { ...combined, observations: [], status: "not_checked" };
+      let profile = await refineCandidateProfile(seed);
       const now = new Date().toISOString();
       // A failed attempt never renews the last successful observation timestamp.
       const retrieved = profile.observations.some((observation) => observation.outcome === "retrieved");
@@ -60,14 +60,10 @@ export async function refineReviewProfiles(reviewKeys: readonly string[]): Promi
       if (!retrieved) profile.freshness = previous?.lastSuccessfulAt ? "stale" : recovered.freshness;
       // The latest display is bounded; every previous run remains immutable below.
       profile.observations = [...(previous?.observations || []), ...profile.observations].slice(-12);
-      for (const field of ["bookingLinks", "socialLinks", "websiteLinks"] as const) {
-        const original = recovered[field];
-        const originalKeys = new Set(original.map((link) => `${link.url}|${link.attribution}`));
-        const derived = profile[field].filter((link) => !originalKeys.has(`${link.url}|${link.attribution}`));
-        // Preserve source-submitted facts; cap the latest derived projection, not its run history.
-        if (derived.length > 24) profile.reasons.push("Latest view is limited to 24 derived links per kind; previous observations remain in run history.");
-        profile[field] = [...original, ...derived.slice(-24)];
-      }
+      // Retain safe historical links and their provenance even after source edits.
+      // The fetch engine bounds newly discovered links; history is not truncated.
+      profile = reconcileCandidateProfile(profile, recovered, ...(previous ? [previous] : []));
+      profile.observations = profile.observations.sort((left, right) => left.fetchedAt.localeCompare(right.fetchedAt)).slice(-12);
       const record: ProfileRefinementRecord = { schemaVersion: 1, reviewKey, fingerprint, runId: `profile_${randomUUID()}`, profile, completedAt: now };
       if (!await completeProfileRefinement(record, token)) return { reviewKey, status: "busy", error: "refinement_lease_changed" };
       token = undefined;

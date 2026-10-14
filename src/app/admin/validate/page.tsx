@@ -1,7 +1,7 @@
 import Link from "next/link";
 import ProfileRefinementControls from "@/components/admin/pipeline/ProfileRefinementControls";
 import { ProfileCheckState, ProfileLinks, SourceLink } from "@/components/admin/pipeline/ProfileEvidence";
-import { toRefinementQueueItem } from "@/lib/admin/pipeline/profile-presentation";
+import { profilePlatformLabel, profilePlatformExplanation, profileMissingLinkLabel, toRefinementQueueItem } from "@/lib/admin/pipeline/profile-presentation";
 import NextActionLink from "@/components/admin/pipeline/NextActionLink";
 import { getValidationLoadDebugInfo } from "@/lib/admin/pipeline/runtime-debug";
 import { getPipelineOperationalSnapshot } from "@/lib/admin/pipeline/state";
@@ -115,7 +115,7 @@ export default async function ValidatePage({
           <tbody>
             {sortedRows.length ? sortedRows.map((row) => (
               <tr key={row.reviewKey} className="border-t align-top">
-                <td className="break-words p-3"><div className="font-semibold text-gray-900">{row.profile?.platformLabel || "Unknown"}</div><div className="mt-1 text-[11px] text-gray-500">{row.profile?.platform && row.profile.platform !== "unknown" ? "Source-reported" : "Platform unresolved"}</div></td>
+                <td className="break-words p-3"><div className="font-semibold text-gray-900">{profilePlatformLabel(row.profile)}</div><div className="mt-1 text-[11px] text-gray-500">{profilePlatformExplanation(row.profile)}</div></td>
                 <td className="break-words p-3"><ProfileLinks compact links={row.profile?.bookingLinks || []} empty="No exact link found" />{row.profile?.sourceContextUrl || row.sourceUrl ? <div className="mt-2 text-xs"><SourceLink url={row.profile?.sourceContextUrl || row.sourceUrl} label="Original source" /></div> : null}</td>
                 <td className="break-words p-3"><ProfileLinks compact links={row.profile?.socialLinks || []} />{row.instagramHandle ? <div className="mt-1 break-all text-xs text-gray-500">@{row.instagramHandle.replace(/^@/, "")}</div> : null}</td>
                 <td className="break-words p-3"><div className="font-medium text-gray-900">{row.profile?.providerName || row.displayName}</div>{row.serviceHint ? <div className="mt-1 text-xs text-gray-500">{row.serviceHint}</div> : null}<div className="mt-2 text-[11px] text-gray-500">{row.sourceLabel}</div></td>

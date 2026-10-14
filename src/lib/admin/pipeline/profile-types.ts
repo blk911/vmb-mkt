@@ -1,4 +1,4 @@
-export type BookingPlatform = "vagaro" | "glossgenius" | "booksy" | "fresha" | "square" | "unknown";
+export type BookingPlatform = "vagaro" | "glossgenius" | "booksy" | "fresha" | "square" | "styleseat" | "unknown";
 export type ProfileLinkKind = "directory" | "shared_business" | "individual" | "website" | "social" | "unknown";
 export type ProfileRefinementStatus = "not_checked" | "directory_linked" | "provider_matched" | "shared_page_only" | "ambiguous" | "unmatched" | "blocked" | "unavailable" | "unsupported" | "error";
 
@@ -6,9 +6,16 @@ export interface ProfileLink {
   url: string;
   platform?: BookingPlatform;
   kind: ProfileLinkKind;
+  /** Explicit source intent, including booking links on an unrecognized custom domain. */
+  purpose?: "booking" | "website" | "social";
   attribution: "candidate" | "business" | "unresolved";
   sourceUrl: string;
   basis: "submitted" | "directory_card" | "linked_page";
+  /** Stable source document and exact candidate-scoped field, when available. */
+  sourceRef?: string;
+  sourceField?: string;
+  /** Original observed input when normalization or a known redirect wrapper was applied. */
+  observedUrl?: string;
   observedAt?: string;
   providerId?: string;
   businessId?: string;
@@ -24,12 +31,41 @@ export interface ProfileObservation {
   claims: Array<{ type: "provider_business" | "platform" | "location" | "booking_url" | "social_url"; value: string }>;
 }
 
+export type ProfileFactField = "providerName" | "businessName" | "city" | "state" | "postalCode" | "providerId" | "businessId";
+export interface ProfileFieldEvidence {
+  field: ProfileFactField;
+  value: string;
+  sourceUrl?: string;
+  sourceRef?: string;
+  sourceField?: string;
+  basis: ProfileLink["basis"];
+  priority?: number;
+}
+
+export interface ProfilePlatformEvidence {
+  platform: Exclude<BookingPlatform, "unknown">;
+  evidence: "url_domain" | "source_reported";
+  attribution: ProfileLink["attribution"];
+  sourceUrl?: string;
+  sourceRef?: string;
+  sourceField?: string;
+  value: string;
+}
+
 /** A projection over source claims, never a license/ownership/manual-review decision. */
 export interface CandidateProfile {
   schemaVersion: 1;
   providerName: string;
   platform: BookingPlatform;
   platformLabel: string;
+  /** Attributable candidate/business platforms. Never person verification; unresolved domains stay in platformEvidence. */
+  knownPlatforms?: BookingPlatform[];
+  observedPlatforms?: BookingPlatform[];
+  platformSummary?: "unknown" | "single" | "multiple";
+  factRecoveryVersion?: number;
+  candidateRef?: string;
+  fieldEvidence?: ProfileFieldEvidence[];
+  platformEvidence?: ProfilePlatformEvidence[];
   businessName?: string;
   city?: string;
   state?: string;

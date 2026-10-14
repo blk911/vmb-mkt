@@ -1,9 +1,9 @@
 import crypto from "node:crypto";
+import { extractProfileUrls } from "@/lib/admin/pipeline/profile-model";
 import type { HashtagPasteIntakeRequest, ParsedSocialPost } from "./types";
 
 const HANDLE_REGEX = /@([a-z0-9._]{2,30})/gi;
 const HASHTAG_REGEX = /#([a-z0-9_]+)/gi;
-const URL_REGEX = /https?:\/\/[^\s]+/gi;
 
 const PROVIDER_PATTERNS: Array<{ pattern: RegExp; reason: string }> = [
   { pattern: /\bdm to book\b/i, reason: "contains 'dm to book'" },
@@ -83,7 +83,7 @@ function splitIntoBlocks(rawText: string): string[] {
 }
 
 function extractDisplayName(lines: string[], handle?: string): string | undefined {
-  const line = lines.find((entry) => !/^[@#]/.test(entry) && !/^https?:\/\//i.test(entry) && entry.length <= 60);
+  const line = lines.find((entry) => !/^[@#]/.test(entry) && !extractProfileUrls(entry).length && entry.length <= 60);
   if (!line) return undefined;
   return handle ? line.replace(new RegExp(`@${handle}\\b`, "i"), "").trim() || undefined : line;
 }
@@ -110,46 +110,43 @@ function inferGeoHint(text: string, request: HashtagPasteIntakeRequest): string 
 
 function isPotentialBareHandle(line: string): boolean {
   const value = line.trim();
-  if (!/^[a-z0-9._]{2,30}$/i.test(value)) return false;
+  if (!/^[a-z0-9._]{2,30}$/i.test(value) || extractProfileUrls(value).length) return false;
   if (/^\d+$/.test(value)) return false;
   return value === value.toLowerCase() || /[._\d]/.test(value);
 }
 
 function buildBareHandleListPosts(request: HashtagPasteIntakeRequest): ParsedSocialPost[] {
-  const lines = request.rawText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-  const posts: ParsedSocialPost[] = [];
-
-  for (let index = 0; index < lines.length; index += 1) {
-    const handleLine = lines[index];
-    if (!isPotentialBareHandle(handleLine)) continue;
-
-    const displayNameLine = lines[index + 1];
-    const hasDisplayName = Boolean(displayNameLine) && !isPotentialBareHandle(displayNameLine);
-    const rawBlock = hasDisplayName ? `${handleLine}\n${displayNameLine}` : handleLine;
-    const handle = handleLine.replace(/^@/, "").toLowerCase();
-
-    posts.push({
+  const lines = request.rawText.split(/\r?\n/);
+  const groups: string[][] = [];
+  let current: string[] = [];
+  for (const line of lines) {
+    if (isPotentialBareHandle(line)) {
+      if (current.length) groups.push(current);
+      current = [line];
+    } else if (current.length) current.push(line);
+  }
+  if (current.length) groups.push(current);
+  return groups.map((group) => {
+    // Keep every following bio line and URL in the source block. The old two-line
+    // fallback silently discarded booking links after a display name.
+    const rawBlock = group.join("\n").trim();
+    const handle = group[0].trim().toLowerCase();
+    const contentLines = group.slice(1).map((line) => line.trim()).filter(Boolean);
+    const displayName = extractDisplayName(contentLines, handle);
+    return {
       id: `hpi_post_${crypto.createHash("md5").update(rawBlock).digest("hex").slice(0, 12)}`,
-      rawBlock,
-      handle,
-      displayName: hasDisplayName ? displayNameLine : undefined,
-      caption: hasDisplayName ? `${handleLine} ${displayNameLine}` : handleLine,
-      hashtags: [],
-      taggedHandles: [],
-      urls: [],
-      inferredType: "provider",
+      rawBlock, handle, displayName,
+      caption: extractCaption([handle, ...contentLines]),
+      hashtags: collectMatches(HASHTAG_REGEX, rawBlock, (value) => `#${value.toLowerCase()}`),
+      taggedHandles: collectMatches(HANDLE_REGEX, rawBlock, (value) => value.toLowerCase()).filter((value) => value !== handle),
+      urls: extractProfileUrls(rawBlock),
+      inferredType: "provider" as const,
       inferredServiceHint: inferServiceHint(rawBlock, request),
       inferredGeoHint: inferGeoHint(rawBlock, request),
-      confidence: hasDisplayName ? "High" : "Medium",
+      confidence: displayName ? "High" as const : "Medium" as const,
       reasons: ["bare handle list entry"],
-    });
-
-    if (hasDisplayName) {
-      index += 1;
-    }
-  }
-
-  return posts;
+    };
+  });
 }
 
 export function parseHashtagPasteRequest(request: HashtagPasteIntakeRequest): {
@@ -157,17 +154,22 @@ export function parseHashtagPasteRequest(request: HashtagPasteIntakeRequest): {
   diagnostics: string[];
 } {
   const blocks = splitIntoBlocks(request.rawText);
+  const hasExplicitOwner = blocks.some((block) => /^@[a-z0-9._]{2,30}(?=\s|$)/i.test(block));
+  const barePosts = !hasExplicitOwner ? buildBareHandleListPosts(request) : [];
   const diagnostics: string[] = [];
   if (request.rawText.trim().length < 80) diagnostics.push("very short pasted input");
 
-  let parsedPosts = blocks.map((block) => {
+  let parsedPosts: ParsedSocialPost[] = blocks.map((block) => {
     const blockId = `hpi_post_${crypto.createHash("md5").update(block).digest("hex").slice(0, 12)}`;
     const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
     const handles = collectMatches(HANDLE_REGEX, block, (value) => value.toLowerCase());
     const hashtags = collectMatches(HASHTAG_REGEX, block, (value) => `#${value.toLowerCase()}`);
-    const urls = collectMatches(URL_REGEX, block, (value) => value);
-    const handle = handles[0];
-    const taggedHandles = handles.slice(1);
+    const urls = extractProfileUrls(block);
+    // A mention inside prose is never the owner of that prose. Only an explicit
+    // leading handle identifies the source account; remaining handles are tags.
+    const leading = lines[0]?.match(/^@([a-z0-9._]{2,30})(?=\s|$)/i)?.[1]?.toLowerCase();
+    const handle = leading || (isPotentialBareHandle(lines[0] || "") ? lines[0].toLowerCase() : undefined);
+    const taggedHandles = handles.filter((value) => value !== handle);
     const caption = extractCaption(lines);
     const displayName = extractDisplayName(lines, handle);
     const reasons: string[] = [];
@@ -175,9 +177,10 @@ export function parseHashtagPasteRequest(request: HashtagPasteIntakeRequest): {
     const providerReasons = PROVIDER_PATTERNS.filter((entry) => entry.pattern.test(block)).map((entry) => entry.reason);
     const clientReasons = CLIENT_PATTERNS.filter((entry) => entry.pattern.test(block)).map((entry) => entry.reason);
     if (handle) reasons.push("handle found");
+    if (handle && !leading) reasons.push("bare handle list entry");
     reasons.push(...providerReasons, ...clientReasons);
 
-    let inferredType: ParsedSocialPost["inferredType"] = "unknown";
+    let inferredType: ParsedSocialPost["inferredType"] = handle && !leading ? "provider" : "unknown";
     if (providerReasons.length > clientReasons.length && providerReasons.length > 0) inferredType = "provider";
     if (clientReasons.length > providerReasons.length && clientReasons.length > 0) inferredType = "client";
     if (providerReasons.length > 0 && clientReasons.length > 0 && taggedHandles.length >= 1) inferredType = "client";
@@ -203,8 +206,8 @@ export function parseHashtagPasteRequest(request: HashtagPasteIntakeRequest): {
     } satisfies ParsedSocialPost;
   });
 
-  if (!parsedPosts.some((post) => post.handle)) {
-    const bareHandleListPosts = buildBareHandleListPosts(request);
+  if (barePosts.length && !hasExplicitOwner) {
+    const bareHandleListPosts = barePosts;
     if (bareHandleListPosts.length) {
       parsedPosts = bareHandleListPosts;
       diagnostics.push("parsed bare instagram handle list format");

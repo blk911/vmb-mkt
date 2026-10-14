@@ -1,3 +1,4 @@
+import { withStableStagedEvidenceId } from "./evidence-identity";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { doraDenverDerivedAbs } from "@/backend/lib/paths/data-root";
@@ -231,6 +232,9 @@ async function writeDoraEvidence(
       sourceUrl: queueItem.sourceUrl,
       observedAt: resolvedAt,
       candidateName: queueItem.displayName,
+      attribution: "unresolved",
+      sourceReasons: ["dora_license_match_claim_requires_identity_review"],
+      sourceRef: `adminPipelineDoraQueue:${queueItem.id}`,
       factType: "license_status",
       factValue: matched.statusText,
       confidence: "high",
@@ -248,6 +252,9 @@ async function writeDoraEvidence(
       sourceUrl: queueItem.sourceUrl,
       observedAt: resolvedAt,
       candidateName: queueItem.displayName,
+      attribution: "unresolved",
+      sourceReasons: ["dora_license_match_claim_requires_identity_review"],
+      sourceRef: `adminPipelineDoraQueue:${queueItem.id}`,
       factType: "license_number",
       factValue: matched.licenseNumber,
       confidence: "high",
@@ -265,6 +272,9 @@ async function writeDoraEvidence(
       sourceUrl: queueItem.sourceUrl,
       observedAt: resolvedAt,
       candidateName: queueItem.displayName,
+      attribution: "unresolved",
+      sourceReasons: ["dora_license_match_claim_requires_identity_review"],
+      sourceRef: `adminPipelineDoraQueue:${queueItem.id}`,
       factType: "license_type",
       factValue: matched.licenseType,
       confidence: "medium",
@@ -282,15 +292,19 @@ async function writeDoraEvidence(
       sourceUrl: queueItem.sourceUrl,
       observedAt: resolvedAt,
       candidateName: queueItem.displayName,
+      attribution: "unresolved",
+      sourceReasons: ["dora_license_match_claim_requires_identity_review"],
+      sourceRef: `adminPipelineDoraQueue:${queueItem.id}`,
       factType: "license_city",
       factValue: matched.city,
       confidence: "medium",
     });
   }
-  if (rows.length) {
-    await appendStagedOperatorEvidence(rows);
+  const durableRows = rows.map(withStableStagedEvidenceId);
+  if (durableRows.length) {
+    await appendStagedOperatorEvidence(durableRows);
   }
-  return rows;
+  return durableRows;
 }
 
 export async function resolveDoraQueueItem(

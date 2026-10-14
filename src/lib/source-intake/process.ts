@@ -1,3 +1,4 @@
+import { withStableStagedEvidenceId } from "./evidence-identity";
 import {
   appendStagedOperatorEvidence,
   createSourceIntakeId,
@@ -87,7 +88,7 @@ function buildEvidenceRows(
       confidence: candidate.parseConfidence,
     });
   }
-  return rows;
+  return rows.map((row) => withStableStagedEvidenceId({ ...row, sourceRef: `adminPipelineSourceIntakes:${intake.id}`, sourceField: `candidate:${candidate.id}:${row.factType}` }));
 }
 
 function buildOperatorCandidate(

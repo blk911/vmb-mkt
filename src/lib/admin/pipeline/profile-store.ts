@@ -5,7 +5,8 @@ import path from "node:path";
 import { adminDb } from "@/lib/admin/firestoreAdmin";
 import { getRuntimeDataRoot } from "@/lib/runtime/runtime-data-root";
 import type { ParsedCandidateRow } from "@/lib/source-intake/types";
-import type { ProfileRefinementRecord } from "./profile-types";
+import type { ProfileLink, ProfileRefinementRecord } from "./profile-types";
+import { PROFILE_FACT_RECOVERY_VERSION, reconcileCandidateProfile } from "./profile-model";
 import { usesFirestoreCanonicalPipelineStore } from "./canonical-store-config";
 
 const HEADS = "adminPipelineProfileRefinements";
@@ -19,12 +20,12 @@ const digest = (value: string) => createHash("sha256").update(value).digest("hex
 const clean = <T,>(value: T): T => JSON.parse(JSON.stringify(value));
 
 /** Bind observations to the source facts, not changing manual review outcomes. */
-export function fingerprintCandidate(candidate: ParsedCandidateRow): string {
-  const c = candidate as unknown as Record<string, unknown>;
-  const keys = ["id", "intakeId", "displayName", "firstName", "lastName", "rawBlock", "sourceUrl", "sourceContextUrl",
-    "city", "state", "postalCode", "businessName", "bookingUrl", "websiteUrl", "providerId", "businessId", "sourceScopedIds",
-    "instagramHandle", "instagramProfileUrl", "serviceHint", "geoHint", "roleLabel"];
-  return digest(JSON.stringify(keys.map((key) => [key, c[key] ?? null])));
+export function fingerprintCandidate(candidate: ParsedCandidateRow, evidenceLinks: readonly ProfileLink[] = []): string {
+  // Review decisions are independent of evidence refresh. Every other stored
+  // source field participates so new recovery aliases cannot reuse an old cache.
+  const fields = Object.entries(candidate).filter(([key]) => !["reviewAction", "suggestedMatch"].includes(key))
+    .sort(([left], [right]) => left.localeCompare(right));
+  return digest(JSON.stringify({ engine: PROFILE_FACT_RECOVERY_VERSION, fields, evidenceLinks: [...evidenceLinks].sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right))) }));
 }
 
 function usesFirestore(): boolean { return usesFirestoreCanonicalPipelineStore(); }
@@ -64,21 +65,40 @@ async function withFileLock<T>(reviewKey: string, work: (head: Head, save: (head
   } finally { await lock.close(); await fs.unlink(loc.lock).catch(() => undefined); }
 }
 
-function matchingRecord(head: Head, reviewKey: string, fingerprint: string): ProfileRefinementRecord | null {
+function matchingRecord(head: Head, reviewKey: string, fingerprint?: string): ProfileRefinementRecord | null {
   const row = head?.record;
-  if (!row || row.schemaVersion !== 1 || row.reviewKey !== reviewKey || row.fingerprint !== fingerprint
+  if (!row || row.schemaVersion !== 1 || row.reviewKey !== reviewKey || (fingerprint !== undefined && row.fingerprint !== fingerprint)
     || row.profile?.schemaVersion !== 1 || !Array.isArray(row.profile.bookingLinks)
-    || !Array.isArray(row.profile.socialLinks) || !Array.isArray(row.profile.observations)) return null;
+    || !Array.isArray(row.profile.socialLinks) || !Array.isArray(row.profile.websiteLinks) || !Array.isArray(row.profile.observations)) return null;
   return clean(row);
 }
 
-export async function readProfileRefinement(reviewKey: string, fingerprint: string): Promise<ProfileRefinementRecord | null> {
+export async function readProfileRefinement(reviewKey: string, fingerprint: string, candidate?: ParsedCandidateRow): Promise<ProfileRefinementRecord | null> {
   let head: Head;
   if (usesFirestore()) {
     const doc = await adminDb().collection(HEADS).doc(location(reviewKey).id).get();
     head = doc.exists ? doc.data() as Head : {};
   } else head = await fileHead(location(reviewKey).head);
-  const record = matchingRecord(head, reviewKey, fingerprint);
+  if (candidate && `${candidate.intakeId}::${candidate.id}` !== reviewKey) return null;
+  const unambiguousCandidate = candidate && !candidate.intakeId.includes(":") && !candidate.id.includes(":");
+  // A legacy delimiter key alone cannot authorize a cross-candidate stale merge.
+  const record = matchingRecord(head, reviewKey, candidate ? undefined : fingerprint);
+  if (record && candidate && !unambiguousCandidate && record.fingerprint !== fingerprint
+    && record.profile.candidateRef !== JSON.stringify([candidate.intakeId, candidate.id])) return null;
+  if (record) {
+    const exact = record.fingerprint === fingerprint;
+    if (candidate && (!record.profile.candidateRef || record.profile.candidateRef === reviewKey)) {
+      record.profile.candidateRef = JSON.stringify([candidate.intakeId, candidate.id]);
+    }
+    record.profile = candidate
+      ? exact ? reconcileCandidateProfile(record.profile, reconcileCandidateProfile(candidate)) : reconcileCandidateProfile(candidate, record.profile)
+      : reconcileCandidateProfile(record.profile);
+    if (!exact) {
+      // A previous head is historical evidence, never a cache hit for changed facts.
+      record.profile.nextAttemptAt = undefined;
+      if (record.profile.lastAttemptAt) record.profile.freshness = "stale";
+    }
+  }
   if (record && Date.parse(record.profile.nextAttemptAt || "") <= Date.now()) record.profile.freshness = "stale";
   return record;
 }
@@ -86,8 +106,8 @@ export async function readProfileRefinement(reviewKey: string, fingerprint: stri
 export async function claimProfileRefinement(reviewKey: string, fingerprint: string, now = Date.now()): Promise<ProfileClaim> {
   const decide = (head: Head): { claim: ProfileClaim; head?: Head } => {
     if (head.lease && Date.parse(head.lease.expiresAt) > now) return { claim: { status: "busy" } };
-    const previous = matchingRecord(head, reviewKey, fingerprint);
-    if (previous && Date.parse(previous.profile.nextAttemptAt || "") > now) return { claim: { status: "cached", record: previous } };
+    const previous = matchingRecord(head, reviewKey);
+    if (previous?.fingerprint === fingerprint && Date.parse(previous.profile.nextAttemptAt || "") > now) return { claim: { status: "cached", record: previous } };
     const token = randomUUID();
     return { claim: { status: "claimed", token, previous }, head: { ...head, lease: { token, fingerprint, expiresAt: new Date(now + LEASE_MS).toISOString() } } };
   };

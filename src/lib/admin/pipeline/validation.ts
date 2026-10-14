@@ -10,7 +10,9 @@ import type { ParsedCandidateRow, SourceIntakeRecord } from "@/lib/source-intake
 import type { DoraValidationResult, SocialDiscoveryResult } from "@/lib/source-intake/phase2-types";
 import { getHistoricalProcessingContext } from "./reconciliation";
 import type { ValidationDetail, ValidationLaneDetail, ValidationQueueRow, ValidationReviewRow } from "./types";
-import { recoverCandidateProfile } from "./profile-model";
+import { adaptStoredCandidateEvidence } from "@/lib/catalog/source-adapters";
+import { loadProfileEvidenceSources } from "./profile-source-evidence";
+import { recoverCandidateProfile, reconcileCandidateProfile } from "./profile-model";
 import type { CandidateProfile } from "./profile-types";
 import { fingerprintCandidate, readProfileRefinement } from "./profile-store";
 
@@ -209,7 +211,7 @@ async function buildLaneDetail(row: ValidationQueueRow): Promise<ValidationLaneD
 }
 
 export async function listValidationRows(): Promise<ValidationQueueRow[]> {
-  const [doraQueue, socialQueue] = await Promise.all([listDoraQueue(), listSocialQueue()]);
+  const [doraQueue, socialQueue, evidenceSources] = await Promise.all([listDoraQueue(), listSocialQueue(), loadProfileEvidenceSources()]);
   const intakeIds = [...new Set([...doraQueue, ...socialQueue].map((row) => row.intakeId))];
 
   const candidatesByKey = new Map<string, ParsedCandidateRow>();
@@ -218,19 +220,21 @@ export async function listValidationRows(): Promise<ValidationQueueRow[]> {
     intakeIds.map(async (intakeId) => {
       const candidates = await listParsedCandidates(intakeId);
       for (const candidate of candidates) {
-        candidatesByKey.set(`${candidate.intakeId}:${candidate.id}`, candidate);
+        candidatesByKey.set(JSON.stringify([candidate.intakeId, candidate.id]), candidate);
       }
     })
   );
 
   // Both validation lanes share one exact-fingerprint read per candidate.
   await Promise.all([...candidatesByKey].map(async ([key, candidate]) => {
-    const base = recoverCandidateProfile(candidate);
+    const original = recoverCandidateProfile(candidate);
+    const evidence = adaptStoredCandidateEvidence(candidate, original, evidenceSources.get(key) || {});
+    const base = reconcileCandidateProfile({ ...original, reasons: [...original.reasons, ...evidence.conflicts] }, evidence.links);
     try {
-      const fingerprint = fingerprintCandidate(candidate);
+      const fingerprint = fingerprintCandidate(candidate, evidence.links);
       const reviewKey = buildValidationReviewKey(candidate.intakeId, candidate.id);
-      const saved = await readProfileRefinement(reviewKey, fingerprint);
-      profilesByKey.set(key, saved?.fingerprint === fingerprint && saved.reviewKey === reviewKey ? saved.profile : base);
+      const saved = await readProfileRefinement(reviewKey, fingerprint, candidate);
+      profilesByKey.set(key, saved?.reviewKey === reviewKey ? reconcileCandidateProfile(saved.profile, base) : base);
     } catch {
       profilesByKey.set(key, { ...base, reasons: [...base.reasons, "profile_refinement_read_error"] });
     }
@@ -239,8 +243,8 @@ export async function listValidationRows(): Promise<ValidationQueueRow[]> {
   const doraRows = await Promise.all(
     doraQueue.map(async (item) => {
       const [result] = await Promise.all([findDoraResultByQueueItemId(item.id)]);
-      const candidate = candidatesByKey.get(`${item.intakeId}:${item.candidateId}`);
-      const profile = profilesByKey.get(`${item.intakeId}:${item.candidateId}`);
+      const candidate = candidatesByKey.get(JSON.stringify([item.intakeId, item.candidateId]));
+      const profile = profilesByKey.get(JSON.stringify([item.intakeId, item.candidateId]));
       const confidence = normalizeConfidence(candidate);
       return {
         queueItemId: item.id,
@@ -271,8 +275,8 @@ export async function listValidationRows(): Promise<ValidationQueueRow[]> {
   const socialRows = await Promise.all(
     socialQueue.map(async (item) => {
       const [result] = await Promise.all([findSocialResultByQueueItemId(item.id)]);
-      const candidate = candidatesByKey.get(`${item.intakeId}:${item.candidateId}`);
-      const profile = profilesByKey.get(`${item.intakeId}:${item.candidateId}`);
+      const candidate = candidatesByKey.get(JSON.stringify([item.intakeId, item.candidateId]));
+      const profile = profilesByKey.get(JSON.stringify([item.intakeId, item.candidateId]));
       const confidence = normalizeConfidence(candidate);
       return {
         queueItemId: item.id,

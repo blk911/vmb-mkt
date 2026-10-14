@@ -1,4 +1,4 @@
-import type { CandidateProfile, ProfileLink, ProfileRefinementStatus } from "./profile-types";
+import type { BookingPlatform, CandidateProfile, ProfileLink, ProfileRefinementStatus } from "./profile-types";
 
 /** Source URLs are data. Never render executable schemes or credential-bearing links. */
 export function safeProfileHref(value?: string): string | undefined {
@@ -44,15 +44,52 @@ export function profileFreshnessLabel(profile?: CandidateProfile): string {
   return "Source not checked";
 }
 
+const platformNames: Record<BookingPlatform, string> = {
+  vagaro: "Vagaro", glossgenius: "GlossGenius", booksy: "Booksy", fresha: "Fresha", square: "Square", styleseat: "StyleSeat", unknown: "Unknown",
+};
+
+/** One domain set drives catalog facets, queue sorting and every profile label. */
+export function profileKnownPlatforms(profile?: CandidateProfile): BookingPlatform[] {
+  if (!profile) return [];
+  const values = profile.knownPlatforms || [...profile.bookingLinks.filter((link) => link.attribution !== "unresolved").map((link) => link.platform), profile.platform];
+  return [...new Set(values.filter((value): value is BookingPlatform => Boolean(value && value !== "unknown")))].sort();
+}
+
+export function profilePlatformLabels(profile?: CandidateProfile): string[] {
+  return profileKnownPlatforms(profile).map((platform) => platformNames[platform] || platform);
+}
+
+export function profilePlatformLabel(profile?: CandidateProfile): string {
+  const labels = profilePlatformLabels(profile);
+  return labels.length ? labels.join(" + ") : profile?.observedPlatforms?.length ? "Platform attribution unresolved" : profile?.bookingLinks.length ? "Platform not recognized" : "Platform not collected";
+}
+
+export function profilePlatformExplanation(profile?: CandidateProfile): string {
+  return profileKnownPlatforms(profile).length ? "Platform recognized · person match is separate" : profile?.observedPlatforms?.length ? "Observed domains need source ownership review" : "No supported booking domain collected";
+}
+
+export function profileMissingLinkLabel(profile: CandidateProfile | undefined, kind: "booking" | "social" = "booking"): string {
+  if ((kind === "booking" ? profile?.bookingLinks : profile?.socialLinks)?.some((link) => link.attribution === "unresolved")) return `${kind === "booking" ? "Booking" : "Social"} attribution unresolved`;
+  return `${kind === "booking" ? "Booking" : "Social"} link not collected`;
+}
+
+export function profileFactCoverage(profile?: CandidateProfile): { collected: number; total: number; conflicts: number } {
+  const fields = ["providerName", "businessName", "city", "state", "postalCode", "providerId", "businessId"] as const;
+  const collected = profile ? fields.filter((field) => Boolean(profile[field])).length
+    + Number(Boolean(profile.bookingLinks.length)) + Number(Boolean(profile.socialLinks.length)) + Number(Boolean(profile.websiteLinks.length)) : 0;
+  const conflicts = profile?.reasons.filter((reason) => /conflict|differs|ambiguous/i.test(reason)).length || 0;
+  return { collected, total: fields.length + 3, conflicts };
+}
+
 export type RefinementQueueItem = { reviewKey: string; nextAttemptAt?: string; eligible: boolean };
 
-export function toRefinementQueueItem(row: import("./types").ValidationReviewRow): RefinementQueueItem {
-  const terminal = new Set(["approved", "merged", "rejected", "failed", "dismissed"]);
-  const links = row.profile ? [...row.profile.bookingLinks, ...row.profile.websiteLinks, ...row.profile.socialLinks] : [];
+export function toRefinementQueueItem(row: Pick<import("./types").ValidationReviewRow, "reviewKey" | "profile">): RefinementQueueItem {
+  const links = row.profile ? [...row.profile.bookingLinks, ...row.profile.websiteLinks] : [];
   return {
     reviewKey: row.reviewKey,
     nextAttemptAt: row.profile?.nextAttemptAt,
-    eligible: !terminal.has(row.status) && !row.lanes.some((lane) => terminal.has(row.laneStatuses[lane] || ""))
-      && links.some((link) => link.kind !== "directory" && Boolean(safeProfileHref(link.url))),
+    // Evidence refresh is independent of approval, rejection and merged lanes.
+    // Social and directory URLs are deliberately unsupported by public retrieval.
+    eligible: links.some((link) => !["directory", "social"].includes(link.kind) && Boolean(safeProfileHref(link.url))),
   };
 }

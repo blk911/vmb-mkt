@@ -1,3 +1,4 @@
+import { profilePlatformLabels } from "./profile-presentation";
 import type { ValidationReviewRow } from "./types";
 
 export type ValidationSortColumn = "platform" | "candidate" | "salon" | "location" | "lanes" | "status" | "confidence";
@@ -41,7 +42,7 @@ function confidenceValue(row: ValidationReviewRow): number | null {
 
 function sortValue(row: ValidationReviewRow, column: ValidationSortColumn): string | number | null {
   if (column === "confidence") return confidenceValue(row);
-  if (column === "platform") return row.profile?.platform && row.profile.platform !== "unknown" ? row.profile.platformLabel.trim() || row.profile.platform : null;
+  if (column === "platform") return profilePlatformLabels(row.profile).join(" + ") || null;
   // Keep the candidate query parameter for existing bookmarks; the heading is Provider.
   if (column === "candidate") return (row.profile?.providerName || row.displayName).trim() || null;
   if (column === "salon") return row.profile?.businessName?.trim() || null;
