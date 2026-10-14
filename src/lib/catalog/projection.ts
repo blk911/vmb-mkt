@@ -5,6 +5,7 @@ import type { ProfileLink, ProfileRefinementRecord } from "@/lib/admin/pipeline/
 import { recoverCandidateProfile, reconcileCandidateProfile } from "@/lib/admin/pipeline/profile-model";
 import { adaptCandidateEvidence, adaptLegacyBusinessEvidence } from "./source-adapters";
 import { auditCatalogEvidence } from "./evidence-audit";
+import { projectCatalogMapping } from "./mapping";
 import type { CatalogDecision, CatalogRecord, CatalogSourceRef } from "./types";
 
 export type SourceDocument = { id: string; data: Record<string, unknown>; updatedAt?: string };
@@ -51,6 +52,7 @@ function legacyBusiness(doc: SourceDocument, recoverEvidence = true): CatalogRec
   const placeId = str(place.placeId) || str(place.id);
   const addressKey = str(data.addressKey);
   return {
+    ...projectCatalogMapping(data, ref("tech_index", doc.id), recoverEvidence ? recovered.factClaims : []),
     doraLicenseClaims: { shopRegistration: independentDoraClaims(data, `tech_index:${doc.id}`, "shop") },
     id: `business:tech_index:${doc.id}`, entityType: "business", displayName, providerName: "", businessName: displayName,
     platformLabel: profile.platformLabel, profile, city: str(address.city), state: str(address.state), postalCode: str(address.zip),
@@ -133,12 +135,22 @@ export function projectCatalog(sources: CatalogSources, fingerprint: (candidate:
     if (profile.businessName || profile.businessId) links.push({ id: `business:source:${doc.id}`, entityType: "business", label: profile.businessName || profile.businessId || "Unknown business", relationship: "source_reported_business", basis: "source_reported" });
     for (const decision of decisions.filter((decision) => decision.targetId && decision.status === "merged")) links.push({ id: `operator:${decision.targetId}`, entityType: "provider", label: decision.targetId!, relationship: decision.status === "merged" ? "reviewed_merge_target" : "reviewed_operator_target", basis: "reviewed" });
     rows.push({
+      ...projectCatalogMapping(doc.data, ref("adminPipelineParsedCandidates", doc.id), recovered.factClaims),
       dora: legacyDoraCrossReference(laneResults.filter((result) => result.lane === "DORA")),
       doraLicenseClaims: { personLicense: independentDoraClaims(doc.data, `adminPipelineParsedCandidates:${doc.id}`, "person") },
       id: `provider:adminPipelineParsedCandidates:${doc.id}`, entityType: "provider", displayName: candidate.displayName || "Unnamed source candidate", providerName: candidate.displayName, businessName: profile.businessName || "", platformLabel: profile.platformLabel, profile,
       city: profile.city || "", state: profile.state || "", postalCode: profile.postalCode || "", area: str(doc.data.area) || str(doc.data.zoneName),
-      services: uniq([candidate.serviceHint || "", candidate.roleLabel || ""]), reviewStatus: conflicts.some((conflict) => ["duplicate_candidate_source_key", "review_result_queue_mismatch", "review_queue_status_disagreement", "merge_target_missing", "duplicate_candidate_lane_queue"].includes(conflict)) ? "conflict" : status, reviewKey,
+      services: uniq([candidate.serviceHint || "", candidate.roleLabel || ""]), reviewStatus: conflicts.some((conflict) => ["duplicate_candidate_source_key", "review_result_queue_mismatch", "review_queue_status_disagreement", "merge_target_missing", "duplicate_candidate_lane_queue"].includes(conflict)) ? "conflict" : status, reviewKey: candidate.intakeId.trim() && candidate.id.trim() && unambiguousLegacyKey && !duplicateKeys.has(candidateKey(doc)) ? reviewKey : undefined,
       sourceRefs, linkedEntities: links, reviewDecisions: decisions, conflicts,
+      reviewLanes: laneQueues.map((queue) => ({
+        lane: queue.lane as "DORA" | "SOCIAL", queueItemId: queue.id, status: str(queue.data.status) || "unknown",
+        actionable: Boolean(typeof doc.data.id === "string" && candidate.id.trim() && candidate.intakeId.trim() && unambiguousLegacyKey && !conflicts.length
+          && laneResults.filter((result) => result.lane === queue.lane).length <= 1
+          && queue.data.id === queue.id && queue.id === queue.id.trim() && !/[%/\u0000-\u001f\u007f]/.test(queue.id)
+          && (!str(queue.data.displayName) || str(queue.data.displayName).toLowerCase() === candidate.displayName.trim().toLowerCase())
+          && ["queued", "resolved"].includes(str(queue.data.status))
+          && !["approved", "rejected", "merged", "dismissed"].includes(status)),
+      })),
       evidence: [{ id: `evidence:candidate:${doc.id}`, kind: "source_candidate", label: rawIntake?.sourceLabel || "Original candidate source retained", sourceUrl: profile.sourceContextUrl || candidate.sourceUrl, observedAt: rawIntake?.submittedAt }, ...recovered.factClaims.map((fact) => ({ id: fact.id, kind: fact.kind, label: `${fact.status}: ${fact.value}`, sourceUrl: fact.sourceUrl, observedAt: fact.observedAt })), ...profile.observations.map((observation, index) => ({ id: `evidence:profile:${doc.id}:${saved?.runId || "source"}:${index}`, kind: observation.outcome, label: "Profile retrieval observation", sourceUrl: observation.sourceUrl, observedAt: observation.fetchedAt }))],
       factClaims: recovered.factClaims,
       updatedAt: iso(doc.updatedAt, rawIntake?.submittedAt, saved?.completedAt, ...candidateEvidence.map((evidence) => evidence.data.observedAt), ...laneResults.flatMap((result) => [result.data.reviewedAt, result.data.resolvedAt])),

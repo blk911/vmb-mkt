@@ -35,7 +35,17 @@
     "src/lib/dora/**/*.ts",
     "src/app/admin/validate/**/*.tsx",
     "src/app/api/source-intake/dora-queue/**/*.ts",
-    "src/components/admin/source-intake/DoraQueueTable.tsx"
+    "src/components/admin/source-intake/DoraQueueTable.tsx",
+    "src/lib/admin/workspace-nav.ts",
+    "src/components/admin/PipelineNav.tsx",
+    "src/components/ops/**/*.tsx",
+    "src/app/_components/AppSwitchNav.tsx",
+    "src/app/admin/page.tsx",
+    "src/app/admin/prospects/**/*.tsx",
+    "src/app/admin/lists/**/*.tsx",
+    "src/app/admin/sources/**/*.tsx",
+    "src/app/admin/tools/**/*.tsx",
+    "src/app/dashboard/**/*.tsx"
   ],
   "exclude": [
     "node_modules",

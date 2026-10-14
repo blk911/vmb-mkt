@@ -1,8 +1,6 @@
-import CatalogWorkspace from "@/components/catalog/CatalogWorkspace";
+import { redirect } from "next/navigation";
+import { workspaceHref, type WorkspaceSearchParams } from "@/lib/admin/workspace-nav";
 
-export const metadata = { title: "DataStore · Shared catalog" };
-
-export default async function DataPage({ searchParams }: { searchParams?: Promise<{ listId?: string }> }) {
-  const params = await searchParams;
-  return <CatalogWorkspace title="DataStore" initialListId={params?.listId} />;
+export default async function DataPage({ searchParams }: { searchParams?: Promise<WorkspaceSearchParams> }) {
+  redirect(workspaceHref("/dashboard/targets", await searchParams));
 }

@@ -238,8 +238,8 @@ export default function BuildPageClient() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold">Build Supply</h1>
-        <p className="mt-1 text-sm text-gray-600">This step uses the unified admin intake adapter and guarantees validation queue work on success.</p>
+        <h1 className="text-xl font-bold">Import</h1>
+        <p className="mt-1 text-sm text-gray-600">Import source material into the shared prospect catalog, then review the resulting evidence.</p>
         <p className="mt-1 text-xs text-gray-500">
           Draft input is kept in this browser so pasted data does not disappear across navigation or remounts.
         </p>
@@ -297,7 +297,7 @@ export default function BuildPageClient() {
             disabled={isSubmitting}
             onClick={handleSubmit}
           >
-            {isSubmitting ? "Submitting..." : "Parse + Send to Validation"}
+            {isSubmitting ? "Submitting..." : "Import + Review"}
           </button>
         </div>
       ) : null}
@@ -326,7 +326,7 @@ export default function BuildPageClient() {
         </div>
       ) : null}
 
-      <NextActionLink href="/admin/validate" text="Open review queue" />
+      <NextActionLink href="/admin/validate" text="Open detailed review queue" />
     </div>
   );
 }
@@ -370,7 +370,7 @@ function BuildDebugPanel({ result }: { result: BuildSubmissionResult }) {
 
   return (
     <div className="mt-4 rounded-lg border border-dashed border-gray-300 bg-white/70 p-3 text-sm">
-      <h3 className="font-medium text-gray-900">Build Runtime Debug</h3>
+      <h3 className="font-medium text-gray-900">Import runtime details</h3>
       <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
         <DebugRow label="Submit outcome" value={result.debug.submitOutcome} />
         <DebugRow label="Submitted at" value={result.debug.submittedAt} />

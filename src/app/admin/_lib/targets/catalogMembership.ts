@@ -1,8 +1,8 @@
-import { filterCatalogRecords, normalizeCatalogFilters, sortCatalogRecords } from "@/lib/catalog/query";
+import { CATALOG_FILTER_KEYS, catalogNeedsReview, filterCatalogRecords, normalizeCatalogFilters, sortCatalogRecords } from "@/lib/catalog/query";
 import type { CatalogFilters, CatalogRecord } from "@/lib/catalog/types";
 import type { TargetList } from "./types";
 
-const FILTER_KEYS = new Set(["q", "platform", "entityType", "city", "postalCode", "area", "service", "reviewStatus", "hasBooking", "hasSocial", "sort", "direction"]);
+const FILTER_KEYS = new Set<string>(CATALOG_FILTER_KEYS);
 
 /** Reject unsupported dynamic predicates instead of silently broadening membership. */
 export function validateDynamicFilters(value: unknown): CatalogFilters {
@@ -38,12 +38,13 @@ export function csvCell(value: unknown): string {
 export function targetListCatalogCsv(list: TargetList, rows: CatalogRecord[], generatedAt: string) {
   const membership = resolveTargetListMembership(list, rows);
   const byId = new Map(membership.rows.map((row) => [row.id, row]));
-  const header = ["listId", "listName", "membershipMode", "catalogId", "resolutionStatus", "entityType", "displayName", "providerName", "businessName", "platform", "city", "state", "postalCode", "area", "services", "reviewStatus", "phone", "bookingLinks", "socialLinks", "websiteLinks", "knownPlatforms", "unresolvedDiscoveries", "linkEvidence", "factClaims", "sourceRefs", "reviewDecisions", "conflicts", "owner", "nextAction", "nextActionAt", "notes", "generatedAt"];
+  const header = ["listId", "listName", "membershipMode", "catalogId", "resolutionStatus", "entityType", "displayName", "providerName", "businessName", "platform", "market", "marketId", "vertical", "verticals", "mappingProvenance", "needsReview", "reviewLanes", "city", "state", "postalCode", "area", "services", "reviewStatus", "phone", "bookingLinks", "socialLinks", "websiteLinks", "knownPlatforms", "unresolvedDiscoveries", "linkEvidence", "factClaims", "sourceRefs", "reviewDecisions", "conflicts", "owner", "nextAction", "nextActionAt", "notes", "generatedAt"];
   const lines = [header.map(csvCell).join(",")];
   function line(id: string, row: CatalogRecord | undefined, status: string, fallbackName = "") {
     return [
       list.id, list.name, list.membershipMode, id, status,
       row?.entityType, row?.displayName || fallbackName, row?.providerName, row?.businessName, row?.platformLabel,
+      row ? row.market || "Unknown" : "", row?.marketId, row ? row.vertical || "Unknown" : "", row?.verticals?.join(" | "), row ? JSON.stringify(row.mapping || {}) : "", row ? catalogNeedsReview(row) : "", row ? JSON.stringify(row.reviewLanes || []) : "",
       row?.city, row?.state, row?.postalCode, row?.area, row?.services.join(" | "), row?.reviewStatus, row?.phone,
       row?.profile?.bookingLinks.filter((link) => link.attribution !== "unresolved" && link.kind !== "directory").map((link) => link.url).join(" | "),
       row?.profile?.socialLinks.filter((link) => link.attribution !== "unresolved").map((link) => link.url).join(" | "),

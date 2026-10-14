@@ -115,3 +115,12 @@ small.muted { display: block; font-size: 10px; }
 @media (max-width: 900px) { .withSidebar { grid-template-columns: 1fr; } .listIndex { max-height: 240px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); } }
 @media (max-width: 600px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .headerActions { width: 100%; } .filterGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .saveControls > .field { max-width: none; width: 100%; } .saveControls > button { flex: 1; } .dialog { width: calc(100vw - 16px); max-height: calc(100dvh - 16px); } .detailHeader, .detailBody { padding: 15px; } .recordSummary { grid-template-columns: 1fr; } }
 @media print { .workspace .headerActions, .tabs, .sidebar, .filters, .saveBar, .pagination { display: none; } .tableScroll { overflow: visible; } .table { min-width: 0; font-size: 8px; } }
+
+.contextFilters { display: grid; grid-template-columns: repeat(3, minmax(120px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.secondaryFilters summary { cursor: pointer; font-size: 12px; color: #4e5e76; font-weight: 650; }
+.secondaryFilters .filterGrid { margin-top: 12px; }
+.filters .inlineForm, .saveBar .inlineForm { margin-top: 12px; flex-wrap: wrap; }
+.stats > div { padding: 9px 13px; }
+.stats strong { font-size: 22px; }
+.header { padding: 12px 0; }
+@media (max-width: 600px) { .contextFilters { grid-template-columns: 1fr; } }

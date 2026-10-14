@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback } from "react";
 import { isMarketsGlobalNavActive, isMarketsSectionPath } from "@/lib/admin/markets-section-nav";
+import { isAdminWorkspacePath } from "@/lib/admin/workspace-nav";
 import MarketsSectionSubnav from "@/components/admin/markets/MarketsSectionSubnav";
 import { canAccessMemberArea, canShowNavItem, type SessionUser } from "@/lib/auth/access";
 
@@ -30,9 +31,9 @@ const MARKETS_LINK: AppLink = {
   isActive: isMarketsGlobalNavActive,
 };
 const LIVE_UNITS_LINK: AppLink = { id: "liveunits", label: "LIVE UNITS", href: "/admin/live-units" };
-const DATASTORE_LINK: AppLink = { id: "datastore", label: "DATA STORE", href: "/dashboard/targets" };
+const PROSPECTS_LINK: AppLink = { id: "datastore", label: "PROSPECTS", href: "/dashboard/targets", isActive: (pathname) => pathname === "/dashboard" || pathname.startsWith("/dashboard/") };
 const TEAM_LINK: AppLink = { id: "team", label: "TEAM", href: "/team" };
-const ADMIN_LINK: AppLink = { id: "admin", label: "ADMIN", href: "/admin" };
+const ADMIN_LINK: AppLink = { id: "admin", label: "ADMIN", href: "/admin/prospects", isActive: (pathname) => isAdminWorkspacePath(pathname) || pathname.startsWith("/dashboard") };
 
 function defaultIsActive(href: string, pathname: string): boolean {
   const targetPath = href;
@@ -55,10 +56,10 @@ export default function AppSwitchNav({ sessionUser }: Props) {
     LOGIN_LINK,
     MARKETS_LINK,
     LIVE_UNITS_LINK,
-    DATASTORE_LINK,
+    PROSPECTS_LINK,
     TEAM_LINK,
     ADMIN_LINK,
-  ].filter((link) => canShowNavItem(link.id, sessionUser));
+  ].filter((link) => canShowNavItem(link.id, sessionUser) && !(link.id === "datastore" && sessionUser?.role === "admin"));
   const onLogout = useCallback(async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST", cache: "no-store" });
@@ -90,9 +91,8 @@ export default function AppSwitchNav({ sessionUser }: Props) {
           borderBottom: showMarketsSectionSubnav ? "1px solid rgba(15,23,42,0.08)" : undefined,
         }}
       >
-        <div style={{ width: "100%", maxWidth: 1100, display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center" }}>
-          <div />
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+        <div style={{ width: "100%", maxWidth: 1100, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8, alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 8 }}>
             {showMarketingQuickLinks ? (
               <span
                 style={{
@@ -133,7 +133,7 @@ export default function AppSwitchNav({ sessionUser }: Props) {
               }
 
               return (
-                <Link key={link.id} href={link.href} style={style}>
+                <Link key={link.id} href={link.href} style={style} aria-current={active ? "page" : undefined}>
                   {link.label}
                 </Link>
               );
