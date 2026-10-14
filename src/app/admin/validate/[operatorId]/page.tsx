@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import DoraEvidence from "@/components/admin/pipeline/DoraEvidence";
 import ProfileRefinementControls from "@/components/admin/pipeline/ProfileRefinementControls";
 import { ProfileSummaryCard, SourceLink } from "@/components/admin/pipeline/ProfileEvidence";
 import { toRefinementQueueItem } from "@/lib/admin/pipeline/profile-presentation";
@@ -40,6 +41,7 @@ export default async function OperatorDetail({
       </div>
 
       <ProfileRefinementControls rows={[toRefinementQueueItem(detail.row)]} scope={`detail:${detail.row.reviewKey}`} checkedAt={new Date().toISOString()} automatic={false} />
+      <DoraEvidence key={detail.row.catalogId || detail.row.reviewKey} dora={detail.row.dora} catalogId={detail.row.catalogId} admin />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <ProfileSummaryCard profile={detail.row.profile || detail.profile} />
         <section className="rounded-xl bg-white p-4 shadow">

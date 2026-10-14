@@ -1,3 +1,5 @@
+import { independentDoraClaims, legacyDoraCrossReference, projectDoraCrossReference } from "@/lib/dora/projection";
+import type { DoraCrossReferenceRecord } from "@/lib/dora/types";
 import type { ParsedCandidateRow, SourceIntakeRecord } from "@/lib/source-intake/types";
 import type { ProfileLink, ProfileRefinementRecord } from "@/lib/admin/pipeline/profile-types";
 import { recoverCandidateProfile, reconcileCandidateProfile } from "@/lib/admin/pipeline/profile-model";
@@ -7,7 +9,7 @@ import type { CatalogDecision, CatalogRecord, CatalogSourceRef } from "./types";
 
 export type SourceDocument = { id: string; data: Record<string, unknown>; updatedAt?: string };
 export type CatalogSources = Record<string, SourceDocument[]>;
-export const CATALOG_COLLECTIONS = ["tech_index", "adminPipelineSourceIntakes", "adminPipelineParsedCandidates", "adminPipelineDoraQueue", "adminPipelineDoraResults", "adminPipelineSocialQueue", "adminPipelineSocialResults", "adminPipelineProfileRefinements", "adminPipelineOperatorEvidence"] as const;
+export const CATALOG_COLLECTIONS = ["tech_index", "adminPipelineSourceIntakes", "adminPipelineParsedCandidates", "adminPipelineDoraQueue", "adminPipelineDoraResults", "adminPipelineSocialQueue", "adminPipelineSocialResults", "adminPipelineProfileRefinements", "adminPipelineOperatorEvidence", "adminPipelineDoraCrossReferences"] as const;
 const str = (value: unknown) => typeof value === "string" ? value.trim() : "";
 const obj = (value: unknown): Record<string, unknown> => value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
 const strings = (value: unknown): string[] => Array.isArray(value) ? value.map(str).filter(Boolean) : str(value) ? [str(value)] : [];
@@ -49,6 +51,7 @@ function legacyBusiness(doc: SourceDocument, recoverEvidence = true): CatalogRec
   const placeId = str(place.placeId) || str(place.id);
   const addressKey = str(data.addressKey);
   return {
+    doraLicenseClaims: { shopRegistration: independentDoraClaims(data, `tech_index:${doc.id}`, "shop") },
     id: `business:tech_index:${doc.id}`, entityType: "business", displayName, providerName: "", businessName: displayName,
     platformLabel: profile.platformLabel, profile, city: str(address.city), state: str(address.state), postalCode: str(address.zip),
     area: str(data.area) || str(data.zoneName) || str(data.beautyZoneName),
@@ -130,6 +133,8 @@ export function projectCatalog(sources: CatalogSources, fingerprint: (candidate:
     if (profile.businessName || profile.businessId) links.push({ id: `business:source:${doc.id}`, entityType: "business", label: profile.businessName || profile.businessId || "Unknown business", relationship: "source_reported_business", basis: "source_reported" });
     for (const decision of decisions.filter((decision) => decision.targetId && decision.status === "merged")) links.push({ id: `operator:${decision.targetId}`, entityType: "provider", label: decision.targetId!, relationship: decision.status === "merged" ? "reviewed_merge_target" : "reviewed_operator_target", basis: "reviewed" });
     rows.push({
+      dora: legacyDoraCrossReference(laneResults.filter((result) => result.lane === "DORA")),
+      doraLicenseClaims: { personLicense: independentDoraClaims(doc.data, `adminPipelineParsedCandidates:${doc.id}`, "person") },
       id: `provider:adminPipelineParsedCandidates:${doc.id}`, entityType: "provider", displayName: candidate.displayName || "Unnamed source candidate", providerName: candidate.displayName, businessName: profile.businessName || "", platformLabel: profile.platformLabel, profile,
       city: profile.city || "", state: profile.state || "", postalCode: profile.postalCode || "", area: str(doc.data.area) || str(doc.data.zoneName),
       services: uniq([candidate.serviceHint || "", candidate.roleLabel || ""]), reviewStatus: conflicts.some((conflict) => ["duplicate_candidate_source_key", "review_result_queue_mismatch", "review_queue_status_disagreement", "merge_target_missing", "duplicate_candidate_lane_queue"].includes(conflict)) ? "conflict" : status, reviewKey,
@@ -141,5 +146,7 @@ export function projectCatalog(sources: CatalogSources, fingerprint: (candidate:
       sourceIdentifiers: { candidateId: candidate.id, intakeId: candidate.intakeId, providerId: profile.providerId, businessId: profile.businessId, sourceScopedIds: candidate.sourceScopedIds },
     });
   }
+  const doraRecords = get("adminPipelineDoraCrossReferences").map((doc) => doc.data.record as DoraCrossReferenceRecord).filter(Boolean);
+  for (const row of rows) row.dora = projectDoraCrossReference(row, doraRecords, row.dora);
   return { rows, orphanQueueCount: orphanQueues.length, orphanResultCount: orphanResults.length, orphanEvidenceCount: orphanEvidence.length, evidenceAudit: auditCatalogEvidence(beforeRows, rows, [...get("tech_index").map((doc) => `business:tech_index:${doc.id}`), ...candidates.map((doc) => `provider:adminPipelineParsedCandidates:${doc.id}`)], candidates.filter((doc) => doc.data.rawBlockTruncated === true || strings(doc.data.parseWarnings).some((warning) => /truncat/i.test(warning))).length) };
 }

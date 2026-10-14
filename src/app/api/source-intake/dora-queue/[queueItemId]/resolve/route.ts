@@ -1,11 +1,13 @@
+import { safeDoraValidationStatus } from "@/lib/dora/projection";
+import { findDoraResultByQueueItemId } from "@/lib/source-intake/phase2-store";
 import { NextResponse } from "next/server";
 import { canAccessAdmin, getSessionUserFromCookieHeader } from "@/lib/auth/access";
-import { findDoraResultByQueueItemId } from "@/lib/source-intake/phase2-store";
 import { resolveDoraQueueItem } from "@/lib/source-intake/dora-resolver";
 import type { ValidationReviewOutcome } from "@/lib/source-intake/phase2-types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 const headers = { "Cache-Control": "private, no-store", Vary: "Cookie" };
 
 type ResolveBody = {
@@ -78,9 +80,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ queueItemId: s
 
     const existing = await findDoraResultByQueueItemId(id);
     if (existing && !body.action) {
-      return NextResponse.json({ ok: true, result: existing }, { headers });
+      return NextResponse.json({ ok: true, result: { ...existing, status: safeDoraValidationStatus(existing) } }, { headers });
     }
-
     const result = await resolveDoraQueueItem(id, {
       action: body.action,
       mergeTargetId: body.mergeTargetId,

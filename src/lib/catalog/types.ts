@@ -1,3 +1,4 @@
+import type { DoraCrossReference, DoraLicenseClaim } from "@/lib/dora/types";
 import type { CandidateProfile } from "@/lib/admin/pipeline/profile-types";
 
 export type CatalogSourceRef = { collection: string; id: string; role: "source" | "review" | "profile" | "place" };
@@ -11,6 +12,8 @@ export type CatalogFactClaim = {
 export type CatalogFieldCoverage = { records: number; knownPlatform: number; multiplePlatforms: number; booking: number; social: number; website: number; businessName: number; city: number; postalCode: number; factClaims: number; unresolvedLinks: number; licenseClaims: number; unknownWithRecoverableEvidence: number; conflicts: number; sourceTruncated: number };
 export type CatalogEvidenceAudit = { version: number; baseline: "same_snapshot_primary_fields"; before: CatalogFieldCoverage; after: CatalogFieldCoverage; delta: CatalogFieldCoverage; derivedOnly: true; sourceDocumentsMutated: 0; baselineDescription: string; stableIds: { expected: number; projected: number; unique: number; unchanged: boolean }; recoveredUnknownRecords: number };
 export type CatalogRecord = {
+  dora?: DoraCrossReference;
+  doraLicenseClaims?: { personLicense?: DoraLicenseClaim[]; shopRegistration?: DoraLicenseClaim[] };
   id: string;
   entityType: "provider" | "business";
   displayName: string;

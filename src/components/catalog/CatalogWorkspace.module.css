@@ -63,10 +63,15 @@
 .selectionActions > .field { min-width: 180px; }
 .tableToolbar { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin: 20px 0 10px; font-size: 12px; flex-wrap: wrap; }
 .tableScroll { width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 11px; background: white; }
-.table { width: 100%; min-width: 1440px; border-collapse: collapse; text-align: left; font-size: 12px; }
-.table th { padding: 0; background: #f5f7fa; border-bottom: 1px solid var(--line); white-space: nowrap; color: #52617a; font-size: 11px; }
-.table th button { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 12px; font: inherit; font-weight: 700; cursor: pointer; }
-.table td { padding: 15px 12px; border-bottom: 1px solid #e8edf3; vertical-align: top; max-width: 240px; overflow-wrap: anywhere; }
+.table { width: max-content; min-width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+.table th { padding: 7px 8px; background: #f5f7fa; border-bottom: 1px solid var(--line); white-space: nowrap; color: #52617a; font-size: 11px; }
+.table th button { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 0; font: inherit; font-weight: 700; cursor: pointer; }
+.table td { padding: 7px 8px; border-bottom: 1px solid #e8edf3; vertical-align: middle; white-space: nowrap; }
+.table .centerCell, .table .centerCell button { text-align: center; }
+.table .nameCell { min-width: 100px; max-width: 210px; }
+.table .nameCell > span, .table .nameCell > button { display: block; max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.table .wrapCell { max-width: 160px; }
+.table .wrapCell > span { display: block; max-width: 144px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .table tr:last-child td { border-bottom: none; }
 .table tr[data-selected="true"] { background: #f1f6ff; }
 .table tr:hover { background: #f8fbff; }
@@ -75,12 +80,12 @@
 .platform { display: block; font-size: 13px; margin-bottom: 6px; }
 .providerBadge, .businessBadge { display: inline-block; padding: 3px 6px; border-radius: 5px; font-size: 10px; font-weight: 650; background: #eaf3ed; color: #356049; }
 .businessBadge { background: #f0edf8; color: #6b5287; }
-.recordLink { display: block; background: none; border: 0; color: #2559ad; font: inherit; font-weight: 650; text-align: left; padding: 7px 0 4px; cursor: pointer; }
+.recordLink { display: inline-block; background: none; border: 0; color: #2559ad; font: inherit; font-weight: 650; text-align: left; padding: 0; cursor: pointer; }
 .recordLink:hover { text-decoration: underline; }
 .muted { color: #657187; font-size: 12px; }
 small.muted { display: block; font-size: 10px; }
 .statusBadge { display: inline-block; padding: 4px 7px; background: #eef2f7; border-radius: 5px; font-size: 10px; font-weight: 600; }
-.conflictLabel { display: block; color: #956012; margin-top: 6px; font-size: 10px; }
+.conflictLabel { display: inline; color: #956012; font-size: 10px; }
 .pagination { display: flex; justify-content: space-between; gap: 10px; align-items: center; font-size: 11px; color: #657187; margin-top: 12px; }
 .pagination > div { display: flex; gap: 8px; }
 .empty { padding: 45px 20px; text-align: center; border-radius: 12px; background: #f8fafc; color: #657187; }

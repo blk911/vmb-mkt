@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { CatalogCoverage } from "@/lib/catalog/types";
 import { filterCatalogRecords, normalizeCatalogFilters, sortCatalogRecords } from "@/lib/catalog/query";
-import { ProfileLinks } from "@/components/admin/pipeline/ProfileEvidence";
-import { safeProfileHref, profilePlatformLabels, profilePlatformLabel, profilePlatformExplanation, profileMissingLinkLabel } from "@/lib/admin/pipeline/profile-presentation";
+import { profilePlatformLabels } from "@/lib/admin/pipeline/profile-presentation";
 import CatalogDetail from "./CatalogDetail";
+import CatalogResultRow from "./CatalogResultRow";
 import ListEditor from "./ListEditor";
 import { EMPTY_FILTERS, dateLabel, listMemberIds, postList, readable, readJson, type CatalogFilters, type CatalogList, type CatalogRecord } from "./catalog-ui-types";
 import styles from "./CatalogWorkspace.module.css";
@@ -14,10 +14,10 @@ import styles from "./CatalogWorkspace.module.css";
 type CatalogResponse = { rows: CatalogRecord[]; coverage?: CatalogCoverage; generatedAt?: string };
 type SortColumn = "platform" | "booking" | "social" | "provider" | "salon" | "service" | "area" | "city" | "postalCode" | "status";
 const PAGE_SIZE = 30;
-const COLUMNS: Array<{ key: SortColumn; label: string }> = [
-  { key: "platform", label: "Platform / record" }, { key: "booking", label: "Profile / booking" }, { key: "social", label: "Social" },
+const COLUMNS: Array<{ key: SortColumn; label: string; centered?: boolean }> = [
+  { key: "platform", label: "Platform" }, { key: "booking", label: "Booking", centered: true }, { key: "social", label: "Social", centered: true },
   { key: "provider", label: "Provider" }, { key: "salon", label: "Salon / business" }, { key: "service", label: "Services" },
-  { key: "area", label: "Area" }, { key: "city", label: "City" }, { key: "postalCode", label: "ZIP" }, { key: "status", label: "Review status" },
+  { key: "area", label: "Area" }, { key: "city", label: "City" }, { key: "postalCode", label: "ZIP" }, { key: "status", label: "Review", centered: true },
 ];
 
 function normalizedFilters(value?: Partial<CatalogFilters>): CatalogFilters {
@@ -47,12 +47,14 @@ export default function CatalogWorkspace({ initialView = "catalog", initialListI
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
+  const reloadSequence = useRef(0);
   const reload = useCallback(async (signal?: AbortSignal) => {
+    const sequence = ++reloadSequence.current;
     setLoading(true);
     const [catalogResult, listResult] = await Promise.allSettled([
       readJson<CatalogResponse>("/api/catalog", { signal }), readJson<{ lists: CatalogList[] }>("/api/targets/lists", { signal }),
     ]);
-    if (signal?.aborted) return;
+    if (signal?.aborted || sequence !== reloadSequence.current) return;
     if (catalogResult.status === "fulfilled") { setCatalog(catalogResult.value); setCatalogError(""); }
     else setCatalogError(message(catalogResult.reason));
     if (listResult.status === "fulfilled") {
@@ -65,7 +67,7 @@ export default function CatalogWorkspace({ initialView = "catalog", initialListI
   useEffect(() => {
     const controller = new AbortController();
     void reload(controller.signal);
-    return () => controller.abort();
+    return () => { controller.abort(); reloadSequence.current += 1; };
   }, [reload]);
 
   const activeList = lists.find((list) => list.id === activeId);
@@ -197,10 +199,10 @@ export default function CatalogWorkspace({ initialView = "catalog", initialListI
             <div className={styles.saveControls}><label className={styles.field}><span>New list name</span><input value={newName} onChange={(event) => setNewName(event.target.value)} placeholder="Name your working list" /></label><button className={styles.primaryButton} disabled={!!pending || !selected.size || !!listError || !!catalogError} onClick={() => void saveList("fixed")}>{pending === "create-fixed" ? "Saving…" : "Save selected as fixed list"}</button>{!currentList || currentList.membershipMode === "dynamic" ? <button className={styles.button} disabled={!!pending || !!listError || !!catalogError || loading} onClick={() => void saveList("dynamic")}>{pending === "create-dynamic" ? "Saving…" : "Save filters as live list"}</button> : null}</div>
             {selected.size ? <div className={styles.selectionActions}><label className={styles.field}><span>Add selection to fixed list</span><select value={destinationId} onChange={(event) => setDestinationId(event.target.value)}><option value="">Choose a fixed list…</option>{fixedLists.map((list) => <option key={list.id} value={list.id}>{list.name}</option>)}</select></label><button className={styles.button} disabled={!destinationId || !!pending || !!listError} onClick={() => void changeMembership("addMany", destinationId)}>Add selected</button>{currentList?.membershipMode === "fixed" ? <button className={styles.button} disabled={!!pending || !!listError} onClick={() => void changeMembership("removeMany", currentList.id)}>Remove selected from this list</button> : null}<button className={styles.textButton} onClick={() => setSelected(new Set())}>Clear selection</button></div> : null}
           </section>
-          <div className={styles.tableToolbar}><div><strong>{rows.length.toLocaleString()}</strong> matching records{currentList?.membershipMode === "dynamic" && dynamicChanged ? " in preview" : ""}<span className={styles.muted}> · Click a column to sort</span></div><button className={styles.textButton} disabled={!rows.length || loading} onClick={() => setSelected((previous) => new Set([...previous, ...rows.map((row) => row.id)]))}>Select all {rows.length.toLocaleString()} matching</button></div>
+          <div className={styles.tableToolbar}><div><strong>{rows.length.toLocaleString()}</strong> matching records{currentList?.membershipMode === "dynamic" && dynamicChanged ? " in preview" : ""}<span className={styles.muted}> · Click an arrow to sort</span></div><button className={styles.textButton} disabled={!rows.length || loading} onClick={() => setSelected((previous) => new Set([...previous, ...rows.map((row) => row.id)]))}>Select all {rows.length.toLocaleString()} matching</button></div>
           <div className={styles.tableScroll} tabIndex={0} role="region" aria-label="Scrollable catalog results">
-            <table className={styles.table}><caption className={styles.srOnly}>Shared catalog. Business and location records are not individual people. Exact links are source-attributed.</caption><thead><tr><th className={styles.checkboxCell}><input type="checkbox" aria-label="Select this page" checked={!!visibleRows.length && visibleRows.every((row) => selected.has(row.id))} disabled={!visibleRows.length} onChange={(event) => { const checked = event.target.checked; setSelected((previous) => { const next = new Set(previous); visibleRows.forEach((row) => { if (checked) next.add(row.id); else next.delete(row.id); }); return next; }); }} /></th>{COLUMNS.map((column) => <th key={column.key} aria-sort={sort === column.key ? direction === "asc" ? "ascending" : "descending" : "none"}><button onClick={() => { if (sort === column.key) setDirection(direction === "asc" ? "desc" : "asc"); else { setSort(column.key); setDirection("asc"); } setPage(1); }}>{column.label}{sort === column.key ? direction === "asc" ? " ↑" : " ↓" : " ↕"}</button></th>)}</tr></thead>
-              <tbody>{visibleRows.map((row) => <tr key={row.id} data-selected={selected.has(row.id)}><td className={styles.checkboxCell}><input type="checkbox" aria-label={`Select ${row.displayName}`} checked={selected.has(row.id)} onChange={() => toggleSelected(row.id)} /></td><td><strong className={styles.platform}>{profilePlatformLabel(row.profile)}</strong><span className={row.entityType === "business" ? styles.businessBadge : styles.providerBadge}>{row.entityType === "business" ? "Business / location · not a person" : "Provider record"}</span><button className={styles.recordLink} onClick={() => setDetail(row)}>{row.displayName || "Open record"}</button><small className={styles.muted}>{profilePlatformExplanation(row.profile)}</small></td><td><ProfileLinks links={(row.profile?.bookingLinks || []).filter((link) => link.kind !== "directory" && safeProfileHref(link.url))} empty={profileMissingLinkLabel(row.profile)} compact /></td><td><ProfileLinks links={(row.profile?.socialLinks || []).filter((link) => safeProfileHref(link.url))} empty={profileMissingLinkLabel(row.profile, "social")} compact /></td><td>{row.entityType === "business" ? <span className={styles.muted}>Not a person</span> : row.providerName || "Unknown"}</td><td>{row.businessName || "Unknown"}</td><td>{row.services.join(", ") || <span className={styles.muted}>Unknown</span>}</td><td>{row.area || <span className={styles.muted}>Unknown</span>}</td><td>{[row.city, row.state].filter(Boolean).join(", ") || "Unknown"}</td><td>{row.postalCode || "Unknown"}</td><td><span className={styles.statusBadge}>{readable(row.reviewStatus)}</span>{row.conflicts.length ? <small className={styles.conflictLabel}>{row.conflicts.length} unresolved difference{row.conflicts.length === 1 ? "" : "s"}</small> : null}</td></tr>)}</tbody>
+            <table className={styles.table}><caption className={styles.srOnly}>Shared catalog. Business and location records are not individual people. Exact links are source-attributed.</caption><thead><tr><th className={styles.checkboxCell}><input type="checkbox" aria-label="Select this page" checked={!!visibleRows.length && visibleRows.every((row) => selected.has(row.id))} disabled={!visibleRows.length} onChange={(event) => { const checked = event.target.checked; setSelected((previous) => { const next = new Set(previous); visibleRows.forEach((row) => { if (checked) next.add(row.id); else next.delete(row.id); }); return next; }); }} /></th>{COLUMNS.map((column) => <th key={column.key} scope="col" className={column.centered ? styles.centerCell : undefined} aria-sort={sort === column.key ? direction === "asc" ? "ascending" : "descending" : "none"}><button onClick={() => { if (sort === column.key) setDirection(direction === "asc" ? "desc" : "asc"); else { setSort(column.key); setDirection("asc"); } setPage(1); }}>{column.label}{sort === column.key ? direction === "asc" ? " ↑" : " ↓" : " ↕"}</button></th>)}<th scope="col" className={styles.centerCell} title="DORA individual license, separate from shop registration">Person lic.</th><th scope="col" className={styles.centerCell} title="DORA business / shop registration, not an individual license">Shop reg.</th><th scope="col"><span className={styles.srOnly}>Record details</span></th></tr></thead>
+              <tbody>{visibleRows.map((row) => <CatalogResultRow key={row.id} row={row} selected={selected.has(row.id)} onToggle={() => toggleSelected(row.id)} onOpen={() => setDetail(row)} />)}</tbody>
             </table>
             {!visibleRows.length ? <div className={styles.empty} role="status"><h3>{loading ? "Loading catalog…" : catalogError ? "Catalog unavailable" : currentList?.membershipMode === "fixed" && !listMemberIds(currentList).length ? "This fixed list is empty" : "No matching records"}</h3><p>{loading ? "Fetching the current source-linked catalog and saved lists." : catalogError ? "Retry the catalog request above." : "Try changing your filters or browse the full catalog."}</p></div> : null}
           </div>

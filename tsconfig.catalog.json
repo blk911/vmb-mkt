@@ -31,7 +31,11 @@
     "src/lib/admin/pipeline/build-queue.ts",
     "src/components/admin/pipeline/**/*.tsx",
     "src/app/admin/validate/page.tsx",
-    "src/lib/hashtag-paste-intake/**/*.ts"
+    "src/lib/hashtag-paste-intake/**/*.ts",
+    "src/lib/dora/**/*.ts",
+    "src/app/admin/validate/**/*.tsx",
+    "src/app/api/source-intake/dora-queue/**/*.ts",
+    "src/components/admin/source-intake/DoraQueueTable.tsx"
   ],
   "exclude": [
     "node_modules",
