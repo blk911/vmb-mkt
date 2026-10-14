@@ -382,15 +382,52 @@ test('long synthetic table values retain complete titles with bounded single-lin
   assert(html.includes(`title="Open provider record: ${long}"`));
   assert(!html.includes('>Unkwn</button>'));
   const css = fs.readFileSync(path.join(root, 'src/components/catalog/CatalogWorkspace.module.css'), 'utf8');
-  assert.match(css, /\.table \.nameCell > button \{[^}]*max-width: 210px[^}]*text-overflow: ellipsis[^}]*white-space: nowrap/);
+  assert.match(css, /\.table \.nameCell > button \{[^}]*max-width: 100%[^}]*text-overflow: ellipsis[^}]*white-space: nowrap/);
   assert.match(css, /\.table \.wrapCell > span \{[^}]*max-width: 144px[^}]*text-overflow: ellipsis[^}]*white-space: nowrap/);
 });
-test('compact layout retains content sizing, tight padding, scroll and name/status alignment', () => {
+test('compact layout fills available width with tight padding, scroll and name/status alignment', () => {
   const css = fs.readFileSync(path.join(root, 'src/components/catalog/CatalogWorkspace.module.css'), 'utf8');
-  assert.match(css, /\.table \{[^}]*width: max-content/); assert.match(css, /\.table td \{[^}]*padding: 7px 8px/);
+  assert.match(css, /\.table \{[^}]*width: 100%[^}]*min-width: 640px[^}]*table-layout: fixed/); assert.match(css, /\.table td \{[^}]*padding: 7px 8px/);
   assert.match(css, /\.tableScroll \{[^}]*overflow-x: auto/); assert.match(css, /\.table \.centerCell[^}]*text-align: center/);
   const page = fs.readFileSync(path.join(root, 'src/app/admin/validate/page.tsx'), 'utf8');
   assert.match(page, /w-max min-w-full table-auto/); assert.match(page, /aria-sort=/); assert.match(page, /validationSortHref\(params, column\)/);
+});
+
+test('fluid table uses six proportional columns with narrow selection and license edges', () => {
+  const html = markup(CatalogWorkspace, {});
+  const group = html.match(/<colgroup>([\s\S]*?)<\/colgroup>/)[1];
+  const expected = ['selectionColumn', 'nameColumn', 'platformColumn', 'contactColumn', 'locationColumn', 'licenseColumn'];
+  assert.deepEqual([...group.matchAll(/class="([^"]+)"/g)].map(match => match[1]), expected);
+  assert(html.indexOf('</caption>') < html.indexOf('<colgroup>'), 'Caption precedes the native table columns.');
+  const css = fs.readFileSync(path.join(root, 'src/components/catalog/CatalogWorkspace.module.css'), 'utf8');
+  assert.match(css, /\.tableScroll \{[^}]*width: 100%[^}]*max-width: 100%[^}]*min-width: 0/);
+  assert.match(css, /\.table \.selectionColumn \{ width: 40px;/);
+  assert.match(css, /\.table \.licenseColumn \{ width: 64px;/);
+  const shares = [34, 18, 14];
+  expected.slice(1, 4).forEach((column, i) => assert(css.includes(`.${column} { width: ${shares[i]}%; }`)));
+  assert.match(css, /\.table \.locationColumn \{ width: auto;/);
+  assert(!/Column \{ width: calc\(/.test(css), 'Fixed native table columns must not rely on unsupported mixed calc widths.');
+  // Layout-policy arithmetic, not a claim that browser pixels were inspected.
+  for (const viewport of [1920, 1366, 1024, 768, 390, 320]) {
+    const available = viewport - 48 - 2, table = Math.max(640, available);
+    const widths = shares.map(share => table * share / 100);
+    widths.push(table - 104 - widths.reduce((sum, width) => sum + width, 0));
+    assert(Math.abs(widths.reduce((sum, width) => sum + width, 104) - table) < 0.001);
+    assert(widths[0] >= 200 && widths[1] >= 115 && widths[2] >= 85 && widths[3] >= 113);
+    assert.equal(table > available, viewport < 690);
+  }
+});
+test('small-screen controls wrap while table overflow stays in its labeled region', () => {
+  const html = markup(CatalogWorkspace, {});
+  assert.match(html, /tabindex="0" role="region" aria-label="Scrollable catalog results"/);
+  const css = fs.readFileSync(path.join(root, 'src/components/catalog/CatalogWorkspace.module.css'), 'utf8');
+  assert.match(css, /\.pagination \{ flex-wrap: wrap; \}/);
+  assert.match(css, /\.tabs \{ flex-wrap: wrap; gap: 12px; \}/);
+  assert.match(css, /\.inlineForm \{ flex-wrap: wrap; \}/);
+  assert.match(css, /@media \(max-width: 400px\) \{ \.filterGrid \{ grid-template-columns: 1fr;/);
+  assert.match(css, /\.table \.platformCell, \.table \.contactCell, \.table \.locationCell \{ white-space: normal; overflow-wrap: anywhere;/);
+  assert(!/\.tableScroll \{[^}]*width: fit-content/.test(css));
+  assert(!/\.table \{[^}]*width: max-content/.test(css));
 });
 
 async function main() {
@@ -402,7 +439,7 @@ async function main() {
     const target = path.resolve(process.env.COMPACT_UI_PREVIEW); fs.mkdirSync(target, { recursive: true });
     const rich = row({ displayName: 'Blair Synthetic', providerName: 'Blair Synthetic', businessName: 'Synthetic Studio', city: 'Synthetic City', state: 'CO', postalCode: '00000', services: ['Nails'], reviewStatus: 'approved', dora, profile: profile({ knownPlatforms: ['glossgenius'], platformSummary: 'single', platform: 'glossgenius', bookingLinks: [link('https://syntheticstudio.glossgenius.com', { platform: 'glossgenius' })], socialLinks: [link('https://instagram.com/synthetic_artist', { kind: 'social' })] }) });
     const rows = [row(), rich, row({ entityType: 'business', displayName: 'Synthetic Studio', providerName: '', businessName: 'Synthetic Studio' }), row({ displayName: 'Long Synthetic Provider Name For Wrapping', providerName: 'Long Synthetic Provider Name For Wrapping', businessName: 'Synthetic Studio With A Long Business Name', reviewStatus: 'rejected' })];
-    const content = `<div class="workspace"><h1>Synthetic compact catalog</h1><p>Render fixture only. No live records or checks.</p><div class="tableScroll"><table class="table"><thead><tr>${['', 'Provider / salon', 'Booking platform', 'IG / website', 'City / State / ZIP', 'License'].map((name, i) => `<th class="${[3, 5].includes(i) ? 'centerCell' : ''}">${name}</th>`).join('')}</tr></thead><tbody>${rows.map(value => markup(CatalogResultRow, { row: value, selected: false, onToggle() {}, onOpen() {} })).join('')}</tbody></table></div><div style="margin-top:24px">${markup(DoraEvidence, { dora, catalogId: rich.id, admin: true })}</div></div>`;
+    const content = `<div class="workspace"><h1>Synthetic compact catalog</h1><p>Render fixture only. No live records or checks.</p><div class="tableScroll"><table class="table"><colgroup><col class="selectionColumn"><col class="nameColumn"><col class="platformColumn"><col class="contactColumn"><col class="locationColumn"><col class="licenseColumn"></colgroup><thead><tr>${['', 'Provider / salon', 'Booking platform', 'IG / website', 'City / State / ZIP', 'License'].map((name, i) => `<th class="${[3, 5].includes(i) ? 'centerCell' : ''}">${name}</th>`).join('')}</tr></thead><tbody>${rows.map(value => markup(CatalogResultRow, { row: value, selected: false, onToggle() {}, onOpen() {} })).join('')}</tbody></table></div><div style="margin-top:24px">${markup(DoraEvidence, { dora, catalogId: rich.id, admin: true })}</div></div>`;
     const candidates = [...new Set([...content.matchAll(/class="([^"]+)"/g)].flatMap(m => m[1].split(/\s+/)))];
     const { compile } = require('@tailwindcss/node');
     const compiler = await compile('@import "tailwindcss";', { base: root, onDependency() {} });
