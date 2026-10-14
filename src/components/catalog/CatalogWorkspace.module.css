@@ -1,4 +1,4 @@
-.workspace { --ink: #18243a; --muted: #657187; --line: #dfe5ed; --accent: #2559ad; color: var(--ink); font-size: 14px; line-height: 1.5; min-width: 0; }
+.workspace { --ink: #18243a; --muted: #657187; --line: #dfe5ed; --accent: #2559ad; color: var(--ink); font-size: 14px; line-height: 1.5; width: 100%; min-width: 0; }
 .workspace *, .dialog * { box-sizing: border-box; }
 .workspace h1, .workspace h2, .workspace h3, .dialog h2, .dialog h3 { margin: 0; color: #18243a; letter-spacing: -.025em; }
 .workspace h1 { font-size: clamp(24px, 3vw, 32px); font-weight: 750; }
@@ -25,7 +25,7 @@
 .tabs span { margin-left: 5px; border-radius: 6px; background: #eaf0f9; font-size: 11px; padding: 2px 6px; }
 .withSidebar { display: grid; grid-template-columns: 245px minmax(0, 1fr); gap: 20px; align-items: start; }
 .sidebar { background: #f7f9fc; border: 1px solid var(--line); padding: 14px; border-radius: 12px; }
-.main { min-width: 0; }
+.main { width: 100%; min-width: 0; }
 .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .field > span { font-size: 11px; font-weight: 650; color: #4e5e76; }
 .field input, .field select, .field textarea { width: 100%; min-width: 0; min-height: 37px; padding: 8px 10px; background: white; border: 1px solid #cfd8e5; border-radius: 7px; color: #18243a; font: inherit; font-size: 12px; }
@@ -62,16 +62,24 @@
 .saveControls > .field { flex: 1; min-width: 180px; max-width: 350px; }
 .selectionActions > .field { min-width: 180px; }
 .tableToolbar { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin: 20px 0 10px; font-size: 12px; flex-wrap: wrap; }
-.tableScroll { width: fit-content; max-width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 11px; background: white; }
-.table { width: max-content; min-width: 0; border-collapse: collapse; text-align: left; font-size: 12px; }
-.table th { padding: 7px 8px; background: #f5f7fa; border-bottom: 1px solid var(--line); white-space: nowrap; color: #52617a; font-size: 11px; }
-.table th button { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 0; font: inherit; font-weight: 700; cursor: pointer; }
+.tableScroll { width: 100%; max-width: 100%; min-width: 0; overflow-x: auto; border: 1px solid var(--line); border-radius: 11px; background: white; }
+.table { width: 100%; min-width: 640px; table-layout: fixed; border-collapse: collapse; text-align: left; font-size: 12px; }
+.table th { padding: 7px 8px; background: #f5f7fa; border-bottom: 1px solid var(--line); white-space: normal; color: #52617a; font-size: 11px; }
+.table th button { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 0; font: inherit; font-weight: 700; white-space: normal; cursor: pointer; }
 .table td { padding: 7px 8px; border-bottom: 1px solid #e8edf3; vertical-align: middle; white-space: nowrap; }
 .table .centerCell, .table .centerCell button { text-align: center; }
-.table .nameCell { min-width: 100px; max-width: 210px; }
-.table .nameCell > span, .table .nameCell > button { display: block; max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.table .nameCell { min-width: 0; }
+.table .nameCell > span, .table .nameCell > button { display: block; width: 100%; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .table .wrapCell { max-width: 160px; }
 .table .wrapCell > span { display: block; max-width: 144px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Fixed utility widths, three flexible shares, and location takes the remainder. */
+.table .selectionColumn { width: 40px; }
+.table .nameColumn { width: 34%; }
+.table .platformColumn { width: 18%; }
+.table .contactColumn { width: 14%; }
+.table .locationColumn { width: auto; }
+.table .licenseColumn { width: 64px; }
+.table .platformCell, .table .contactCell, .table .locationCell { white-space: normal; overflow-wrap: anywhere; }
 .table tr:last-child td { border-bottom: none; }
 .table tr[data-selected="true"] { background: #f1f6ff; }
 .table tr:hover { background: #f8fbff; }
@@ -152,3 +160,12 @@ small.muted { display: block; font-size: 10px; }
 @media (max-width: 600px) { .dialog { width: calc(100vw - 16px); } .detailHeader, .detailBody { padding: 12px; } .evidenceMetadata { grid-template-columns: 1fr; } }
 
 .dialog section[aria-label="DORA cross-reference"] h2 { font-size: 13px; letter-spacing: 0; }
+
+@media (max-width: 600px) {
+  .filters { padding: 12px; }
+  .tabs { flex-wrap: wrap; gap: 12px; }
+  .pagination { flex-wrap: wrap; }
+  .pagination > div { flex-wrap: wrap; }
+  .inlineForm { flex-wrap: wrap; }
+}
+@media (max-width: 400px) { .filterGrid { grid-template-columns: 1fr; } }

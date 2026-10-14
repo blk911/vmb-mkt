@@ -19,9 +19,9 @@ export default function CatalogResultRow({ row, selected, onToggle, onOpen }: { 
   return <tr data-selected={selected}>
     <td className={styles.checkboxCell}><input type="checkbox" aria-label={`Select ${name}`} checked={selected} onChange={onToggle} /></td>
     <td className={styles.nameCell}><button className={styles.recordLink} title={nameLabel} aria-label={nameLabel} onClick={onOpen}><span className="block truncate">{name}</span>{showBusiness ? <span className={`${styles.muted} block truncate`} title={businessName}>{businessName}</span> : null}</button></td>
-    <td><BookingPlatformLinks profile={row.profile} /></td>
-    <td className={styles.centerCell}><CatalogContactLinks profile={row.profile} /></td>
-    <td><CompactValue value={location} /></td>
+    <td className={styles.platformCell}><BookingPlatformLinks profile={row.profile} /></td>
+    <td className={`${styles.centerCell} ${styles.contactCell}`}><CatalogContactLinks profile={row.profile} /></td>
+    <td className={styles.locationCell}><CompactValue value={location} /></td>
     <td className={styles.centerCell}><DoraLicenseMark check={business ? row.dora?.shopRegistration : row.dora?.personLicense} label={licenseLabel} /></td>
   </tr>;
 }
