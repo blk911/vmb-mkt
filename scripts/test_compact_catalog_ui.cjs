@@ -48,6 +48,8 @@ const compact = load('src/components/admin/pipeline/CompactProfile.tsx');
 const { ProfileLinks } = load('src/components/admin/pipeline/ProfileEvidence.tsx');
 const { default: DoraEvidence, DoraStatus } = load('src/components/admin/pipeline/DoraEvidence.tsx');
 const { default: CatalogResultRow } = load('src/components/catalog/CatalogResultRow.tsx');
+const { default: BookingPlatformLinks, CatalogContactLinks } = load('src/components/catalog/BookingPlatformLinks.tsx');
+const { default: CatalogWorkspace } = load('src/components/catalog/CatalogWorkspace.tsx');
 const unknown = { status: 'unknown', outcome: 'not_checked', matches: [], reasons: [], conflicts: [] };
 const candidate = { name: 'Avery Synthetic', licenseType: 'Manicurist', licenseNumber: '999900001', licensePrefix: 'MAN', statusText: 'Active', city: 'Synthetic City', state: 'CO', postalCode: '00000', sourceUrl: 'https://apps2.colorado.gov/dora/licensing/Lookup/LicenseLookup.aspx', datasetUrl: 'https://data.colorado.gov/resource/7s5z-vewr.json', expirationDate: '2027-03-31T00:00:00.000', identity: 'review', basis: ['Full name matches'], conflicts: ['Identity not corroborated'], sourceRows: 1 };
 const review = { status: 'review', outcome: 'matched', matches: [candidate], reasons: ['Independent identifier required'], conflicts: [], checkedAt: '2026-10-14T16:00:00.000Z', datasetUpdatedAt: '2026-10-13T04:00:00.000Z' };
@@ -66,7 +68,9 @@ test('missing text is compact and never a negative finding', () => {
 });
 test('compact unknown catalog row has no verbose filler or duplicate person name', () => {
   const html = markup(CatalogResultRow, { row: row(), selected: false, onToggle() {}, onOpen() {} });
-  assert.equal((html.match(/<td/g) || []).length, 14);
+  assert.equal((html.match(/<td/g) || []).length, 6);
+  assert.equal((html.match(/<button/g) || []).length, 1);
+  assert.equal((html.match(/role="img"/g) || []).length, 1);
   assert.equal((html.match(/>Avery Synthetic</g) || []).length, 1);
   assert(!/>[^<]*(not collected|not recorded|Provider record|No supported booking)/i.test(html));
   assert(!/[✓✕]/.test(html));
@@ -75,7 +79,10 @@ test('compact unknown catalog row has no verbose filler or duplicate person name
 });
 test('business rows retain the business name without fabricating an individual provider', () => {
   const html = markup(CatalogResultRow, { row: row({ entityType: 'business', displayName: 'Synthetic Studio', providerName: '', businessName: 'Synthetic Studio' }), selected: false, onToggle() {}, onOpen() {} });
-  assert.match(html, /Business \/ location record, not an individual person/);
+  assert.match(html, /Open business \/ location record: Synthetic Studio/);
+  assert.match(html, /Shop registration: Unresolved/);
+  assert(!html.includes('Person license:'));
+  assert(!html.includes('>—<'));
   assert.equal((html.match(/>Synthetic Studio</g) || []).length, 1);
 });
 test('short Booking and IG labels keep exact safe destinations and attribution', () => {
@@ -93,6 +100,115 @@ test('more links remain in expandable detailed profile evidence', () => {
   assert.equal((summary.match(/<a /g) || []).length, 2); assert.match(summary, /\+1/);
   const detail = markup(ProfileLinks, { links });
   for (const entry of links) assert(detail.includes(entry.url));
+});
+test('prospect headers contain only the compact identity, links, location and license columns', () => {
+  const html = markup(CatalogWorkspace, {});
+  const header = html.match(/<thead>([\s\S]*?)<\/thead>/)[1];
+  assert.equal((header.match(/<th(?: |>)/g) || []).length, 6);
+  for (const label of ['Provider / salon', 'Booking platform', 'IG / website', 'City / State / ZIP', 'License']) assert(header.includes(label), label);
+  for (const label of ['Services', 'Area', 'Review', 'Person lic.', 'Shop reg.', 'Record details']) assert(!header.includes(label), label);
+});
+test('combined identity shows a different business only once and all name clicks open the record', () => {
+  let opened = 0, toggled = 0;
+  const props = { row: row({ businessName: 'Synthetic Studio', city: 'Synthetic City', state: 'CO', postalCode: '00000' }), selected: true, onToggle: () => toggled++, onOpen: () => opened++ };
+  const html = markup(CatalogResultRow, props);
+  assert.equal((html.match(/>Avery Synthetic</g) || []).length, 1);
+  assert.equal((html.match(/>Synthetic Studio</g) || []).length, 1);
+  assert.match(html, />Synthetic City, CO 00000</);
+  const tree = CatalogResultRow(props);
+  const nameButton = elements(tree, node => node.type === 'button')[0];
+  assert.equal(elements(nameButton, node => node.type === 'span').length, 2);
+  assert.match(textOf(nameButton), /Avery Synthetic.*Synthetic Studio/);
+  assert.equal(nameButton.props['aria-label'], 'Open provider record: Avery Synthetic, Synthetic Studio');
+  nameButton.props.onClick();
+  elements(tree, node => node.type === 'input')[0].props.onChange();
+  assert.equal(opened, 1); assert.equal(toggled, 1);
+  assert.equal(tree.props['data-selected'], true);
+  const duplicate = markup(CatalogResultRow, { ...props, row: row({ businessName: '  avery synthetic  ' }) });
+  assert.equal((duplicate.match(/>Avery Synthetic</g) || []).length, 1);
+  assert(!duplicate.includes('>avery synthetic<'));
+});
+test('each row uses exactly the entity-scoped DORA check without leaking the other scope', () => {
+  const props = { row: row({ dora }), selected: false, onToggle() {}, onOpen() {} };
+  const person = elements(CatalogResultRow(props), node => node.type?.name === 'DoraLicenseMark');
+  assert.equal(person.length, 1); assert.equal(person[0].props.check, review); assert.equal(person[0].props.label, 'Person license');
+  const shop = elements(CatalogResultRow({ ...props, row: row({ entityType: 'business', dora }) }), node => node.type?.name === 'DoraLicenseMark');
+  assert.equal(shop.length, 1); assert.equal(shop[0].props.check, unknown); assert.equal(shop[0].props.label, 'Shop registration');
+});
+test('booking platform names are the exact source links and preserve all platforms and attribution', () => {
+  const links = [
+    link('https://syntheticstudio.glossgenius.com/services?staff=One#book', { platform: 'glossgenius', sourceUrl: 'https://source.example.org/card/1' }),
+    link('https://www.vagaro.com/syntheticstudio?staff=Two', { platform: 'vagaro', attribution: 'business' }),
+    link('https://booksy.com/en-us/999999_synthetic', { platform: 'booksy', attribution: 'unresolved' }),
+  ];
+  const html = markup(BookingPlatformLinks, { profile: profile({ bookingLinks: links, knownPlatforms: ['glossgenius', 'vagaro'] }) });
+  assert.equal((html.match(/<a /g) || []).length, 3);
+  for (const entry of links) assert(html.includes(`href="${entry.url}"`));
+  for (const label of ['>GG<', '>Vagaro<', '>Booksy?<']) assert(html.includes(label));
+  assert.match(html, /Source: https:\/\/source.example.org\/card\/1/);
+  assert.match(html, /Source-linked to provider; identity not verified/);
+  assert.match(html, /Shared business link; not individual verification/);
+  assert.match(html, /Attribution unresolved; review evidence/);
+  assert.equal((html.match(/rel="noopener noreferrer"/g) || []).length, 3);
+  assert(!html.includes('>Booking<'));
+});
+test('duplicate URLs and same-platform links collapse to one evidence-backed preferred link', () => {
+  const shared = link('https://syntheticstudio.glossgenius.com/services', { platform: 'glossgenius', kind: 'shared_business', attribution: 'business' });
+  const individual = link('https://syntheticstudio.glossgenius.com/staff/synthetic', { platform: 'glossgenius', kind: 'individual', attribution: 'candidate' });
+  const uncertain = link('https://syntheticstudio.glossgenius.com/other', { platform: 'glossgenius', attribution: 'unresolved' });
+  const links = [shared, { ...shared }, uncertain, individual, { ...individual }];
+  const original = JSON.stringify(links);
+  const html = markup(BookingPlatformLinks, { profile: profile({ bookingLinks: links }) });
+  assert.equal((html.match(/<a /g) || []).length, 1); assert.equal((html.match(/>GG</g) || []).length, 1);
+  assert(html.includes(`href="${individual.url}"`)); assert(!html.includes(`href="${shared.url}"`));
+  assert.match(html, />\+2</); assert.match(html, /2 more booking source links in Evidence &amp; review/);
+  assert.equal(JSON.stringify(links), original, 'compact display cannot mutate source evidence');
+  const evidence = markup(ProfileLinks, { links });
+  for (const entry of links) assert(evidence.includes(`href="${entry.url}"`));
+  const businessOnly = markup(BookingPlatformLinks, { profile: profile({ bookingLinks: [uncertain, shared] }) });
+  assert(businessOnly.includes(`href="${shared.url}"`)); assert.match(businessOnly, /Shared business link; not individual verification/); assert.match(businessOnly, />\+1</);
+  const exactDuplicates = markup(BookingPlatformLinks, { profile: profile({ bookingLinks: [shared, { ...shared }] }) });
+  assert.equal((exactDuplicates.match(/<a /g) || []).length, 1); assert(!exactDuplicates.includes('>+'));
+});
+test('unsafe, directory-only and unlinked booking platforms cannot invent a booking destination', () => {
+  const html = markup(BookingPlatformLinks, { profile: profile({ knownPlatforms: ['glossgenius'], bookingLinks: [link('javascript:alert(1)'), link('https://user:secret@example.org'), link('https://www.vagaro.com/professionals/synthetic', { kind: 'directory' })] }) });
+  assert(!html.includes('<a ')); assert(html.includes('>GG<')); assert.match(html, /booking link unavailable/);
+  assert(!html.includes('javascript:')); assert(!html.includes('secret'));
+  const recognized = markup(BookingPlatformLinks, { profile: profile({ bookingLinks: [link('https://syntheticstudio.glossgenius.com/services')] }) });
+  assert.match(recognized, />GG</);
+  const misleading = markup(BookingPlatformLinks, { profile: profile({ bookingLinks: [link('https://glossgenius.com.evil.example.org/path')] }) });
+  assert.match(misleading, />Booking</); assert(!misleading.includes('>GG<'));
+  const custom = markup(BookingPlatformLinks, { profile: profile({ bookingLinks: [link('https://studio.example.org/book', { purpose: 'booking' })] }) });
+  assert.match(custom, /href="https:\/\/studio.example.org\/book"/); assert.match(custom, />Booking</);
+});
+test('IG and website share one cell with their exact source destinations', () => {
+  const html = markup(CatalogResultRow, { row: row({ profile: profile({ socialLinks: [link('https://www.instagram.com/synthetic_artist/', { kind: 'social' })], websiteLinks: [link('https://studio.example.org/about', { kind: 'website' })] }) }), selected: false, onToggle() {}, onOpen() {} });
+  assert.equal((html.match(/<td/g) || []).length, 6);
+  const cells = [...html.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map(match => match[1]);
+  assert.match(cells[3], />IG</); assert.match(cells[3], />Web</);
+  assert(cells[3].includes('href="https://www.instagram.com/synthetic_artist/"'));
+  assert(cells[3].includes('href="https://studio.example.org/about"'));
+});
+test('contact quick links deduplicate safe URLs and omit Web duplicates of booking or social', () => {
+  const booking = link('https://syntheticstudio.glossgenius.com/services', { platform: 'glossgenius' });
+  const instagram = link('https://www.instagram.com/synthetic_artist/', { kind: 'social', attribution: 'unresolved' });
+  const facebook = link('https://www.facebook.com/syntheticstudio', { kind: 'social', attribution: 'business' });
+  const website = link('https://studio.example.org/about', { kind: 'website' });
+  const value = profile({ bookingLinks: [booking], socialLinks: [instagram, { ...instagram }, facebook, link('javascript:alert(1)', { kind: 'social' })], websiteLinks: [{ ...booking, kind: 'website' }, { ...instagram, kind: 'website' }, website, { ...website }, link('https://user:secret@example.org', { kind: 'website' })] });
+  const original = JSON.stringify(value);
+  const html = markup(CatalogContactLinks, { profile: value });
+  assert.equal((html.match(/<a /g) || []).length, 3);
+  assert.equal((html.match(/>IG\?</g) || []).length, 1); assert.equal((html.match(/>FB</g) || []).length, 1); assert.equal((html.match(/>Web</g) || []).length, 1);
+  assert(!html.includes(`href="${booking.url}"`));
+  for (const entry of [instagram, facebook, website]) assert(html.includes(`href="${entry.url}"`));
+  assert.match(html, /Attribution unresolved/); assert.match(html, /Shared business link/);
+  assert(!html.includes('javascript:')); assert(!html.includes('secret')); assert(!html.includes('>+'));
+  assert.equal(JSON.stringify(value), original);
+  const evidence = markup(ProfileLinks, { links: value.websiteLinks });
+  assert(evidence.includes(`href="${booking.url}"`)); assert(evidence.includes(`href="${instagram.url}"`));
+  assert.equal(markup(CatalogContactLinks, { profile: profile(), hideEmpty: true }), '');
+  const empty = markup(CatalogContactLinks, { profile: profile({ websiteLinks: [link('javascript:alert(1)')] }) });
+  assert(!empty.includes('<a ')); assert.match(empty, />Unkwn</);
 });
 test('DORA statuses distinguish review, expiration and no match from a negative finding', () => {
   for (const status of ['unknown', 'review', 'expired', 'active']) {
@@ -211,10 +327,58 @@ test('newer catalog reload wins when an older request resolves late', async () =
   assert.equal(elements(instance.tree, n => n.props?.row?.displayName === latest.displayName).length, 1);
   assert.equal(elements(instance.tree, n => n.props?.row?.displayName === 'Stale synthetic record').length, 0); instance.unmount();
 });
+test('every legacy URL sort remains valid after removing its table column', async () => {
+  const records = [
+    row({ id: 'synthetic-z', displayName: 'Zulu Synthetic', providerName: 'Zulu Synthetic', businessName: 'Alpha Studio', services: ['Zulu service'], area: 'Alpha area', postalCode: '20000', reviewStatus: 'pending' }),
+    row({ id: 'synthetic-a', displayName: 'Alpha Synthetic', providerName: 'Alpha Synthetic', businessName: 'Zulu Studio', services: ['Alpha service'], area: 'Zulu area', postalCode: '10000', reviewStatus: 'approved' }),
+  ];
+  const { sortCatalogRecords } = load('src/lib/catalog/query.ts');
+  for (const sort of ['name', 'platform', 'booking', 'social', 'provider', 'salon', 'service', 'area', 'city', 'postalCode', 'status']) {
+    let url = new URL(`https://synthetic.invalid/dashboard/targets?sort=${sort}&direction=desc&external=keep`);
+    const window = { location: { get href() { return url.href; } }, history: { state: { router: 'retained' }, replaceState(state, _, next) { assert.equal(state.router, 'retained'); url = new URL(String(next)); } }, addEventListener() {}, removeEventListener() {} };
+    const instance = harness('src/components/catalog/CatalogWorkspace.tsx', {}, { window, fetch: async url => ({ ok: true, json: async () => url === '/api/catalog' ? { rows: records } : { lists: [] } }) });
+    await settle(); instance.render();
+    const actual = elements(instance.tree, node => node.props?.row?.id).map(node => node.props.row.id);
+    assert.deepEqual(actual, Array.from(sortCatalogRecords(records, sort, 'desc'), record => record.id), sort);
+    assert.equal(url.searchParams.get('sort'), sort); assert.equal(url.searchParams.get('direction'), 'desc'); assert.equal(url.searchParams.get('external'), 'keep');
+    instance.unmount();
+  }
+});
+test('combined name sorting follows the displayed business or provider name', async () => {
+  const records = [row({ id: 'synthetic-business', entityType: 'business', displayName: 'Alpha stale label', businessName: 'Zulu Studio' }), row({ id: 'synthetic-provider', displayName: 'Zulu stale label', providerName: 'Alpha Artist' })];
+  let url = new URL('https://synthetic.invalid/dashboard/targets?sort=name&direction=asc');
+  const window = { location: { get href() { return url.href; } }, history: { state: null, replaceState(_, __, next) { url = new URL(String(next)); } }, addEventListener() {}, removeEventListener() {} };
+  const instance = harness('src/components/catalog/CatalogWorkspace.tsx', {}, { window, fetch: async url => ({ ok: true, json: async () => url === '/api/catalog' ? { rows: records } : { lists: [] } }) });
+  await settle(); instance.render();
+  assert.deepEqual(elements(instance.tree, node => node.props?.row?.id).map(node => node.props.row.id), ['synthetic-provider', 'synthetic-business']);
+  button(instance.tree, 'Provider / salon').props.onClick(); instance.render();
+  assert.deepEqual(elements(instance.tree, node => node.props?.row?.id).map(node => node.props.row.id), ['synthetic-business', 'synthetic-provider']);
+  instance.unmount();
+});
+test('profile add-to-list returns to the existing selected-list controls without a mutation', async () => {
+  const calls = [], frames = []; let focused = 0, scrolled = 0;
+  const globals = {
+    fetch: async (url, init) => { calls.push({ url, init }); return { ok: true, json: async () => url === '/api/catalog' ? { rows: [row()] } : { lists: [] } }; },
+    requestAnimationFrame: callback => frames.push(callback),
+    document: { getElementById(id) { assert.equal(id, 'catalog-selection-actions'); return { focus(options) { assert.equal(options.preventScroll, true); focused++; }, scrollIntoView(options) { assert.equal(options.block, 'center'); scrolled++; } }; } },
+  };
+  const instance = harness('src/components/catalog/CatalogWorkspace.tsx', {}, globals);
+  await settle(); instance.render();
+  elements(instance.tree, node => node.props?.row?.id)[0].props.onOpen(); instance.render();
+  const detail = elements(instance.tree, node => node.type?.name === 'CatalogDetail')[0];
+  assert(detail); detail.props.onSelectForList(); detail.props.onSelectForList(); instance.render();
+  assert.equal(elements(instance.tree, node => node.type?.name === 'CatalogDetail').length, 0);
+  assert.equal(elements(instance.tree, node => node.props?.row?.id)[0].props.selected, true);
+  const selection = elements(instance.tree, node => node.props?.id === 'catalog-selection-actions')[0];
+  assert.equal(selection.props.tabIndex, -1); assert.match(textOf(selection), /1 selected/);
+  for (const callback of frames) callback();
+  assert.equal(focused, 2); assert.equal(scrolled, 2);
+  assert.equal(calls.length, 2); assert(calls.every(call => !call.init?.method || call.init.method === 'GET'));
+  instance.unmount();
+});
 test('long synthetic table values retain complete titles with bounded single-line presentation', () => {
   const long = 'Synthetic long value '.repeat(25).trim();
   const html = markup(CatalogResultRow, { row: row({ displayName: long, providerName: long, businessName: long, area: long, services: [long] }), selected: false, onToggle() {}, onOpen() {} });
-  assert(html.includes(`title="${long}"`));
   assert(html.includes(`title="Open provider record: ${long}"`));
   assert(!html.includes('>Unkwn</button>'));
   const css = fs.readFileSync(path.join(root, 'src/components/catalog/CatalogWorkspace.module.css'), 'utf8');
@@ -238,7 +402,7 @@ async function main() {
     const target = path.resolve(process.env.COMPACT_UI_PREVIEW); fs.mkdirSync(target, { recursive: true });
     const rich = row({ displayName: 'Blair Synthetic', providerName: 'Blair Synthetic', businessName: 'Synthetic Studio', city: 'Synthetic City', state: 'CO', postalCode: '00000', services: ['Nails'], reviewStatus: 'approved', dora, profile: profile({ knownPlatforms: ['glossgenius'], platformSummary: 'single', platform: 'glossgenius', bookingLinks: [link('https://syntheticstudio.glossgenius.com', { platform: 'glossgenius' })], socialLinks: [link('https://instagram.com/synthetic_artist', { kind: 'social' })] }) });
     const rows = [row(), rich, row({ entityType: 'business', displayName: 'Synthetic Studio', providerName: '', businessName: 'Synthetic Studio' }), row({ displayName: 'Long Synthetic Provider Name For Wrapping', providerName: 'Long Synthetic Provider Name For Wrapping', businessName: 'Synthetic Studio With A Long Business Name', reviewStatus: 'rejected' })];
-    const content = `<div class="workspace"><h1>Synthetic compact catalog</h1><p>Render fixture only. No live records or checks.</p><div class="tableScroll"><table class="table"><thead><tr>${['', 'Platform', 'Booking', 'Social', 'Provider', 'Salon / business', 'Services', 'Area', 'City', 'ZIP', 'Review', 'Person lic.', 'Shop reg.', ''].map((name, i) => `<th class="${[2, 3, 10, 11, 12].includes(i) ? 'centerCell' : ''}">${name}</th>`).join('')}</tr></thead><tbody>${rows.map(value => markup(CatalogResultRow, { row: value, selected: false, onToggle() {}, onOpen() {} })).join('')}</tbody></table></div><div style="margin-top:24px">${markup(DoraEvidence, { dora, catalogId: rich.id, admin: true })}</div></div>`;
+    const content = `<div class="workspace"><h1>Synthetic compact catalog</h1><p>Render fixture only. No live records or checks.</p><div class="tableScroll"><table class="table"><thead><tr>${['', 'Provider / salon', 'Booking platform', 'IG / website', 'City / State / ZIP', 'License'].map((name, i) => `<th class="${[3, 5].includes(i) ? 'centerCell' : ''}">${name}</th>`).join('')}</tr></thead><tbody>${rows.map(value => markup(CatalogResultRow, { row: value, selected: false, onToggle() {}, onOpen() {} })).join('')}</tbody></table></div><div style="margin-top:24px">${markup(DoraEvidence, { dora, catalogId: rich.id, admin: true })}</div></div>`;
     const candidates = [...new Set([...content.matchAll(/class="([^"]+)"/g)].flatMap(m => m[1].split(/\s+/)))];
     const { compile } = require('@tailwindcss/node');
     const compiler = await compile('@import "tailwindcss";', { base: root, onDependency() {} });

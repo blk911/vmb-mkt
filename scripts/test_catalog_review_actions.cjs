@@ -107,7 +107,7 @@ test('server capability, not the route prop, unlocks all detail actions', async 
 });
 test('new record navigation fails closed and rejects late evidence from the previous record', async () => {
   const gates = [deferred(), deferred()]; let calls = 0;
-  const first = row(), newer = row({ id: 'provider:adminPipelineParsedCandidates:newer', displayName: 'Newer Synthetic' });
+  const first = row(), newer = row({ id: 'provider:adminPipelineParsedCandidates:newer', displayName: 'Newer Synthetic', providerName: 'Newer Synthetic' });
   const instance = harness(detailFile, { record: first, onClose() {}, admin: true }, { fetch: () => gates[calls++].promise });
   instance.render({ record: newer, onClose() {}, admin: true });
   assert.equal(child(instance.tree, 'DoraEvidence').props.admin, false);
