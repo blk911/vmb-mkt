@@ -23,7 +23,7 @@ function loader(overrides = {}, globals = {}) {
     const source = compiled.get(file);
     vm.runInNewContext(source, {
       module, exports: module.exports, URL, URLSearchParams, Date, AbortController, Request, Response, Headers,
-      Buffer, TextDecoder, TextEncoder, setTimeout, clearTimeout, queueMicrotask, console, fetch: forbidden, ...globals,
+      Buffer, TextDecoder, TextEncoder, setTimeout, clearTimeout, queueMicrotask, console, requestAnimationFrame: fn => fn(), document: { getElementById: () => null }, fetch: forbidden, ...globals,
       require(id) {
         if (Object.hasOwn(overrides, id)) return overrides[id];
         if (['react', 'react/jsx-runtime', 'node:crypto', 'next/server'].includes(id)) return require(id);
@@ -318,9 +318,9 @@ test('popstate restores URL state, including default sort when omitted', async (
   const { instance, client } = await workspace();
   client.history.pushState(client.history.state, '', '/dashboard/targets?q=Synthetic&sort=provider&direction=desc');
   client.window.dispatchEvent({ type: 'popstate' }); instance.render();
-  assert.equal(control(instance.tree, 'Search prospects').props.value, 'Synthetic'); assert(button(instance.tree, 'Provider ↓'));
+  assert.equal(control(instance.tree, 'Search prospects').props.value, 'Synthetic'); assert.equal(new URL(client.location.href).searchParams.get('sort'), 'provider'); assert.equal(new URL(client.location.href).searchParams.get('direction'), 'desc');
   client.history.pushState(client.history.state, '', '/dashboard/targets'); client.window.dispatchEvent({ type: 'popstate' }); instance.render();
-  assert.equal(control(instance.tree, 'Search prospects').props.value, ''); assert(button(instance.tree, 'Platform ↑'));
+  assert.equal(control(instance.tree, 'Search prospects').props.value, ''); assert(button(instance.tree, 'Booking platform ↑'));
   instance.unmount();
 });
 
@@ -339,6 +339,38 @@ test('drawer action capability comes from API result and fails closed when absen
 
 const detailFile = 'src/components/catalog/CatalogDetail.tsx';
 const safeReviewRow = (id = 'alpha') => row(id, { reviewKey: `synthetic-intake::synthetic-${id}`, sourceIdentifiers: { intakeId: 'synthetic-intake', candidateId: `synthetic-${id}` }, reviewLanes: [{ lane: 'DORA', queueItemId: `synthetic-${id}-queue`, status: 'queued', actionable: true }], profile: profile('booksy') });
+
+test('quick profile has one collapsed evidence section and no duplicate dashboard fields', async () => {
+  const record = safeReviewRow('Quick');
+  Object.assign(record, { businessName: 'Synthetic Studio', city: 'Synthetic City', state: 'CO', postalCode: '00000' });
+  let selections = 0;
+  const gate = deferred();
+  const instance = harness(detailFile, { record, onClose() {}, onSelectForList() { selections++; } }, { fetch: () => gate.promise });
+  const folds = elements(instance.tree, node => node.type === 'details');
+  assert.equal(folds.length, 1); assert(!folds[0].props.open);
+  assert.match(textOf(folds[0].props.children[0]), /Evidence & review/);
+  assert.equal(child(instance.tree, 'DoraEvidence').props.compact, true);
+  assert(!child(instance.tree, 'ProfileSummaryCard'));
+  assert.equal((textOf(instance.tree).match(/Quick Synthetic/g) || []).length, 1);
+  assert.equal((textOf(instance.tree).match(/Synthetic Studio/g) || []).length, 1);
+  assert.equal(button(instance.tree, 'Add to list…').props.disabled, true);
+  gate.resolve(response({ record, viewer: { canReview: true } })); await settle(instance);
+  click(instance, 'Add to list…'); assert.equal(selections, 1);
+  assert(child(folds[0], 'CatalogEvidenceDetails'));
+  instance.unmount();
+});
+
+test('profile list action adds explicit selection without mutating membership or clearing filters', async () => {
+  const { instance, client, api } = await workspace({ href: 'https://synthetic.invalid/admin/prospects?q=Synthetic' });
+  rowsIn(instance.tree)[0].props.onOpen(); instance.render();
+  const href = client.location.href;
+  child(instance.tree, 'CatalogDetail').props.onSelectForList(); instance.render();
+  assert(!child(instance.tree, 'CatalogDetail'));
+  assert.equal(rowsIn(instance.tree)[0].props.selected, true);
+  assert.equal(client.location.href, href); assert.equal(api.posts.length, 0);
+  assert(elements(instance.tree, node => node.props?.id === 'catalog-selection-actions').length);
+  instance.unmount();
+});
 
 test('drawer actions require fresh authenticated detail capability, ignoring route hints', async () => {
   for (const viewer of [undefined, { canReview: false }, { canReview: true }]) {

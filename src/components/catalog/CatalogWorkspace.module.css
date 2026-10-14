@@ -62,8 +62,8 @@
 .saveControls > .field { flex: 1; min-width: 180px; max-width: 350px; }
 .selectionActions > .field { min-width: 180px; }
 .tableToolbar { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin: 20px 0 10px; font-size: 12px; flex-wrap: wrap; }
-.tableScroll { width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 11px; background: white; }
-.table { width: max-content; min-width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+.tableScroll { width: fit-content; max-width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 11px; background: white; }
+.table { width: max-content; min-width: 0; border-collapse: collapse; text-align: left; font-size: 12px; }
 .table th { padding: 7px 8px; background: #f5f7fa; border-bottom: 1px solid var(--line); white-space: nowrap; color: #52617a; font-size: 11px; }
 .table th button { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 0; font: inherit; font-weight: 700; cursor: pointer; }
 .table td { padding: 7px 8px; border-bottom: 1px solid #e8edf3; vertical-align: middle; white-space: nowrap; }
@@ -124,3 +124,31 @@ small.muted { display: block; font-size: 10px; }
 .stats strong { font-size: 22px; }
 .header { padding: 12px 0; }
 @media (max-width: 600px) { .contextFilters { grid-template-columns: 1fr; } }
+
+/* A profile is a quick review, with secondary evidence folded away. */
+.dialog { width: min(680px, calc(100vw - 32px)); background: white; }
+.detailHeader { padding: 16px 18px 12px; gap: 12px; }
+.detailHeader h2 { font-size: 21px; overflow-wrap: anywhere; }
+.detailBody { padding: 12px 18px 18px; gap: 12px; }
+.detailBody p { margin: 0; }
+.recordKind { display: block; font-size: 10px; color: #657187; margin-bottom: 2px; }
+.detailHeader .salonName { font-size: 13px; color: #263955; }
+.quickLinks { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; font-size: 13px; }
+.profileActions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.profileActions .muted { font-size: 11px; }
+.advancedEvidence { border-top: 1px solid #dfe5ed; padding-top: 10px; }
+.advancedEvidence > summary { cursor: pointer; color: #52617a; font-size: 12px; font-weight: 600; }
+.advancedActions { margin-top: 12px; }
+.evidenceBody { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }
+.evidenceBody > section { min-width: 0; }
+.evidenceBody h3 { font-size: 13px; }
+.evidenceMetadata { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; font-size: 11px; margin: 0; }
+.evidenceMetadata dt { color: #657187; }
+.evidenceMetadata dd { margin: 0; overflow-wrap: anywhere; }
+.sourceGroup { margin-top: 10px; font-size: 12px; }
+.sourceGroup h4 { font-size: 11px; font-weight: 650; margin: 0 0 5px; color: #52617a; }
+.evidenceBody .evidenceList { margin-top: 5px; }
+.evidenceBody .evidenceList li { padding: 7px 0; gap: 2px; }
+@media (max-width: 600px) { .dialog { width: calc(100vw - 16px); } .detailHeader, .detailBody { padding: 12px; } .evidenceMetadata { grid-template-columns: 1fr; } }
+
+.dialog section[aria-label="DORA cross-reference"] h2 { font-size: 13px; letter-spacing: 0; }

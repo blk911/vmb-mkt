@@ -28,7 +28,7 @@
     "test:catalog": "node scripts/test_shared_catalog.cjs && node scripts/test_shared_target_lists.cjs && node scripts/test_source_intake_auth.cjs",
     "typecheck:catalog": "tsc --project tsconfig.catalog.json --noEmit",
     "test:fact-recovery": "node scripts/test_fact_recovery.cjs && node scripts/test_catalog_fact_sources.cjs && node scripts/test_intake_fact_refresh.cjs && node scripts/test_fact_recovery_adversarial.cjs",
-    "test:compact-dora": "node scripts/test_compact_catalog_ui.cjs && node scripts/test_compact_dora_adversarial.cjs",
+    "test:compact-dora": "node scripts/test_compact_catalog_ui.cjs && node scripts/test_dora_license_marks.cjs && node scripts/test_compact_dora_adversarial.cjs",
     "test:workspace": "node scripts/test_workspace_navigation.cjs && node scripts/test_catalog_mapping.cjs && node scripts/test_catalog_review_actions.cjs && node scripts/test_unified_workspace.cjs"
   },
   "dependencies": {
