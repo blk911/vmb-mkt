@@ -16,7 +16,7 @@ type SessionPayloadLike = {
 
 export const PUBLIC_ROUTES = ["/", "/marketing", "/marketing-decks", "/access/request"];
 export const MEMBER_ROUTES = ["/admin/markets", "/dashboard", "/team", "/api/targets", "/api/derived", "/api/dashboard", "/api/integrations"];
-export const ADMIN_ROUTES = ["/admin", "/api/admin"];
+export const ADMIN_ROUTES = ["/admin", "/api/admin", "/api/source-intake"];
 export const AUTH_ROUTES = ["/auth", "/api/auth"];
 
 function routeMatches(pathname: string, prefix: string) {

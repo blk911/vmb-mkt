@@ -5,16 +5,23 @@ import {
   getSessionUserFromToken,
   isAdminRoute,
   isAuthRoute,
+  isMemberRoute,
   isPublicRoute,
 } from "@/lib/auth/access";
 import { getSessionSecret } from "@/lib/auth/config";
 import { SESSION_COOKIE } from "@/lib/auth/session";
+
+const AUTH_FAILURE_HEADERS = { "Cache-Control": "private, no-store, max-age=0", Vary: "Cookie" };
 
 function isApiPath(pathname: string) {
   return pathname.startsWith("/api/");
 }
 
 function isIgnoredPath(pathname: string) {
+  // Dynamic record IDs may resemble filenames. Protected routes must still
+  // authenticate before the public-asset extension exemption is considered.
+  if (isAdminRoute(pathname) || isMemberRoute(pathname)) return false;
+
   return (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/static") ||
@@ -58,7 +65,7 @@ export async function middleware(req: NextRequest) {
 
   const sessionSecret = getSessionSecret();
   if (!sessionSecret) {
-    return new NextResponse("Admin session auth is not configured.", { status: 503 });
+    return new NextResponse("Admin session auth is not configured.", { status: 503, headers: AUTH_FAILURE_HEADERS });
   }
 
   const token = req.cookies.get(SESSION_COOKIE)?.value || "";
@@ -69,7 +76,7 @@ export async function middleware(req: NextRequest) {
       const status = sessionUser && isAdminRoute(pathname) && !canAccessAdmin(sessionUser) ? 403 : 401;
       return NextResponse.json(
         { ok: false, error: status === 403 ? "forbidden" : "unauthorized" },
-        { status }
+        { status, headers: AUTH_FAILURE_HEADERS }
       );
     }
 
@@ -84,7 +91,7 @@ export async function middleware(req: NextRequest) {
       loginUrl.pathname = "/auth/login";
       loginUrl.searchParams.set("next", pathname);
     }
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(loginUrl, { headers: AUTH_FAILURE_HEADERS });
   }
 
   return NextResponse.next();
