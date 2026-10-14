@@ -6,6 +6,7 @@ import { adminDb } from "@/lib/admin/firestoreAdmin";
 import { getRuntimeDataRoot } from "@/lib/runtime/runtime-data-root";
 import type { ParsedCandidateRow } from "@/lib/source-intake/types";
 import type { ProfileRefinementRecord } from "./profile-types";
+import { usesFirestoreCanonicalPipelineStore } from "./canonical-store-config";
 
 const HEADS = "adminPipelineProfileRefinements";
 const RUNS = "adminPipelineProfileRefinementRuns";
@@ -26,14 +27,7 @@ export function fingerprintCandidate(candidate: ParsedCandidateRow): string {
   return digest(JSON.stringify(keys.map((key) => [key, c[key] ?? null])));
 }
 
-function usesFirestore(): boolean {
-  const mode = process.env.VMB_CANONICAL_PIPELINE_STORE?.trim() || "file";
-  if (mode !== "file" && mode !== "firestore") throw new Error("profile_store_unavailable");
-  if (mode === "firestore" && !["FIREBASE_PROJECT_ID", "FIREBASE_CLIENT_EMAIL", "FIREBASE_PRIVATE_KEY"].every((key) => !!process.env[key])) {
-    throw new Error("profile_store_unavailable");
-  }
-  return mode === "firestore";
-}
+function usesFirestore(): boolean { return usesFirestoreCanonicalPipelineStore(); }
 
 function location(reviewKey: string) {
   const id = digest(reviewKey);

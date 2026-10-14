@@ -1,49 +1,27 @@
 import { NextResponse } from "next/server";
-import { listTargetLists, readTargetList } from "@/app/admin/_lib/targets/store";
+import { loadTargetWorkflowLists } from "@/app/admin/_lib/targets/workflowLists";
+import { TargetListStoreError } from "@/app/admin/_lib/targets/store";
 import { listAccessRequests } from "@/lib/access/requestAccessStore";
 import { buildHighLevelHandoffPreview, summarizeWorkflowLists } from "@/lib/ops/targetWorkflow";
+import { canAccessMemberArea, getSessionUserFromCookieHeader } from "@/lib/auth/access";
 
-async function getDashboardLists() {
-  const index = await listTargetLists();
-  const techIds = index.lists
-    .filter((list) => list.scope === "tech")
-    .sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""))
-    .map((list) => list.id);
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+const headers = { "Cache-Control": "private, no-store", Vary: "Cookie" };
 
-  const lists = (
-    await Promise.all(
-      techIds.map(async (id) => {
-        const list = await readTargetList(id);
-        if (!list || list.scope !== "tech") return null;
-        return {
-          id: list.id,
-          name: list.name,
-          updatedAt: list.updatedAt,
-          techIds: list.items.filter((item) => item.kind === "tech").map((item) => item.refId),
-          workflow: list.workflow,
-          activity: list.activity,
-        };
-      })
-    )
-  ).filter(Boolean);
-
-  return lists;
-}
-
-export async function GET() {
-  const [lists, accessRequests] = await Promise.all([getDashboardLists(), listAccessRequests()]);
-  return NextResponse.json(
-    {
-      ok: true,
-      generatedAt: new Date().toISOString(),
-      summary: summarizeWorkflowLists(lists),
-      highLevelPreview: buildHighLevelHandoffPreview(lists),
-      accessRequests: {
-        total: accessRequests.requests.length,
-        pending: accessRequests.requests.filter((request) => request.status === "pending").length,
-      },
-      lists,
-    },
-    { status: 200 }
-  );
+export async function GET(req: Request) {
+  const user = await getSessionUserFromCookieHeader(req.headers.get("cookie") || "");
+  if (!canAccessMemberArea(user)) return NextResponse.json({ ok: false, error: user ? "forbidden" : "unauthorized" }, { status: user ? 403 : 401, headers });
+  try {
+    const [shared, accessRequests] = await Promise.all([loadTargetWorkflowLists(), listAccessRequests()]);
+    return NextResponse.json({
+      ok: true, generatedAt: shared.generatedAt,
+      summary: summarizeWorkflowLists(shared.lists),
+      highLevelPreview: buildHighLevelHandoffPreview(shared.lists),
+      accessRequests: { total: accessRequests.requests.length, pending: accessRequests.requests.filter((request) => request.status === "pending").length },
+      lists: shared.lists, coverage: shared.coverage, catalogCoverage: shared.catalogCoverage,
+    }, { headers });
+  } catch (error) {
+    return NextResponse.json({ ok: false, error: error instanceof TargetListStoreError ? error.code : "ops_report_unavailable" }, { status: error instanceof TargetListStoreError ? error.status : 503, headers });
+  }
 }

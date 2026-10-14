@@ -1,0 +1,33 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "types": [
+      "node",
+      "react",
+      "react-dom",
+      "next"
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    "src/lib/catalog/**/*.ts",
+    "src/components/catalog/**/*.ts",
+    "src/components/catalog/**/*.tsx",
+    "src/app/api/catalog/**/*.ts",
+    "src/app/api/targets/**/*.ts",
+    "src/app/admin/_lib/targets/**/*.ts",
+    "src/app/admin/target/page.tsx",
+    "src/app/admin/activate/page.tsx",
+    "src/app/dashboard/data/page.tsx",
+    "src/app/dashboard/lists/page.tsx",
+    "src/app/dashboard/targets/**/*.tsx",
+    "src/lib/admin/operator-adapter.ts",
+    "src/app/api/dashboard/ops-report/route.ts",
+    "src/app/api/integrations/highlevel/preview/route.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next"
+  ]
+}

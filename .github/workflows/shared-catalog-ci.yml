@@ -1,0 +1,26 @@
+name: Shared catalog checks
+on:
+  push:
+    branches: [main, shared-catalog-durable-lists]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  catalog-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run test:catalog
+      - run: npm run typecheck:catalog
+      - name: Lint shared catalog and list surfaces
+        run: npx eslint src/lib/catalog src/components/catalog src/app/api/catalog src/app/api/targets src/app/admin/_lib/targets src/lib/auth/access.ts src/lib/admin/operator-adapter.ts src/lib/admin/pipeline/canonical-store-config.ts src/lib/admin/pipeline/profile-store.ts src/lib/ops/targetWorkflow.ts src/app/api/dashboard/ops-report/route.ts src/app/api/integrations/highlevel/preview/route.ts
+      - run: npm run build
