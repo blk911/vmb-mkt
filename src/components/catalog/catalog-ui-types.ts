@@ -2,6 +2,9 @@ import type { TargetWorkflow } from "@/lib/ops/targetWorkflow";
 export type { CatalogRecord } from "@/lib/catalog/types";
 export type CatalogFilters = {
   q: string;
+  market: string;
+  vertical: string;
+  needsReview: "yes" | "no" | "all";
   platform: string;
   entityType: string;
   service: string;
@@ -14,7 +17,7 @@ export type CatalogFilters = {
 };
 
 export const EMPTY_FILTERS: CatalogFilters = {
-  q: "", platform: "", entityType: "", service: "", area: "", city: "", postalCode: "", reviewStatus: "", hasBooking: "all", hasSocial: "all",
+  q: "", market: "", vertical: "", needsReview: "all", platform: "", entityType: "", service: "", area: "", city: "", postalCode: "", reviewStatus: "", hasBooking: "all", hasSocial: "all",
 };
 
 export type CatalogList = {

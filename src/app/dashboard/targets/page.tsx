@@ -1,8 +1,11 @@
 import TargetsClient from "./TargetsClient";
+import { redirectAdminWorkspaceAlias } from "../_lib/workspaceAlias";
+import { catalogAliasDestination, type WorkspaceSearchParams } from "@/lib/admin/workspace-nav";
 
-export const metadata = { title: "Targets · Shared catalog" };
+export const metadata = { title: "Prospects · Shared catalog" };
 
-export default async function TargetsPage({ searchParams }: { searchParams?: Promise<{ listId?: string }> }) {
+export default async function TargetsPage({ searchParams }: { searchParams?: Promise<WorkspaceSearchParams> }) {
   const params = await searchParams;
-  return <TargetsClient initialListId={params?.listId} />;
+  await redirectAdminWorkspaceAlias(catalogAliasDestination(params), params);
+  return <TargetsClient initialListId={typeof params?.listId === "string" ? params.listId : undefined} />;
 }

@@ -2,6 +2,15 @@ import type { DoraCrossReference, DoraLicenseClaim } from "@/lib/dora/types";
 import type { CandidateProfile } from "@/lib/admin/pipeline/profile-types";
 
 export type CatalogSourceRef = { collection: string; id: string; role: "source" | "review" | "profile" | "place" };
+export type CatalogVertical = "Nail" | "Hair" | "Skin" | "Lash" | "Brow" | "Makeup" | "Massage" | "Waxing" | "Barber" | "Other";
+export type CatalogMappingEvidence = {
+  value: string; sourceRef: CatalogSourceRef; sourceField: string;
+  basis: "explicit_source_field" | "attributed_fact"; sourceUrl?: string;
+};
+export type CatalogFieldMapping = {
+  status: "source_reported" | "unknown" | "conflict";
+  evidence: CatalogMappingEvidence[]; reason?: string;
+};
 export type CatalogLink = { id: string; entityType: "provider" | "business" | "place" | "evidence"; label: string; relationship: string; basis: "source_reported" | "reviewed" | "exact_source_id" };
 export type CatalogDecision = { id: string; lane: string; status: string; reviewedAt?: string; reviewedBy?: string; targetId?: string; suggestedTargetId?: string };
 export type CatalogFactClaim = {
@@ -20,6 +29,12 @@ export type CatalogRecord = {
   providerName: string;
   businessName: string;
   platformLabel: string;
+  /** Read-time source mappings; no geographic inference or identity matching. */
+  market?: string;
+  marketId?: string;
+  vertical?: CatalogVertical | "Multiple" | "Unknown";
+  verticals?: CatalogVertical[];
+  mapping?: { market: CatalogFieldMapping; vertical: CatalogFieldMapping };
   profile?: CandidateProfile;
   city: string;
   state: string;
@@ -31,6 +46,7 @@ export type CatalogRecord = {
   sourceRefs: CatalogSourceRef[];
   linkedEntities: CatalogLink[];
   reviewDecisions: CatalogDecision[];
+  reviewLanes?: Array<{ lane: "DORA" | "SOCIAL"; queueItemId: string; status: string; actionable?: boolean }>;
   conflicts: string[];
   evidence: Array<{ id: string; sourceUrl?: string; observedAt?: string; kind: string; label: string }>;
   factClaims?: CatalogFactClaim[];
@@ -41,8 +57,9 @@ export type CatalogRecord = {
   address?: { street?: string; city?: string; state?: string; zip?: string };
 };
 export type CatalogFilters = {
-  q?: string; platform?: string; entityType?: string; city?: string; postalCode?: string;
+  q?: string; market?: string; vertical?: string; platform?: string; entityType?: string; city?: string; postalCode?: string;
   area?: string; service?: string; reviewStatus?: string;
+  needsReview?: "yes" | "no" | "all";
   hasBooking?: "yes" | "no" | "all"; hasSocial?: "yes" | "no" | "all";
   sort?: string; direction?: "asc" | "desc";
 };

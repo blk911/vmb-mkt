@@ -8,6 +8,6 @@ export default function ActivatePage() {
       <p className="mt-2 text-sm">Shared lists are ready for selection and follow-up planning. No messages or campaigns are sent from this app, and saving a list does not create campaign recipients.</p>
       <p className="mt-2 text-sm">Use a fixed list to preserve an explicit selection. Saved-filter lists update as catalog records change. Existing outreach queue records remain preserved; they have not been converted into a sent campaign.</p>
     </div>
-    <Link className="inline-block rounded bg-black px-4 py-2 text-white" href="/dashboard/lists">Open shared lists</Link>
+    <Link className="inline-block rounded bg-black px-4 py-2 text-white" href="/admin/lists">Open My lists</Link>
   </div>;
 }

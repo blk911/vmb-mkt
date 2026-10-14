@@ -1,9 +1,9 @@
-import CatalogWorkspace from "@/components/catalog/CatalogWorkspace";
+import { redirect } from "next/navigation";
+import { catalogAliasDestination, workspaceHref, type WorkspaceSearchParams } from "@/lib/admin/workspace-nav";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Target · Shared catalog" };
 
-export default async function TargetPage({ searchParams }: { searchParams?: Promise<{ listId?: string }> }) {
+export default async function TargetPage({ searchParams }: { searchParams?: Promise<WorkspaceSearchParams> }) {
   const params = await searchParams;
-  return <CatalogWorkspace title="Target" initialListId={params?.listId} admin />;
+  redirect(workspaceHref(catalogAliasDestination(params), params));
 }

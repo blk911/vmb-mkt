@@ -79,8 +79,8 @@ export async function runProfilePass(
   }
 }
 
-export default function ProfileRefinementControls({ rows, scope, checkedAt, automatic = true, onComplete }: {
-  rows: RefinementQueueItem[]; scope: string; checkedAt: string; automatic?: boolean; onComplete?: () => void;
+export default function ProfileRefinementControls({ rows, scope, checkedAt, automatic = true, onComplete, buttonLabel }: {
+  rows: RefinementQueueItem[]; scope: string; checkedAt: string; automatic?: boolean; onComplete?: () => void; buttonLabel?: string;
 }) {
   const router = useRouter();
   const active = useRef<AbortController | null>(null);
@@ -176,7 +176,7 @@ export default function ProfileRefinementControls({ rows, scope, checkedAt, auto
         <p className="mt-1 text-xs text-blue-900">Saved source facts appear immediately. Checks add derived observations; approval, rejection, merged records and original evidence stay unchanged.</p>
       </div>
       <div className="flex flex-wrap gap-2">
-        <button type="button" disabled={progress.running || !eligible.length} onClick={() => void run()} className="rounded bg-blue-700 px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50">{progress.running ? "Checking…" : `Check next ${Math.min(PROFILE_PASS_LIMIT, eligible.length) || PROFILE_PASS_LIMIT}`}</button>
+        <button type="button" disabled={progress.running || !eligible.length} onClick={() => void run()} className="rounded bg-blue-700 px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50">{progress.running ? "Checking…" : buttonLabel || `Check next ${Math.min(PROFILE_PASS_LIMIT, eligible.length) || PROFILE_PASS_LIMIT}`}</button>
         {failedKeys.length ? <button type="button" disabled={progress.running} onClick={() => void run(failedKeys)} className="rounded border border-blue-700 bg-white px-3 py-2 text-sm text-blue-900 disabled:opacity-50">Retry {failedKeys.length} failed</button> : null}
         {!failedKeys.length && !progress.running && previousAttempts.length ? <button type="button" onClick={() => void run(previousAttempts)} className="rounded border border-blue-700 bg-white px-3 py-2 text-sm text-blue-900">Retry {previousAttempts.length} previously attempted</button> : null}
       </div>

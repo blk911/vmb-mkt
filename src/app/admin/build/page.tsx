@@ -1,7 +1,6 @@
-import BuildPageClient from "@/components/admin/pipeline/BuildPageClient";
+import { redirect } from "next/navigation";
+import { workspaceHref, type WorkspaceSearchParams } from "@/lib/admin/workspace-nav";
 
-export const dynamic = "force-dynamic";
-
-export default function BuildPage() {
-  return <BuildPageClient />;
+export default async function BuildPage({ searchParams }: { searchParams?: Promise<WorkspaceSearchParams> }) {
+  redirect(workspaceHref("/admin/sources/import", await searchParams));
 }
