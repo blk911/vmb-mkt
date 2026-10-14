@@ -49,6 +49,7 @@ assert.equal(JSON.stringify(sources), before, 'projection is non-mutating');
 sources.adminPipelineParsedCandidates[0].data.displayName = 'Updated Provider';
 assert.equal(row(sources).id, 'provider:adminPipelineParsedCandidates:candidate-doc-1');
 assert.equal(row(sources).providerName, 'Updated Provider', 'source edits visible without a second store copy');
+const linked = fixture(); const businessIdentity = row(linked).linkedEntities.find(link => link.entityType === 'business').id; linked.adminPipelineParsedCandidates[0].data.businessId = 'new-observed-platform-id'; assert.equal(row(linked).linkedEntities.find(link => link.entityType === 'business').id, businessIdentity, 'source business identity stays stable when more identifiers are recovered');
 const emptyCity = fixture(); delete emptyCity.adminPipelineParsedCandidates[0].data.city;
 assert.equal(row(emptyCity).city, '', 'never borrow intake-wide city');
 const review = fixture();
