@@ -24,7 +24,14 @@
     "src/app/dashboard/targets/**/*.tsx",
     "src/lib/admin/operator-adapter.ts",
     "src/app/api/dashboard/ops-report/route.ts",
-    "src/app/api/integrations/highlevel/preview/route.ts"
+    "src/app/api/integrations/highlevel/preview/route.ts",
+    "src/lib/admin/pipeline/profile-*.ts",
+    "src/lib/admin/pipeline/validation.ts",
+    "src/lib/admin/pipeline/validation-sort.ts",
+    "src/lib/admin/pipeline/build-queue.ts",
+    "src/components/admin/pipeline/**/*.tsx",
+    "src/app/admin/validate/page.tsx",
+    "src/lib/hashtag-paste-intake/**/*.ts"
   ],
   "exclude": [
     "node_modules",

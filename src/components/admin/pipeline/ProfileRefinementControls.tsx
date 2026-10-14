@@ -8,7 +8,7 @@ import type { RefinementQueueItem } from "@/lib/admin/pipeline/profile-presentat
 export const PROFILE_PASS_LIMIT = 20;
 export const PROFILE_BATCH_LIMIT = 3;
 const DAY_MS = 24 * 60 * 60 * 1000;
-const SESSION_KEY = "profile-refinement:v1";
+const SESSION_KEY = "profile-refinement:fact-recovery-v2";
 type ResultStatus = "completed" | "cached" | "busy" | "skipped" | "error";
 export type RefinementResult = { reviewKey: string; status: ResultStatus; profile?: CandidateProfile; error?: string };
 type Ledger = { scopes: Record<string, number>; attempts: Record<string, number> };
@@ -79,8 +79,8 @@ export async function runProfilePass(
   }
 }
 
-export default function ProfileRefinementControls({ rows, scope, checkedAt, automatic = true }: {
-  rows: RefinementQueueItem[]; scope: string; checkedAt: string; automatic?: boolean;
+export default function ProfileRefinementControls({ rows, scope, checkedAt, automatic = true, onComplete }: {
+  rows: RefinementQueueItem[]; scope: string; checkedAt: string; automatic?: boolean; onComplete?: () => void;
 }) {
   const router = useRouter();
   const active = useRef<AbortController | null>(null);
@@ -128,11 +128,11 @@ export default function ProfileRefinementControls({ rows, scope, checkedAt, auto
           setFailedKeys([...new Set([...results.filter((result) => result.status === "error").map((result) => result.reviewKey), ...(failure ? attempted.filter((key) => !results.some((result) => result.reviewKey === key)) : [])])]);
           setClock(Date.now());
           // One refresh for the entire pass, never one per result or per render.
-          if (processed > 0) router.refresh();
+          if (processed > 0) { router.refresh(); onComplete?.(); }
         }
       }
     }
-  }, [rows, router]);
+  }, [rows, router, onComplete]);
 
   useEffect(() => {
     // Deferring the claim makes the Strict Mode setup/cleanup/setup cycle harmless.
@@ -173,7 +173,7 @@ export default function ProfileRefinementControls({ rows, scope, checkedAt, auto
       <div>
         <h2 className="font-semibold text-blue-950">Profile checks</h2>
         <p className="mt-1 text-sm text-blue-900">{automatic ? "One automatic pass when this queue opens, guarded against repeat checks for 24 hours. " : "Check the exact source links for this row. "}Up to 20 rows per pass, 3 per request.</p>
-        <p className="mt-1 text-xs text-blue-900">Saved source facts appear immediately. Checks add derived observations; manual decisions and original evidence are preserved.</p>
+        <p className="mt-1 text-xs text-blue-900">Saved source facts appear immediately. Checks add derived observations; approval, rejection, merged records and original evidence stay unchanged.</p>
       </div>
       <div className="flex flex-wrap gap-2">
         <button type="button" disabled={progress.running || !eligible.length} onClick={() => void run()} className="rounded bg-blue-700 px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50">{progress.running ? "Checking…" : `Check next ${Math.min(PROFILE_PASS_LIMIT, eligible.length) || PROFILE_PASS_LIMIT}`}</button>
@@ -183,7 +183,7 @@ export default function ProfileRefinementControls({ rows, scope, checkedAt, auto
     </div>
     <div className="mt-3 text-sm text-blue-950" role="status" aria-live="polite">
       {progress.total ? <p>{progress.running ? "Checking" : progress.error ? "Stopped" : "Pass finished"}: {progress.processed}/{progress.total} rows processed. Budget: {PROFILE_PASS_LIMIT} rows maximum.</p> : null}
-      <p>{eligible.length} eligible and unattempted in this session. {Math.max(0, due - eligible.length)} already attempted. {rows.length - due} waiting for cache expiry, resolved, or missing an exact link.</p>
+      <p>{eligible.length} eligible and unattempted in this session. {Math.max(0, due - eligible.length)} already attempted. {rows.length - due} waiting for cache expiry or without a supported public link.</p>
       {progress.results.length ? <p>{Object.entries(counts).map(([status, count]) => `${count} ${status}`).join(" · ")}</p> : null}
       {!eligible.length ? <p className="mt-1 text-xs">No further automatic checks are queued. Unknown or protected sources remain unresolved.</p> : null}
     </div>

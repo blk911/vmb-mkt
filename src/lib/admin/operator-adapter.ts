@@ -1,4 +1,4 @@
-import { safeProfileHref } from "@/lib/admin/pipeline/profile-presentation";
+import { candidateInstagramUrl } from "@/lib/admin/pipeline/profile-model";
 import { loadSharedCatalog } from "@/lib/catalog/store";
 
 export type CanonicalOperator = {
@@ -20,7 +20,7 @@ export async function listCanonicalOperators(): Promise<CanonicalOperator[]> {
     id: row.id,
     name: row.providerName || row.displayName,
     city: row.city || "Unknown",
-    ig: row.profile?.socialLinks.find((link) => safeProfileHref(link.url) && /(^|\.)instagram\.com$/.test(new URL(link.url).hostname))?.url,
+    ig: row.profile?.socialLinks.flatMap((link) => link.attribution === "candidate" ? [candidateInstagramUrl(link.url)].filter((url): url is string => Boolean(url)) : [])[0],
     status: "approved" as const,
     // Approval and retrieval are separate. No invented ranking or confidence.
     score: 0,

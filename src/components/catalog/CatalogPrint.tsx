@@ -1,5 +1,7 @@
 "use client";
 
+import { profilePlatformLabel, profileMissingLinkLabel } from "@/lib/admin/pipeline/profile-presentation";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ProfileLinks } from "@/components/admin/pipeline/ProfileEvidence";
@@ -28,7 +30,7 @@ export default function CatalogPrint({ listId }: { listId: string }) {
       {result.list.unresolvedLegacyItems?.length ? <p className="mt-3 text-sm text-amber-800">{result.list.unresolvedLegacyItems.length} unresolved legacy references are preserved. Use CSV export to inspect those references.</p> : null}
       {result.missing ? <p className="mt-3 text-sm text-amber-800">{result.missing} saved members are unavailable in the current catalog snapshot. Their membership is preserved.</p> : null}
       {result.list.notes ? <p className="my-4 whitespace-pre-wrap text-sm">{result.list.notes}</p> : null}
-      {result.rows.map((row) => <section key={row.id} className="break-inside-avoid border-b border-slate-200 py-5"><h2 className="font-semibold">{row.platformLabel} · {row.displayName}</h2><p className="text-xs text-slate-600">{row.entityType === "business" ? "Business / location · Not a person" : "Provider record"} · {readable(row.reviewStatus)}</p><p className="mt-2 text-sm">{[row.businessName, row.city, row.state, row.postalCode, row.area].filter(Boolean).join(" · ")}</p><p className="text-sm">Services: {row.services.join(", ") || "Unknown"}</p><div className="mt-2 text-sm"><ProfileLinks links={row.profile?.bookingLinks || []} empty="No exact profile link found" /></div><div className="mt-2 text-sm"><ProfileLinks links={row.profile?.socialLinks || []} empty="No social link found" /></div></section>)}
+      {result.rows.map((row) => <section key={row.id} className="break-inside-avoid border-b border-slate-200 py-5"><h2 className="font-semibold">{profilePlatformLabel(row.profile)} · {row.displayName}</h2><p className="text-xs text-slate-600">{row.entityType === "business" ? "Business / location · Not a person" : "Provider record"} · {readable(row.reviewStatus)}</p><p className="mt-2 text-sm">{[row.businessName, row.city, row.state, row.postalCode, row.area].filter(Boolean).join(" · ")}</p><p className="text-sm">Services: {row.services.join(", ") || "Unknown"}</p><div className="mt-2 text-sm"><ProfileLinks links={row.profile?.bookingLinks || []} empty={profileMissingLinkLabel(row.profile)} /></div><div className="mt-2 text-sm"><ProfileLinks links={row.profile?.socialLinks || []} empty={profileMissingLinkLabel(row.profile, "social")} /></div></section>)}
       {!result.rows.length ? <p className="py-8 text-slate-600">This list has no current catalog records.</p> : null}
     </>}
   </div>;

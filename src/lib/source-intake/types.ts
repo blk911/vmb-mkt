@@ -49,6 +49,15 @@ export type SourceIntakeRecord = {
   };
 };
 
+export type SourceEvidenceLink = {
+  url: string;
+  sourceUrl?: string;
+  sourcePostId?: string;
+  attribution: "provider" | "business" | "unknown";
+  evidenceType: "owned_profile" | "owned_post" | "client_post" | "mention";
+  excerpt?: string;
+};
+
 export type ParsedCandidateRow = {
   id: string;
   intakeId: string;
@@ -60,6 +69,8 @@ export type ParsedCandidateRow = {
   sourceContextUrl?: string;
   bookingUrl?: string;
   websiteUrl?: string;
+  /** Complete attributed source links; singular URLs remain compatibility fields. */
+  sourceEvidenceLinks?: SourceEvidenceLink[];
   businessName?: string;
   city?: string;
   state?: string;
@@ -143,6 +154,12 @@ export type OperatorEvidenceFactType =
   | "tiktok_handle";
 
 export type StagedOperatorEvidence = {
+  /** Source claims only. Manual approval and confidence do not establish identity. */
+  attribution?: "candidate" | "business" | "unresolved";
+  sourceReasons?: string[];
+  sourceRef?: string;
+  sourceField?: string;
+  basis?: "submitted" | "directory_card" | "linked_page";
   id: string;
   intakeId: string;
   candidateId: string;

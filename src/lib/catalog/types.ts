@@ -3,6 +3,13 @@ import type { CandidateProfile } from "@/lib/admin/pipeline/profile-types";
 export type CatalogSourceRef = { collection: string; id: string; role: "source" | "review" | "profile" | "place" };
 export type CatalogLink = { id: string; entityType: "provider" | "business" | "place" | "evidence"; label: string; relationship: string; basis: "source_reported" | "reviewed" | "exact_source_id" };
 export type CatalogDecision = { id: string; lane: string; status: string; reviewedAt?: string; reviewedBy?: string; targetId?: string; suggestedTargetId?: string };
+export type CatalogFactClaim = {
+  id: string; sourceRef: CatalogSourceRef; sourceField: string; kind: string; value: string;
+  attribution: "candidate" | "business" | "unresolved"; status: "source_reported" | "discovered" | "rejected";
+  sourceUrl?: string; observedAt?: string; confidence?: string; reasons?: string[]; reviewStatus?: string; evidenceIds?: string[]; raw?: unknown;
+};
+export type CatalogFieldCoverage = { records: number; knownPlatform: number; multiplePlatforms: number; booking: number; social: number; website: number; businessName: number; city: number; postalCode: number; factClaims: number; unresolvedLinks: number; licenseClaims: number; unknownWithRecoverableEvidence: number; conflicts: number; sourceTruncated: number };
+export type CatalogEvidenceAudit = { version: number; baseline: "same_snapshot_primary_fields"; before: CatalogFieldCoverage; after: CatalogFieldCoverage; delta: CatalogFieldCoverage; derivedOnly: true; sourceDocumentsMutated: 0; baselineDescription: string; stableIds: { expected: number; projected: number; unique: number; unchanged: boolean }; recoveredUnknownRecords: number };
 export type CatalogRecord = {
   id: string;
   entityType: "provider" | "business";
@@ -23,6 +30,7 @@ export type CatalogRecord = {
   reviewDecisions: CatalogDecision[];
   conflicts: string[];
   evidence: Array<{ id: string; sourceUrl?: string; observedAt?: string; kind: string; label: string }>;
+  factClaims?: CatalogFactClaim[];
   updatedAt: string;
   legacyIds: string[];
   sourceIdentifiers?: { candidateId?: string; intakeId?: string; providerId?: string; businessId?: string; sourceScopedIds?: Array<{ sourceUrl: string; id: string }> };
@@ -49,5 +57,8 @@ export type CatalogCoverage = {
   orphanResultCount: number;
   conflictCount: number;
   warnings: string[];
+  orphanEvidenceCount?: number;
+  evidenceAudit?: CatalogEvidenceAudit;
+  legacyFileEvidence?: { status: "unavailable_or_unimported"; importedCount: number; note: string };
 };
 export type SharedCatalog = { rows: CatalogRecord[]; coverage: CatalogCoverage; generatedAt: string };

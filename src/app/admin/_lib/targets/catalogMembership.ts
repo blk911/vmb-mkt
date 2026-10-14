@@ -38,16 +38,20 @@ export function csvCell(value: unknown): string {
 export function targetListCatalogCsv(list: TargetList, rows: CatalogRecord[], generatedAt: string) {
   const membership = resolveTargetListMembership(list, rows);
   const byId = new Map(membership.rows.map((row) => [row.id, row]));
-  const header = ["listId", "listName", "membershipMode", "catalogId", "resolutionStatus", "entityType", "displayName", "providerName", "businessName", "platform", "city", "state", "postalCode", "area", "services", "reviewStatus", "phone", "bookingLinks", "socialLinks", "websiteLinks", "owner", "nextAction", "nextActionAt", "notes", "generatedAt"];
+  const header = ["listId", "listName", "membershipMode", "catalogId", "resolutionStatus", "entityType", "displayName", "providerName", "businessName", "platform", "city", "state", "postalCode", "area", "services", "reviewStatus", "phone", "bookingLinks", "socialLinks", "websiteLinks", "knownPlatforms", "unresolvedDiscoveries", "linkEvidence", "factClaims", "sourceRefs", "reviewDecisions", "conflicts", "owner", "nextAction", "nextActionAt", "notes", "generatedAt"];
   const lines = [header.map(csvCell).join(",")];
   function line(id: string, row: CatalogRecord | undefined, status: string, fallbackName = "") {
     return [
       list.id, list.name, list.membershipMode, id, status,
       row?.entityType, row?.displayName || fallbackName, row?.providerName, row?.businessName, row?.platformLabel,
       row?.city, row?.state, row?.postalCode, row?.area, row?.services.join(" | "), row?.reviewStatus, row?.phone,
-      row?.profile?.bookingLinks.map((link) => link.url).join(" | "),
-      row?.profile?.socialLinks.map((link) => link.url).join(" | "),
-      row?.profile?.websiteLinks.map((link) => link.url).join(" | "),
+      row?.profile?.bookingLinks.filter((link) => link.attribution !== "unresolved" && link.kind !== "directory").map((link) => link.url).join(" | "),
+      row?.profile?.socialLinks.filter((link) => link.attribution !== "unresolved").map((link) => link.url).join(" | "),
+      row?.profile?.websiteLinks.filter((link) => link.attribution !== "unresolved").map((link) => link.url).join(" | "),
+      row?.profile?.knownPlatforms?.join(" | "),
+      row?.profile ? [...row.profile.bookingLinks, ...row.profile.socialLinks, ...row.profile.websiteLinks].filter((link) => link.attribution === "unresolved").map((link) => link.url).join(" | ") : "",
+      row?.profile ? JSON.stringify([...row.profile.bookingLinks, ...row.profile.socialLinks, ...row.profile.websiteLinks]) : "",
+      row ? JSON.stringify(row.factClaims || []) : "", row ? JSON.stringify(row.sourceRefs) : "", row ? JSON.stringify(row.reviewDecisions) : "", row?.conflicts.join(" | "),
       list.workflow?.owner, list.workflow?.nextAction, list.workflow?.nextActionAt, list.notes, generatedAt,
     ].map(csvCell).join(",");
   }

@@ -1,16 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import ProfileRefinementControls from "@/components/admin/pipeline/ProfileRefinementControls";
+import { profilePlatformLabel, toRefinementQueueItem } from "@/lib/admin/pipeline/profile-presentation";
 import { ProfileSummaryCard, SourceLink } from "@/components/admin/pipeline/ProfileEvidence";
 import { dateLabel, readable, readJson, type CatalogRecord } from "./catalog-ui-types";
 import styles from "./CatalogWorkspace.module.css";
 
-export default function CatalogDetail({ record, onClose }: { record: CatalogRecord; onClose: () => void }) {
+export default function CatalogDetail({ record, onClose, admin = false, onRefreshed }: { record: CatalogRecord; onClose: () => void; admin?: boolean; onRefreshed?: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [detail, setDetail] = useState(record);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [attempt, setAttempt] = useState(0);
+  const refreshDetail = useCallback(() => { setLoading(true); setAttempt((value) => value + 1); onRefreshed?.(); }, [onRefreshed]);
 
   useEffect(() => {
     const element = dialog.current;
@@ -29,7 +32,7 @@ export default function CatalogDetail({ record, onClose }: { record: CatalogReco
 
   return <dialog ref={dialog} className={styles.dialog} aria-labelledby="catalog-detail-title" onCancel={onClose} onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
     <div className={styles.detailHeader}>
-      <div><div className={styles.eyebrow}>{detail.platformLabel || "Platform unknown"}</div><h2 id="catalog-detail-title">{detail.displayName}</h2>
+      <div><div className={styles.eyebrow}>{profilePlatformLabel(detail.profile)}</div><h2 id="catalog-detail-title">{detail.displayName}</h2>
         <p>{detail.entityType === "business" ? "Business / location record · Not an individual provider" : "Provider record · Identity claims remain source-attributed"}</p></div>
       <button type="button" className={styles.button} onClick={onClose} autoFocus>Close</button>
     </div>
@@ -43,6 +46,7 @@ export default function CatalogDetail({ record, onClose }: { record: CatalogReco
         <div><span>Updated</span><strong>{dateLabel(detail.updatedAt)}</strong></div>
       </div>
       {detail.conflicts?.length ? <section className={styles.warning}><h3>Unresolved differences</h3><ul>{detail.conflicts.map((conflict, index) => <li key={index}>{conflict}</li>)}</ul></section> : null}
+      {admin && detail.reviewKey ? <ProfileRefinementControls rows={[toRefinementQueueItem({ reviewKey: detail.reviewKey, profile: detail.profile })]} scope={`catalog:${detail.reviewKey}`} checkedAt={new Date().toISOString()} automatic={false} onComplete={refreshDetail} /> : null}
       <ProfileSummaryCard profile={detail.profile} />
       <section className={styles.panel}>
         <h3>Linked entities</h3>
@@ -51,6 +55,7 @@ export default function CatalogDetail({ record, onClose }: { record: CatalogReco
       </section>
       <section className={styles.panel}>
         <h3>Source evidence</h3>
+        {detail.factClaims?.length ? <details className={styles.sourceRefs}><summary>Stored fact claims ({detail.factClaims.length})</summary><ul className={styles.evidenceList}>{detail.factClaims.map((fact) => <li key={fact.id}><strong>{readable(fact.kind)}</strong><span className="break-all">{fact.value}</span><small>{readable(fact.attribution)} · {readable(fact.status)} · {fact.sourceField}</small>{fact.sourceUrl ? <SourceLink url={fact.sourceUrl} label="Open fact source" /> : null}</li>)}</ul></details> : null}
         {detail.evidence?.length ? <ul className={styles.evidenceList}>{detail.evidence.map((evidence, index) => <li key={`${evidence.id}:${index}`}><strong>{evidence.label || readable(evidence.kind)}</strong><span>{readable(evidence.kind)} · {dateLabel(evidence.observedAt)}</span>{evidence.sourceUrl ? <SourceLink url={evidence.sourceUrl} label="Open exact source" /> : <span className={styles.muted}>No source URL recorded</span>}</li>)}</ul> : <p className={styles.muted}>No additional source evidence recorded.</p>}
         {detail.sourceRefs.length ? <details className={styles.sourceRefs}><summary>Source references ({detail.sourceRefs.length})</summary><ul>{detail.sourceRefs.map((source, index) => <li key={`${source.collection}:${source.id}:${index}`}>{readable(source.role)} · {source.collection} · {source.id}</li>)}</ul></details> : null}
       </section>

@@ -9,6 +9,8 @@ import {
   firestoreSaveParsedCandidates,
   firestoreSetSourceIntake,
 } from "@/lib/admin/pipeline/firestore-canonical-store";
+import { sameStagedEvidence } from "./evidence-identity";
+import { firestoreAppendStagedOperatorEvidence, firestoreListStagedOperatorEvidence } from "./firestore-staged-evidence";
 import { getRuntimeDataRoot } from "@/lib/runtime/runtime-data-root";
 import { readJsonArrayFile } from "@/lib/social-targets/json-file";
 import type {
@@ -206,17 +208,21 @@ export async function upsertOperatorCandidates(rows: OperatorCandidateRecord[]):
 }
 
 export async function listStagedOperatorEvidence(): Promise<StagedOperatorEvidence[]> {
+  if (usesFirestoreCanonicalPipelineStore()) return firestoreListStagedOperatorEvidence();
   return readArray<StagedOperatorEvidence>(OPERATOR_EVIDENCE_PATH);
 }
 
 export async function appendStagedOperatorEvidence(rows: StagedOperatorEvidence[]): Promise<StagedOperatorEvidence[]> {
+  if (usesFirestoreCanonicalPipelineStore()) return firestoreAppendStagedOperatorEvidence(rows);
   const existing = await listStagedOperatorEvidence();
   const byKey = new Map<string, StagedOperatorEvidence>();
   for (const row of existing) {
-    byKey.set(`${row.intakeId}|${row.candidateId}|${row.factType}|${row.factValue}`, row);
+    byKey.set(row.id, row);
   }
   for (const row of rows) {
-    byKey.set(`${row.intakeId}|${row.candidateId}|${row.factType}|${row.factValue}`, row);
+    const previous = byKey.get(row.id);
+    if (previous && !sameStagedEvidence(previous, row)) throw new Error("staged_evidence_id_conflict");
+    if (!previous) byKey.set(row.id, row);
   }
   const next = [...byKey.values()].sort((a, b) => compareDescByIso(a.observedAt, b.observedAt));
   await writeArray(OPERATOR_EVIDENCE_PATH, next);

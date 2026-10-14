@@ -1,5 +1,5 @@
 import type { CandidateProfile, ProfileLink } from "@/lib/admin/pipeline/profile-types";
-import { profileFreshnessLabel, profileLinkLabel, profileStatusLabel, safeProfileHref } from "@/lib/admin/pipeline/profile-presentation";
+import { profileFreshnessLabel, profileLinkLabel, profileStatusLabel, safeProfileHref, profilePlatformLabel, profilePlatformExplanation, profileMissingLinkLabel, profileFactCoverage } from "@/lib/admin/pipeline/profile-presentation";
 
 export function SourceLink({ url, label }: { url?: string; label?: string }) {
   const href = safeProfileHref(url);
@@ -7,7 +7,7 @@ export function SourceLink({ url, label }: { url?: string; label?: string }) {
   return <a className="break-all text-blue-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2" href={href} title={url} target="_blank" rel="noopener noreferrer">{label || url}</a>;
 }
 
-export function ProfileLinks({ links, empty = "Unknown", compact = false }: { links: ProfileLink[]; empty?: string; compact?: boolean }) {
+export function ProfileLinks({ links, empty = "Not collected", compact = false }: { links: ProfileLink[]; empty?: string; compact?: boolean }) {
   if (!links.length) return <span className="text-gray-500">{empty}</span>;
   const shown = compact ? links.slice(0, 2) : links;
   return <div className="space-y-2">
@@ -32,20 +32,23 @@ export function ProfileCheckState({ profile }: { profile?: CandidateProfile }) {
 }
 
 export function ProfileSummaryCard({ profile }: { profile?: CandidateProfile }) {
+  const coverage = profileFactCoverage(profile);
   return <section className="break-words rounded-xl border border-blue-100 bg-white p-4 shadow xl:col-span-2">
     <h2 className="font-bold">Source-linked profile</h2>
     <p className="mt-1 text-sm text-gray-600">Source claims and retrieval results support review. They do not establish identity, license, ownership, or approval.</p>
     <dl className="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 xl:grid-cols-3">
-      <div><dt className="text-gray-500">Platform</dt><dd className="font-medium">{profile?.platformLabel || "Unknown"}</dd></div>
-      <div><dt className="text-gray-500">Profile / booking link</dt><dd className="mt-1"><ProfileLinks links={profile?.bookingLinks || []} empty="No exact profile link found" /></dd></div>
-      <div><dt className="text-gray-500">Social link</dt><dd className="mt-1"><ProfileLinks links={profile?.socialLinks || []} /></dd></div>
-      <div><dt className="text-gray-500">Provider (source-reported)</dt><dd>{profile?.providerName || "Unknown"}</dd></div>
-      <div><dt className="text-gray-500">Salon / business (source-reported)</dt><dd>{profile?.businessName || "Unknown"}</dd></div>
-      <div><dt className="text-gray-500">City / ZIP (source-reported)</dt><dd>{[profile?.city, profile?.state, profile?.postalCode].filter(Boolean).join(", ") || "Unknown"}</dd></div>
+      <div><dt className="text-gray-500">Recognized booking platforms</dt><dd className="font-medium">{profilePlatformLabel(profile)}</dd><dd className="mt-1 text-xs text-gray-500">{profilePlatformExplanation(profile)}</dd></div>
+      <div><dt className="text-gray-500">Profile / booking link</dt><dd className="mt-1"><ProfileLinks links={profile?.bookingLinks || []} empty={profileMissingLinkLabel(profile)} /></dd></div>
+      <div><dt className="text-gray-500">Social link</dt><dd className="mt-1"><ProfileLinks links={profile?.socialLinks || []} empty={profileMissingLinkLabel(profile, "social")} /></dd></div>
+      <div><dt className="text-gray-500">Provider (source-reported)</dt><dd>{profile?.providerName || "Not collected"}</dd></div>
+      <div><dt className="text-gray-500">Salon / business (source-reported)</dt><dd>{profile?.businessName || "Not collected"}</dd></div>
+      <div><dt className="text-gray-500">City / ZIP (source-reported)</dt><dd>{[profile?.city, profile?.state, profile?.postalCode].filter(Boolean).join(", ") || "Not collected"}</dd></div>
       <div><dt className="text-gray-500">Website</dt><dd className="mt-1"><ProfileLinks links={profile?.websiteLinks || []} /></dd></div>
-      <div><dt className="text-gray-500">Platform identifiers</dt><dd className="break-all">Provider: {profile?.providerId || "Unknown"}<br />Business: {profile?.businessId || "Unknown"}</dd></div>
+      <div><dt className="text-gray-500">Platform identifiers</dt><dd className="break-all">Provider: {profile?.providerId || "Not collected"}<br />Business: {profile?.businessId || "Not collected"}</dd></div>
       <div><dt className="text-gray-500">Retrieval status</dt><dd className="mt-1"><ProfileCheckState profile={profile} /></dd></div>
     </dl>
+    <p className="mt-4 text-sm text-gray-600">Fact coverage: {coverage.collected}/{coverage.total} fields or link types collected.{coverage.conflicts ? ` ${coverage.conflicts} source differences need review.` : ""} Collection is separate from verification or approval.</p>
+    {profile?.fieldEvidence?.length ? <details className="mt-3 text-sm"><summary className="cursor-pointer font-semibold">Source-attributed facts ({profile.fieldEvidence.length})</summary><ul className="mt-2 space-y-2">{profile.fieldEvidence.map((fact, index) => <li key={`${fact.field}:${fact.value}:${index}`} className="rounded border border-gray-200 p-2"><span className="font-medium">{fact.field.replace(/([A-Z])/g, " $1")}: {fact.value}</span><div className="mt-1 text-xs text-gray-600">{fact.sourceUrl ? <SourceLink url={fact.sourceUrl} label="Open fact source" /> : "Stored source evidence"}{fact.sourceField ? ` · ${fact.sourceField}` : ""}{fact.sourceRef ? ` · ${fact.sourceRef}` : ""}</div></li>)}</ul></details> : null}
     {profile?.sourceContextUrl ? <p className="mt-4 text-sm"><SourceLink url={profile.sourceContextUrl} label="Original source context" /></p> : null}
     {profile?.reasons.length ? <ul className="mt-3 list-inside list-disc space-y-1 text-sm text-gray-700">{profile.reasons.map((reason, index) => <li key={index}>{reason}</li>)}</ul> : null}
     {profile?.nextAttemptAt ? <p className="mt-3 text-xs text-gray-500">Next eligible check: <time dateTime={profile.nextAttemptAt}>{profile.nextAttemptAt}</time></p> : null}

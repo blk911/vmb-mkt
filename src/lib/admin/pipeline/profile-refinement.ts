@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { fetchPublicProfile, PROFILE_FETCH_LIMITS, type ProfileFetchDependencies } from "./profile-fetch";
 import { inspectProfilePage } from "./profile-evidence";
-import { classifyProfileUrl } from "./profile-model";
+import { classifyProfileUrl, reconcileProfile } from "./profile-model";
 import type { CandidateProfile, ProfileLink, ProfileObservation, ProfileRefinementStatus } from "./profile-types";
 
 export type ProfileRefinementDependencies = ProfileFetchDependencies;
@@ -38,6 +38,7 @@ function failureStatus(observation: ProfileObservation): ProfileRefinementStatus
 }
 /** Bounded observation of an already-linked public trail. Never searches, authenticates, or verifies licensing/ownership. */
 export async function refineCandidateProfile(base: CandidateProfile, deps: ProfileRefinementDependencies = {}): Promise<CandidateProfile> {
+  base = reconcileProfile(base);
   const now = deps.now ?? Date.now;
   const started = now();
   const attemptedAt = new Date(started).toISOString();
@@ -115,10 +116,6 @@ export async function refineCandidateProfile(base: CandidateProfile, deps: Profi
       const pageLink: ProfileLink = { ...classified, kind: evidence.match === "individual" && classified.platform !== "unknown" ? "individual" : classified.kind === "unknown" ? "website" : classified.kind,
         attribution: evidence.match === "individual" ? "candidate" : "business", sourceUrl: link.url, basis: "linked_page", observedAt: fetchedAt };
       addLink(profile, pageLink, linkBudget);
-      if (profile.platform === "unknown" && classified.platform !== "unknown") {
-        profile.platform = classified.platform;
-        profile.platformLabel = ({ vagaro: "Vagaro", glossgenius: "GlossGenius", booksy: "Booksy", fresha: "Fresha", square: "Square", unknown: "Unknown platform" })[classified.platform];
-      }
       if (!profile.providerId && pageLink.attribution === "candidate" && classified.providerId) profile.providerId = classified.providerId;
       if (!profile.businessId && classified.businessId) profile.businessId = classified.businessId;
     }
@@ -152,5 +149,5 @@ export async function refineCandidateProfile(base: CandidateProfile, deps: Profi
   profile.searchStatus = incomplete ? "unsupported" : "not_needed";
   if (incomplete) reason("Linked trail is incomplete; broader name, salon, and platform web search is unsupported.");
   if (attempted >= PROFILE_FETCH_LIMITS.maxPages && queue.some((link) => !visited.has(link.url))) reason("Stopped at the three-page public profile limit.");
-  return profile;
+  return reconcileProfile(profile);
 }
