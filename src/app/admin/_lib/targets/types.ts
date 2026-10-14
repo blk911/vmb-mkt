@@ -2,42 +2,59 @@ import type { AdminQueryState } from "../adminQueryState";
 import type { TargetActivity, TargetWorkflow } from "@/lib/ops/targetWorkflow";
 
 export type TargetScope = "facility" | "tech";
+export type TargetMembershipMode = "fixed" | "dynamic";
+
+export type TargetItem = {
+  kind: TargetScope;
+  /** Legacy reference retained for compatibility; never used for fuzzy rematching. */
+  refId: string;
+  /** Exact shared catalog identity, captured when the membership is saved. */
+  catalogId?: string;
+  referenceResolution?: "unresolved" | "ambiguous";
+  addressId?: string;
+  label: string;
+  city?: string;
+  zip?: string;
+  sizeBand?: string;
+  tags?: string[];
+  addedAt: string;
+};
 
 export type TargetList = {
-  id: string; // "tgt_20260203_xxxxxx"
-  name: string; // "Lone Tree - Nails - 6-15"
-  scope: TargetScope; // facility or tech
+  id: string;
+  name: string;
+  scope: TargetScope;
   createdAt: string;
   updatedAt: string;
+  membershipMode: TargetMembershipMode;
+  /** Fixed lists keep these IDs even if their records disappear from the catalog. */
+  catalogIds: string[];
   notes?: string;
   workflow?: TargetWorkflow;
   activity?: TargetActivity[];
-
-  // This is the saved "view" (query state snapshot)
   savedQuery?: AdminQueryState | Record<string, unknown>;
+  items: TargetItem[];
+  archivedAt?: string;
+  archivedBy?: string;
+};
 
-  // Items are normalized minimal refs
-  items: Array<{
-    kind: TargetScope;
-    refId: string; // facilityId OR licenseId
-    addressId?: string;
-    label: string; // display name
-    city?: string;
-    zip?: string;
-    sizeBand?: string;
-    tags?: string[];
-    addedAt: string;
-  }>;
+export type TargetListStorageCoverage = {
+  store: "firestore";
+  legacyFileLists: "not_imported_unverified";
+  message: string;
 };
 
 export type TargetListIndex = {
   ok: true;
   updatedAt: string;
+  coverage: TargetListStorageCoverage;
   lists: Array<{
     id: string;
     name: string;
     scope: TargetScope;
+    membershipMode: TargetMembershipMode;
     updatedAt: string;
     itemCount?: number;
+    archivedAt?: string;
   }>;
 };

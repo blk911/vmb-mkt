@@ -1,127 +1,38 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "node:path";
-import { readTargetList } from "@/app/admin/_lib/targets/store";
-import { dataRootAbs } from "@/backend/lib/paths/data-root";
+import { readTargetList, TargetListStoreError } from "@/app/admin/_lib/targets/store";
+import { targetListCatalogCsv } from "@/app/admin/_lib/targets/catalogMembership";
+import { canAccessMemberArea, getSessionUserFromCookieHeader } from "@/lib/auth/access";
+import { loadSharedCatalog } from "@/lib/catalog/store";
 
-const TECH_PATH = path.join(
-  dataRootAbs(),
-  "co",
-  "dora",
-  "denver_metro",
-  "places",
-  "derived",
-  "tech_index.v4_facilities.v1.json"
-);
-
-function readJson(p: string) {
-  const txt = fs.readFileSync(p, "utf8");
-  return JSON.parse(txt);
-}
-
-function csvEscape(v: any) {
-  const s = (v ?? "").toString();
-  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
-  return s;
-}
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
+  const user = await getSessionUserFromCookieHeader(req.headers.get("cookie") || "");
+  if (!canAccessMemberArea(user)) return NextResponse.json({ ok: false, error: user ? "forbidden" : "unauthorized" }, { status: user ? 403 : 401 });
   const url = new URL(req.url);
   const listId = (url.searchParams.get("listId") || "").trim();
   const format = (url.searchParams.get("format") || "csv").trim().toLowerCase();
-
-  if (!listId) {
-    return NextResponse.json({ ok: false, error: "missing_listId" }, { status: 400 });
+  if (!listId) return NextResponse.json({ ok: false, error: "missing_listId" }, { status: 400 });
+  if (format !== "csv") return NextResponse.json({ ok: false, error: "unsupported_format", format }, { status: 400 });
+  try {
+    const list = await readTargetList(listId);
+    if (!list) return NextResponse.json({ ok: false, error: "list_not_found", listId }, { status: 404 });
+    const catalog = await loadSharedCatalog();
+    const { csv, membership } = targetListCatalogCsv(list, catalog.rows, catalog.generatedAt);
+    const safeName = list.name.replace(/[^a-z0-9]+/gi, "_").replace(/^_+|_+$/g, "").slice(0, 100) || "targets";
+    return new NextResponse(csv, {
+      headers: {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": `attachment; filename="${safeName}_${list.id}.csv"`,
+        "Cache-Control": "no-store",
+        "X-List-Membership-Mode": list.membershipMode,
+        "X-Catalog-Coverage-Complete": String(catalog.coverage.complete),
+        "X-Unresolved-Member-Count": String(membership.missingIds.length + membership.unresolvedLegacyItems.length),
+      },
+    });
+  } catch (error) {
+    if (error instanceof TargetListStoreError) return NextResponse.json({ ok: false, error: error.code, message: error.message }, { status: error.status });
+    return NextResponse.json({ ok: false, error: "shared_catalog_unavailable", message: "The current shared catalog could not be loaded. No local data fallback was used." }, { status: 503 });
   }
-  if (format !== "csv") {
-    return NextResponse.json({ ok: false, error: "unsupported_format", format }, { status: 400 });
-  }
-
-  if (!fs.existsSync(TECH_PATH)) {
-    return NextResponse.json({ ok: false, error: "tech_index_missing", path: TECH_PATH }, { status: 404 });
-  }
-
-  const list = await readTargetList(listId);
-  if (!list) {
-    return NextResponse.json({ ok: false, error: "list_not_found", listId }, { status: 404 });
-  }
-
-  const techIndex = readJson(TECH_PATH);
-  const tech = (techIndex?.tech || []) as any[];
-
-  const byId = new Map<string, any>();
-  for (const t of tech) byId.set(String(t.id), t);
-
-  const techIds = list.items
-    .filter((item: any) => item.kind === "tech")
-    .map((item: any) => String(item.refId || "").trim())
-    .filter(Boolean);
-
-  const rows = techIds
-    .map((id: string) => byId.get(String(id)))
-    .filter(Boolean);
-
-  const header = [
-    "listId",
-    "listName",
-    "techId",
-    "displayName",
-    "segment",
-    "segmentConfidence",
-    "doraLicenses",
-    "addressKey",
-    "city",
-    "zip",
-    "placeName",
-    "placeScore",
-    "types",
-    "phone",
-    "website",
-  ];
-
-  const lines: string[] = [];
-  lines.push(header.join(","));
-
-  for (const t of rows) {
-    const place = t?.places?.best || {};
-    const premise = t?.premise || {};
-    const addr = t?.address || {};
-    const types = (premise.types || place.types || []).map(String).join("|");
-
-    const phone = (premise.phone || place.phone || "").toString().trim();
-    const website = (premise.website || place.website || "").toString().trim();
-
-    const line = [
-      list.id,
-      list.name,
-      t.id,
-      t.displayName || "",
-      t.segment || "",
-      (t.segmentConfidence ?? "").toString(),
-      (t.techSignals?.doraLicenses ?? "").toString(),
-      t.addressKey || "",
-      addr.city || "",
-      addr.zip || "",
-      place.name || "",
-      (place.score ?? "").toString(),
-      types,
-      phone,
-      website,
-    ].map(csvEscape);
-
-    lines.push(line.join(","));
-  }
-
-  const csv = lines.join("\n");
-  const safeName = (list.name || "targets").toString().replace(/[^a-z0-9]+/gi, "_").replace(/^_+|_+$/g, "");
-  const filename = `${safeName || "targets"}_${list.id}.csv`;
-
-  return new NextResponse(csv, {
-    status: 200,
-    headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${filename}"`,
-      "Cache-Control": "no-store",
-    },
-  });
 }

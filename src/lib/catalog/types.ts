@@ -1,0 +1,53 @@
+import type { CandidateProfile } from "@/lib/admin/pipeline/profile-types";
+
+export type CatalogSourceRef = { collection: string; id: string; role: "source" | "review" | "profile" | "place" };
+export type CatalogLink = { id: string; entityType: "provider" | "business" | "place" | "evidence"; label: string; relationship: string; basis: "source_reported" | "reviewed" | "exact_source_id" };
+export type CatalogDecision = { id: string; lane: string; status: string; reviewedAt?: string; reviewedBy?: string; targetId?: string; suggestedTargetId?: string };
+export type CatalogRecord = {
+  id: string;
+  entityType: "provider" | "business";
+  displayName: string;
+  providerName: string;
+  businessName: string;
+  platformLabel: string;
+  profile?: CandidateProfile;
+  city: string;
+  state: string;
+  postalCode: string;
+  area: string;
+  services: string[];
+  reviewStatus: string;
+  reviewKey?: string;
+  sourceRefs: CatalogSourceRef[];
+  linkedEntities: CatalogLink[];
+  reviewDecisions: CatalogDecision[];
+  conflicts: string[];
+  evidence: Array<{ id: string; sourceUrl?: string; observedAt?: string; kind: string; label: string }>;
+  updatedAt: string;
+  legacyIds: string[];
+  sourceIdentifiers?: { candidateId?: string; intakeId?: string; providerId?: string; businessId?: string; sourceScopedIds?: Array<{ sourceUrl: string; id: string }> };
+  phone?: string;
+  address?: { street?: string; city?: string; state?: string; zip?: string };
+};
+export type CatalogFilters = {
+  q?: string; platform?: string; entityType?: string; city?: string; postalCode?: string;
+  area?: string; service?: string; reviewStatus?: string;
+  hasBooking?: "yes" | "no" | "all"; hasSocial?: "yes" | "no" | "all";
+  sort?: string; direction?: "asc" | "desc";
+};
+export type CatalogCoverage = {
+  version: 1;
+  storage: "firestore";
+  strategy: "non_destructive_read_projection";
+  complete: boolean;
+  snapshotId: string;
+  sourceCounts: Record<string, number>;
+  recordCount: number;
+  providerCount: number;
+  businessCount: number;
+  orphanQueueCount: number;
+  orphanResultCount: number;
+  conflictCount: number;
+  warnings: string[];
+};
+export type SharedCatalog = { rows: CatalogRecord[]; coverage: CatalogCoverage; generatedAt: string };

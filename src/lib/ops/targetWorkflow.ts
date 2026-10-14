@@ -9,6 +9,7 @@ export type TargetWorkflow = {
   stage: WorkflowStage;
   disposition: WorkflowDisposition;
   nextActionAt?: string;
+  nextAction?: string;
   pinned: boolean;
 };
 
@@ -23,6 +24,9 @@ export type WorkflowListLike = {
   name: string;
   updatedAt: string;
   techIds?: string[];
+  membershipMode?: "fixed" | "dynamic";
+  resolvedTargetCount?: number;
+  unresolvedTargetCount?: number;
   workflow?: Partial<TargetWorkflow> | null;
   activity?: TargetActivity[] | null;
 };
@@ -42,6 +46,7 @@ export function normalizeTargetWorkflow(workflow?: Partial<TargetWorkflow> | nul
     stage,
     disposition,
     nextActionAt: nextActionAt || undefined,
+    nextAction: String(workflow?.nextAction ?? "").trim().slice(0, 2000) || undefined,
     pinned: workflow?.pinned === true,
   };
 }
@@ -77,6 +82,9 @@ export function summarizeWorkflowLists(lists: WorkflowListLike[], now = new Date
   let unassignedCount = 0;
   let staleCount = 0;
   let totalTargets = 0;
+  let fixedTargetCount = 0;
+  let dynamicMatchCount = 0;
+  let unresolvedTargetCount = 0;
   const ownerCounts: Record<string, number> = {};
 
   const nowTime = now.getTime();
@@ -86,7 +94,11 @@ export function summarizeWorkflowLists(lists: WorkflowListLike[], now = new Date
     const workflow = normalizeTargetWorkflow(list.workflow);
     stageCounts[workflow.stage] += 1;
     dispositionCounts[workflow.disposition] += 1;
-    totalTargets += Array.isArray(list.techIds) ? list.techIds.length : 0;
+    const targetCount = Array.isArray(list.techIds) ? list.techIds.length : 0;
+    totalTargets += targetCount;
+    if (list.membershipMode === "dynamic") dynamicMatchCount += targetCount;
+    else fixedTargetCount += targetCount;
+    unresolvedTargetCount += list.unresolvedTargetCount || 0;
     if (workflow.pinned) pinnedCount += 1;
     if (!workflow.owner) {
       unassignedCount += 1;
@@ -104,6 +116,9 @@ export function summarizeWorkflowLists(lists: WorkflowListLike[], now = new Date
   return {
     listCount: lists.length,
     totalTargets,
+    fixedTargetCount,
+    dynamicMatchCount,
+    unresolvedTargetCount,
     pinnedCount,
     overdueCount,
     unassignedCount,
@@ -122,6 +137,8 @@ export function buildHighLevelHandoffPreview(lists: WorkflowListLike[]) {
 
   return {
     generatedAt: new Date().toISOString(),
+    previewOnly: true,
+    deliveryEnabled: false,
     listCount: eligible.length,
     totalTargets: eligible.reduce((sum, list) => sum + (Array.isArray(list.techIds) ? list.techIds.length : 0), 0),
     lists: eligible.map((list) => ({
@@ -131,7 +148,12 @@ export function buildHighLevelHandoffPreview(lists: WorkflowListLike[]) {
       stage: list.workflow.stage,
       disposition: list.workflow.disposition,
       nextActionAt: list.workflow.nextActionAt || "",
+      nextAction: list.workflow.nextAction || "",
       targetCount: Array.isArray(list.techIds) ? list.techIds.length : 0,
+      membershipMode: list.membershipMode || "fixed",
+      membershipNote: list.membershipMode === "dynamic" ? "Live filter matches for preview only." : "Saved fixed catalog membership.",
+      resolvedTargetCount: list.resolvedTargetCount,
+      unresolvedTargetCount: list.unresolvedTargetCount || 0,
       updatedAt: list.updatedAt,
     })),
   };

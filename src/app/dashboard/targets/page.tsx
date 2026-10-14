@@ -1,9 +1,8 @@
 import TargetsClient from "./TargetsClient";
 
-export const metadata = {
-  title: "Targets — Tech First",
-};
+export const metadata = { title: "Targets · Shared catalog" };
 
-export default function TargetsPage({ searchParams }: { searchParams: { listId?: string } }) {
-  return <TargetsClient initialListId={searchParams?.listId} />;
+export default async function TargetsPage({ searchParams }: { searchParams?: Promise<{ listId?: string }> }) {
+  const params = await searchParams;
+  return <TargetsClient initialListId={params?.listId} />;
 }

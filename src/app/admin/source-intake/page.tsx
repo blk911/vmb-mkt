@@ -224,6 +224,8 @@ export default function SourceIntakeAdminPage() {
     try {
       const response = await fetch(`/api/source-intake/dora-queue/${encodeURIComponent(queueItemId)}/resolve`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
       });
       const json = (await response.json()) as ResolveDoraResponse;
       if (!response.ok || !json.ok || !json.result) {
@@ -243,6 +245,8 @@ export default function SourceIntakeAdminPage() {
     try {
       const response = await fetch(`/api/source-intake/social-queue/${encodeURIComponent(queueItemId)}/resolve`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
       });
       const json = (await response.json()) as ResolveSocialResponse;
       if (!response.ok || !json.ok || !json.result) {
