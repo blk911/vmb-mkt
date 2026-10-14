@@ -46,6 +46,7 @@ async function main() {
     let existing = null;
     let fail = false;
     const route = loadSource(`src/app/api/source-intake/${lane}-queue/[queueItemId]/resolve/route.ts`, {
+      "@/lib/dora/projection": { safeDoraValidationStatus: (result) => ["active_match", "inactive_match"].includes(result.status) ? "possible_match" : result.status },
       "next/server": { NextResponse: { json: (body, init) => Response.json(body, init) } },
       "@/lib/auth/access": { canAccessAdmin: (value) => value?.role === "admin", getSessionUserFromCookieHeader: async () => user },
       "@/lib/source-intake/phase2-store": { [`find${name}ResultByQueueItemId`]: async () => { reads++; return existing; } },
@@ -87,9 +88,11 @@ async function main() {
     assert.equal((await invoke({ body: '{"action":"merged","mergeTargetId":"target-1"}' })).status, 200);
     assert.equal(options.mergeTargetId, "target-1");
     assert.equal((await invoke({ url: "https://internal.example/api/source-intake/test/resolve", host: "catalog.example" })).status, 200);
-    existing = { id: "existing-result" };
+    existing = { id: "existing-result", status: "active_match" };
     const before = writes;
-    assert.equal((await invoke({ body: "{}" })).body.result.id, existing.id);
+    const cached = (await invoke({ body: "{}" })).body.result;
+    assert.equal(cached.id, existing.id);
+    if (lane === "dora") assert.equal(cached.status, "possible_match", "unproven legacy status must be sanitized without a write");
     assert.equal(writes, before, "read-existing action must not re-resolve");
     fail = true;
     const failed = await invoke();

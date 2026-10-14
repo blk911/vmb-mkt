@@ -27,7 +27,8 @@
     "ig:harvest": "ts-node scripts/run_ig_hashtag_harvest.ts",
     "test:catalog": "node scripts/test_shared_catalog.cjs && node scripts/test_shared_target_lists.cjs && node scripts/test_source_intake_auth.cjs",
     "typecheck:catalog": "tsc --project tsconfig.catalog.json --noEmit",
-    "test:fact-recovery": "node scripts/test_fact_recovery.cjs && node scripts/test_catalog_fact_sources.cjs && node scripts/test_intake_fact_refresh.cjs && node scripts/test_fact_recovery_adversarial.cjs"
+    "test:fact-recovery": "node scripts/test_fact_recovery.cjs && node scripts/test_catalog_fact_sources.cjs && node scripts/test_intake_fact_refresh.cjs && node scripts/test_fact_recovery_adversarial.cjs",
+    "test:compact-dora": "node scripts/test_compact_catalog_ui.cjs && node scripts/test_compact_dora_adversarial.cjs"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",

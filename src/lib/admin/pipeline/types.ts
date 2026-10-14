@@ -1,3 +1,4 @@
+import type { DoraCrossReference } from "@/lib/dora/types";
 import type { CandidateProfile } from "./profile-types";
 import type { CandidateMatchSuggestion } from "@/lib/source-intake/types";
 import type { BuildSubmitDebugInfo, ValidationLoadDebugInfo } from "./runtime-debug";
@@ -37,6 +38,8 @@ export type BuildSubmissionResult =
 export type ValidationQueueSource = "DORA" | "SOCIAL";
 
 export type ValidationQueueRow = {
+  catalogId?: string;
+  dora?: DoraCrossReference;
   profile?: CandidateProfile;
   queueItemId: string;
   intakeId: string;
@@ -61,6 +64,8 @@ export type ValidationQueueRow = {
 };
 
 export type ValidationReviewRow = {
+  catalogId?: string;
+  dora?: DoraCrossReference;
   profile?: CandidateProfile;
   reviewKey: string;
   intakeId: string;
@@ -111,6 +116,8 @@ export type DirectoryReviewContext = {
 };
 
 export type ValidationDetail = {
+  catalogId?: string;
+  dora?: DoraCrossReference;
   profile?: CandidateProfile;
   row: ValidationReviewRow;
   lanes: ValidationLaneDetail[];

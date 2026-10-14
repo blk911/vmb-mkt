@@ -1,3 +1,6 @@
+import type { DoraCrossReference } from "@/lib/dora/types";
+import { loadSharedCatalog } from "@/lib/catalog/store";
+import { safeDoraValidationStatus } from "@/lib/dora/projection";
 import { getSourceIntakeById, listParsedCandidates } from "@/lib/source-intake/store";
 import { buildCandidateMatchSuggestions } from "@/lib/source-intake/matcher";
 import {
@@ -47,10 +50,10 @@ function normalizeConfidence(candidate?: ParsedCandidateRow, fallbackScore?: num
   return { label: "UNKNOWN" };
 }
 
-function resultStatus(result?: DoraValidationResult | SocialDiscoveryResult | null): string | undefined {
+function resultStatus(result?: DoraValidationResult | SocialDiscoveryResult | null, current?: DoraCrossReference): string | undefined {
   if (!result) return undefined;
   if ("finalStatus" in result && result.finalStatus) return result.finalStatus;
-  if ("status" in result) return result.status;
+  if ("status" in result) return safeDoraValidationStatus(result, current);
   return result.discoveredSurfaces.length ? "resolved" : "queued";
 }
 
@@ -144,6 +147,8 @@ function combineValidationReviewRow(rows: ValidationQueueRow[]): ValidationRevie
     (left, right) => VALIDATION_LANE_ORDER[left] - VALIDATION_LANE_ORDER[right]
   );
   return {
+    catalogId: baseRow.catalogId,
+    dora: baseRow.dora,
     reviewKey: buildValidationReviewKey(baseRow.intakeId, baseRow.candidateId),
     intakeId: baseRow.intakeId,
     candidateId: baseRow.candidateId,
@@ -195,7 +200,7 @@ async function buildLaneDetail(row: ValidationQueueRow): Promise<ValidationLaneD
       createdAt: row.createdAt,
       resolvedAt: row.resolvedAt,
       resolveEndpoint: `/api/source-intake/dora-queue/${encodeURIComponent(row.queueItemId)}/resolve`,
-      resultSummary: result ? doraResultSummary(result) : undefined,
+      resultSummary: result ? doraResultSummary(result, row.dora) : undefined,
     };
   }
   const result = await findSocialResultByQueueItemId(row.queueItemId);
@@ -211,7 +216,12 @@ async function buildLaneDetail(row: ValidationQueueRow): Promise<ValidationLaneD
 }
 
 export async function listValidationRows(): Promise<ValidationQueueRow[]> {
-  const [doraQueue, socialQueue, evidenceSources] = await Promise.all([listDoraQueue(), listSocialQueue(), loadProfileEvidenceSources()]);
+  const [doraQueue, socialQueue, evidenceSources, catalog] = await Promise.all([listDoraQueue(), listSocialQueue(), loadProfileEvidenceSources(), loadSharedCatalog()]);
+  const catalogByKey = new Map<string, typeof catalog.rows>();
+  for (const row of catalog.rows.filter((entry) => entry.entityType === "provider")) {
+    const key = JSON.stringify([row.sourceIdentifiers?.intakeId, row.sourceIdentifiers?.candidateId]);
+    catalogByKey.set(key, [...(catalogByKey.get(key) || []), row]);
+  }
   const intakeIds = [...new Set([...doraQueue, ...socialQueue].map((row) => row.intakeId))];
 
   const candidatesByKey = new Map<string, ParsedCandidateRow>();
@@ -246,7 +256,11 @@ export async function listValidationRows(): Promise<ValidationQueueRow[]> {
       const candidate = candidatesByKey.get(JSON.stringify([item.intakeId, item.candidateId]));
       const profile = profilesByKey.get(JSON.stringify([item.intakeId, item.candidateId]));
       const confidence = normalizeConfidence(candidate);
+      const catalogRows = catalogByKey.get(JSON.stringify([item.intakeId, item.candidateId]));
+      const catalogRow = catalogRows?.length === 1 ? catalogRows[0] : undefined;
       return {
+        catalogId: catalogRow?.id,
+        dora: catalogRow?.dora,
         queueItemId: item.id,
         intakeId: item.intakeId,
         candidateId: item.candidateId,
@@ -256,7 +270,7 @@ export async function listValidationRows(): Promise<ValidationQueueRow[]> {
         sourceLabel: item.sourceLabel,
         sourceUrl: candidate ? profile?.bookingLinks.find((link) => link.kind !== "directory")?.url || profile?.socialLinks[0]?.url || profile?.websiteLinks[0]?.url : item.sourceUrl,
         sourceType: "DORA" as const,
-        status: resultStatus(result) || item.status,
+        status: resultStatus(result, catalogRow?.dora) || item.status,
         confidence: confidence.label,
         confidenceScore: confidence.score,
         createdAt: item.createdAt,
@@ -278,7 +292,11 @@ export async function listValidationRows(): Promise<ValidationQueueRow[]> {
       const candidate = candidatesByKey.get(JSON.stringify([item.intakeId, item.candidateId]));
       const profile = profilesByKey.get(JSON.stringify([item.intakeId, item.candidateId]));
       const confidence = normalizeConfidence(candidate);
+      const catalogRows = catalogByKey.get(JSON.stringify([item.intakeId, item.candidateId]));
+      const catalogRow = catalogRows?.length === 1 ? catalogRows[0] : undefined;
       return {
+        catalogId: catalogRow?.id,
+        dora: catalogRow?.dora,
         queueItemId: item.id,
         intakeId: item.intakeId,
         candidateId: item.candidateId,
@@ -288,7 +306,7 @@ export async function listValidationRows(): Promise<ValidationQueueRow[]> {
         sourceLabel: item.sourceLabel,
         sourceUrl: candidate ? profile?.bookingLinks.find((link) => link.kind !== "directory")?.url || profile?.socialLinks[0]?.url || profile?.websiteLinks[0]?.url : item.sourceUrl,
         sourceType: "SOCIAL" as const,
-        status: resultStatus(result) || item.status,
+        status: resultStatus(result, catalogRow?.dora) || item.status,
         confidence: confidence.label,
         confidenceScore: confidence.score,
         createdAt: item.createdAt,
@@ -307,14 +325,17 @@ export async function listValidationRows(): Promise<ValidationQueueRow[]> {
   return [...doraRows, ...socialRows].sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
 }
 
-function doraResultSummary(result: DoraValidationResult): ValidationLaneDetail["resultSummary"] {
+function doraResultSummary(result: DoraValidationResult, current?: DoraCrossReference): ValidationLaneDetail["resultSummary"] {
   return {
     title: "DORA Resolution",
     lines: [
-      `status: ${result.status}`,
+      `status: ${safeDoraValidationStatus(result, current)}`,
       ...(result.finalStatus ? [`review: ${result.finalStatus}`] : []),
       ...(result.mergeTargetId ? [`mergeTargetId: ${result.mergeTargetId}`] : []),
-      `score: ${result.score}`,
+      ...(result.matchedLicenseName ? [`DORA candidate: ${result.matchedLicenseName}`] : []),
+      ...(result.licenseType ? [`type: ${result.licenseType}`] : []),
+      ...(result.licenseStatusText ? [`official status: ${result.licenseStatusText}`] : []),
+      ...([result.city, result.state].filter(Boolean).length ? [`holder-reported mailing location: ${[result.city, result.state].filter(Boolean).join(", ")}`] : []),
       ...(result.matchedLicenseNumber ? [`license: ${result.matchedLicenseNumber}`] : []),
       ...result.reasons,
     ],
@@ -373,6 +394,8 @@ export async function getValidationDetail(reviewKeyOrQueueItemId: string): Promi
   const directoryContext = parseDirectoryReviewContext(candidate);
 
   return {
+    catalogId: laneRows[0]?.catalogId,
+    dora: laneRows[0]?.dora,
     row: combineValidationReviewRow(laneRows),
     profile: laneRows[0]?.profile,
     lanes,

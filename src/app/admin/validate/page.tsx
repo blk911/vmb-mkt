@@ -1,7 +1,9 @@
 import Link from "next/link";
 import ProfileRefinementControls from "@/components/admin/pipeline/ProfileRefinementControls";
-import { ProfileCheckState, ProfileLinks, SourceLink } from "@/components/admin/pipeline/ProfileEvidence";
-import { profilePlatformLabel, profilePlatformExplanation, profileMissingLinkLabel, toRefinementQueueItem } from "@/lib/admin/pipeline/profile-presentation";
+import { ProfileLinks } from "@/components/admin/pipeline/ProfileEvidence";
+import { toRefinementQueueItem } from "@/lib/admin/pipeline/profile-presentation";
+import { CompactPlatform, CompactValue, CompactProfileCheckState } from "@/components/admin/pipeline/CompactProfile";
+import { DoraStatus } from "@/components/admin/pipeline/DoraEvidence";
 import NextActionLink from "@/components/admin/pipeline/NextActionLink";
 import { getValidationLoadDebugInfo } from "@/lib/admin/pipeline/runtime-debug";
 import { getPipelineOperationalSnapshot } from "@/lib/admin/pipeline/state";
@@ -93,40 +95,42 @@ export default async function ValidatePage({
 
       <p className="text-xs text-gray-500">Source-reported details may be partial. Extraction describes parsing quality, not verified identity. Scroll horizontally on smaller screens.</p>
       <div className="w-full max-w-full overflow-x-auto rounded-xl bg-white shadow" role="region" aria-label="Review queue, scroll horizontally for all columns" tabIndex={0}>
-        <table className="w-full min-w-[88rem] table-fixed text-sm">
+        <table className="w-max min-w-full table-auto text-xs [&_td]:px-2 [&_td]:py-2 [&_td]:align-middle [&_td]:whitespace-nowrap">
           <caption className="sr-only">Platform-first candidate review queue. Source claims are separate from manual review outcomes.</caption>
-          <colgroup>
-            <col className="w-[9%]" /><col className="w-[15%]" /><col className="w-[12%]" /><col className="w-[12%]" /><col className="w-[11%]" /><col className="w-[9%]" /><col className="w-[7%]" /><col className="w-[12%]" /><col className="w-[7%]" /><col className="w-[6%]" />
-          </colgroup>
+
           <thead className="bg-gray-100 text-left">
             <tr>
               <SortHeader column="platform" label="Platform" params={params} sort={sort} />
-              <th scope="col" className="p-3">Profile / booking link</th>
-              <th scope="col" className="p-3">Social link</th>
+              <th scope="col" className="px-2 py-2 text-center">Booking</th>
+              <th scope="col" className="px-2 py-2 text-center">Social</th>
               <SortHeader column="candidate" label="Provider" params={params} sort={sort} />
               <SortHeader column="salon" label="Salon" params={params} sort={sort} />
               <SortHeader column="location" label="City / ZIP" params={params} sort={sort} />
               <SortHeader column="lanes" label="Lanes" params={params} sort={sort} />
-              <SortHeader column="status" label="Status" params={params} sort={sort} />
+              <SortHeader column="status" label="Check" params={params} sort={sort} />
               <SortHeader column="confidence" label="Extraction" params={params} sort={sort} />
-              <th scope="col" className="p-3">Action</th>
+              <th scope="col" className="px-2 py-2 text-center" title="DORA individual license">Person lic.</th>
+              <th scope="col" className="px-2 py-2 text-center" title="DORA shop registration, separate from an individual license">Shop reg.</th>
+              <th scope="col" className="px-2 py-2">Action</th>
             </tr>
           </thead>
           <tbody>
             {sortedRows.length ? sortedRows.map((row) => (
-              <tr key={row.reviewKey} className="border-t align-top">
-                <td className="break-words p-3"><div className="font-semibold text-gray-900">{profilePlatformLabel(row.profile)}</div><div className="mt-1 text-[11px] text-gray-500">{profilePlatformExplanation(row.profile)}</div></td>
-                <td className="break-words p-3"><ProfileLinks compact links={row.profile?.bookingLinks || []} empty="No exact link found" />{row.profile?.sourceContextUrl || row.sourceUrl ? <div className="mt-2 text-xs"><SourceLink url={row.profile?.sourceContextUrl || row.sourceUrl} label="Original source" /></div> : null}</td>
-                <td className="break-words p-3"><ProfileLinks compact links={row.profile?.socialLinks || []} />{row.instagramHandle ? <div className="mt-1 break-all text-xs text-gray-500">@{row.instagramHandle.replace(/^@/, "")}</div> : null}</td>
-                <td className="break-words p-3"><div className="font-medium text-gray-900">{row.profile?.providerName || row.displayName}</div>{row.serviceHint ? <div className="mt-1 text-xs text-gray-500">{row.serviceHint}</div> : null}<div className="mt-2 text-[11px] text-gray-500">{row.sourceLabel}</div></td>
-                <td className="break-words p-3">{row.profile?.businessName || <span className="text-gray-500">Unknown</span>}</td>
-                <td className="break-words p-3">{[row.profile?.city || row.city, row.profile?.state || row.state, row.profile?.postalCode].filter(Boolean).join(", ") || <span className="text-gray-500">Unknown</span>}</td>
-                <td className="p-3"><div className="flex flex-wrap gap-1">{row.lanes.map((lane) => <LaneBadge key={lane} lane={lane} />)}</div></td>
-                <td className="break-words p-3"><ProfileCheckState profile={row.profile} /><div className="mt-2 space-y-1 border-t border-gray-100 pt-2 text-[11px] text-gray-500">{row.lanes.map((lane) => <div key={lane}>{lane}: {row.laneStatuses[lane] || "pending"}</div>)}</div></td>
-                <td className="p-3"><span title="Source extraction quality; not identity verification">{row.confidence}</span></td>
-                <td className="p-3"><Link href={`/admin/validate/${encodeURIComponent(row.reviewKey)}${detailHrefSuffix}`} className="text-blue-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2">Review<span className="sr-only"> {row.displayName}</span></Link></td>
+              <tr key={row.reviewKey} className="border-t">
+                <td><CompactPlatform profile={row.profile} /></td>
+                <td className="text-center"><ProfileLinks compact kind="booking" links={(row.profile?.bookingLinks || []).filter((link) => link.kind !== "directory")} /></td>
+                <td className="text-center"><ProfileLinks compact kind="social" links={row.profile?.socialLinks || []} /></td>
+                <td className="max-w-52 text-left"><Link href={`/admin/validate/${encodeURIComponent(row.reviewKey)}${detailHrefSuffix}`} className="block max-w-48 truncate font-medium text-blue-700 hover:underline" title={row.profile?.providerName || row.displayName}>{row.profile?.providerName || row.displayName}</Link></td>
+                <td className="max-w-48 text-left [&>span]:block [&>span]:max-w-44 [&>span]:truncate"><CompactValue value={row.profile?.businessName} /></td>
+                <td><CompactValue value={[row.profile?.city || row.city, row.profile?.state || row.state, row.profile?.postalCode].filter(Boolean).join(", ")} /></td>
+                <td className="text-center"><div className="flex justify-center gap-1">{row.lanes.map((lane) => <LaneBadge key={lane} lane={lane} />)}</div></td>
+                <td className="text-center"><CompactProfileCheckState profile={row.profile} /></td>
+                <td className="text-center"><span title="Source extraction quality; not identity verification"><CompactValue value={row.confidence} /></span></td>
+                <td className="text-center"><DoraStatus check={row.dora?.personLicense} label="Person license" /></td>
+                <td className="text-center"><DoraStatus check={row.dora?.shopRegistration} label="Shop registration" /></td>
+                <td><Link href={`/admin/validate/${encodeURIComponent(row.reviewKey)}${detailHrefSuffix}`} className="text-blue-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2">Review<span className="sr-only"> {row.displayName}</span></Link></td>
               </tr>
-            )) : <tr><td className="p-4 text-gray-500" colSpan={10}>{intakeId ? "No pending review rows found for this intake." : "No queue items found."}</td></tr>}
+            )) : <tr><td className="p-4 text-gray-500" colSpan={12}>{intakeId ? "No pending review rows found for this intake." : "No queue items found."}</td></tr>}
           </tbody>
         </table>
       </div>
@@ -168,7 +172,7 @@ function SortHeader({ column, label, params, sort }: {
   const active = sort?.column === column;
   const nextDirection = active && sort.direction === "asc" ? "descending" : "ascending";
   return (
-    <th scope="col" className="p-3" aria-sort={active ? (sort.direction === "asc" ? "ascending" : "descending") : undefined}>
+    <th scope="col" className={`px-2 py-2 ${["status", "confidence", "lanes"].includes(column) ? "text-center" : "text-left"}`} aria-sort={active ? (sort.direction === "asc" ? "ascending" : "descending") : undefined}>
       <Link
         href={validationSortHref(params, column)}
         className="inline-flex items-center gap-1 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
@@ -194,7 +198,7 @@ function LaneBadge({ lane }: { lane: "DORA" | "SOCIAL" }) {
     lane === "DORA"
       ? "border-blue-200 bg-blue-50 text-blue-700"
       : "border-purple-200 bg-purple-50 text-purple-700";
-  return <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${className}`}>{lane}</span>;
+  return <span className={`rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${className}`}>{lane}</span>;
 }
 
 function DebugRow({ label, value }: { label: string; value: string }) {

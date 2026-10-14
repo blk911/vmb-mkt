@@ -1,3 +1,4 @@
+import type { DoraCrossReference } from "@/lib/dora/types";
 import type { ParseConfidence, SourceType } from "./types";
 
 export type QueueStatus =
@@ -16,7 +17,8 @@ export type DoraMatchStatus =
   | "active_match"
   | "inactive_match"
   | "possible_match"
-  | "not_found";
+  | "not_found"
+  | "not_checked";
 
 export type SocialSurfaceType =
   | "instagram"
@@ -46,6 +48,10 @@ export type DoraValidationQueueItem = {
 };
 
 export type DoraValidationResult = {
+  dora?: DoraCrossReference;
+  catalogId?: string;
+  legacyStatus?: DoraMatchStatus;
+  sourceUrl?: string;
   id: string;
   queueItemId: string;
   intakeId: string;
