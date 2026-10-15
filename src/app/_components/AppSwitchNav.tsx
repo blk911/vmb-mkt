@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback } from "react";
-import { isMarketsGlobalNavActive, isMarketsSectionPath } from "@/lib/admin/markets-section-nav";
-import { isAdminWorkspacePath } from "@/lib/admin/workspace-nav";
+import { isMarketsSectionPath } from "@/lib/admin/markets-section-nav";
+import { isAdminWorkspacePath, isLegacyMarketToolsPath } from "@/lib/admin/workspace-nav";
 import MarketsSectionSubnav from "@/components/admin/markets/MarketsSectionSubnav";
 import { canAccessMemberArea, canShowNavItem, type SessionUser } from "@/lib/auth/access";
 
@@ -24,16 +24,9 @@ const MARKETING_LINK: AppLink = {
 };
 const REQUEST_ACCESS_LINK: AppLink = { id: "request_access", label: "REQUEST ACCESS", href: "/access/request" };
 const LOGIN_LINK: AppLink = { id: "login", label: "LOGIN", href: "/auth/login" };
-const MARKETS_LINK: AppLink = {
-  id: "markets",
-  label: "MARKETS",
-  href: "/admin/markets",
-  isActive: isMarketsGlobalNavActive,
-};
-const LIVE_UNITS_LINK: AppLink = { id: "liveunits", label: "LIVE UNITS", href: "/admin/live-units" };
 const PROSPECTS_LINK: AppLink = { id: "datastore", label: "PROSPECTS", href: "/dashboard/targets", isActive: (pathname) => pathname === "/dashboard" || pathname.startsWith("/dashboard/") };
 const TEAM_LINK: AppLink = { id: "team", label: "TEAM", href: "/team" };
-const ADMIN_LINK: AppLink = { id: "admin", label: "ADMIN", href: "/admin/prospects", isActive: (pathname) => isAdminWorkspacePath(pathname) || pathname.startsWith("/dashboard") };
+const ADMIN_LINK: AppLink = { id: "admin", label: "ADMIN", href: "/admin/prospects", isActive: (pathname) => isAdminWorkspacePath(pathname) || isLegacyMarketToolsPath(pathname) || pathname.startsWith("/dashboard") };
 
 function defaultIsActive(href: string, pathname: string): boolean {
   const targetPath = href;
@@ -49,13 +42,12 @@ export default function AppSwitchNav({ sessionUser }: Props) {
   const pathname = usePathname() || "/";
   const showMarketsSectionSubnav =
     !!sessionUser && canAccessMemberArea(sessionUser) && isMarketsSectionPath(pathname);
+  const showLegacyToolsReturn = canAccessMemberArea(sessionUser) && isLegacyMarketToolsPath(pathname);
   const showMarketingQuickLinks = pathname === "/marketing-decks" || pathname.startsWith("/marketing-decks/");
   const links: AppLink[] = [
     MARKETING_LINK,
     REQUEST_ACCESS_LINK,
     LOGIN_LINK,
-    MARKETS_LINK,
-    LIVE_UNITS_LINK,
     PROSPECTS_LINK,
     TEAM_LINK,
     ADMIN_LINK,
@@ -168,6 +160,15 @@ export default function AppSwitchNav({ sessionUser }: Props) {
           </div>
         </div>
       </div>
+      {showLegacyToolsReturn ? (
+        <nav aria-label="Legacy tools navigation" className="border-b border-slate-200 bg-slate-50 px-4 py-2 text-sm">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4">
+            <span className="text-xs font-semibold text-slate-500">Legacy market tools</span>
+            <Link href={sessionUser?.role === "admin" ? "/admin/prospects" : "/dashboard/targets"} className="font-medium text-slate-700 hover:underline">Back to Prospects</Link>
+            {sessionUser?.role === "admin" ? <Link href="/admin/tools" className="font-medium text-slate-700 hover:underline">Admin tools</Link> : null}
+          </div>
+        </nav>
+      ) : null}
       {showMarketsSectionSubnav && sessionUser ? <MarketsSectionSubnav sessionUser={sessionUser} /> : null}
     </div>
   );

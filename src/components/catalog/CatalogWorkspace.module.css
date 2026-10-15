@@ -169,3 +169,28 @@ small.muted { display: block; font-size: 10px; }
   .inlineForm { flex-wrap: wrap; }
 }
 @media (max-width: 400px) { .filterGrid { grid-template-columns: 1fr; } }
+
+/* Saved lists put the working table first; editors mount only on request. */
+.listPicker { width: clamp(190px, 24vw, 300px); }
+.listToolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; margin: 0 0 12px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.compactFilters { padding: 0; }
+.listFilterBar { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; }
+.listFilterBar > .field:first-child { flex: 1; min-width: 180px; }
+.listFilterBar > .field:nth-child(2) { width: 180px; }
+.compactFilters .contextFilters { margin-top: 12px; max-width: 560px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.compactFilters .filterFooter { margin-top: 8px; }
+.listEditor { max-width: 760px; margin-top: 0; padding: 16px; }
+.listEditor h2 { font-size: 17px; }
+.listEditor .editorBody { gap: 12px; padding-top: 0; }
+.listEditor .filterGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.listBrowserFilters { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-bottom: 12px; }
+.listBrowserFilters > .field { width: min(100%, 300px); }
+.listCards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 10px; }
+.listCards .listItem { border: 1px solid var(--line); background: white; }
+.dangerText { color: #9b2f2f; }
+.deleteConfirmation { border: 1px solid #e5bebe; border-radius: 10px; background: #fff8f8; padding: 16px; margin-bottom: 12px; max-width: 700px; }
+.deleteConfirmation h2 { font-size: 17px; }
+.deleteConfirmation p { font-size: 12px; margin: 8px 0 12px; }
+.archivedLists { list-style: none; padding: 0; margin: 12px 0 0; }
+.archivedLists li { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; border-top: 1px solid var(--line); padding: 10px 0; }
+@media (max-width: 600px) { .listPicker { flex: 1; width: auto; } .listFilterBar > .field:nth-child(2) { flex: 1; } .listEditor .filterGrid { grid-template-columns: 1fr; } }

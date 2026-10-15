@@ -5,6 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const ts = require('typescript');
 const React = require('react');
+const { NextRequest } = require('next/server');
 const { renderToStaticMarkup } = require('react-dom/server');
 const root = path.resolve(__dirname, '..');
 let pathname = '/admin/prospects';
@@ -17,13 +18,25 @@ function load(relative) {
   const filename = path.resolve(root, relative);
   if (cache.has(filename)) return cache.get(filename).exports;
   const module = { exports: {} }; cache.set(filename, module);
-  const compiled = ts.transpileModule(fs.readFileSync(filename, 'utf8'), { fileName: filename, compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText;
+  let compiled = ts.transpileModule(fs.readFileSync(filename, 'utf8'), { fileName: filename, compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText;
+  // Expose the private login normalizer only inside this hermetic test VM.
+  if (relative === 'src/app/auth/login/page.tsx') compiled += '\nmodule.exports.testSanitizeNextPath = sanitizeNextPath;';
   vm.runInNewContext(compiled, { module, exports: module.exports, URLSearchParams, Date, AbortController, console, process: { env: {} }, fetch() { throw new Error('Network access is forbidden'); }, require(id) {
     if (id === 'react' || id === 'react/jsx-runtime') return require(id);
+    if (id === 'next/server') return require(id);
     if (id === 'next/link') return { __esModule: true, default: ({ children, ...props }) => h('a', props, children) };
     if (id === 'next/headers') return { cookies: async () => ({}) };
     if (id === 'next/navigation') return { usePathname: () => pathname, redirect: (href) => { throw Object.assign(new Error('redirect'), { href }); } };
-    if (id === '@/lib/auth/access') return { getSessionUserFromCookies: async () => user, canAccessMemberArea: (value) => ['admin', 'member'].includes(value?.role), canShowNavItem: (name, value) => name === 'marketing' || ['request_access', 'login'].includes(name) && !value || ['markets', 'datastore', 'team'].includes(name) && ['admin', 'member'].includes(value?.role) || ['admin', 'liveunits'].includes(name) && value?.role === 'admin' };
+    if (id === '@/lib/auth/access') return {
+      getSessionUserFromCookies: async () => user, getSessionUserFromToken: async () => user,
+      canAccessAdmin: (value) => value?.role === 'admin', canAccessMemberArea: (value) => ['admin', 'member'].includes(value?.role),
+      canShowNavItem: (name, value) => name === 'marketing' || ['request_access', 'login'].includes(name) && !value || ['markets', 'datastore', 'team'].includes(name) && ['admin', 'member'].includes(value?.role) || ['admin', 'liveunits'].includes(name) && value?.role === 'admin',
+      isAdminRoute: (value) => value.startsWith('/admin') || value.startsWith('/api/admin'),
+      isPublicRoute: (value) => value === '/', isAuthRoute: (value) => value.startsWith('/auth') || value.startsWith('/api/auth'),
+      canAccessRoute: (value, session) => value.startsWith('/admin/markets') ? !!session : value.startsWith('/admin') || value.startsWith('/api/admin') ? session?.role === 'admin' : ['admin', 'member'].includes(session?.role),
+    };
+    if (id === '@/lib/auth/config') return { getSessionSecret: () => 'synthetic-test-secret' };
+    if (id === '@/lib/auth/session') return { SESSION_COOKIE: 'synthetic_session' };
     if (id === '@/components/admin/markets/MarketsSectionSubnav') return { __esModule: true, default: () => h('nav', { 'aria-label': 'Markets section' }) };
     if (id === '@/components/catalog/CatalogWorkspace') return { __esModule: true, default: catalog };
     if (id === '@/lib/source-intake/store') return { listSourceIntakes: async () => { if (intakeFailure) throw new Error('synthetic failure'); return [{ id: 'intake/a', sourceLabel: 'Synthetic import', sourceType: 'manual', status: 'processed', submittedAt: '2026-10-14T12:00:00Z', parseSummary: { totalCandidates: 4 }, processSummary: { matchedCount: 1, newCandidateCount: 2, heldCount: 1 } }]; } };
@@ -101,16 +114,65 @@ test('members see only authorized workspace destinations', () => {
   assert.match(rendered, /href="\/dashboard\/targets"/); assert.match(rendered, /href="\/dashboard\/lists" aria-current="page"/);
   assert(!rendered.includes('href="/admin/')); assert(!rendered.includes('Sources')); assert(!rendered.includes('Admin tools'));
 });
-test('global admin navigation has one workspace entry and preserves other apps', () => {
+test('global admin navigation has one workspace entry and retires legacy primary pills', () => {
   pathname = '/admin/prospects';
   const rendered = html(AppSwitchNav, { sessionUser: { role: 'admin' } });
-  for (const label of ['VMB SALONS', 'MARKETS', 'LIVE UNITS', 'TEAM', 'ADMIN']) assert(rendered.includes(label));
+  for (const label of ['VMB SALONS', 'TEAM', 'ADMIN']) assert(rendered.includes(label));
+  for (const label of ['MARKETS', 'LIVE UNITS']) assert(!rendered.includes(`>${label}<`));
   assert(!rendered.includes('DATA STORE')); assert(!rendered.includes('/dashboard/targets'));
   assert.equal((rendered.match(/aria-current="page"/g) || []).length, 1);
-  pathname = '/admin/markets';
-  const markets = html(AppSwitchNav, { sessionUser: { role: 'admin' } });
-  assert.match(markets, /href="\/admin\/markets"[^>]*aria-current="page"/);
-  assert(!/href="\/admin\/prospects"[^>]*aria-current/.test(markets));
+});
+test('legacy pages retain local navigation and a clear route back to Prospects and Admin tools', () => {
+  for (const route of ['/admin/markets', '/admin/markets/member/example', '/admin/social-targets', '/admin/live-units']) {
+    pathname = route;
+    const rendered = html(AppSwitchNav, { sessionUser: { role: 'admin' } });
+    assert.match(rendered, /aria-label="Legacy tools navigation"/);
+    assert.match(rendered, /href="\/admin\/prospects"[^>]*aria-current="page"/);
+    assert.match(rendered, /href="\/admin\/prospects"[^>]*>Back to Prospects<\/a>/);
+    assert.match(rendered, /href="\/admin\/tools"/);
+    assert(!rendered.includes('>MARKETS<')); assert(!rendered.includes('>LIVE UNITS<'));
+    assert.equal(rendered.includes('aria-label="Markets section"'), route !== '/admin/live-units');
+  }
+});
+test('members retain prospect navigation without legacy primary pills or admin-only return links', () => {
+  for (const route of ['/dashboard/targets', '/admin/markets']) {
+    pathname = route;
+    const rendered = html(AppSwitchNav, { sessionUser: { role: 'member' } });
+    assert.match(rendered, /href="\/dashboard\/targets"/);
+    assert(!rendered.includes('>MARKETS<')); assert(!rendered.includes('>LIVE UNITS<'));
+    assert(!rendered.includes('href="/admin/prospects"')); assert(!rendered.includes('href="/admin/tools"'));
+    assert.equal(rendered.includes('Back to Prospects'), route === '/admin/markets');
+  }
+});
+test('Admin tools retains clearly labeled legacy routes without replacing current intake', () => {
+  const rendered = html(load('src/app/admin/tools/page.tsx').default);
+  assert.match(rendered, /Legacy Markets/); assert.match(rendered, /Legacy Live Units/);
+  assert.match(rendered, /separate datasets/); assert.match(rendered, /sample-derived signals/);
+  for (const route of ['/admin/markets', '/admin/live-units']) {
+    assert(rendered.includes(`href="${route}"`));
+    assert(fs.existsSync(path.join(root, 'src/app', route, 'page.tsx')));
+  }
+});
+test('login defaults enter Prospects while explicit legacy URLs remain valid', () => {
+  const sanitize = load('src/app/auth/login/page.tsx').testSanitizeNextPath;
+  for (const value of [undefined, '', 'https://example.invalid', '//example.invalid', '/auth/login', '/auth/login?next=/admin/markets']) assert.equal(sanitize(value), '/dashboard/targets');
+  for (const value of ['/admin/markets?category=Nail', '/admin/markets/member/example', '/admin/live-units', '/admin/sources/import?source=URL']) assert.equal(sanitize(value), value);
+});
+test('denied admin access returns members to Prospects while direct authorized legacy routes remain', async () => {
+  const middleware = load('src/middleware.ts').middleware;
+  user = { role: 'member' };
+  const denied = await middleware(new NextRequest('https://synthetic.invalid/admin/tools?private=value'));
+  assert.equal(denied.headers.get('location'), 'https://synthetic.invalid/dashboard/targets');
+  assert.equal((await middleware(new NextRequest('https://synthetic.invalid/admin/markets?category=Nail'))).headers.get('x-middleware-next'), '1');
+  assert.equal((await middleware(new NextRequest('https://synthetic.invalid/api/admin/live-units/dataset'))).status, 403);
+  user = { role: 'admin' };
+  for (const route of ['/admin/markets', '/admin/live-units']) assert.equal((await middleware(new NextRequest(`https://synthetic.invalid${route}`))).headers.get('x-middleware-next'), '1');
+  user = { role: 'external' };
+  assert.equal((await middleware(new NextRequest('https://synthetic.invalid/admin/tools'))).headers.get('location'), 'https://synthetic.invalid/');
+  user = null;
+  const login = new URL((await middleware(new NextRequest('https://synthetic.invalid/admin/markets'))).headers.get('location'));
+  assert.equal(login.pathname, '/auth/login'); assert.equal(login.searchParams.get('next'), '/admin/markets');
+  user = { role: 'admin' };
 });
 test('runtime counts name their units without claiming campaigns or outreach eligibility', async () => {
   const rendered = renderToStaticMarkup(await load('src/app/admin/tools/overview/page.tsx').default());

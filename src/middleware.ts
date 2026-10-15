@@ -75,7 +75,7 @@ export async function middleware(req: NextRequest) {
 
     const loginUrl = req.nextUrl.clone();
     if (sessionUser && isAdminRoute(pathname) && !canAccessAdmin(sessionUser)) {
-      loginUrl.pathname = "/admin/markets";
+      loginUrl.pathname = sessionUser.role === "external" ? "/" : "/dashboard/targets";
       loginUrl.search = "";
     } else {
       if (pathname.startsWith("/auth/login")) {
