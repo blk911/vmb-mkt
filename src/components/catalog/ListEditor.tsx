@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { WORKFLOW_STAGES, WORKFLOW_DISPOSITIONS, normalizeTargetWorkflow } from "@/lib/ops/targetWorkflow";
 import type { WorkflowStage, WorkflowDisposition } from "@/lib/ops/targetWorkflow";
 import { dateLabel, postList, type CatalogList } from "./catalog-ui-types";
@@ -13,15 +13,18 @@ function localDateTime(value?: string) {
   return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 }
 
-export default function ListEditor({ list, onUpdated }: { list: CatalogList; onUpdated: (list: CatalogList) => void }) {
+export default function ListEditor({ list, onUpdated, onClose, onSaveStart, onSaveEnd }: { list: CatalogList; onUpdated: (list: CatalogList) => void; onClose: () => void; onSaveStart: () => boolean; onSaveEnd: () => void }) {
   const [name, setName] = useState(list.name);
   const [notes, setNotes] = useState(list.notes || "");
   const [workflow, setWorkflow] = useState(() => ({ ...normalizeTargetWorkflow(list.workflow), nextAction: list.workflow?.nextAction || "", nextActionAt: localDateTime(list.workflow?.nextActionAt) }));
+  const saving = useRef(false);
   const [pending, setPending] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
   async function save(op: string, data: Record<string, unknown>, label: string) {
+    if (saving.current || !onSaveStart()) return;
+    saving.current = true;
     setPending(op); setError(""); setNotice("");
     try {
       const result = await postList({ op, id: list.id, ...data });
@@ -29,11 +32,11 @@ export default function ListEditor({ list, onUpdated }: { list: CatalogList; onU
       onUpdated(result.list);
       setNotice(`${label} saved.`);
     } catch (failure) { setError(failure instanceof Error ? failure.message : "Save failed. Please retry."); }
-    finally { setPending(""); }
+    finally { saving.current = false; setPending(""); onSaveEnd(); }
   }
 
-  return <details className={styles.listEditor}>
-    <summary>List details, owner & next action</summary>
+  return <section className={`${styles.panel} ${styles.listEditor}`} aria-label="List settings">
+    <div className={styles.listHeading}><h2>List settings</h2><button className={styles.textButton} type="button" disabled={!!pending} onClick={onClose}>Done</button></div>
     <div className={styles.editorBody}>
       {error ? <div role="alert" className={styles.error}>{error}</div> : null}
       {notice ? <p role="status" className={styles.success}>{notice}</p> : null}
@@ -57,5 +60,5 @@ export default function ListEditor({ list, onUpdated }: { list: CatalogList; onU
       </form>
       <p className={styles.muted}>Last saved: {dateLabel(list.updatedAt)}. These fields organize work; they do not send messages or start campaigns.</p>
     </div>
-  </details>;
+  </section>;
 }

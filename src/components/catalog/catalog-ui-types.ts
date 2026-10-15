@@ -32,6 +32,7 @@ export type CatalogList = {
   workflow?: Partial<TargetWorkflow> & { nextAction?: string };
   createdAt?: string;
   updatedAt?: string;
+  archivedAt?: string;
 };
 
 export function listMemberIds(list: CatalogList) {
@@ -58,7 +59,7 @@ export async function readJson<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export function postList(body: Record<string, unknown>) {
-  return readJson<{ ok: true; list?: CatalogList }>("/api/targets/lists", {
+  return readJson<{ ok: true; list?: CatalogList; archived?: string; recoverable?: boolean }>("/api/targets/lists", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
   });
 }

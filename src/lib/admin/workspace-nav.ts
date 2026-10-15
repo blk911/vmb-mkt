@@ -6,9 +6,14 @@ export type WorkspaceSearchParams = Record<string, string | string[] | undefined
 const sourcePaths = ["/admin/build", "/admin/source-intake", "/admin/sources", "/admin/sola-containers", "/admin/manual-ig-clusters", "/admin/operators/surface-recovery"];
 const matches = (path: string, root: string) => path === root || path.startsWith(`${root}/`);
 
-/** Markets and Live Units have their own workspace navigation. */
+/** Retained diagnostics with their own navigation; these are not primary workspaces. */
+export function isLegacyMarketToolsPath(pathname: string): boolean {
+  return isMarketsSectionPath(pathname) || matches(pathname, "/admin/live-units");
+}
+
+/** Keep legacy member-accessible pages out of the admin-only workspace navigation. */
 export function isAdminWorkspacePath(pathname: string): boolean {
-  return matches(pathname, "/admin") && !isMarketsSectionPath(pathname) && !matches(pathname, "/admin/live-units") && pathname !== "/admin/login";
+  return matches(pathname, "/admin") && !isLegacyMarketToolsPath(pathname) && pathname !== "/admin/login";
 }
 
 export function workspaceSection(pathname: string): WorkspaceSection {

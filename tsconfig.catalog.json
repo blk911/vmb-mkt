@@ -45,7 +45,9 @@
     "src/app/admin/lists/**/*.tsx",
     "src/app/admin/sources/**/*.tsx",
     "src/app/admin/tools/**/*.tsx",
-    "src/app/dashboard/**/*.tsx"
+    "src/app/dashboard/**/*.tsx",
+    "src/app/auth/login/page.tsx",
+    "src/middleware.ts"
   ],
   "exclude": [
     "node_modules",

@@ -24,7 +24,7 @@ function loader(overrides = {}, globals = {}) {
         if (Object.hasOwn(overrides, id)) return overrides[id];
         if (['react', 'react/jsx-runtime', 'node:crypto'].includes(id)) return require(id);
         if (id === 'next/link') return { __esModule: true, default: ({ children, ...props }) => React.createElement('a', props, children) };
-        if (id === 'next/navigation') return { useRouter: () => ({ refresh() {} }) };
+        if (id === 'next/navigation') return { useRouter: () => ({ refresh() {} }), usePathname: () => globals.window?.location?.pathname || '/admin/prospects', useSearchParams: () => new URLSearchParams(globals.window?.location?.search || '') };
         if (id.endsWith('.module.css')) return { __esModule: true, default: new Proxy({}, { get: (_, key) => String(key) }) };
         if (id.startsWith('@/') || id.startsWith('.')) {
           const stem = id.startsWith('@/') ? path.join(root, 'src', id.slice(2)) : path.resolve(path.dirname(file), id);

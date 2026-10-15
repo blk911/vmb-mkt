@@ -8,10 +8,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 function sanitizeNextPath(nextPath?: string | null) {
   const value = String(nextPath || "").trim();
   if (!value.startsWith("/") || value.startsWith("//")) {
-    return "/admin/markets";
+    return "/dashboard/targets";
   }
   if (value === "/auth/login" || value.startsWith("/auth/login?")) {
-    return "/admin/markets";
+    return "/dashboard/targets";
   }
   return value;
 }
